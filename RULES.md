@@ -1,6 +1,6 @@
 # Project rules
 
-TRACE Workbench installs a shared Reverse Engineer Anything skill and connects local agent CLIs to the pinned REA analysis server. The current scope is setup, configuration preservation, diagnostics, and a reproducible MCP smoke test. A desktop-control executor is a separate future project.
+TRACE Workbench is being developed to give AI agents shared Windows computer control. The desktop executor is not implemented yet. This repository currently contains engineering setup, configuration preservation, diagnostics, and recorded workflow evidence. Analysis tooling supports development; it is not the product.
 
 ## Implementation
 
@@ -14,5 +14,5 @@ TRACE Workbench installs a shared Reverse Engineer Anything skill and connects l
 
 - Verify the changed behavior and configuration preservation before claiming setup is complete. A successful direct MCP test proves the server works; a configured client is not evidence of a successful model-host session.
 - Report each result at its actual scope: unit checks, direct MCP integration, client configuration, or live host acceptance. Record a blocked CI run as blocked rather than passing.
-- Preserve upstream attribution. TRACE owns the integration workflow; REA supplies the analysis engine and tools.
+- Keep product descriptions focused on TRACE's computer-control goal and implemented capabilities. Preserve analysis-tool attribution in technical documentation and third-party notices.
 - Update documentation to match the completed implementation. The initial README is written last, after setup and verification results are known.

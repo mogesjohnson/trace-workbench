@@ -1,6 +1,6 @@
 # Local analysis setup
 
-TRACE Workbench connects local Codex, Claude Code, Grok Build, and Gemini CLI installations to the pinned REA analysis server. It also installs the accompanying `reverse-engineer-anything` skill for client discovery. Setup configures the connection; a running model session is a separate acceptance check.
+This development setup connects local Codex, Claude Code, Grok Build, and Gemini CLI installations to the pinned REA analysis server. It also installs the accompanying `reverse-engineer-anything` skill for client discovery. These tools support engineering work on TRACE; they do not provide its planned desktop executor. A running model session is a separate acceptance check.
 
 ## Install and inspect
 

@@ -1,6 +1,6 @@
 # Upstream provenance
 
-TRACE Workbench is an integration around **Reverse Engineer Anything (REA)**. It installs the upstream analysis server, maintains shared skill discovery, and configures local clients. It does not present REA's analysis engine as an original TRACE implementation.
+TRACE Workbench's current development tooling uses **Reverse Engineer Anything (REA)** for analysis. The tooling installs the upstream analysis server, maintains shared skill discovery, and configures local clients. TRACE's intended product is shared Windows computer control; the analysis engine is an upstream development tool.
 
 | Component | Source | Version / pin |
 | --- | --- | --- |

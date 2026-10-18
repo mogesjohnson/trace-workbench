@@ -2,7 +2,7 @@
   "name": "trace-workbench",
   "version": "0.1.0-alpha.1",
   "private": true,
-  "description": "Versioned local REA analysis setup for Windows coding agents.",
+  "description": "Development foundation for shared Windows computer control across AI agents.",
   "license": "MIT",
   "engines": {
     "node": "^22.19.0 || ^24.11.0 || >=26.0.0"

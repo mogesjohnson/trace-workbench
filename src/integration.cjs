@@ -12,7 +12,7 @@ const DEFAULT_CLIENTS = Object.freeze([
 const SUPPORTED_CLIENTS = DEFAULT_CLIENTS;
 const COMMANDS = new Set(['plan', 'apply', 'doctor', 'mcp']);
 
-const HELP = `TRACE Workbench — pinned local REA integration
+const HELP = `TRACE Workbench — development analysis tooling
 
 Usage:
   trace-workbench plan   [--client NAME ...] [--skill-client NAME ...]

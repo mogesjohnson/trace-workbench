@@ -1,10 +1,12 @@
 # TRACE Workbench
 
-Shared local REA analysis setup for **Codex, Claude Code, Grok Build, and Gemini CLI**.
+Shared Windows computer control for AI agents.
 
-**Version:** `0.1.0-alpha.1` · **REA:** `6.7.0` · **Skill:** `42`
+**Version:** `0.1.0-alpha.1` · **Status:** development foundation
 
-## Setup
+The goal is one interface for **Codex, Claude Code, Grok Build, and Gemini CLI** to observe and operate Windows. The shared desktop executor is not implemented yet. This version contains engineering setup and recorded workflow evidence.
+
+## Developer setup
 
 Requires a supported Node.js version; verified on Windows x64 with Node.js 26.
 
@@ -17,22 +19,22 @@ node scripts/link-grok-skill.cjs --apply
 node bin/trace.cjs doctor
 ```
 
-Review the plan before applying it. Setup preserves unrelated settings and backs up existing configuration. New agent connections launch the pinned analysis server over stdio. No listening network port or model API key is required.
+These commands configure development analysis tools. Review the plan before applying it; setup preserves unrelated settings and backs up existing configuration.
 
-For selected clients and recovery, see [setup](docs/SETUP.md). REA provides the analysis engine; TRACE provides the integration workflow. [Upstream attribution](docs/PROVENANCE.md).
+See [setup and recovery](docs/SETUP.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
 
 ## Verified
 
 - **38 unit tests passed.**
-- **207 MCP tools** discovered through TRACE; static fixture analysis passed and owned processes exited.
+- **207 analysis tools** discovered through the development MCP connection; static fixture analysis passed and owned processes exited.
 - Two selected modules from packaged REPLAY were analyzed without changing its package.
-- Calculator **12 × 3 = 36** was demonstrated by one driver and reviewed by two observers.
+- The existing Computer Use executor demonstrated Calculator **12 × 3 = 36**, reviewed by two observers.
 
 [Verification and limits](docs/VERIFICATION.md) · [Observed computer workflow](docs/OBSERVED-WORKFLOW.md)
 
 ## Scope
 
-The skill and analysis connection are installed. Native decompilation engines and live Claude/Grok/Gemini model sessions were not tested. A shared desktop-control replacement is future work.
+The development skill and analysis connection are installed. Native decompilation engines and live Claude/Grok/Gemini model sessions were not tested. The Calculator demonstration records the workflow TRACE aims to support; it does not establish a working TRACE executor.
 
 ```powershell
 npm test
