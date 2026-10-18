@@ -1,0 +1,10 @@
+node_modules/
+.runtime/
+.env
+.env.*
+!.env.example
+*.log
+*.rea.backup*
+*.local.json
+coverage/
+
