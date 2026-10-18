@@ -1,10 +1,14 @@
 # TRACE Workbench
 
-Shared Windows computer control for AI agents.
+## Advanced capabilities for AI agents
+
+Shared tools that give agents abilities beyond written instructions.
 
 **Version:** `0.1.0-alpha.1` · **Status:** development foundation
 
 The goal is one interface for **Codex, Claude Code, Grok Build, and Gemini CLI** to observe and operate Windows. The shared desktop executor is not implemented yet. This version contains engineering setup and recorded workflow evidence.
+
+Start with computer and browser control. Explore the proposed [capabilities and priorities](docs/CAPABILITIES.md).
 
 ## Developer setup
 
