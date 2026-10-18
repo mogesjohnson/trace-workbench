@@ -8,7 +8,7 @@ Shared tools that give agents abilities beyond written instructions.
 
 The goal is one interface for **Codex, Claude Code, Grok Build, and Gemini CLI** to observe and operate Windows. The shared desktop executor is not implemented yet. This version contains engineering setup and recorded workflow evidence.
 
-Start with computer and browser control. Explore the proposed [capabilities and priorities](docs/CAPABILITIES.md).
+The first two skills are **Reverse Engineer Anything** and **Computer Use**. See the [skill list and current status](SKILLS.md). Other [future skills are under review](docs/CAPABILITIES.md).
 
 ## Developer setup
 
