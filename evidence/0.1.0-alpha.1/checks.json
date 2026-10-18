@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "coreCommit": "b4bdc22",
+  "applicationVersion": "0.1.0-alpha.1",
+  "nodeVersion": "v26.2.0",
+  "platform": "win32",
+  "architecture": "x64",
+  "unitTests": {
+    "command": "npm test",
+    "tests": 38,
+    "passed": 38,
+    "failed": 0
+  },
+  "sourceChecks": {
+    "command": "npm run check",
+    "passed": true
+  },
+  "review": {
+    "independentSourceReview": true,
+    "findings": 2,
+    "resolved": 2
+  },
+  "modelProviderRequests": 0,
+  "otherModelHostTests": 0
+}

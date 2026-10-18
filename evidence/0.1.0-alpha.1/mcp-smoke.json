@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "observedAt": "2026-10-18T19:47:34.337Z",
+  "scope": "TRACE wrapper -> REA",
+  "transport": "stdio",
+  "client": "@modelcontextprotocol/client@2.3.1",
+  "server": {
+    "name": "rea",
+    "version": "6.7.0"
+  },
+  "toolCount": 207,
+  "health": {
+    "completed": true,
+    "noNativeTargetOpen": true,
+    "alignment": "aligned",
+    "negotiatedProtocol": "2025-11-25",
+    "catalogDigests": {
+      "tools_sha256": "af39310c9591bb981893ec0d2188b1bcf6e9cc8ba3ac513d5bbefc8ddcb85639",
+      "prompts_sha256": "7152916ab48bd2a9677a5ad9cdbde0a51dc53c113934952ad096e93f5f18aa7e",
+      "combined_sha256": "96d8f6e6ea1b1ba13557216624a3461c738729d53c79b4b0100d1f3a3a32441c"
+    }
+  },
+  "target": {
+    "kind": "owned-synthetic-javascript-application",
+    "relativePath": "tests/fixtures/owned-demo",
+    "files": [
+      {
+        "path": "main.cjs",
+        "bytes": 846,
+        "sha256": "77004d410149fb6be1433426fc3fd98d0fcf7abdf37c036c97f1a84e7a5b0650"
+      },
+      {
+        "path": "package.json",
+        "bytes": 220,
+        "sha256": "d1a873c6a4ae041408ae629ae2373780a677db630582385ee481b2157cd03463"
+      }
+    ],
+    "digest": "60d775fb22c0d47c1ba909d66278c7cf20523fe72c2e93091b7ac6d0a1bf52e4",
+    "unchanged": true
+  },
+  "analysis": {
+    "evidenceId": "ev_5da2d027a58d5d7a98600e425abf0117111882655b30818a6a037638537704a6",
+    "confidence": "derived",
+    "operation": "analyze_javascript_application",
+    "authority": "shipped-artifact",
+    "exports": [
+      {
+        "name": "createRecordingPlan",
+        "observationId": "jag_observation_4f8813f8c0af973457a56d0b1178ef46ed5467d8e35cd42538abe163860cf381"
+      },
+      {
+        "name": "formatOverlay",
+        "observationId": "jag_observation_7e28cb1d3fe9c6b42f6f5ffe813371d3b4fb56f0699e7fece806954088542bdc"
+      },
+      {
+        "name": "OUTPUT_FORMAT",
+        "observationId": "jag_observation_e8b9eb0da0c114fa6b26f60451884f817132cd62c5ce1c471a9b752324eb9685"
+      }
+    ],
+    "graphCoverage": {
+      "status": "complete",
+      "truncated": false,
+      "omitted_count": 0,
+      "limits": []
+    },
+    "semanticCoverage": "unknown",
+    "residualUnknownCount": 15,
+    "parsedJavascriptFiles": 1,
+    "artifactSha256": "23a28707656bfc9c7ef5703032e9ea97f634ac009e72b85c239460e7a616266a",
+    "limitations": [
+      "CommonJS and ESM binding relationships were recovered from inert syntax and resolved only within the inventoried artifact container.",
+      "JavaScript and HTML were parsed as inert text; bundle bootstrap code was never executed.",
+      "Static imports, entrypoints, workers, endpoints, and storage relationships do not prove runtime execution.",
+      "Static paths and relationships may remain unresolved when expressions are dynamic or obfuscated.",
+      "Webpack/Rspack factories were recovered from AST literals; REA did not invoke push handlers or bundle bootstrap code."
+    ]
+  },
+  "localEvidenceRun": ".runtime/mcp-smoke/2026-10-18T19-47-24-747Z-6fe73b63-f39c-4e78-a9cc-fc759cab7fa2",
+  "rawEvidence": [
+    {
+      "file": "tools-list.json",
+      "sha256": "fa8002fee587f5b61bdf0cc65b3b18a902891501241ba824cd6eeb18455d68d3"
+    },
+    {
+      "file": "binary-session.json",
+      "sha256": "6e77d9e738f9c8910fbdcc2483b329bd269256bd5c070716266e328c4651ca57"
+    },
+    {
+      "file": "javascript-analysis.json",
+      "sha256": "7d5a5d8a48fa3fd1919f2e61db5fefe358d04183bdca021b9ffddbaf4e5cb7e9"
+    }
+  ],
+  "limits": {
+    "paidCalls": 0,
+    "modelClientTests": 0,
+    "executedTargetCode": false,
+    "nativeEngineInstalled": false,
+    "persistentNetworkListener": false,
+    "staticEvidenceOnly": true
+  },
+  "cleanup": {
+    "ownedWrapperExited": true,
+    "ownedReaChildCount": 1,
+    "ownedDirectChildCount": 2,
+    "ownedChildrenExited": true,
+    "childExitCheck": "owned-pids-through-windows-cim"
+  }
+}

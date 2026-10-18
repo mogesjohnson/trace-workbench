@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "reviewer": "computer_workflow_observer",
+  "reviewDate": "2026-10-18",
+  "role": "Independent read-only review of driver-retained evidence; no desktop API calls or window focus changes",
+  "evidence": {
+    "trace": "trace.jsonl",
+    "sessionId": "calculator-2026-10-18T19-40-37-862Z",
+    "traceSha256": "a9f659cf7c08afaa77fda6cd47a4905041ee352945700f4fe57ece1c30428ea9",
+    "records": 22,
+    "sequencesContiguous": true,
+    "retainedFramesOpened": [
+      "observation-002",
+      "observation-003",
+      "observation-004",
+      "observation-005",
+      "observation-006",
+      "observation-007"
+    ],
+    "retainedFrameHashesAndByteSizesMatchTrace": true,
+    "withdrawnFrameOpened": false
+  },
+  "boundedResult": "passed",
+  "observations": [
+    "Retained screenshots independently show Calculator Standard: 0, 1, 12, 12 with pending multiplication, 3 with pending 12 multiplication, then expression 12 × 3 = and result 36.",
+    "All five click intents cite the latest retained observation, the same Calculator window id 134542, app Microsoft.WindowsCalculator_8wekyb3d8bbwe!App, title Calculator, and screenshot-backed coordinates inside the depicted intended control.",
+    "Each click intent has one resolved click result followed by a new get_window_state observation before the next intent. No batching of multiple input actions between retained observations appears in this trace.",
+    "Initial get_window_state returned a non-target capture with no accessibility. The trace records no input before exact-window activation and a verified Calculator observation. The withdrawn image was excluded from this review.",
+    "Accessibility was null for every recorded observation. This run demonstrates screenshot-backed clicking, not indexed UIA control selection or accessibility/pixel agreement.",
+    "Method names, selected arguments, durations where available, action outcomes, target identity, screenshot dimensions, hashes and byte sizes are retained. No private protocol traffic or helper internals were inspected."
+  ],
+  "traceLimitations": [
+    "Observation-002 duration is explicitly unavailable after driver corrected an inspection-pause measurement. It must not be included in latency statistics.",
+    "Record emission timing does not isolate underlying action completion: action-result recordedAt is roughly 3.2 seconds after intent while reported click durations are 109 to 159 milliseconds. Do not treat recordedAt gaps as click latency; separate action and capture durations are available.",
+    "Repeated screenshot id screenshot-0 is scoped by precedingObservationId and session; implementations must not use it as a globally unique frame identifier.",
+    "App/title/window identity and pixels agree after recovery, but no executable hash or process identity was independently established by this observer.",
+    "The driver-authored trace is evidence of the documented calls and visible outcomes, not a raw independent capture of all host API traffic."
+  ],
+  "demonstratedCapabilities": [
+    "Documented app discovery/launch and window selection",
+    "Detection of wrong-target capture and no-input recovery through exact-window activation",
+    "Target-window screenshot observation",
+    "One screenshot-backed coordinate click followed by fresh observation",
+    "Arithmetic state progression and final visible result verification"
+  ],
+  "untestedCapabilities": [
+    "UIA indexed selection, set_value and semantic editable controls",
+    "Typing, keyboard chords, scrolling and dragging",
+    "Dialogs, focus changes after input, minimized/occluded windows and multi-window recovery",
+    "Shared-desktop exclusive control leases or competing agents",
+    "Claude, Grok, Gemini or other client compatibility",
+    "End-to-end replacement executor equivalence, recording or REPLAY integration"
+  ],
+  "reconstructionImplications": [
+    "Bind each action to a fresh target-verified observation; activate and re-observe before input when capture identity is wrong or uncertain.",
+    "Provide explicit screenshot-only fallback when accessibility is absent and preserve that degraded-mode status.",
+    "Expose method/argument/outcome/error records with separate operation timestamps and record emission timestamps.",
+    "The demonstrated workflow is a reconstruction requirement. This evidence does not reveal or reproduce the proprietary executor implementation."
+  ]
+}
