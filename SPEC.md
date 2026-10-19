@@ -8,6 +8,14 @@ TRACE gives AI agents executable capabilities through a shared local MCP interfa
 
 The initial delivery targets Windows x64 and the Codex, Claude Code, Grok Build, and Gemini CLI hosts. Each host supplies its reasoning model and permission controls. TRACE supplies the operations and evidence; equivalent model behavior is not assumed.
 
+## Agent completion contract
+
+- **Plan:** select a milestone and requirement IDs. Before each acceptance case, declare the target, initial state, exact actions, expected result/error and cleanup. Keep separate results for each action, failure mode and environment.
+- **Prove:** retain a sanitized receipt with case ID, tested source commit, runtime/display configuration, expected/actual result, status (`pass`, `fail`, `blocked`, `not_run`) and artifact paths/hashes. A live case needs MCP evidence plus independently checked target state; input delivery alone is insufficient.
+- **Bound retries:** allow one corrective live-test retry after recording a changed precondition or code fix and taking a fresh observation. A second failure ends that case. Missing hardware, credentials or providers produce `blocked` with the exact prerequisite; continue independent cases.
+- **Resolve uncertainty:** stop input on unknown delivery, ambiguous target/ownership or quarantine. Re-observe and verify targeting/cleanup: a proven intended result with safe input permits continuing without replay; proven non-delivery with safe input permits one bounded retry. Unresolved delivery/cleanup stays `blocked`; restarting a server does not prove recovery.
+- **Finish:** every required case must be `pass` before marking its milestone complete. Preserve failures/skips and their reasons. Reuse passing evidence from the same relevant code/environment; rerun only cases affected by changes. End with completed IDs, unresolved IDs and the next required action.
+
 ## Acceptance requirements
 
 | ID | Done when | Current evidence / remaining work |
@@ -24,13 +32,27 @@ The initial delivery targets Windows x64 and the Codex, Claude Code, Grok Build,
 
 ## Delivery sequence
 
-| Milestone | Required outcome | Status |
-| --- | --- | --- |
-| `0.1.0-alpha.1` | Shared analysis foundation and reference workflow evidence. | Implemented in prerequisite PRs. |
-| `0.1.0-alpha.2` | Computer Use MCP, pinned Windows engine, setup preservation, owned-fixture proof and current specification. | Implementation under final review/publication. |
-| `0.1.0-alpha.3` | Complete live key/scroll/drag and interrupted-input tests; cover dialogs, moved/minimized windows, DPI and monitor changes. | Pending. |
-| `0.1.0-alpha.4` | Codex and Claude task acceptance, real-app/REPLAY walkthrough, recovery guidance and clean-machine installation proof. | Pending; other hosts remain configuration-verified unless separately exercised. |
-| `0.1.0` | Satisfy every acceptance row at its declared scope, clear hosted CI, merge reviewed work and publish reproducible release artifacts. | Pending. |
+- `0.1.0-alpha.1`: analysis foundation and reference workflow evidence merged; unreleased.
+- `0.1.0-alpha.2`: Computer Use MCP, pinned engine, setup preservation, fixture evidence and spec merged; unreleased.
+
+### `0.1.0-alpha.3` — native input and window acceptance (pending)
+
+- **A3-INPUT / CU-03:** owned-fixture cases for a key chord, vertical wheel in both directions and dragging. Assert exact resulting text/selection, scroll position and drag endpoint/drop count against predeclared values; retain before/after frames and fixture state.
+- **A3-RECOVERY / CU-04:** interrupt real native input through cancellation and timeout; exercise disconnect and server crash. Prove owned-process exit, released input and lease handoff. Failed cleanup must report uncertainty, block further input and retain recovery evidence.
+- **A3-DIALOG / CU-01:** open an owned modal dialog; verify parent input is blocked, select/observe the dialog explicitly, complete or dismiss it and recover the parent session without input reaching another window.
+- **A3-WINDOW / CU-01, CU-02:** move, minimize and restore the target between observation and action. Stale geometry must reject input; a fresh capture must restore valid bounds and hit the intended control once.
+- **A3-DISPLAY / CU-01:** test two DPI scales and a monitor transition. Record scale/topology, PNG dimensions and physical bounds; verify coordinate hits after each transition. Unavailable configurations remain `blocked`, not passed by simulation.
+
+### `0.1.0-alpha.4` — host and real-app acceptance (pending)
+
+- **A4-HOST / HOST-01:** separate Codex and Claude receipts show both skills discovered, actual image/evidence inspection, an owned-target task with an exact final state, recovery from a failed action and session cleanup. Other host live runs remain optional and labeled unverified.
+- **A4-REPLAY / APP-01:** define one REPLAY editing/control task and its expected saved result before execution. Retain the agent trace and independently verify the resulting project or exported artifact; a tool success response alone cannot pass.
+- **A4-INSTALL / CFG-01:** from a clean Windows environment and pinned commit, use documented setup, pass diagnostics and a smoke task, verify unrelated configuration preservation, then restore backups and verify rollback. Publish missing-prerequisite and recovery steps.
+
+### `0.1.0` — release acceptance (pending)
+
+- **V1-ACCEPT / REL-01:** publish a requirement-to-receipt checklist for every acceptance row and required milestone case. Resolve all `fail`, `blocked` and `not_run` entries; retain explicitly optional limits. Required hosted CI must pass; account/billing blocks keep release pending.
+- **V1-RELEASE / REL-01:** merge reviewed work within the [PR limits](VERSION_CONTROL.md), align package/lockfile/tag versions, and publish artifacts with SHA-256 checksums and reproducible build/install commands. Verify those artifacts before publishing the GitHub release.
 
 ## Current operating limits
 
