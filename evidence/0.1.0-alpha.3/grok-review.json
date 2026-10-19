@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "reviewDate": "2026-10-19",
+  "reviewType": "independent artifact and source inspection; no live rerun",
+  "reviewedPullRequest": 7,
+  "reviewedHead": "0929e085252924a8478cddc14c683fd3ea613e81",
+  "originalRunId": "trace-bd21c91b-deae-4f0c-a409-6fe38c7dbd35",
+  "originalReceipt": "evidence/0.1.0-alpha.3/computer-live.json",
+  "originalArtifactsPreserved": true,
+  "integrity": {
+    "framesChecked": 22,
+    "allDeclaredPngSha256Match": true,
+    "allDeclaredByteSizesMatch": true,
+    "allDeclaredPngDimensionsMatch": true,
+    "uniqueObservationIds": 22,
+    "uniquePixelHashes": 21,
+    "dimensions": [
+      { "width": 564, "height": 717, "count": 20 },
+      { "width": 364, "height": 187, "count": 2 }
+    ],
+    "fixtureSourcesVerified": [
+      {
+        "path": "tests/fixtures/computer-app/TraceComputerFixture.csproj",
+        "sha256": "6eeb0a93b1ad0b73993fbb70bb248746f147ebd7b6731c50eaf889595439a793"
+      },
+      {
+        "path": "tests/fixtures/computer-app/Program.cs",
+        "sha256": "0f69353eca2ad513ff19152969ef3b5662c0158d6ad24ce685f02171aa9f2027"
+      }
+    ],
+    "note": "Frames 020 and 021 contain identical pixels under different observation IDs; a fresh observation need not contain changed pixels."
+  },
+  "visualReview": {
+    "imagesInspected": 22,
+    "allImagesInspected": true,
+    "supportedObservations": [
+      "The owned fixture shows text input, counter increments, a checked option and the ctrl+d chord label.",
+      "Frame 011 shows later scroll rows than frame 010; frame 012 shows the drag target moved.",
+      "Frames 016 and 017 show a separately captured child window and its changed confirmation button.",
+      "Frame 014 shows count 3 after the low-level interruption/release sequence; the final frame shows count 5."
+    ],
+    "limits": [
+      "Text is clipped in the visible input field; the screenshot alone does not establish its complete string.",
+      "Pixels alone do not prove process exit, input release, lease handoff, window identity or the cause of a state transition.",
+      "The retained original source and receipt must accompany the frames when assessing those assertions."
+    ]
+  },
+  "sourceProvenance": {
+    "testedSourceCommit": null,
+    "reviewedHeadIsProvenTestedCommit": false,
+    "reason": "The original receipt records fixture source hashes but no tested source commit or complete execution-source manifest. The run occurred before the implementation commit was created. Inspection of the later PR head must not be reported as proof that that commit was executed."
+  },
+  "acceptanceAssessment": [
+    {
+      "caseId": "A3-INPUT",
+      "status": "not_run",
+      "supportedSubset": "The real MCP run delivered ctrl+d, one downward wheel action and a drag; fixture state and visible changes support those limited outcomes.",
+      "remaining": "The complete named case was not exercised: no upward wheel action, exact scroll-position assertion, exact drag endpoint assertion or drop-count assertion was recorded.",
+      "oracleDefect": "The original fixture reports a cumulative maximum scroll displacement. Its scrollY cannot decrease on reverse scrolling and is not a valid current-position oracle. The harness accepts scroll and drag with lower-bound thresholds."
+    },
+    {
+      "caseId": "A3-RECOVERY",
+      "status": "not_run",
+      "supportedSubset": "A directly started native held drag was cancelled. The source-owned release-left bridge reported that it released a previously held left button, followed by a successful fixture click.",
+      "remaining": "This path calls runProcess directly with a manually supplied recovery callback, bypassing the MCP action and controller recovery path. Required MCP cancellation, timeout, disconnect, server-crash and failed-cleanup quarantine cases were not exercised live. The original summary does not retain the owned native process identity and independently checked exit/input-state evidence required for full recovery acceptance."
+    },
+    {
+      "caseId": "A3-DIALOG",
+      "status": "not_run",
+      "supportedSubset": "A separately selected owned child window was observed and its confirmation button was clicked.",
+      "remaining": "The fixture opens the child with Show(owner), which is modeless. It does not prove modal parent blocking. The harness does not attempt and verify rejection of parent input while a modal dialog is active; it closes the child through the fixture command channel."
+    },
+    {
+      "caseId": "A3-WINDOW",
+      "status": "blocked",
+      "supportedSubset": "Source and retained results support old-observation rejection after move and minimize, unchanged fixture count on rejection, fresh observation and exactly one subsequent counter increment. The minimized window was restored during observation.",
+      "remaining": "Functional checks are reusable, but the original receipt lacks the tested source commit and named-case expected/actual record required by the completion contract. Preserve this as legacy evidence rather than retroactively declaring the complete contract satisfied."
+    },
+    {
+      "caseId": "A3-DISPLAY",
+      "status": "blocked",
+      "supportedSubset": "The run records one 2880x1800 display at 144 DPI and matching PNG dimensions.",
+      "remaining": "A second DPI scale and monitor transition were unavailable and were not tested. Recording the existing configuration does not satisfy transition acceptance."
+    }
+  ],
+  "claimCorrections": [
+    "The original result passed describes its narrower script assertions; it does not establish completion of all named alpha.3 acceptance cases.",
+    "Keep the successful owned-fixture actions and existing display limits, but label modal and end-to-end recovery coverage as pending.",
+    "Named-pipe ownership release after process termination and mocked cleanup tests do not establish physical input cleanup following a TRACE server crash.",
+    "A published version, actual model-host workflow, REPLAY workflow and release readiness are not established by these artifacts."
+  ],
+  "reviewActions": {
+    "desktopActions": 0,
+    "liveReruns": 0,
+    "paidCalls": 0,
+    "originalReceiptOrPngEdits": 0
+  }
+}

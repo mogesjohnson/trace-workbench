@@ -29,7 +29,7 @@ Persist task IDs, action outcomes, and artifact references so another agent can 
 
 ## Selection limits
 
-- **Windows control:** TRACE's owned-fixture test covers a subset of the pinned engine's actions. TRACE adds per-user desktop ownership and exact DWM capture mapping. Broader app, monitor and action coverage remains in the specification.
+- **Windows control:** TRACE's owned-fixture test covers the pinned engine's selected actions, including key, scroll, drag, and an interrupted hold, on one 144 DPI display. TRACE adds per-user desktop ownership and exact DWM capture mapping. A second monitor, a DPI change, and broader application coverage remain in the specification.
 - **Browser control:** agent-browser currently includes CLI and stdio MCP modes, Windows x64 binaries, compact snapshots, and isolated sessions. Browser engines do not supply native desktop control. Use separate contexts/profiles for independent jobs.
 - **Vision:** OmniParser supplies screenshot parsing; TRACE still needs an executor and adapter. Its current README distinguishes MIT-based `icon_detect_v3` and caption weights from earlier AGPL detectors. Pin the exact code and weight revision; the documented v3 download currently references a Hugging Face PR.
 - **Voice:** the [official local ElevenLabs MCP README](https://raw.githubusercontent.com/elevenlabs/elevenlabs-mcp/main/README.md) marks that server deprecated in favor of [hosted OAuth MCP](https://elevenlabs.io/docs/eleven-agents/operate/hosted-mcp). Explicit APIs are the proposed fit for timing, transcription, alignment, and the existing narration budget. No new voice request was made.

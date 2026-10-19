@@ -199,9 +199,12 @@ test('shutdown cancels in-flight dispatch, reports uncertainty and releases the 
   await lease.release('next');
 });
 
-test('different artifact runtimes still contend for the same production desktop lease', async t => {
+test('different artifact runtimes still contend for the same OS-user desktop lease', async t => {
   const { controller: unused, backend, directory } = await fixture(t);
   await unused.close();
+  // Preserve the default OS-user lease derivation without competing with a live agent.
+  const user = os.userInfo();
+  t.mock.method(os, 'userInfo', () => ({ ...user, homedir: path.join(directory, 'isolated-os-user') }));
   const first = createComputerController({ backend, runtimeDirectory: path.join(directory, 'a') });
   const second = createComputerController({ backend, runtimeDirectory: path.join(directory, 'b') });
   t.after(async () => { await first.close(); await second.close(); });

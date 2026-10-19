@@ -7,7 +7,7 @@ Initial selection confirmed by the owner on 18 October 2026. TRACE is the produc
 | Order | Skill | Purpose | Current status |
 | --- | --- | --- | --- |
 | 1 | Reverse Engineer Anything | Inspect artifacts, gather evidence, and support reconstruction work. | Shared local skill/server setup and direct analysis verified. Individual model-host acceptance remains pending. See [setup](docs/SETUP.md) and [verification](docs/VERIFICATION.md). |
-| 2 | Computer Use | Observe Windows apps, use mouse/keyboard and controls, and check action results. | Windows executor and six MCP tools implemented. A real stdio fixture verified typing, clicks, screenshots, values, invocation, checkbox and ownership. Remaining acceptance is in [SPEC.md](SPEC.md). |
+| 2 | Computer Use | Observe Windows apps, use mouse/keyboard and controls, and check action results. | Windows executor and six MCP tools implemented, with owned-fixture action and targeting evidence. Native release-primitive evidence does not establish end-to-end MCP recovery. Display transitions and full recovery acceptance remain in [SPEC.md](SPEC.md). |
 
 Both skills are selected; neither configuration nor a fixture test establishes every host/app combination. All four CLI connections are configured. Finish Computer Use reliability, Codex/Claude workflows and real-app acceptance under [the specification](SPEC.md); report Grok/Gemini live coverage separately.
 

@@ -1,0 +1,47 @@
+{
+  "version": "0.1.0-alpha.3",
+  "reviewDate": "2026-10-19",
+  "node": "v26.2.0",
+  "unit": {
+    "command": "npm test",
+    "tests": 110,
+    "passed": 109,
+    "failed": 0,
+    "skipped": 1,
+    "skipReason": "Creating a file symlink requires developer mode on this Windows host; the symlink destination conflict test was skipped."
+  },
+  "source": {
+    "command": "npm run check",
+    "result": "passed",
+    "javascriptFiles": 21
+  },
+  "computerMcp": {
+    "command": "npm run test:computer:mcp",
+    "result": "passed",
+    "observedAt": "2026-10-19T15:12:19.570Z",
+    "toolCount": 6,
+    "providerReady": true,
+    "desktopActions": 0
+  },
+  "analysisMcp": {
+    "command": "npm run test:mcp",
+    "result": "passed",
+    "observedAt": "2026-10-19T15:12:40.909Z",
+    "toolCount": 207,
+    "staticFixtureUnchanged": true,
+    "paidCalls": 0
+  },
+  "live": {
+    "command": "npm run test:computer:live",
+    "result": "passed",
+    "observedAt": "2026-10-19T15:10:56.015Z",
+    "actions": 16,
+    "frames": 22,
+    "runId": "trace-bd21c91b-deae-4f0c-a409-6fe38c7dbd35",
+    "dpi": 144,
+    "monitorCount": 1,
+    "monitorBounds": "2880x1800",
+    "physicalInterruption": "A held drag left the left button down. The window bridge released it, and the next fixture click incremented the counter."
+  },
+  "hostedCi": "Track the pull request run. These local results do not establish hosted CI success."
+}

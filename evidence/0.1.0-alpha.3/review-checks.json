@@ -1,0 +1,81 @@
+{
+  "originalEvidence": {
+    "independentReview": "grok-review.json",
+    "preserved": true,
+    "frames": 22,
+    "receipt": "computer-live.json"
+  },
+  "milestoneStatus": "incomplete",
+  "reviewedHead": "0929e085252924a8478cddc14c683fd3ea613e81",
+  "cases": [
+    {
+      "evidence": "review-run/computer-live.json",
+      "id": "A3-INPUT",
+      "scope": "Exact key/selection/released modifiers, down96/up0 visible offsets, exact drag endpoint and one drop passed before the modal failure. Later guard changes affect disabled owners; enabled-target paths are preserved.",
+      "status": "pass"
+    },
+    {
+      "reason": "Raw-native cancellation/release passed; full MCP cancel/timeout/disconnect/crash/failed-cleanup cases remain untested.",
+      "id": "A3-RECOVERY",
+      "status": "not_run"
+    },
+    {
+      "reason": "Two complete-case attempts failed and were retained. Focused disabled-owner regression passes after the fix; full confirmation/recovery needs a new acceptance task.",
+      "id": "A3-DIALOG",
+      "status": "not_run"
+    },
+    {
+      "reason": "Original move/minimize proof retained; corrected complete run stopped before these cases.",
+      "id": "A3-WINDOW",
+      "status": "not_run"
+    },
+    {
+      "reason": "One physical monitor at144 DPI; second DPI scale/monitor transition unavailable.",
+      "id": "A3-DISPLAY",
+      "status": "blocked"
+    }
+  ],
+  "unit": {
+    "skipReason": "Windows file-symlink privilege unavailable",
+    "skipped": 1,
+    "passed": 126,
+    "command": "node --test tests/*.test.cjs",
+    "tests": 127,
+    "failed": 0
+  },
+  "hostedCi": "Billing/spending block; no hosted pass claimed",
+  "fullAttempts": [
+    {
+      "cleanupPassed": true,
+      "reason": "Incorrect test assumption: UIA descendants need not inherit native owner disabled state",
+      "result": "failed",
+      "receipt": "review-attempt-1/computer-live.json"
+    },
+    {
+      "cleanupPassed": true,
+      "reason": "Product accepted disabled-owner request; subsequent native guard correction verified separately",
+      "result": "failed",
+      "receipt": "review-run/computer-live.json"
+    }
+  ],
+  "paidCalls": 0,
+  "native": {
+    "guardReceipt": "modal-guard/receipt.json",
+    "engineDownloadRepeated": false,
+    "dispatchedInput": 0,
+    "bridgeRebuilt": true,
+    "pinnedEngineReused": true,
+    "result": "passed"
+  },
+  "source": {
+    "result": "passed",
+    "command": "npm run check",
+    "javascriptFiles": 23
+  },
+  "skill": {
+    "result": "passed",
+    "validator": "skill-creator quick_validate.py"
+  },
+  "schemaVersion": 1,
+  "reviewDate": "2026-10-19"
+}

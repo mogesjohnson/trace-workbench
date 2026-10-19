@@ -1,0 +1,388 @@
+{
+  "schemaVersion": 1,
+  "result": "passed",
+  "observedAt": "2026-10-19T15:10:56.015Z",
+  "platform": "win32",
+  "runId": "trace-bd21c91b-deae-4f0c-a409-6fe38c7dbd35",
+  "engine": {
+    "name": "winapp",
+    "version": "0.7.1",
+    "integrity": "verified"
+  },
+  "protocol": {
+    "transport": "stdio",
+    "server": {
+      "name": "trace-computer",
+      "version": "0.1.0-alpha.3"
+    },
+    "toolCount": 6,
+    "toolNames": [
+      "trace_computer_act",
+      "trace_computer_close_session",
+      "trace_computer_doctor",
+      "trace_computer_list_windows",
+      "trace_computer_observe",
+      "trace_computer_open_session"
+    ]
+  },
+  "target": "Owned WinForms desktop fixture",
+  "fixtureSources": [
+    {
+      "path": "tests/fixtures/computer-app/TraceComputerFixture.csproj",
+      "sha256": "6eeb0a93b1ad0b73993fbb70bb248746f147ebd7b6731c50eaf889595439a793"
+    },
+    {
+      "path": "tests/fixtures/computer-app/Program.cs",
+      "sha256": "0f69353eca2ad513ff19152969ef3b5662c0158d6ad24ce685f02171aa9f2027"
+    }
+  ],
+  "fixtureExecutableSha256": "2a97f88f51c8ac0b7e25110593399d206d0a0fb54b05212704885253cf8960a9",
+  "checks": {
+    "physicalTyping": true,
+    "accessibilityValue": true,
+    "coordinateClick": true,
+    "accessibilityInvoke": true,
+    "checkboxClick": true,
+    "keyChord": true,
+    "verticalScroll": true,
+    "drag": true,
+    "physicalInterruptionReleased": true,
+    "inputAfterInterruption": true,
+    "dialogConfirmed": true,
+    "movedWindowRejected": true,
+    "movedWindowRetargeted": true,
+    "minimizedWindowRejected": true,
+    "minimizedWindowRestored": true,
+    "dpiRecorded": true,
+    "monitorChange": "not_available_single_display",
+    "dpiChange": "not_available_single_dpi",
+    "freshObservationAfterEveryAction": true,
+    "staleObservationRejected": true,
+    "competingControllerRejected": true,
+    "crossProcessDesktopLease": true,
+    "leaseSharedAcrossDifferentArtifactDirectories": true,
+    "leaseReleasedForNextController": true,
+    "screenshotsReturnedOnceAsMcpImage": true,
+    "fixtureClosed": true
+  },
+  "interruption": {
+    "released": true,
+    "button": "left",
+    "method": "public-win32-sendinput",
+    "alreadyReleased": false
+  },
+  "geometry": {
+    "dpiX": 144,
+    "dpiY": 144,
+    "monitorCount": 1,
+    "monitorName": "\\\\.\\DISPLAY1",
+    "monitorBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 2880,
+      "height": 1800
+    },
+    "window": {
+      "x": 1309,
+      "y": 617,
+      "width": 582,
+      "height": 726
+    },
+    "monitorChange": "not_available_single_display",
+    "dpiChange": "not_available_single_dpi"
+  },
+  "finalState": {
+    "text": "TRACE accessibility value trace-bd21c91b-deae-4f0c-a409-6fe38c7dbd35",
+    "count": 5,
+    "optionChecked": true,
+    "chord": "ctrl+d",
+    "scrollY": 96,
+    "dragX": 100,
+    "dragY": 46,
+    "dialogConfirmed": true,
+    "revision": 99
+  },
+  "actions": [
+    {
+      "type": "activate",
+      "actionId": "75a4b4b9-443c-4430-85f0-dbca49fe8516",
+      "observationId": "0dbc7b34-58b2-4d2a-8667-68e7fd8a2058",
+      "nextObservationId": "a5291a98-6935-4ceb-b5f3-08ba6d5f8cc8"
+    },
+    {
+      "type": "click",
+      "actionId": "b31ba59e-e848-4093-9d8c-1de886864b45",
+      "observationId": "a5291a98-6935-4ceb-b5f3-08ba6d5f8cc8",
+      "nextObservationId": "5d6e2b23-b83e-4ab7-917e-2a9590829efd"
+    },
+    {
+      "type": "type_text",
+      "actionId": "e73fa768-dafb-4cb1-8e66-4c06c217afa9",
+      "observationId": "5d6e2b23-b83e-4ab7-917e-2a9590829efd",
+      "nextObservationId": "c9866fb1-01ce-4e20-bf45-a4cc0e95fa17"
+    },
+    {
+      "type": "set_value",
+      "actionId": "fb7ed7e9-db3a-4412-9783-9a9914b4425d",
+      "observationId": "c9866fb1-01ce-4e20-bf45-a4cc0e95fa17",
+      "nextObservationId": "0e13b690-5780-4383-bc34-54e7e2c6d2c3"
+    },
+    {
+      "type": "click",
+      "actionId": "867d310c-c8c0-4b29-84c0-ade2c9afef12",
+      "observationId": "0e13b690-5780-4383-bc34-54e7e2c6d2c3",
+      "nextObservationId": "4dd39975-30cf-410f-9c66-efbc0921e3f5"
+    },
+    {
+      "type": "invoke",
+      "actionId": "68b1748c-31d5-4947-9704-efba3d405459",
+      "observationId": "4dd39975-30cf-410f-9c66-efbc0921e3f5",
+      "nextObservationId": "60ffc9bb-969f-4126-8f2e-f8e9259e44db"
+    },
+    {
+      "type": "click",
+      "actionId": "df7dc2fe-e437-431c-bd0c-68bab5317598",
+      "observationId": "60ffc9bb-969f-4126-8f2e-f8e9259e44db",
+      "nextObservationId": "616c4642-a7ac-4eb0-bfb5-c391753a3b88"
+    },
+    {
+      "type": "click",
+      "actionId": "e82e9039-f7a6-4908-bccf-bc52bba4bd1a",
+      "observationId": "616c4642-a7ac-4eb0-bfb5-c391753a3b88",
+      "nextObservationId": "c574d8dd-2ac2-4831-915f-a701ebe575bc"
+    },
+    {
+      "type": "press_key",
+      "actionId": "d21a4697-dbd6-412c-b881-b04ec412fca2",
+      "observationId": "c574d8dd-2ac2-4831-915f-a701ebe575bc",
+      "nextObservationId": "c36d90ad-acc5-43ac-8c51-cda76fe5d38e"
+    },
+    {
+      "type": "scroll",
+      "actionId": "83270ba3-289f-4410-9436-f113d11fea0b",
+      "observationId": "c36d90ad-acc5-43ac-8c51-cda76fe5d38e",
+      "nextObservationId": "061a94d2-0ed0-4f0b-86cc-2b8ec97bd980"
+    },
+    {
+      "type": "drag",
+      "actionId": "ada4c3a5-d28e-41bd-b132-6eb94e0a355f",
+      "observationId": "061a94d2-0ed0-4f0b-86cc-2b8ec97bd980",
+      "nextObservationId": "7b5e3b49-230d-4bad-9887-d62a19a175fc"
+    },
+    {
+      "type": "click",
+      "actionId": "937521c9-f9ff-4930-97f6-1a969e159ea5",
+      "observationId": "ee7b8f00-0283-4a13-8372-8b3a2d1bb248",
+      "nextObservationId": "616225d4-80d2-4eb4-96dc-5b6e43fe422f"
+    },
+    {
+      "type": "click",
+      "actionId": "e4189a6c-9b0b-4bcc-b7ff-f4ccf7db8592",
+      "observationId": "616225d4-80d2-4eb4-96dc-5b6e43fe422f",
+      "nextObservationId": "6dbdcea4-9167-4a5f-8eb8-d7a4bd10b8e7"
+    },
+    {
+      "type": "click",
+      "actionId": "cb79a79d-e0bf-408a-ad45-bbc9be1cbac3",
+      "observationId": "2c2aaa54-04fc-4f40-b056-ea253bcf93de",
+      "nextObservationId": "e039ecc7-3ef0-4e7c-a748-e5737fbd1a30"
+    },
+    {
+      "type": "click",
+      "actionId": "cf5c167c-95cd-45a6-b092-b4447415d6d8",
+      "observationId": "b58fde2a-be8c-4192-92e9-377bb7b4eccc",
+      "nextObservationId": "78d184d0-53fb-4d82-9bbd-7e18ac6fa528"
+    },
+    {
+      "type": "click",
+      "actionId": "0154087e-af50-43d1-8a71-24bee724b5a9",
+      "observationId": "b3b5f469-73da-497c-b740-9fba408f01f7",
+      "nextObservationId": "7e1501b0-0e89-49ec-859b-2c66f586cb99"
+    }
+  ],
+  "frames": [
+    {
+      "filename": "frame-001.png",
+      "observationId": "0dbc7b34-58b2-4d2a-8667-68e7fd8a2058",
+      "bytes": 29033,
+      "sha256": "e3a6bd1cc8046e563aa18109c56470c5d8441c65d2054fe549732c32f5e5c505",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-002.png",
+      "observationId": "a5291a98-6935-4ceb-b5f3-08ba6d5f8cc8",
+      "bytes": 30141,
+      "sha256": "39b9c9efd005d14e5ab30c46757284b3584153735af69ab129506e9d20146e6a",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-003.png",
+      "observationId": "5d6e2b23-b83e-4ab7-917e-2a9590829efd",
+      "bytes": 29523,
+      "sha256": "3bd40d3d272e8741f592c057fc85a9b3c94c53f7463f7bd6dc8d2089c6fb3e78",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-004.png",
+      "observationId": "c9866fb1-01ce-4e20-bf45-a4cc0e95fa17",
+      "bytes": 33020,
+      "sha256": "aaca232ff0d075a78e6fa3651d1ec9011a64a86aba4fa5150dd56e2340f9e632",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-005.png",
+      "observationId": "0e13b690-5780-4383-bc34-54e7e2c6d2c3",
+      "bytes": 32961,
+      "sha256": "920a51f7b3fee2e5cef7e753fb27a3f4ea57ab649a8041de0cbcfdef03514a25",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-006.png",
+      "observationId": "4dd39975-30cf-410f-9c66-efbc0921e3f5",
+      "bytes": 33024,
+      "sha256": "0bb7b372fae51c69dac9738ce4883968104e3f78090afc8ec477ec12609385f6",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-007.png",
+      "observationId": "60ffc9bb-969f-4126-8f2e-f8e9259e44db",
+      "bytes": 33134,
+      "sha256": "508bbc1451f40d1f75091df6c697db76e4909cfd0ec778726e62295558a2bba6",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-008.png",
+      "observationId": "616c4642-a7ac-4eb0-bfb5-c391753a3b88",
+      "bytes": 33023,
+      "sha256": "d891cda07c216bbb7454e54f8796ec6c7529aa9379c24352f45af385fa7d4951",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-009.png",
+      "observationId": "c574d8dd-2ac2-4831-915f-a701ebe575bc",
+      "bytes": 33006,
+      "sha256": "57d9a6c521c03131774b8505b9e204cc7cb4850ec4852b06497af74cd118e982",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-010.png",
+      "observationId": "c36d90ad-acc5-43ac-8c51-cda76fe5d38e",
+      "bytes": 32998,
+      "sha256": "87e23c4d2e6cbab2b53fa720b311a1026f29d3dc48119cd2436ce9303d6cc8ea",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-011.png",
+      "observationId": "061a94d2-0ed0-4f0b-86cc-2b8ec97bd980",
+      "bytes": 33316,
+      "sha256": "067bbd46eeaea71844a86ad04915cb2d115093830a8bf4868e9e9f6e474196a7",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-012.png",
+      "observationId": "7b5e3b49-230d-4bad-9887-d62a19a175fc",
+      "bytes": 33279,
+      "sha256": "77edb7dbfd33446154c03fe1e5c68b78514751e164edb67a9370e564f2428d1a",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-013.png",
+      "observationId": "ee7b8f00-0283-4a13-8372-8b3a2d1bb248",
+      "bytes": 33310,
+      "sha256": "4f0ed3a75a0ea0d6966c2628cae46649ce87e33f251a747facec126acb8a56e3",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-014.png",
+      "observationId": "616225d4-80d2-4eb4-96dc-5b6e43fe422f",
+      "bytes": 33456,
+      "sha256": "2dda500032d20bbeb0940007d9263d21768df54944485b320d758f3cbcffe078",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-015.png",
+      "observationId": "6dbdcea4-9167-4a5f-8eb8-d7a4bd10b8e7",
+      "bytes": 32972,
+      "sha256": "b3943ae377e830a1414f3922b99d7d697d4dea2b7daa8a85ca78067dd233b9ad",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-016.png",
+      "observationId": "2c2aaa54-04fc-4f40-b056-ea253bcf93de",
+      "bytes": 7772,
+      "sha256": "c4755841feadb24df31a73593c09126b05a5803963b72a3402681f05dba75bac",
+      "width": 364,
+      "height": 187
+    },
+    {
+      "filename": "frame-017.png",
+      "observationId": "e039ecc7-3ef0-4e7c-a748-e5737fbd1a30",
+      "bytes": 7964,
+      "sha256": "e3483e7387de7372673def8dae354947e60a4e5e2e5b45775f5c0feeed92c8e9",
+      "width": 364,
+      "height": 187
+    },
+    {
+      "filename": "frame-018.png",
+      "observationId": "8dec88af-dc16-4699-8375-620dc4c20d3b",
+      "bytes": 33401,
+      "sha256": "64daa68c6d9dc3541574927f3aa865bd7b95016278380bab1ac1f5f3f5713a6e",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-019.png",
+      "observationId": "b58fde2a-be8c-4192-92e9-377bb7b4eccc",
+      "bytes": 33399,
+      "sha256": "9278261d54017914c3ea2507e1b216460a9f206f08b7e3051ef2dd5783c765d3",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-020.png",
+      "observationId": "78d184d0-53fb-4d82-9bbd-7e18ac6fa528",
+      "bytes": 33424,
+      "sha256": "e0f813a9fdba395098fb6bb6d380c16dc0059e27c455019a783c80432de7f237",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-021.png",
+      "observationId": "b3b5f469-73da-497c-b740-9fba408f01f7",
+      "bytes": 33424,
+      "sha256": "e0f813a9fdba395098fb6bb6d380c16dc0059e27c455019a783c80432de7f237",
+      "width": 564,
+      "height": 717
+    },
+    {
+      "filename": "frame-022.png",
+      "observationId": "7e1501b0-0e89-49ec-859b-2c66f586cb99",
+      "bytes": 33433,
+      "sha256": "95c965a3ae6f133bb1a83fe024651ae9250bc99c3902734d56aa9b1495f5a3ee",
+      "width": 564,
+      "height": 717
+    }
+  ],
+  "rawEvidenceDirectory": ".runtime/computer-live/trace-bd21c91b-deae-4f0c-a409-6fe38c7dbd35",
+  "limits": [
+    "Only the owned synthetic fixture was controlled. This does not establish compatibility with every Windows application.",
+    "This host had one display, so a second-monitor relocation was not available.",
+    "Monitor DPI was recorded at 144. This host did not present a DPI change.",
+    "Secure desktop, elevated applications, and a live model-host session were not tested."
+  ]
+}

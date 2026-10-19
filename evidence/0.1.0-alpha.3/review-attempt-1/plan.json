@@ -1,0 +1,341 @@
+{
+  "schemaVersion": 1,
+  "runId": "trace-b0865f1e-938f-4369-be58-d492981ecb78",
+  "testedSource": {
+    "baseCommit": "0929e085252924a8478cddc14c683fd3ea613e81",
+    "workingTreeModified": true,
+    "files": [
+      {
+        "path": "bin/trace.cjs",
+        "sha256": "2006b9f1554076fe89711067566c882702c66fe5f50677270ed83f88d9d5ee60"
+      },
+      {
+        "path": "src/computer/server.cjs",
+        "sha256": "afe84b975061d6f15d67d0428b86abf93e0ac7c097c887990ef8334f18909222"
+      },
+      {
+        "path": "src/computer/controller.cjs",
+        "sha256": "0daad720ac3d8f461176e1f84e3d1a2dbe3bfca8da6e7e5a5f221ce48e1b282a"
+      },
+      {
+        "path": "src/computer/lease.cjs",
+        "sha256": "3600fa756bda99e15aa695731bc0e5a8f6a0893e1f7e333db4d6742ae561389b"
+      },
+      {
+        "path": "src/computer/winapp-backend.cjs",
+        "sha256": "1477dc69421728e009bb5a043417d7cde46ae181ce336e2e9cada7454aab3250"
+      },
+      {
+        "path": "scripts/smoke-computer-live.cjs",
+        "sha256": "990e5b2d891d7c6760a335eac6cbf3909aef57d68a0174087b434bcb3d590b78"
+      },
+      {
+        "path": "tests/fixtures/computer-app/Program.cs",
+        "sha256": "82d6a0c6eddf4c1e4ba95750b51dc18c5caef34c0290cd4ac45c5b77443f3c09"
+      },
+      {
+        "path": "tests/fixtures/computer-app/TraceComputerFixture.csproj",
+        "sha256": "6eeb0a93b1ad0b73993fbb70bb248746f147ebd7b6731c50eaf889595439a793"
+      },
+      {
+        "path": "native/TraceWindowBridge/Program.cs",
+        "sha256": "df30fb55dbfdde3acf50760042ee2eed976aae62814589eb5585e2a61ea088be"
+      },
+      {
+        "path": "native/TraceWindowBridge/TraceWindowBridge.csproj",
+        "sha256": "48125adff7a0a8b21b33b79c6e38cf535e285f27aaa2ae3bf5306c61602a2d2d"
+      },
+      {
+        "path": "package.json",
+        "sha256": "3058af5a008a623c332af4b7c3057c4c54e9fbabed02f6059f3dc17d99d89c5d"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "45dd03346a9320803000f35ecb7fdc00f8586f44c70871e4f9cdc6df840a59a5"
+      },
+      {
+        "path": "src/computer/winapp-pin.json",
+        "sha256": "18ce4ebee64f47dce17f6a536f62b3ee77037a8c07794ed1564143f7db7cb5bd"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "A3-BASELINE",
+      "requirement": "CU-01/CU-02/CU-03",
+      "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+      "initialState": "New owned fixture",
+      "actions": [
+        "Activate, type, set value, click, invoke, toggle",
+        "Reject consumed observation; reject competing controller"
+      ],
+      "expected": {
+        "text": "TRACE accessibility value trace-b0865f1e-938f-4369-be58-d492981ecb78",
+        "count": 2,
+        "optionChecked": true
+      },
+      "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+    },
+    {
+      "id": "A3-INPUT-KEY",
+      "requirement": "CU-03",
+      "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+      "initialState": "Text input contains declared text",
+      "actions": [
+        "Focus input",
+        "Press ctrl+d once"
+      ],
+      "expected": {
+        "text": "TRACE accessibility value trace-b0865f1e-938f-4369-be58-d492981ecb78",
+        "selectedText": "TRACE",
+        "selectionStart": 0,
+        "selectionLength": 5,
+        "modifiers": "None"
+      },
+      "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+    },
+    {
+      "id": "A3-INPUT-SCROLL-DOWN",
+      "requirement": "CU-03",
+      "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+      "initialState": "Viewport at zero",
+      "actions": [
+        "Send deltaY +240 over panel"
+      ],
+      "expected": {
+        "scrollY": 96,
+        "scrollRowOffset": 96
+      },
+      "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+    },
+    {
+      "id": "A3-INPUT-SCROLL-UP",
+      "requirement": "CU-03",
+      "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+      "initialState": "Viewport at 96",
+      "actions": [
+        "Send deltaY -240 over panel"
+      ],
+      "expected": {
+        "scrollY": 0,
+        "scrollRowOffset": 0
+      },
+      "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+    },
+    {
+      "id": "A3-INPUT-DRAG",
+      "requirement": "CU-03",
+      "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+      "initialState": "Known target location and client dimensions",
+      "actions": [
+        "Drag +90 X, +16 Y; clamp to area"
+      ],
+      "expected": {
+        "endpoint": "Declared from baseline before input",
+        "dropsAdded": 1
+      },
+      "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+    },
+    {
+      "id": "A3-RECOVERY-PRIMITIVE-CANCEL",
+      "requirement": "CU-04/supporting-only",
+      "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+      "initialState": "Released button, stationary drag target",
+      "actions": [
+        "Start raw native held drag",
+        "Await actual left-button press",
+        "Cancel; await native exit and release",
+        "Reobserve, click counter once"
+      ],
+      "expected": {
+        "released": true,
+        "alreadyReleased": false,
+        "positionUnchanged": true,
+        "dropsAdded": 1,
+        "subsequentClickAdded": 1
+      },
+      "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+    },
+    {
+      "id": "A3-DIALOG",
+      "requirement": "CU-01",
+      "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+      "initialState": "Enabled parent; no dialog",
+      "actions": [
+        "Open modal child once",
+        "Observe disabled owner and reject parent action",
+        "Select child explicitly, confirm",
+        "Close child and reacquire parent"
+      ],
+      "expected": {
+        "parentEnabledWhileOpen": false,
+        "parentCountUnchanged": true,
+        "dialogConfirmed": true,
+        "parentEnabledAfterClose": true
+      },
+      "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+    },
+    {
+      "id": "A3-WINDOW-MOVE",
+      "requirement": "CU-01/CU-02",
+      "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+      "initialState": "Current observation of parent",
+      "actions": [
+        "Move fixture by command",
+        "Reject old geometry without counter change",
+        "Fresh capture and one counter click"
+      ],
+      "expected": {
+        "staleOutcome": "unknown",
+        "staleError": "window_moved",
+        "counterAdded": 1
+      },
+      "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+    },
+    {
+      "id": "A3-WINDOW-MINIMIZE",
+      "requirement": "CU-01/CU-02",
+      "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+      "initialState": "Current observation of visible parent",
+      "actions": [
+        "Minimize by command",
+        "Reject old geometry without counter change",
+        "Observe/restore and one counter click"
+      ],
+      "expected": {
+        "staleOutcome": "unknown",
+        "staleError": "window_moved",
+        "counterAdded": 1
+      },
+      "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+    },
+    {
+      "id": "A3-DISPLAY-MONITOR",
+      "requirement": "CU-01",
+      "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+      "initialState": "Known topology",
+      "actions": [
+        "Move onto a different physical monitor",
+        "Fresh capture and counter click"
+      ],
+      "expected": {
+        "monitorChanged": true,
+        "counterAdded": 1
+      },
+      "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+    },
+    {
+      "id": "A3-DISPLAY-DPI",
+      "requirement": "CU-01",
+      "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+      "initialState": "Known initial physical DPI",
+      "actions": [
+        "Move to a monitor with a different DPI",
+        "Fresh capture and counter click"
+      ],
+      "expected": {
+        "twoDistinctDpiScales": true,
+        "counterAdded": 1
+      },
+      "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+    },
+    {
+      "id": "A3-RECOVERY-MCP-CANCEL",
+      "requirement": "CU-04",
+      "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+      "initialState": "Independent owned-process case required",
+      "actions": [
+        "Exercise this failure mode through the product MCP/controller",
+        "Verify process exit, balanced input, quarantine when needed, and lease handoff"
+      ],
+      "expected": {
+        "required": "Separate end-to-end recovery evidence"
+      },
+      "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+    },
+    {
+      "id": "A3-RECOVERY-TIMEOUT",
+      "requirement": "CU-04",
+      "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+      "initialState": "Independent owned-process case required",
+      "actions": [
+        "Exercise this failure mode through the product MCP/controller",
+        "Verify process exit, balanced input, quarantine when needed, and lease handoff"
+      ],
+      "expected": {
+        "required": "Separate end-to-end recovery evidence"
+      },
+      "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+    },
+    {
+      "id": "A3-RECOVERY-DISCONNECT",
+      "requirement": "CU-04",
+      "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+      "initialState": "Independent owned-process case required",
+      "actions": [
+        "Exercise this failure mode through the product MCP/controller",
+        "Verify process exit, balanced input, quarantine when needed, and lease handoff"
+      ],
+      "expected": {
+        "required": "Separate end-to-end recovery evidence"
+      },
+      "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+    },
+    {
+      "id": "A3-RECOVERY-CRASH",
+      "requirement": "CU-04",
+      "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+      "initialState": "Independent owned-process case required",
+      "actions": [
+        "Exercise this failure mode through the product MCP/controller",
+        "Verify process exit, balanced input, quarantine when needed, and lease handoff"
+      ],
+      "expected": {
+        "required": "Separate end-to-end recovery evidence"
+      },
+      "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+    },
+    {
+      "id": "A3-RECOVERY-FAILED-CLEANUP",
+      "requirement": "CU-04",
+      "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+      "initialState": "Independent owned-process case required",
+      "actions": [
+        "Exercise this failure mode through the product MCP/controller",
+        "Verify process exit, balanced input, quarantine when needed, and lease handoff"
+      ],
+      "expected": {
+        "required": "Separate end-to-end recovery evidence"
+      },
+      "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+    },
+    {
+      "id": "A3-LEASE-HANDOFF",
+      "requirement": "CU-04",
+      "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+      "initialState": "First controller owns session",
+      "actions": [
+        "Close session",
+        "Acquire/release from another controller"
+      ],
+      "expected": {
+        "handoff": true
+      },
+      "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+    },
+    {
+      "id": "A3-CLEANUP",
+      "requirement": "CU-04",
+      "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+      "initialState": "Owned fixture and controllers may be running",
+      "actions": [
+        "Close owned controllers and fixture"
+      ],
+      "expected": {
+        "fixtureExited": true,
+        "controllersClosed": true
+      },
+      "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+    }
+  ]
+}
