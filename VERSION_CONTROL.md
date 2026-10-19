@@ -12,7 +12,7 @@ Keep one implementation commit, one verification commit, and one documentation c
 
 ## Versions and releases
 
-TRACE Workbench starts at `0.1.0-alpha.1`. Its product version is independent of development-tool package and skill versions. Keep the package manifest, lockfile, and release notes consistent when changing a version.
+The current implementation is `0.1.0-alpha.2`; `0.1.0-alpha.1` established the analysis foundation. TRACE's product version is independent of upstream package and skill versions. Keep the package manifest, lockfile, and release notes consistent when changing a version. [SPEC.md](SPEC.md) records milestone acceptance.
 
 Use `v<package-version>` tags for published releases. A merged PR is not a release. Publish only after the version, artifacts, required checks, and known limits are recorded. Report CI account or billing failures as release blockers, with the run linked.
 

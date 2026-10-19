@@ -5,6 +5,11 @@ node_modules/
 !.env.example
 *.log
 *.rea.backup*
+*.trace.backup.*
 *.local.json
 coverage/
+**/obj/
+**/bin/
+!bin/
+!bin/trace.cjs
 

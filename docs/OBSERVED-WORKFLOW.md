@@ -23,4 +23,4 @@ The driver selected one Calculator window and entered **12 × 3 = 36** with five
 
 Typing, keyboard chords, scrolling, dragging, editable values, dialogs, competing controllers, and cross-client operation remain untested. No private helper protocol or implementation was recovered. The trace is driver-authored evidence of documented calls and visible outcomes, with independent artifact review.
 
-This is a starting specification for a future shared Windows executor. TRACE's current version supplies the analysis setup and evidence, not that executor.
+This alpha.1 record supplied the initial behavioral reference. The alpha.2 Windows executor has separate [verification](VERIFICATION.md); [SPEC.md](../SPEC.md) now governs acceptance. This historical Calculator demonstration does not establish current TRACE action coverage.

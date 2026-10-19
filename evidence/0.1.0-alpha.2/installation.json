@@ -1,0 +1,38 @@
+{
+  "observedAt": "2026-10-18T22:37:38.819Z",
+  "version": "0.1.0-alpha.2",
+  "result": "pass",
+  "clients": [
+    {
+      "client": "codex",
+      "configured": true,
+      "unrelatedValuesPreserved": true,
+      "backupMatchedBefore": true
+    },
+    {
+      "client": "claude_code",
+      "configured": true,
+      "unrelatedValuesPreserved": true,
+      "backupMatchedBefore": true
+    },
+    {
+      "client": "grok_build",
+      "configured": true,
+      "unrelatedValuesPreserved": true,
+      "backupMatchedBefore": true
+    },
+    {
+      "client": "gemini_cli",
+      "configured": true,
+      "unrelatedValuesPreserved": true,
+      "backupMatchedBefore": true
+    }
+  ],
+  "skill": {
+    "name": "trace-computer-use",
+    "sha256": "b7cdc232aa01c5e7974d9b77f03f3a58447a49867fb697d285952444d01bdbbd",
+    "matchingCopies": 3
+  },
+  "modelHostSessionsTested": [],
+  "reconnectRequired": true
+}

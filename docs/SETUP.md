@@ -1,6 +1,6 @@
 # Local analysis setup
 
-This development setup connects local Codex, Claude Code, Grok Build, and Gemini CLI installations to the pinned REA analysis server. It also installs the accompanying `reverse-engineer-anything` skill for client discovery. These tools support engineering work on TRACE; they do not provide its planned desktop executor. A running model session is a separate acceptance check.
+This setup connects local Codex, Claude Code, Grok Build, and Gemini CLI installations to the pinned REA analysis server and installs the `reverse-engineer-anything` skill. This is TRACE's first selected capability. For its separate Windows executor, see [Computer Use setup](COMPUTER_USE.md). A configured connection and a live agent workflow are separate acceptance checks.
 
 ## Install and inspect
 
@@ -54,7 +54,7 @@ The canonical installed skill is `~/.agents/skills/reverse-engineer-anything`. T
 
 Each configured local client starts the pinned REA command over **stdio** when it needs the server. `node bin/trace.cjs mcp` is TRACE's alternative entry point over its locked local dependency; the direct smoke test exercises that wrapper too. No listening TCP port, cloud service, or model API key is required for this connection. Diagnostics and operational messages must stay off the MCP stdout stream.
 
-The analysis server does not supply a reasoning model, a REPLAY connection, or desktop mouse and keyboard control. Each agent host supplies its own model and tools. TRACE's first version establishes the shared analysis interface and skill.
+The analysis server does not supply a reasoning model or desktop mouse/keyboard control. Each agent host supplies its model; TRACE's separate Computer Use server supplies desktop operations. The analysis foundation remains pinned independently.
 
 The pinned package exposes 207 tool definitions. Native providers depend on their separately installed requirements; TRACE setup does not install native engines. Built-in JavaScript and ZIP analysis can be checked without those providers. A healthy client registration and successful tool discovery do not establish native engine availability.
 

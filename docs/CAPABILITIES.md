@@ -4,9 +4,9 @@ Research reviewed 18 October 2026. The [first two selected skills](../SKILLS.md)
 
 TRACE should give agents executable abilities: an engine that performs the work, structured tools that expose it, and a small skill that teaches its use. A written instruction file alone does not supply desktop input, vision, or audio processing. [Agent Skills](https://agentskills.io/home) describes instruction/resource packaging; [MCP tools](https://modelcontextprotocol.io/specification/2026-07-28/server/tools) expose executable operations and can return images, audio, and structured results.
 
-## Computer Use engine review
+## Computer Use foundation
 
-Computer Use is selected for initial delivery. Its underlying Windows engine still needs evaluation: [Microsoft winapp UI automation](https://learn.microsoft.com/en-us/windows/apps/dev-tools/winapp-cli/ui-automation) and the existing [Windows-MCP](https://github.com/CursorTouch/Windows-MCP) implementation are research candidates, not selected dependencies.
+Computer Use is selected and implemented using [Microsoft winapp UI automation](https://learn.microsoft.com/en-us/windows/apps/dev-tools/winapp-cli/ui-automation), pinned to `0.7.1`, plus TRACE's source-owned window bridge. [Windows-MCP](https://github.com/CursorTouch/Windows-MCP) remains a comparison, not a bundled dependency. See [current acceptance](../SPEC.md).
 
 ## Future candidates
 
@@ -29,7 +29,7 @@ Persist task IDs, action outcomes, and artifact references so another agent can 
 
 ## Selection limits
 
-- **Windows control:** winapp supports UIA inspection and actions, input simulation, capture, and Sandbox execution. Physical input requires an interactive desktop. Its CLI coordinates compatible workflows; direct library callers are outside that guarantee. TRACE needs its own ownership mechanism if using those libraries. These candidates have not been tested here.
+- **Windows control:** TRACE's owned-fixture test covers a subset of the pinned engine's actions. TRACE adds per-user desktop ownership and exact DWM capture mapping. Broader app, monitor and action coverage remains in the specification.
 - **Browser control:** agent-browser currently includes CLI and stdio MCP modes, Windows x64 binaries, compact snapshots, and isolated sessions. Browser engines do not supply native desktop control. Use separate contexts/profiles for independent jobs.
 - **Vision:** OmniParser supplies screenshot parsing; TRACE still needs an executor and adapter. Its current README distinguishes MIT-based `icon_detect_v3` and caption weights from earlier AGPL detectors. Pin the exact code and weight revision; the documented v3 download currently references a Hugging Face PR.
 - **Voice:** the [official local ElevenLabs MCP README](https://raw.githubusercontent.com/elevenlabs/elevenlabs-mcp/main/README.md) marks that server deprecated in favor of [hosted OAuth MCP](https://elevenlabs.io/docs/eleven-agents/operate/hosted-mcp). Explicit APIs are the proposed fit for timing, transcription, alignment, and the existing narration budget. No new voice request was made.
@@ -41,4 +41,4 @@ For searchable screen/audio history, [Screenpipe](https://github.com/screenpipe/
 
 ## First delivery
 
-Preserve the verified Reverse Engineer Anything setup and implement Computer Use through one shared Windows executor with fresh observations, stable window targeting, action-result evidence, cancellation, and desktop ownership. Verify the selected skills with each of the four agent hosts before claiming universal access. Future modules remain under review.
+Complete the selected skills' acceptance in [SPEC.md](../SPEC.md). Report configured hosts separately from live agent workflows. Future modules remain under review.

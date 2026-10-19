@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "reviewedOn": "2026-10-19",
+  "reviewer": "independent Codex evidence-review agent",
+  "result": "passed",
+  "runId": "trace-4e109a8b-3f25-427a-bb7f-ed2bcba3e83f",
+  "scope": "Review of retained artifacts from the completed direct-MCP fixture run; no desktop input, new recording, model-host session, or test rerun.",
+  "receipt": "computer-live.json",
+  "framesReviewed": 8,
+  "actionsReviewed": 7,
+  "checks": {
+    "allEightImagesVisuallyInspected": true,
+    "onlyOwnedFixtureVisible": true,
+    "allFrameSha256AndByteSizesMatchReceipt": true,
+    "allPngDimensionsMatch564By697": true,
+    "uniqueObservationIdsAndSevenActionLinksMatch": true,
+    "rawFrameMetadataMatchesReceiptObservationIds": true,
+    "stableSessionAndWindowIdentityAcrossFrames": true,
+    "rawJournalMatchesSevenActionStartsAndCompletions": true,
+    "finalTextCountAndCheckboxAgreeWithFixtureReceipt": true
+  },
+  "visibleSequence": [
+    "Frames 001-003: empty text input, count 0, option unchecked; activation and focus need not change image content.",
+    "Frame 004: synthetic typing text appears, with its beginning horizontally clipped in the single-line input.",
+    "Frame 005: text changes to the TRACE accessibility-value prefix; the full value is supplied by the fixture receipt.",
+    "Frame 006: count changes to 1.",
+    "Frame 007: count changes to 2.",
+    "Frame 008: option is checked; count remains 2 and the accessibility-value prefix remains visible."
+  ],
+  "limits": [
+    "Artifact review corroborates this retained run; it does not independently observe the original tool execution live.",
+    "Images and the action journal establish visible outcomes and recorded ordering, not behavior in every Windows application.",
+    "No live key-chord, scroll, drag, interrupted-gesture, or physical cancellation coverage is established.",
+    "No Claude, Grok, Gemini, or full Codex model-host workflow is established by these artifacts."
+  ]
+}

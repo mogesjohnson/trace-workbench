@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "result": "passed",
+  "observedAt": "2026-10-18T22:37:17.941Z",
+  "platform": "win32",
+  "runId": "trace-4e109a8b-3f25-427a-bb7f-ed2bcba3e83f",
+  "engine": {
+    "name": "winapp",
+    "version": "0.7.1",
+    "integrity": "verified"
+  },
+  "protocol": {
+    "transport": "stdio",
+    "server": {
+      "name": "trace-computer",
+      "version": "0.1.0-alpha.2"
+    },
+    "toolCount": 6,
+    "toolNames": [
+      "trace_computer_act",
+      "trace_computer_close_session",
+      "trace_computer_doctor",
+      "trace_computer_list_windows",
+      "trace_computer_observe",
+      "trace_computer_open_session"
+    ]
+  },
+  "target": "Owned WinForms desktop fixture",
+  "fixtureSources": [
+    {
+      "path": "tests/fixtures/computer-app/TraceComputerFixture.csproj",
+      "sha256": "6eeb0a93b1ad0b73993fbb70bb248746f147ebd7b6731c50eaf889595439a793"
+    },
+    {
+      "path": "tests/fixtures/computer-app/Program.cs",
+      "sha256": "f31764b0b9f250e940c712f433ce2ece82c5ce2f571d08a723e9da9ff8611396"
+    }
+  ],
+  "fixtureExecutableSha256": "52f490bea4798623fc730058fccec3948b076218a83b841d2c4a52cc82f96113",
+  "checks": {
+    "physicalTyping": true,
+    "accessibilityValue": true,
+    "coordinateClick": true,
+    "accessibilityInvoke": true,
+    "checkboxClick": true,
+    "freshObservationAfterEveryAction": true,
+    "staleObservationRejected": true,
+    "competingControllerRejected": true,
+    "crossProcessDesktopLease": true,
+    "leaseSharedAcrossDifferentArtifactDirectories": true,
+    "leaseReleasedForNextController": true,
+    "screenshotsReturnedOnceAsMcpImage": true,
+    "fixtureClosed": true
+  },
+  "finalState": {
+    "text": "TRACE accessibility value trace-4e109a8b-3f25-427a-bb7f-ed2bcba3e83f",
+    "count": 2,
+    "optionChecked": true,
+    "revision": 70
+  },
+  "actions": [
+    {
+      "type": "activate",
+      "actionId": "4ae33382-b528-46c8-bea2-95f647f5818b",
+      "observationId": "84e27ac4-8adf-4c9a-8b76-e5f1336db1ec",
+      "nextObservationId": "ab76c0e9-9b69-4414-8428-4eb176a08ebe"
+    },
+    {
+      "type": "click",
+      "actionId": "66b8ca71-a404-4c89-ac19-6f7ebab62a7d",
+      "observationId": "ab76c0e9-9b69-4414-8428-4eb176a08ebe",
+      "nextObservationId": "ff53a8d7-8074-41c9-91ae-bd380f436c9f"
+    },
+    {
+      "type": "type_text",
+      "actionId": "19d47bb5-9a7e-4a58-b4d7-71fdf07e5b20",
+      "observationId": "ff53a8d7-8074-41c9-91ae-bd380f436c9f",
+      "nextObservationId": "eee4f282-42f9-4c7a-a78c-2630b387b822"
+    },
+    {
+      "type": "set_value",
+      "actionId": "c9a9879b-77ca-4d77-ae4e-909d34c9f680",
+      "observationId": "eee4f282-42f9-4c7a-a78c-2630b387b822",
+      "nextObservationId": "c3bd9580-3847-450a-ab2f-53c1ed9603cd"
+    },
+    {
+      "type": "click",
+      "actionId": "358546f9-7b67-4309-8ee6-a0b092fab7ce",
+      "observationId": "c3bd9580-3847-450a-ab2f-53c1ed9603cd",
+      "nextObservationId": "785e520e-00d5-4818-a08b-c256cd282b2c"
+    },
+    {
+      "type": "invoke",
+      "actionId": "19823204-96d8-41a5-8741-5fca6a0db2fd",
+      "observationId": "785e520e-00d5-4818-a08b-c256cd282b2c",
+      "nextObservationId": "6cd33f72-8229-4445-b030-6c86c74437ba"
+    },
+    {
+      "type": "click",
+      "actionId": "2d682f4e-6b83-4b7e-b9ea-65913120ac70",
+      "observationId": "6cd33f72-8229-4445-b030-6c86c74437ba",
+      "nextObservationId": "f933b5eb-7cde-4cd8-b193-801bb19f4175"
+    }
+  ],
+  "frames": [
+    {
+      "filename": "frame-001.png",
+      "observationId": "84e27ac4-8adf-4c9a-8b76-e5f1336db1ec",
+      "bytes": 26693,
+      "sha256": "b1d51241438c53d8bb8418c883fae8e37ba6cd935569e4b3d6448ffe17e62dc5",
+      "width": 564,
+      "height": 697
+    },
+    {
+      "filename": "frame-002.png",
+      "observationId": "ab76c0e9-9b69-4414-8428-4eb176a08ebe",
+      "bytes": 26680,
+      "sha256": "c5863a31d06ce4d9cb879ec7f89c0572b481909e20d76146537f89561680a818",
+      "width": 564,
+      "height": 697
+    },
+    {
+      "filename": "frame-003.png",
+      "observationId": "ff53a8d7-8074-41c9-91ae-bd380f436c9f",
+      "bytes": 26680,
+      "sha256": "c5863a31d06ce4d9cb879ec7f89c0572b481909e20d76146537f89561680a818",
+      "width": 564,
+      "height": 697
+    },
+    {
+      "filename": "frame-004.png",
+      "observationId": "eee4f282-42f9-4c7a-a78c-2630b387b822",
+      "bytes": 30103,
+      "sha256": "4d0b05d467c84416ec3f50a06093992c03577b33f23db56d055e74c1ea007fc6",
+      "width": 564,
+      "height": 697
+    },
+    {
+      "filename": "frame-005.png",
+      "observationId": "c3bd9580-3847-450a-ab2f-53c1ed9603cd",
+      "bytes": 30493,
+      "sha256": "55d7388770ce512ff12a1ffb7670502f91610d3db60dd1be2f31a71e0151f2e9",
+      "width": 564,
+      "height": 697
+    },
+    {
+      "filename": "frame-006.png",
+      "observationId": "785e520e-00d5-4818-a08b-c256cd282b2c",
+      "bytes": 30496,
+      "sha256": "6084cb8a3a1c26358026280875346417121d1e8baeecace6080d9af7d5b52535",
+      "width": 564,
+      "height": 697
+    },
+    {
+      "filename": "frame-007.png",
+      "observationId": "6cd33f72-8229-4445-b030-6c86c74437ba",
+      "bytes": 30597,
+      "sha256": "81c1330c59e2fe5b5a8dfc9d25269ffe459f84c143917b60675353b77419f462",
+      "width": 564,
+      "height": 697
+    },
+    {
+      "filename": "frame-008.png",
+      "observationId": "f933b5eb-7cde-4cd8-b193-801bb19f4175",
+      "bytes": 30516,
+      "sha256": "e3991a36deac39899f8c8a2b9b25c6b242e7280d0ffc14f228e8f7f29b9ff5e1",
+      "width": 564,
+      "height": 697
+    }
+  ],
+  "rawEvidenceDirectory": ".runtime/computer-live/trace-4e109a8b-3f25-427a-bb7f-ed2bcba3e83f",
+  "limits": [
+    "Only the owned synthetic fixture was controlled. This does not establish compatibility with every Windows application.",
+    "Scroll, drag, secure desktop, elevated applications, and a live model-host session were not tested."
+  ]
+}

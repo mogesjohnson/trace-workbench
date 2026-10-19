@@ -1,6 +1,6 @@
 # Project rules
 
-TRACE Workbench is being developed to give AI agents shared Windows computer control. The desktop executor is not implemented yet. This repository currently contains engineering setup, configuration preservation, diagnostics, and recorded workflow evidence. Analysis tooling supports development; it is not the product.
+TRACE Workbench gives agents shared executable capabilities. The selected first skills are Reverse Engineer Anything and Computer Use. The alpha.2 implementation includes a Windows executor and MCP server; release acceptance remains governed by [SPEC.md](SPEC.md). Keep implementation, observed verification, and release readiness distinct.
 
 ## Implementation
 

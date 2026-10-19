@@ -19,6 +19,8 @@ Usage:
   trace-workbench apply  [--client NAME ...] [--skill-client NAME ...]
   trace-workbench doctor [--client NAME ...]
   trace-workbench mcp
+  trace-workbench computer mcp
+  trace-workbench computer doctor
   trace-workbench --help
 
 Clients: codex, claude_code, grok_build, gemini_cli
@@ -35,6 +37,7 @@ doctor  Check the selected registrations and report JSON diagnostics.
 mcp     Serve the pinned REA MCP server over stdio. Supply no extra options.
 
 Uses this repository's rea-agents package, never npx or a global executable.
+The computer subcommands serve TRACE's separate Windows control tools.
 No command selects native analysis-provider installation, changes PATH, or
 automatically requests paid model inference. Existing home environment
 variables pass through unchanged. Restart agent clients after applying
