@@ -1,0 +1,35 @@
+{
+  "version": "0.1.0-alpha.2",
+  "reviewDate": "2026-10-19",
+  "unit": {
+    "command": "npm test",
+    "tests": 110,
+    "passed": 109,
+    "failed": 0,
+    "skipped": 1,
+    "skipReason": "Creating a file symlink requires developer mode on this Windows host; the symlink destination conflict test was skipped."
+  },
+  "source": {
+    "command": "npm run check",
+    "result": "passed",
+    "javascriptFiles": 21
+  },
+  "nativeBridge": {
+    "setupCommand": "npm run computer:setup -- --apply",
+    "build": "passed",
+    "sourceManifest": "verified",
+    "doctorReady": true
+  },
+  "inputRecovery": {
+    "backendUnitTests": 36,
+    "result": "passed",
+    "physicalInterruptionTested": false,
+    "quarantineScope": "current backend/server process"
+  },
+  "modelHosts": {
+    "codexConnectedDoctor": "passed",
+    "fullAgentWorkflowTested": []
+  },
+  "providerCreditsUsed": 0,
+  "hostedCi": "Track actual run on the implementation pull request; local results do not establish hosted CI success."
+}
