@@ -2,7 +2,23 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { assertScroll, assertChord, assertDrag, resultState, waitForOwnedProcessExit, rejectedModalParentAction } = require('../scripts/smoke-computer-live.cjs');
+const { assertScroll, assertChord, assertDrag, resultState, waitForOwnedProcessExit, rejectedModalParentAction, reserveEvidenceDirectory } = require('../scripts/smoke-computer-live.cjs');
+
+test('live evidence reserves a fresh directory and preserves an earlier attempt', async t => {
+  const fs = require('node:fs/promises');
+  const path = require('node:path');
+  const os = require('node:os');
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'trace-evidence-test-'));
+  t.after(async () => {
+    assert.ok(path.resolve(root).startsWith(path.resolve(os.tmpdir()) + path.sep) && path.basename(root).startsWith('trace-evidence-test-'));
+    await fs.rm(root, { recursive: true, force: true });
+  });
+  const report = path.join(root, 'run', 'receipt.json');
+  await reserveEvidenceDirectory(report);
+  await fs.writeFile(report, 'retained failure');
+  await assert.rejects(reserveEvidenceDirectory(report), /fresh run directory/);
+  assert.equal(await fs.readFile(report, 'utf8'), 'retained failure');
+});
 
 test('scroll evidence rejects a requested offset when the visible viewport stayed still', () => {
   assert.throws(() => assertScroll({ scrollY: 96, scrollRowOffset: 0 }, 96));

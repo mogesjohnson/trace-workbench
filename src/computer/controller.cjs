@@ -5,6 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { randomUUID, createHash } = require('node:crypto');
 const { DesktopLease } = require('./lease.cjs');
+const { ActivityIndicator } = require('./activity-indicator.cjs');
 
 const fail = (code, message) => Object.assign(new Error(message), { code });
 const identityMatches = (a, b) => a && b && a.id === b.id && a.pid === b.pid && a.processName === b.processName;
@@ -79,6 +80,7 @@ function createComputerController(options = {}) {
   // Artifact directories may differ between hosts. Desktop ownership must not.
   // userInfo comes from the OS rather than the configurable artifact path.
   const lease = options.lease ?? new DesktopLease(path.join(os.userInfo().homedir, '.trace-desktop-lease'));
+  const indicator = options.indicator ?? new ActivityIndicator();
   const observationTtlMs = options.observationTtlMs ?? 60000;
   const now = options.now ?? Date.now;
   const shutdown = new AbortController();
@@ -102,6 +104,25 @@ function createComputerController(options = {}) {
     if (!session) throw fail('unknown_session', 'Open a session for a discovered window first.');
     return session;
   }
+  function targetWindows(windows) {
+    return windows.filter(window => window.pid !== indicator.pid && String(window.processName).toLowerCase() !== 'traceactivityindicator');
+  }
+  function markedSignal(signal) {
+    indicator.assertActive();
+    const combined = AbortSignal.any([signal, indicator.signal]);
+    combined.throwIfAborted();
+    return combined;
+  }
+  async function cleanupSession(session) {
+    const errors = [];
+    // The operation queue has already drained native input/recovery before this runs.
+    try { await indicator.stop(); } catch (error) { errors.push(error); }
+    try { await lease.release(session.id); sessions.delete(session.id); } catch (error) { errors.push(error); }
+    if (errors.length) {
+      errors[0].cleanupCodes = errors.map(error => error.code || 'cleanup_failed');
+      throw errors[0];
+    }
+  }
   async function currentWindow(session, signal) {
     const windows = await backend.listWindows({ signal });
     const current = windows.find(window => window.id === session.window.id);
@@ -116,6 +137,7 @@ function createComputerController(options = {}) {
     await fs.appendFile(path.join(session.directory, 'events.jsonl'), `${JSON.stringify({ at: new Date(now()).toISOString(), sessionId: session.id, ...event })}\n`);
   }
   async function observeInternal(session, signal) {
+    signal = markedSignal(signal);
     await lease.assert(session.id);
     await currentWindow(session, signal);
     session.observation = null;
@@ -142,6 +164,8 @@ function createComputerController(options = {}) {
     };
     session.observation = { id: observationId, observedAtMs, snapshot, result };
     await record(session, { type: 'observation', observationId, screenshotSha256: result.screenshot.sha256 });
+    signal.throwIfAborted();
+    indicator.assertActive();
     return result;
   }
 
@@ -149,7 +173,7 @@ function createComputerController(options = {}) {
     doctor(callOptions) { return queued(signal => backend.doctor({ signal }), callOptions); },
     listWindows(callOptions) {
       return queued(async signal => {
-        const windows = await backend.listWindows({ signal });
+        const windows = targetWindows(await backend.listWindows({ signal }));
         discovered = new Map(windows.map(window => [window.id, window]));
         return { windows };
       }, callOptions);
@@ -158,7 +182,7 @@ function createComputerController(options = {}) {
       return queued(async signal => {
         const selected = discovered.get(windowId);
         if (!selected) throw fail('unknown_window', 'Select a windowId returned by list_windows.');
-        const current = (await backend.listWindows({ signal })).find(window => window.id === windowId);
+        const current = targetWindows(await backend.listWindows({ signal })).find(window => window.id === windowId);
         if (!identityMatches(selected, current)) throw fail('window_changed', 'The discovered window changed. Refresh the window list.');
         const id = randomUUID();
         await lease.acquire(id);
@@ -167,18 +191,26 @@ function createComputerController(options = {}) {
           signal.throwIfAborted();
           await fs.mkdir(directory, { recursive: true });
           signal.throwIfAborted();
+          const activityIndicator = await indicator.start({ signal });
+          signal.throwIfAborted();
+          indicator.assertActive();
           const session = { id, window: current, directory, observation: null };
           await record(session, { type: 'session_open', windowId, pid: current.pid });
           signal.throwIfAborted();
+          indicator.assertActive();
           sessions.set(id, session);
-          return { sessionId: id, window: current };
-        } catch (error) { await lease.release(id); throw error; }
+          return { sessionId: id, window: current, activityIndicator };
+        } catch (error) {
+          try { await cleanupSession({ id }); } catch (cleanup) { error.cleanupCodes = cleanup.cleanupCodes || [cleanup.code || 'cleanup_failed']; }
+          throw error;
+        }
       }, callOptions);
     },
     observe({ sessionId }, callOptions) { return queued(signal => observeInternal(getSession(sessionId), signal), callOptions); },
     act({ sessionId, observationId, action }, callOptions) {
       return queued(async signal => {
         const session = getSession(sessionId);
+        signal = markedSignal(signal);
         await lease.assert(sessionId);
         const observation = session.observation;
         if (!observation || observation.id !== observationId) throw fail('stale_observation', 'Use the latest observationId. Every action consumes it.');
@@ -193,6 +225,8 @@ function createComputerController(options = {}) {
         const actionId = randomUUID();
         await record(session, { type: 'action_started', actionId, observationId, actionType: checked.type });
         try {
+          signal.throwIfAborted();
+          indicator.assertActive();
           const nativeResult = await backend.act({ window: session.window, observation: observation.snapshot, action: checked, signal });
           const fresh = await observeInternal(session, signal);
           await record(session, { type: 'action_completed', actionId, observationId: fresh.observationId });
@@ -201,7 +235,9 @@ function createComputerController(options = {}) {
           session.observation = null;
           await record(session, { type: 'action_unknown', actionId, errorCode: error.code ?? 'backend_error' }).catch(() => {});
           const projected = safeError(error);
-          return { actionId, outcome: 'unknown', error: projected, nextStep: projected.inputRecoveryRequired
+          return { actionId, outcome: 'unknown', error: projected, nextStep: indicator.signal.aborted
+            ? 'The visible activity marker was lost. Input is stopped. Verify the action outcome and input cleanup, then close the session before reopening; do not replay automatically.'
+            : projected.inputRecoveryRequired
             ? 'Input is quarantined. Check the owned input process and button state before restarting TRACE; observation alone does not clear this condition.'
             : 'Observe the window before deciding whether to retry. The input may have occurred.' };
         }
@@ -211,8 +247,7 @@ function createComputerController(options = {}) {
       return queued(async () => {
         const session = getSession(sessionId);
         session.observation = null;
-        await lease.release(session.id);
-        sessions.delete(session.id);
+        await cleanupSession(session);
         return { sessionId, closed: true };
       }, callOptions);
     },
@@ -221,9 +256,18 @@ function createComputerController(options = {}) {
       closed = true;
       shutdown.abort();
       return queued(async () => {
-        for (const session of sessions.values()) await lease.release(session.id);
-        sessions.clear();
-        await backend.close?.();
+        const errors = [];
+        try { await backend.close?.(); } catch (error) { errors.push(error); }
+        if (!sessions.size) {
+          try { await indicator.stop(); } catch (error) { errors.push(error); }
+        }
+        for (const session of [...sessions.values()]) {
+          try { await cleanupSession(session); } catch (error) { errors.push(error); }
+        }
+        if (errors.length) {
+          errors[0].cleanupCodes = errors.flatMap(error => error.cleanupCodes || [error.code || 'cleanup_failed']);
+          throw errors[0];
+        }
       }, {}, true);
     },
   };

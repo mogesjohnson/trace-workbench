@@ -1,6 +1,6 @@
 {
   "name": "trace-workbench",
-  "version": "0.1.0-alpha.3",
+  "version": "0.1.0-alpha.3.1",
   "private": true,
   "description": "Shared Windows computer tools for AI agents.",
   "license": "MIT",

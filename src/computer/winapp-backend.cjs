@@ -4,6 +4,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { spawn } = require('node:child_process');
+const { DEFAULT_INDICATOR, verifyIndicatorFiles } = require('./activity-indicator.cjs');
 const pin = require('./winapp-pin.json');
 const ROOT = path.resolve(__dirname, '../..');
 const DEFAULT_BINARY = path.join(ROOT, '.runtime', 'winapp', `v${pin.version}`, 'bin', 'winapp.exe');
@@ -195,14 +196,16 @@ async function verifyBridgeFiles(bridgePath = DEFAULT_BRIDGE) {
 }
 
 class WinappBackend {
-  constructor({ binaryPath = DEFAULT_BINARY, bridgePath = DEFAULT_BRIDGE, run = runProcess, platform = process.platform, arch = process.arch, verify = verifyFiles, verifyBridge = verifyBridgeFiles } = {}) {
+  constructor({ binaryPath = DEFAULT_BINARY, bridgePath = DEFAULT_BRIDGE, indicatorPath = DEFAULT_INDICATOR, run = runProcess, platform = process.platform, arch = process.arch, verify = verifyFiles, verifyBridge = verifyBridgeFiles, verifyIndicator = verifyIndicatorFiles } = {}) {
     this.binaryPath = binaryPath;
     this.bridgePath = bridgePath;
+    this.indicatorPath = indicatorPath;
     this.run = run;
     this.platform = platform;
     this.arch = arch;
     this.verify = verify;
     this.verifyBridge = verifyBridge;
+    this.verifyIndicator = verifyIndicator;
     this.inputRecoveryRequired = null;
   }
   async command(verb, args, signal) {
@@ -238,11 +241,14 @@ class WinappBackend {
     try {
       await this.verify(this.binaryPath);
       await this.verifyBridge(this.bridgePath);
+      const activityIndicator = await this.verifyIndicator(this.indicatorPath);
+      const runtimes = await this.run('dotnet', ['--list-runtimes'], { signal, maxOutputBytes: 128 * 1024 });
+      if (runtimes.exitCode !== 0 || !/^Microsoft\.WindowsDesktop\.App 9\.\d+\.\d+\s+\[/m.test(runtimes.stdout)) fail('indicator_runtime', 'The .NET 9 Windows Desktop runtime is required by the visible activity indicator.');
       const bridge = await this.bridge('info', null, signal);
       if (bridge.version !== 1) fail('bridge_version', 'Unexpected window bridge version.');
       const result = await this.run(this.binaryPath, ['--version'], { signal });
       if (result.exitCode !== 0 || !new RegExp(`(^|\\s)${pin.version.replaceAll('.', '\\.')}($|\\s)`).test(result.stdout)) fail('engine_version', 'Unexpected Windows engine version.');
-      return { ready: true, engine: 'winapp', version: pin.version, platform: this.platform, architecture: this.arch, transport: 'public-cli', integrity: 'verified', bridge: { version: 1, runtime: '.NET 9', method: 'public-win32-dwm' }, limitations: ['Windows x64', 'minimized observations restore the selected window', 'unlocked interactive desktop for input', 'horizontal scroll unsupported', 'no secure desktop or elevation bypass'] };
+      return { ready: true, engine: 'winapp', version: pin.version, platform: this.platform, architecture: this.arch, transport: 'public-cli', integrity: 'verified', bridge: { version: 1, runtime: '.NET 9', method: 'public-win32-dwm' }, activityIndicator, limitations: ['Windows x64', 'minimized observations restore the selected window', 'unlocked interactive desktop for input', 'horizontal scroll unsupported', 'no secure desktop or elevation bypass'] };
     } catch (error) {
       if (signal?.aborted) throw error;
       return { ready: false, engine: 'winapp', version: pin.version, code: error.code || 'engine_unavailable', reason: error.message };
