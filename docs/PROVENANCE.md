@@ -1,6 +1,6 @@
 # Upstream provenance
 
-TRACE Workbench's current development tooling uses **Reverse Engineer Anything (REA)** for analysis. The tooling installs the upstream analysis server, maintains shared skill discovery, and configures local clients. TRACE's intended product is shared Windows computer control; the analysis engine is an upstream development tool.
+TRACE Workbench's first selected analysis capability uses **Reverse Engineer Anything (REA)**. The integration installs the upstream server, maintains shared skill discovery, and configures local clients. TRACE is the product; REA supplies its upstream analysis engine.
 
 | Component | Source | Version / pin |
 | --- | --- | --- |
@@ -25,3 +25,9 @@ The lockfile is the installation source of truth. When updating upstream, inspec
 The pinned server exposes 207 MCP tools. Tool discovery does not establish that all native analysis providers are available. Built-in JavaScript and ZIP analysis can run without the optional native engines; other capabilities depend on the local provider installations reported by diagnostics.
 
 The repository's direct MCP smoke test uses a synthetic fixture. A separate local CLI check inspected two selected modules from REPLAY's packaged ASAR, retaining its original hash and partial-coverage limits. Neither test proves a Claude, Codex, Grok, or Gemini model session or reproduces a computer-control runtime. REPLAY remains a separate application with its own recording and editing interface. See [verification](VERIFICATION.md).
+
+## Computer Use foundation
+
+The Windows engine is Microsoft winapp CLI `0.7.1`. Its official release archive SHA-256 and native-file hashes are recorded in [the engine pin](../src/computer/winapp-pin.json). The source-owned [window bridge](../native/TraceWindowBridge/Program.cs) uses public Win32/DWM APIs for geometry, activation and interrupted-input cleanup. Setup verifies its source/build manifest locally.
+
+MCP server/client `2.3.1`, Zod `4.6.7` and smol-toml `1.9.0` are pinned in the lockfile. Retained license texts are linked from [third-party notices](../THIRD_PARTY_NOTICES.md). The reference Codex executor's private helper is not copied or included.

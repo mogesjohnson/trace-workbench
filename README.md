@@ -4,46 +4,47 @@
 
 Shared tools that give agents abilities beyond written instructions.
 
-**Version:** `0.1.0-alpha.1` · **Status:** development foundation
+**Version:** `0.1.0-alpha.2` · **Status:** Windows preview
 
-The goal is one interface for **Codex, Claude Code, Grok Build, and Gemini CLI** to observe and operate Windows. The shared desktop executor is not implemented yet. This version contains engineering setup and recorded workflow evidence.
+TRACE provides local tools for **Codex, Claude Code, Grok Build, and Gemini CLI**. The first two skills are **Reverse Engineer Anything** and **Computer Use**. The Windows executor now exposes six MCP tools for discovering windows, observing screenshots and controls, acting, and releasing desktop ownership.
 
-The first two skills are **Reverse Engineer Anything** and **Computer Use**. See the [skill list and current status](SKILLS.md). Other [future skills are under review](docs/CAPABILITIES.md).
+Read the [specification and remaining acceptance](SPEC.md). [Skill status](SKILLS.md) and [future skills under review](docs/CAPABILITIES.md) distinguish selected work from research.
 
-## Developer setup
+## Computer Use setup
 
-Requires a supported Node.js version; verified on Windows x64 with Node.js 26.
+Requires Windows x64, a supported Node.js version, and .NET 9 SDK/runtime.
 
 ```powershell
 npm ci
-node bin/trace.cjs plan
-node bin/trace.cjs apply
-node scripts/link-grok-skill.cjs --plan
-node scripts/link-grok-skill.cjs --apply
-node bin/trace.cjs doctor
+npm run computer:setup -- --plan
+npm run computer:setup -- --apply
+npm run computer:doctor
+npm run computer:config -- --plan
+npm run computer:config -- --apply
 ```
 
-These commands configure development analysis tools. Review the plan before applying it; setup preserves unrelated settings and backs up existing configuration.
+Review each plan before applying it. Setup pins the Windows engine locally; configuration preserves unrelated settings and exact backups. Reconnect agent hosts after installation or code changes.
 
-See [setup and recovery](docs/SETUP.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
+[Computer Use operation and recovery](docs/COMPUTER_USE.md) · [Analysis setup](docs/SETUP.md) · [Third-party notices](THIRD_PARTY_NOTICES.md)
 
 ## Verified
 
-- **38 unit tests passed.**
-- **207 analysis tools** discovered through the development MCP connection; static fixture analysis passed and owned processes exited.
-- Two selected modules from packaged REPLAY were analyzed without changing its package.
-- The existing Computer Use executor demonstrated Calculator **12 × 3 = 36**, reviewed by two observers.
+- **109 tests passed; 1 Windows file-symlink privilege test skipped.**
+- A real stdio MCP run completed **7 actions with 8 fresh PNGs** in an owned Windows fixture.
+- Typing, clicks, editable values, invocation, checkbox and cross-process desktop ownership were verified.
+- Four client registrations and matching skill copies are installed. The existing analysis connection still exposes **207 tools** and passes its static fixture check.
 
 [Verification and limits](docs/VERIFICATION.md) · [Observed computer workflow](docs/OBSERVED-WORKFLOW.md)
 
-## Scope
+## Remaining
 
-The development skill and analysis connection are installed. Native decompilation engines and live Claude/Grok/Gemini model sessions were not tested. The Calculator demonstration records the workflow TRACE aims to support; it does not establish a working TRACE executor.
+Live key/scroll/drag and interrupted-input coverage, Codex/Claude task acceptance, a real REPLAY workflow, clean-machine setup and release gates remain. Grok/Gemini live behavior is unverified. See [SPEC.md](SPEC.md); alpha.2 is not a published release.
 
 ```powershell
 npm test
 npm run check
 npm run test:mcp
+npm run test:computer:mcp
 ```
 
 Personal configuration, credentials, raw private analysis, and application binaries stay outside Git. PRs target **2–3 commits**, with a **maximum of 4**. See [repository rules](RULES.md) and [version control](VERSION_CONTROL.md).
