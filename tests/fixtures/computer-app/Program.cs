@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
 
 namespace TraceComputerFixture;
 
@@ -41,6 +42,7 @@ internal sealed class FixtureWindow : Form
     private readonly Panel dragArea;
     private readonly Label dragTarget;
     private readonly System.Windows.Forms.Timer commands;
+    private readonly PanelWheelFilter wheelFilter;
     private Form? dialog;
     private int count;
     private int revision;
@@ -50,7 +52,9 @@ internal sealed class FixtureWindow : Form
     private bool dialogOpen;
     private bool dialogConfirmed;
     private int scrollBaseline = 8;
-    private int observedScrollY;
+    private int dragStarts;
+    private int dragDrops;
+    private Point dragStart;
     private Point? dragOffset;
 
     internal FixtureWindow(string runId, string receiptPath, string commandsPath)
@@ -128,7 +132,15 @@ internal sealed class FixtureWindow : Form
             TextAlign = ContentAlignment.MiddleCenter, ForeColor = Color.White, BackColor = Color.RoyalBlue,
             Location = new Point(10, 30), Size = new Size(120, 50)
         };
-        dragTarget.MouseDown += (_, e) => { if (e.Button == MouseButtons.Left) { dragOffset = e.Location; dragTarget.Capture = true; } };
+        dragTarget.MouseDown += (_, e) =>
+        {
+            if (e.Button != MouseButtons.Left || dragOffset is not null) return;
+            dragOffset = e.Location;
+            dragStart = dragTarget.Location;
+            dragStarts++;
+            dragTarget.Capture = true;
+            WriteReceipt();
+        };
         dragTarget.MouseMove += (_, e) =>
         {
             if (dragOffset is not Point offset) return;
@@ -137,7 +149,20 @@ internal sealed class FixtureWindow : Form
                 Math.Clamp(pointer.X - offset.X, 0, dragArea.ClientSize.Width - dragTarget.Width),
                 Math.Clamp(pointer.Y - offset.Y, 0, dragArea.ClientSize.Height - dragTarget.Height));
         };
-        dragTarget.MouseUp += (_, _) => { dragOffset = null; dragTarget.Capture = false; WriteReceipt(); };
+        dragTarget.MouseUp += (_, e) =>
+        {
+            if (e.Button != MouseButtons.Left || dragOffset is null) return;
+            dragOffset = null;
+            dragDrops++;
+            dragTarget.Capture = false;
+            WriteReceipt();
+        };
+        dragTarget.MouseCaptureChanged += (_, _) =>
+        {
+            if (dragTarget.Capture || dragOffset is null) return;
+            dragOffset = null;
+            WriteReceipt();
+        };
         dragArea.Controls.Add(dragTarget);
         Controls.Add(dragArea);
 
@@ -157,21 +182,19 @@ internal sealed class FixtureWindow : Form
 
         textInput.TextChanged += (_, _) => WriteReceipt();
         option.CheckedChanged += (_, _) => WriteReceipt();
-        scrolling.Scroll += (_, e) =>
-        {
-            if (e.ScrollOrientation == ScrollOrientation.VerticalScroll) observedScrollY = Math.Max(observedScrollY, e.NewValue);
-            WriteReceipt();
-        };
-        scrolling.ScrolledByWheel += value => { observedScrollY = Math.Max(observedScrollY, value); WriteReceipt(); };
+        scrolling.Scroll += (_, _) => WriteReceipt();
+        scrolling.ScrolledByWheel += _ => WriteReceipt();
         KeyDown += (_, e) =>
         {
             if (!e.Control || e.KeyCode != Keys.D) return;
             chord = "ctrl+d";
             chordLabel.Text = "Last chord: ctrl+d";
+            textInput.Select(0, Math.Min(5, textInput.TextLength));
             e.Handled = true;
             e.SuppressKeyPress = true;
             WriteReceipt();
         };
+        KeyUp += (_, _) => WriteReceipt();
         LocationChanged += (_, _) => WriteReceipt();
         Resize += (_, _) => WriteReceipt();
         DpiChanged += (_, _) => WriteReceipt();
@@ -187,13 +210,14 @@ internal sealed class FixtureWindow : Form
         commands = new System.Windows.Forms.Timer { Interval = 50 };
         commands.Tick += (_, _) => ApplyCommand();
         commands.Start();
-        Application.AddMessageFilter(new PanelWheelFilter(scrolling));
+        wheelFilter = new PanelWheelFilter(scrolling);
+        Application.AddMessageFilter(wheelFilter);
     }
 
     private void ShowOwnedDialog()
     {
         if (dialog is { IsDisposed: false }) return;
-        var owned = new Form
+        using var owned = new Form
         {
             Name = "traceDialog",
             Text = $"TRACE dialog — {runId}",
@@ -214,11 +238,18 @@ internal sealed class FixtureWindow : Form
         confirm.Click += (_, _) => { dialogConfirmed = true; confirm.Text = "Dialog confirmed"; WriteReceipt(); };
         owned.Controls.Add(new Label { Text = "Owned synthetic dialog", Location = new Point(24, 18), AutoSize = true });
         owned.Controls.Add(confirm);
+        owned.Shown += (_, _) => { dialogOpen = true; WriteReceipt(); };
         owned.FormClosed += (_, _) => { dialogOpen = false; WriteReceipt(); };
         dialog = owned;
-        dialogOpen = true;
-        owned.Show(this);
-        WriteReceipt();
+        dialogConfirmed = false;
+        try { owned.ShowDialog(this); }
+        finally
+        {
+            dialogOpen = false;
+            dialog = null;
+            // ShowDialog has restored the owner's native enabled state before this receipt.
+            WriteReceipt();
+        }
     }
 
     private void ApplyCommand()
@@ -227,7 +258,7 @@ internal sealed class FixtureWindow : Form
         {
             if (!File.Exists(commandsPath)) return;
             var command = JsonSerializer.Deserialize<FixtureCommand>(File.ReadAllText(commandsPath), CommandJson);
-            if (command is null || command.Id <= appliedCommandId || command.Op is not ("move" or "minimize" or "restore" or "move-monitor" or "close-dialog")) return;
+            if (command is null || command.Id <= appliedCommandId || command.Op is not ("move" or "minimize" or "restore" or "move-monitor" or "close-dialog" or "open-dialog")) return;
             appliedCommandId = command.Id;
             lastCommand = command.Op;
             switch (command.Op)
@@ -237,6 +268,7 @@ internal sealed class FixtureWindow : Form
                 case "restore": WindowState = FormWindowState.Normal; break;
                 case "move-monitor": MoveToOtherMonitor(); break;
                 case "close-dialog": dialog?.Close(); break;
+                case "open-dialog": ShowOwnedDialog(); break;
             }
             WriteReceipt();
         }
@@ -267,9 +299,22 @@ internal sealed class FixtureWindow : Form
         {
             schemaVersion = 1, runId, title = Text, text = textInput.Text,
             count, optionChecked = option.Checked, chord,
-            scrollY = Math.Max(observedScrollY, Math.Max(0, scrollBaseline - scrolling.Controls[0].Top)),
+            selectionStart = textInput.SelectionStart, selectionLength = textInput.SelectionLength,
+            selectedText = textInput.SelectedText,
+            modifiers = ModifierKeys.ToString(),
+            controlPressed = (ModifierKeys & Keys.Control) != Keys.None,
+            shiftPressed = (ModifierKeys & Keys.Shift) != Keys.None,
+            altPressed = (ModifierKeys & Keys.Alt) != Keys.None,
+            scrollY = Math.Max(0, -scrolling.AutoScrollPosition.Y),
+            scrollRowOffset = scrollBaseline - scrolling.Controls[0].Top,
+            scrollMaximum = Math.Max(0, scrolling.DisplayRectangle.Height - scrolling.ClientSize.Height),
             dragX = dragTarget.Left, dragY = dragTarget.Top,
-            dialogOpen, dialogConfirmed,
+            dragStartX = dragStart.X, dragStartY = dragStart.Y, dragStarts, dragDrops,
+            dragPressed = dragOffset is not null,
+            dragAreaWidth = dragArea.ClientSize.Width, dragAreaHeight = dragArea.ClientSize.Height,
+            dragTargetWidth = dragTarget.Width, dragTargetHeight = dragTarget.Height,
+            leftButtonDown = (MouseButtons & MouseButtons.Left) != MouseButtons.None,
+            dialogOpen, dialogConfirmed, parentEnabled = NativeWindowState.IsEnabled(this),
             windowX = Left, windowY = Top, windowWidth = Width, windowHeight = Height,
             minimized = WindowState == FormWindowState.Minimized,
             dpiX = DeviceDpi, dpiY = DeviceDpi,
@@ -292,6 +337,7 @@ internal sealed class FixtureWindow : Form
         {
             commands.Stop();
             commands.Dispose();
+            Application.RemoveMessageFilter(wheelFilter);
         }
         base.Dispose(disposing);
     }
@@ -318,10 +364,9 @@ internal sealed class ScrollFixturePanel : Panel
     {
         if (notches == 0) return;
         var maximum = Math.Max(0, DisplayRectangle.Height - ClientSize.Height);
-        var next = Math.Clamp(Math.Max(0, -AutoScrollPosition.Y) + notches * 48, 0, Math.Max(maximum, 48));
+        var next = Math.Clamp(Math.Max(0, -AutoScrollPosition.Y) + notches * 48, 0, maximum);
         AutoScrollPosition = new Point(0, next);
-        var actual = Math.Max(0, -AutoScrollPosition.Y);
-        ScrolledByWheel?.Invoke(actual > 0 ? actual : next);
+        ScrolledByWheel?.Invoke(Math.Max(0, -AutoScrollPosition.Y));
     }
 }
 
@@ -338,7 +383,8 @@ internal sealed class PanelWheelFilter(ScrollFixturePanel panel) : IMessageFilte
 {
     public bool PreFilterMessage(ref Message message)
     {
-        if (message.Msg != 0x020A || panel.IsDisposed) return false;
+        if (message.Msg != 0x020A || panel.IsDisposed || !panel.Enabled || panel.FindForm() is not Form owner ||
+            !NativeWindowState.IsEnabled(owner) || Control.FromChildHandle(message.HWnd)?.FindForm() != owner) return false;
         var packed = message.LParam.ToInt64();
         var cursor = new Point((short)(packed & 0xFFFF), (short)((packed >> 16) & 0xFFFF));
         if (!panel.RectangleToScreen(panel.ClientRectangle).Contains(cursor)) return false;
@@ -346,4 +392,13 @@ internal sealed class PanelWheelFilter(ScrollFixturePanel panel) : IMessageFilte
         panel.ScrollNotches(-delta / 120);
         return true;
     }
+}
+
+internal static class NativeWindowState
+{
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsWindowEnabled(IntPtr window);
+
+    internal static bool IsEnabled(Control control) => control.IsHandleCreated && IsWindowEnabled(control.Handle);
 }

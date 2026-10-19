@@ -45,7 +45,7 @@ internal static class Program
             var hr = DwmGetWindowAttribute(hwnd, 9 /* DWMWA_EXTENDED_FRAME_BOUNDS */, out var frame, Marshal.SizeOf<Rect>());
             if (hr != 0) throw new BridgeException("frame_bounds_unavailable", "DWM extended frame bounds are unavailable.");
             Guard(hwnd, pid);
-            Write(new { hwnd = raw.ToString(), pid, windowBounds = outer.ToBounds(), frameBounds = frame.ToBounds(), foreground = GetForegroundWindow() == hwnd, minimized = IsIconic(hwnd), method = "public-win32-dwm" });
+            Write(new { hwnd = raw.ToString(), pid, windowBounds = outer.ToBounds(), frameBounds = frame.ToBounds(), foreground = GetForegroundWindow() == hwnd, minimized = IsIconic(hwnd), enabled = IsWindowEnabled(hwnd), method = "public-win32-dwm" });
             return 0;
         }
         catch (Exception error)
@@ -65,7 +65,7 @@ internal static class Program
 
     private static void Activate(nint hwnd, uint pid)
     {
-        Guard(hwnd, pid);
+        GuardEnabled(hwnd, pid);
         if (GetForegroundWindow() == hwnd) return;
         var current = GetCurrentThreadId();
         var target = GetWindowThreadProcessId(hwnd, out _);
@@ -78,8 +78,9 @@ internal static class Program
         {
             if (foreground != 0 && foreground != current) attachedForeground = AttachThreadInput(current, foreground, true);
             if (target != 0 && target != current && target != foreground) attachedTarget = AttachThreadInput(current, target, true);
-            Guard(hwnd, pid);
+            GuardEnabled(hwnd, pid);
             if (IsIconic(hwnd)) ShowWindow(hwnd, 9 /* SW_RESTORE */);
+            GuardEnabled(hwnd, pid);
             BringWindowToTop(hwnd);
             SetForegroundWindow(hwnd);
             SetActiveWindow(hwnd);
@@ -92,6 +93,12 @@ internal static class Program
         }
         // SetForegroundWindow is subject to Windows foreground policy; failure never becomes success.
         if (GetForegroundWindow() != hwnd) throw new BridgeException("foreground_not_target", "Windows refused activation of the selected window.");
+    }
+
+    private static void GuardEnabled(nint hwnd, uint pid)
+    {
+        Guard(hwnd, pid);
+        if (!IsWindowEnabled(hwnd)) throw new BridgeException("window_blocked", "The selected window is disabled, for example by an owned modal dialog. Select the enabled dialog explicitly.");
     }
 
     private static void Write(object value) => Console.WriteLine(JsonSerializer.Serialize(value));
@@ -110,6 +117,7 @@ internal static class Program
     [StructLayout(LayoutKind.Sequential)] private struct Input { public uint Type; public MouseInput Mouse; }
     [StructLayout(LayoutKind.Sequential)] private struct Message { public nint Hwnd; public uint Id; public nuint WParam; public nint LParam; public uint Time; public Point Point; public uint Private; }
     [DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool IsWindow(nint hwnd);
+    [DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool IsWindowEnabled(nint hwnd);
     [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(nint hwnd, out uint pid);
     [DllImport("user32.dll", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool GetWindowRect(nint hwnd, out Rect rect);
     [DllImport("dwmapi.dll")] private static extern int DwmGetWindowAttribute(nint hwnd, uint attribute, out Rect value, int size);

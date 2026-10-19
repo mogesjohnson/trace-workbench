@@ -29,16 +29,16 @@ Review each plan before applying it. Setup pins the Windows engine locally; conf
 
 ## Verified
 
-- **109 tests passed; 1 Windows file-symlink privilege test skipped.**
-- A real stdio MCP run completed **16 actions with 22 fresh PNGs** in an owned Windows fixture at 144 DPI.
-- Typing, clicks, editable values, invocation, checkbox, the `ctrl+d` chord, vertical scroll, drag, dialog confirmation, moved and minimized windows, and interrupted left-button recovery were verified.
+- **126 tests passed; 1 Windows file-symlink privilege test skipped.**
+- Owned-fixture MCP evidence covers exact key/selection, bidirectional scrolling and drag/drop results. Original action/window evidence and both failed review attempts are preserved.
+- A native disabled-window guard rejects activation, clicks, invocation and value changes before input, including when UIA children appear enabled. A focused MCP/native regression passed; it does not establish complete modal/recovery acceptance.
 - The analysis connection still exposes **207 tools** and passes its static fixture check. Four client registrations were verified with the alpha.2 installation receipt.
 
 [Verification and limits](docs/VERIFICATION.md) · [Observed computer workflow](docs/OBSERVED-WORKFLOW.md)
 
 ## Remaining
 
-Codex/Claude task acceptance, a real REPLAY workflow, clean-machine setup, and release gates remain. The 19 October live run had one 144 DPI display, so it did not include a DPI change or a second monitor. Grok/Gemini live behavior is unverified. See [SPEC.md](SPEC.md); alpha.3 is not a published release.
+Complete modal/recovery acceptance, Codex/Claude tasks, a real REPLAY workflow, clean-machine setup and release gates remain. One 144 DPI display did not permit DPI/monitor transitions. Grok/Gemini live behavior is unverified. See [SPEC.md](SPEC.md); alpha.3 is an incomplete preview, not a published release. Current local input uses the active desktop; an isolated background worker is proposed.
 
 ```powershell
 npm test

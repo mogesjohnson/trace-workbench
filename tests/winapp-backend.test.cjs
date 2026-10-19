@@ -134,6 +134,38 @@ test('bridge PID mismatch and frame movement fail before native input', async ()
   await assert.rejects(movedFrame.backend.act({ window, observation: canonical(), action: { type: 'click', x: 50, y: 70 } }), { code: 'window_moved' });
 });
 
+for (const action of [
+  { type: 'click', elementId: 'calculate' },
+  { type: 'invoke', elementId: 'calculate' },
+  { type: 'set_value', elementId: 'calculate', value: 'must not change' },
+]) test(`disabled native owner blocks ${action.type} even when UIA reports an enabled descendant`, async () => {
+  const { backend, calls } = mock(args => args[0] === 'bounds' ? {
+    hwnd: '1234', pid: 456, frameBounds: rect, windowBounds: rect, enabled: false, minimized: false,
+  } : undefined);
+  await assert.rejects(backend.act({ window, observation: canonical(), action }), (error) => error.code === 'window_blocked' && error.details.outcome === 'not_dispatched');
+  assert.equal(calls.some(call => call.args[0] === 'activate'), false, 'A disabled owner must not reach foreground mutation');
+  assert.equal(calls.some(call => ['click', 'drag', 'invoke', 'set-value', 'send-keys', 'scroll'].includes(call.args[1])), false, 'Disabled-owner validation must prevent the mutating native command');
+});
+
+for (const action of [{ type: 'click', elementId: 'calculate' }, { type: 'invoke', elementId: 'calculate' }, { type: 'activate' }])
+test(`late native disabling blocks ${action.type} even if activation reports foreground`, async () => {
+  const { backend, calls } = mock(args => args[0] === 'activate' ? {
+    hwnd: '1234', pid: 456, frameBounds: rect, windowBounds: rect, enabled: false, foreground: true, minimized: false,
+  } : undefined);
+  await assert.rejects(backend.act({ window, observation: canonical(), action }), { code: 'window_blocked' });
+  assert.equal(calls.some(call => ['click', 'drag', 'invoke', 'set-value', 'send-keys', 'scroll'].includes(call.args[1])), false);
+});
+
+test('a UIA value cannot dispatch if the owner becomes disabled after initial validation', async () => {
+  let reads = 0;
+  const { backend, calls } = mock(args => args[0] === 'bounds' ? {
+    hwnd: '1234', pid: 456, frameBounds: rect, windowBounds: rect, enabled: ++reads === 1, minimized: false,
+  } : undefined);
+  await assert.rejects(backend.act({ window, observation: canonical(), action: { type: 'set_value', elementId: 'calculate', value: 'must not change' } }), { code: 'window_blocked' });
+  assert.equal(reads, 2);
+  assert.equal(calls.some(call => call.args[1] === 'set-value'), false);
+});
+
 test('coordinate input uses exact DWM capture origin rather than invisible UIA resize borders', async () => {
   const frame = { x: 109, y: 200, width: 282, height: 391 };
   const { backend, calls } = mock(args => ['bounds', 'activate'].includes(args[0]) ? { hwnd: '1234', pid: 456, frameBounds: frame, windowBounds: rect, foreground: true, minimized: false } : undefined);

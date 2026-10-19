@@ -1,0 +1,1288 @@
+{
+  "schemaVersion": 2,
+  "scope": "Owned-fixture input, modal and geometry acceptance; supporting raw-native cancellation only",
+  "runId": "trace-5973d6a9-7026-4e78-8ad1-1fa67985383e",
+  "platform": "win32",
+  "runtime": {
+    "node": "v26.2.0",
+    "architecture": "x64",
+    "platform": "win32"
+  },
+  "testedSource": {
+    "baseCommit": "0929e085252924a8478cddc14c683fd3ea613e81",
+    "workingTreeModified": true,
+    "files": [
+      {
+        "path": "bin/trace.cjs",
+        "sha256": "2006b9f1554076fe89711067566c882702c66fe5f50677270ed83f88d9d5ee60"
+      },
+      {
+        "path": "src/computer/server.cjs",
+        "sha256": "afe84b975061d6f15d67d0428b86abf93e0ac7c097c887990ef8334f18909222"
+      },
+      {
+        "path": "src/computer/controller.cjs",
+        "sha256": "0daad720ac3d8f461176e1f84e3d1a2dbe3bfca8da6e7e5a5f221ce48e1b282a"
+      },
+      {
+        "path": "src/computer/lease.cjs",
+        "sha256": "3600fa756bda99e15aa695731bc0e5a8f6a0893e1f7e333db4d6742ae561389b"
+      },
+      {
+        "path": "src/computer/winapp-backend.cjs",
+        "sha256": "1477dc69421728e009bb5a043417d7cde46ae181ce336e2e9cada7454aab3250"
+      },
+      {
+        "path": "scripts/smoke-computer-live.cjs",
+        "sha256": "3f858f01d4bb665966c35a1f32cd110532ab063bb38a7d6edb3d33750c20f700"
+      },
+      {
+        "path": "tests/fixtures/computer-app/Program.cs",
+        "sha256": "82d6a0c6eddf4c1e4ba95750b51dc18c5caef34c0290cd4ac45c5b77443f3c09"
+      },
+      {
+        "path": "tests/fixtures/computer-app/TraceComputerFixture.csproj",
+        "sha256": "6eeb0a93b1ad0b73993fbb70bb248746f147ebd7b6731c50eaf889595439a793"
+      },
+      {
+        "path": "native/TraceWindowBridge/Program.cs",
+        "sha256": "df30fb55dbfdde3acf50760042ee2eed976aae62814589eb5585e2a61ea088be"
+      },
+      {
+        "path": "native/TraceWindowBridge/TraceWindowBridge.csproj",
+        "sha256": "48125adff7a0a8b21b33b79c6e38cf535e285f27aaa2ae3bf5306c61602a2d2d"
+      },
+      {
+        "path": "package.json",
+        "sha256": "3058af5a008a623c332af4b7c3057c4c54e9fbabed02f6059f3dc17d99d89c5d"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "45dd03346a9320803000f35ecb7fdc00f8586f44c70871e4f9cdc6df840a59a5"
+      },
+      {
+        "path": "src/computer/winapp-pin.json",
+        "sha256": "18ce4ebee64f47dce17f6a536f62b3ee77037a8c07794ed1564143f7db7cb5bd"
+      }
+    ]
+  },
+  "fixtureExecutableSha256": "fa80943d64813f848404e4433c20cf034e3029c4fabcbcfab14f6fe313491b4d",
+  "plan": {
+    "path": "plan.json",
+    "sha256": "2d3dbc30cdf3b13a739395144126f9b0220af0fc31491c5ee83ee5e939efaa62"
+  },
+  "cases": [
+    {
+      "id": "A3-BASELINE",
+      "requirement": "CU-01/CU-02/CU-03",
+      "required": true,
+      "status": "pass",
+      "plan": {
+        "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+        "initialState": "New owned fixture",
+        "actions": [
+          "Activate, type, set value, click, invoke, toggle",
+          "Reject consumed observation; reject competing controller"
+        ],
+        "expected": {
+          "text": "TRACE accessibility value trace-5973d6a9-7026-4e78-8ad1-1fa67985383e",
+          "count": 2,
+          "optionChecked": true
+        },
+        "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+      },
+      "expected": {
+        "text": "TRACE accessibility value trace-5973d6a9-7026-4e78-8ad1-1fa67985383e",
+        "count": 2,
+        "optionChecked": true,
+        "staleError": "stale_observation",
+        "competitorError": "desktop_busy"
+      },
+      "actual": {
+        "text": "TRACE accessibility value trace-5973d6a9-7026-4e78-8ad1-1fa67985383e",
+        "count": 2,
+        "optionChecked": true,
+        "staleError": "stale_observation",
+        "competitorError": "desktop_busy"
+      },
+      "artifacts": {
+        "frames": [
+          {
+            "path": "frames/frame-001.png",
+            "sha256": "3dcf1cf4f965e78803cf3c8950cc61a7ca3f14307e95cb529bb53e52fa92bfaf",
+            "observationId": "a4f4de6b-e0ae-4673-bdb0-571c84035887"
+          },
+          {
+            "path": "frames/frame-002.png",
+            "sha256": "d86ddfe3ca030080ef990eb2122336850b62b64c3426c9b34dca186812947c58",
+            "observationId": "4aac30c5-7d11-4335-a1b8-65841c752f41"
+          },
+          {
+            "path": "frames/frame-003.png",
+            "sha256": "f2d6cba479190d86a08b42339dd5849e751944716e4ce6ac4a557b733d28fe66",
+            "observationId": "a0de31e0-7011-460d-bdc2-c5fdfe294882"
+          },
+          {
+            "path": "frames/frame-004.png",
+            "sha256": "7ca3453c72fc47137454a715c805c8d30180616b8bc247a4cc80257bf59876d6",
+            "observationId": "914e7ba5-530f-4604-84d6-5667d9a6b9f2"
+          },
+          {
+            "path": "frames/frame-005.png",
+            "sha256": "b0dc0d1ebdf674caf22e2f9329d8bbad6a5a0886c1616ec3b62b0ee44ceea133",
+            "observationId": "8b13f343-d257-4a67-92f1-4a04cf7724c4"
+          },
+          {
+            "path": "frames/frame-006.png",
+            "sha256": "550f1716f82fa5b9b32befaddf3c24fe31203a260908928cb1b9220ff3260701",
+            "observationId": "1eaa827d-7ffd-4ce3-b375-74000895daa7"
+          },
+          {
+            "path": "frames/frame-007.png",
+            "sha256": "9ac41aa9ed2f39ec48ac055383744fa12bf52bca16905cbcb5e75d43b4ae5ca0",
+            "observationId": "24311f70-608b-4332-b28c-fdf8d329589c"
+          },
+          {
+            "path": "frames/frame-008.png",
+            "sha256": "8d369677942d8c3c0e8c73f58bc05c6792306c904e31f3c1f5d54f21b0f009d5",
+            "observationId": "5877c28f-8cbe-4253-b335-f5d968ff9dd9"
+          }
+        ],
+        "fixtureStates": [
+          {
+            "stage": "after",
+            "path": "states/a3-baseline-after.json",
+            "sha256": "12b1f2d317f1aba96b7806cc5c0e824b13422c8a9e86132e45ac398ea04ed305"
+          }
+        ]
+      },
+      "startedAt": "2026-10-19T15:36:01.639Z",
+      "finishedAt": "2026-10-19T15:36:24.528Z"
+    },
+    {
+      "id": "A3-INPUT-KEY",
+      "requirement": "CU-03",
+      "required": true,
+      "status": "pass",
+      "plan": {
+        "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+        "initialState": "Text input contains declared text",
+        "actions": [
+          "Focus input",
+          "Press ctrl+d once"
+        ],
+        "expected": {
+          "text": "TRACE accessibility value trace-5973d6a9-7026-4e78-8ad1-1fa67985383e",
+          "selectedText": "TRACE",
+          "selectionStart": 0,
+          "selectionLength": 5,
+          "modifiers": "None"
+        },
+        "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+      },
+      "expected": {
+        "text": "TRACE accessibility value trace-5973d6a9-7026-4e78-8ad1-1fa67985383e",
+        "selectedText": "TRACE",
+        "selectionStart": 0,
+        "selectionLength": 5,
+        "modifiers": "None"
+      },
+      "actual": {
+        "text": "TRACE accessibility value trace-5973d6a9-7026-4e78-8ad1-1fa67985383e",
+        "selectedText": "TRACE",
+        "selectionStart": 0,
+        "selectionLength": 5,
+        "modifiers": "None"
+      },
+      "artifacts": {
+        "frames": [
+          {
+            "path": "frames/frame-008.png",
+            "sha256": "8d369677942d8c3c0e8c73f58bc05c6792306c904e31f3c1f5d54f21b0f009d5",
+            "observationId": "5877c28f-8cbe-4253-b335-f5d968ff9dd9"
+          },
+          {
+            "path": "frames/frame-009.png",
+            "sha256": "2809870f866f1c2b3d61e0d89d64b44c7d6ef72e0697cf4462376c070480b60f",
+            "observationId": "efb1df56-dfff-4b6a-b67f-25dc31da7705"
+          },
+          {
+            "path": "frames/frame-010.png",
+            "sha256": "8f2659282dc324a876a6c6d68634a74590130584cd42f222a888db66b7af09cd",
+            "observationId": "153ee13b-6ed5-4ab3-b60f-19ba194337f8"
+          }
+        ],
+        "fixtureStates": [
+          {
+            "stage": "before",
+            "path": "states/a3-input-key-before.json",
+            "sha256": "12b1f2d317f1aba96b7806cc5c0e824b13422c8a9e86132e45ac398ea04ed305"
+          },
+          {
+            "stage": "after",
+            "path": "states/a3-input-key-after.json",
+            "sha256": "1c1c1d9ff1eec9e8fd3e037f74417d7baf8134be18a1740e29f72c875ab6859b"
+          }
+        ]
+      },
+      "startedAt": "2026-10-19T15:36:24.530Z",
+      "finishedAt": "2026-10-19T15:36:30.231Z"
+    },
+    {
+      "id": "A3-INPUT-SCROLL-DOWN",
+      "requirement": "CU-03",
+      "required": true,
+      "status": "pass",
+      "plan": {
+        "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+        "initialState": "Viewport at zero",
+        "actions": [
+          "Send deltaY +240 over panel"
+        ],
+        "expected": {
+          "scrollY": 96,
+          "scrollRowOffset": 96
+        },
+        "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+      },
+      "expected": {
+        "scrollY": 96,
+        "scrollRowOffset": 96
+      },
+      "actual": {
+        "scrollY": 96,
+        "scrollRowOffset": 96
+      },
+      "artifacts": {
+        "frames": [
+          {
+            "path": "frames/frame-010.png",
+            "sha256": "8f2659282dc324a876a6c6d68634a74590130584cd42f222a888db66b7af09cd",
+            "observationId": "153ee13b-6ed5-4ab3-b60f-19ba194337f8"
+          },
+          {
+            "path": "frames/frame-011.png",
+            "sha256": "9e0c8f769603364bd490ade54d0f665ac259dee26361128288884920dc6ff103",
+            "observationId": "e887ad57-6fe9-47be-ba3a-9a3e9cb32160"
+          }
+        ],
+        "fixtureStates": [
+          {
+            "stage": "before",
+            "path": "states/a3-input-scroll-down-before.json",
+            "sha256": "1c1c1d9ff1eec9e8fd3e037f74417d7baf8134be18a1740e29f72c875ab6859b"
+          },
+          {
+            "stage": "after",
+            "path": "states/a3-input-scroll-down-after.json",
+            "sha256": "582499dd2e6ab0606c7452e037b035badcccd357ded03aec1fce2c3b0c0c816d"
+          }
+        ]
+      },
+      "startedAt": "2026-10-19T15:36:30.233Z",
+      "finishedAt": "2026-10-19T15:36:33.172Z"
+    },
+    {
+      "id": "A3-INPUT-SCROLL-UP",
+      "requirement": "CU-03",
+      "required": true,
+      "status": "pass",
+      "plan": {
+        "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+        "initialState": "Viewport at 96",
+        "actions": [
+          "Send deltaY -240 over panel"
+        ],
+        "expected": {
+          "scrollY": 0,
+          "scrollRowOffset": 0
+        },
+        "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+      },
+      "expected": {
+        "scrollY": 0,
+        "scrollRowOffset": 0
+      },
+      "actual": {
+        "scrollY": 0,
+        "scrollRowOffset": 0
+      },
+      "artifacts": {
+        "frames": [
+          {
+            "path": "frames/frame-011.png",
+            "sha256": "9e0c8f769603364bd490ade54d0f665ac259dee26361128288884920dc6ff103",
+            "observationId": "e887ad57-6fe9-47be-ba3a-9a3e9cb32160"
+          },
+          {
+            "path": "frames/frame-012.png",
+            "sha256": "ed269fc0bd7ffe4b411e5e8293d99f378b6fc9c590c23d1310b56e90279a5c6e",
+            "observationId": "4982da4c-e6f9-4122-9002-67efcc7b553b"
+          }
+        ],
+        "fixtureStates": [
+          {
+            "stage": "before",
+            "path": "states/a3-input-scroll-up-before.json",
+            "sha256": "582499dd2e6ab0606c7452e037b035badcccd357ded03aec1fce2c3b0c0c816d"
+          },
+          {
+            "stage": "after",
+            "path": "states/a3-input-scroll-up-after.json",
+            "sha256": "5ab79cf6b2aa4bb7fd92c7048beb5e652134992f13d43c19994e43ae32487074"
+          }
+        ]
+      },
+      "startedAt": "2026-10-19T15:36:33.173Z",
+      "finishedAt": "2026-10-19T15:36:36.010Z"
+    },
+    {
+      "id": "A3-INPUT-DRAG",
+      "requirement": "CU-03",
+      "required": true,
+      "status": "pass",
+      "plan": {
+        "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+        "initialState": "Known target location and client dimensions",
+        "actions": [
+          "Drag +90 X, +16 Y; clamp to area"
+        ],
+        "expected": {
+          "endpoint": "Declared from baseline before input",
+          "dropsAdded": 1
+        },
+        "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+      },
+      "expected": {
+        "x": 100,
+        "y": 46,
+        "drops": 1,
+        "starts": 1
+      },
+      "actual": {
+        "x": 100,
+        "y": 46,
+        "drops": 1,
+        "starts": 1,
+        "dragPressed": false,
+        "leftButtonDown": false
+      },
+      "artifacts": {
+        "frames": [
+          {
+            "path": "frames/frame-012.png",
+            "sha256": "ed269fc0bd7ffe4b411e5e8293d99f378b6fc9c590c23d1310b56e90279a5c6e",
+            "observationId": "4982da4c-e6f9-4122-9002-67efcc7b553b"
+          },
+          {
+            "path": "frames/frame-013.png",
+            "sha256": "9cf97a264cb0a305bd9ee5e5ec92c84bd9869d7c2487a45fe76ee487e992a77f",
+            "observationId": "395efa4e-69a9-4898-952f-99f9a57c9a88"
+          }
+        ],
+        "fixtureStates": [
+          {
+            "stage": "before",
+            "path": "states/a3-input-drag-before.json",
+            "sha256": "5ab79cf6b2aa4bb7fd92c7048beb5e652134992f13d43c19994e43ae32487074"
+          },
+          {
+            "stage": "after",
+            "path": "states/a3-input-drag-after.json",
+            "sha256": "3b78524699c1298bd12179c449ba6939e6bf4a073d2de1bd93e6ea5d5c93129d"
+          }
+        ]
+      },
+      "startedAt": "2026-10-19T15:36:36.013Z",
+      "finishedAt": "2026-10-19T15:36:39.345Z"
+    },
+    {
+      "id": "A3-RECOVERY-PRIMITIVE-CANCEL",
+      "requirement": "CU-04/supporting-only",
+      "required": true,
+      "status": "pass",
+      "plan": {
+        "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+        "initialState": "Released button, stationary drag target",
+        "actions": [
+          "Start raw native held drag",
+          "Await actual left-button press",
+          "Cancel; await native exit and release",
+          "Reobserve, click counter once"
+        ],
+        "expected": {
+          "released": true,
+          "alreadyReleased": false,
+          "positionUnchanged": true,
+          "dropsAdded": 1,
+          "subsequentClickAdded": 1
+        },
+        "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+      },
+      "expected": {
+        "released": true,
+        "alreadyReleased": false,
+        "x": 100,
+        "y": 46,
+        "drops": 2,
+        "counter": 3
+      },
+      "actual": {
+        "released": true,
+        "alreadyReleased": false,
+        "x": 100,
+        "y": 46,
+        "drops": 2,
+        "counter": 3
+      },
+      "artifacts": {
+        "frames": [
+          {
+            "path": "frames/frame-013.png",
+            "sha256": "9cf97a264cb0a305bd9ee5e5ec92c84bd9869d7c2487a45fe76ee487e992a77f",
+            "observationId": "395efa4e-69a9-4898-952f-99f9a57c9a88"
+          },
+          {
+            "path": "frames/frame-014.png",
+            "sha256": "9cf97a264cb0a305bd9ee5e5ec92c84bd9869d7c2487a45fe76ee487e992a77f",
+            "observationId": "9a3da18c-d367-4f25-aae4-66775520f452"
+          },
+          {
+            "path": "frames/frame-015.png",
+            "sha256": "6fb17463136f5fc9fbd77713630be1c4023947656f734b8b5dc122cee45c81e9",
+            "observationId": "6ab11a09-288a-42bf-954b-55bae28705ce"
+          }
+        ],
+        "fixtureStates": [
+          {
+            "stage": "before",
+            "path": "states/a3-recovery-primitive-cancel-before.json",
+            "sha256": "3b78524699c1298bd12179c449ba6939e6bf4a073d2de1bd93e6ea5d5c93129d"
+          },
+          {
+            "stage": "after",
+            "path": "states/a3-recovery-primitive-cancel-after.json",
+            "sha256": "5610849a3a310a951def03fb1780d634f020a068a02994ea71af2861b70a5285"
+          }
+        ]
+      },
+      "startedAt": "2026-10-19T15:36:39.346Z",
+      "finishedAt": "2026-10-19T15:36:44.881Z"
+    },
+    {
+      "id": "A3-DIALOG",
+      "requirement": "CU-01",
+      "required": true,
+      "status": "fail",
+      "reason": "No automatic input retry; inspect retained fixture state and frames",
+      "plan": {
+        "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+        "initialState": "Enabled parent; no dialog",
+        "actions": [
+          "Open modal child once",
+          "Observe disabled owner and reject parent action",
+          "Select child explicitly, confirm",
+          "Close child and reacquire parent"
+        ],
+        "expected": {
+          "parentEnabledWhileOpen": false,
+          "parentCountUnchanged": true,
+          "dialogConfirmed": true,
+          "parentEnabledAfterClose": true
+        },
+        "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+      },
+      "expected": {
+        "parentEnabledWhileOpen": false,
+        "parentCountUnchanged": true,
+        "dialogConfirmed": true,
+        "parentEnabledAfterClose": true
+      },
+      "actual": {
+        "error": {
+          "code": "ERR_ASSERTION",
+          "message": "A modal parent must reject input before dispatch\n+ actual - expected\n\n+ 'completed'\n- 'unknown'\n"
+        }
+      },
+      "artifacts": {
+        "frames": [
+          {
+            "path": "frames/frame-015.png",
+            "sha256": "6fb17463136f5fc9fbd77713630be1c4023947656f734b8b5dc122cee45c81e9",
+            "observationId": "6ab11a09-288a-42bf-954b-55bae28705ce"
+          },
+          {
+            "path": "frames/frame-016.png",
+            "sha256": "635314dc0d085cf8e994a8c4d4e6882daccb23689a878880740f82ad4f3dc2bf",
+            "observationId": "e3f132ea-7095-4d55-8cff-009c15ffed7b"
+          }
+        ],
+        "fixtureStates": [
+          {
+            "stage": "before",
+            "path": "states/a3-dialog-before.json",
+            "sha256": "5610849a3a310a951def03fb1780d634f020a068a02994ea71af2861b70a5285"
+          },
+          {
+            "stage": "after",
+            "path": "states/a3-dialog-after.json",
+            "sha256": "20bf1169e06286ec352d9824bb2cf072eb84f55912e49e1baa8f28d55b2cbc37"
+          }
+        ]
+      },
+      "startedAt": "2026-10-19T15:36:44.883Z",
+      "finishedAt": "2026-10-19T15:36:51.057Z"
+    },
+    {
+      "id": "A3-WINDOW-MOVE",
+      "requirement": "CU-01/CU-02",
+      "required": true,
+      "status": "not_run",
+      "reason": "Not reached",
+      "plan": {
+        "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+        "initialState": "Current observation of parent",
+        "actions": [
+          "Move fixture by command",
+          "Reject old geometry without counter change",
+          "Fresh capture and one counter click"
+        ],
+        "expected": {
+          "staleOutcome": "unknown",
+          "staleError": "window_moved",
+          "counterAdded": 1
+        },
+        "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+      },
+      "expected": {
+        "staleOutcome": "unknown",
+        "staleError": "window_moved",
+        "counterAdded": 1
+      },
+      "actual": null,
+      "artifacts": {
+        "frames": [],
+        "fixtureStates": []
+      }
+    },
+    {
+      "id": "A3-WINDOW-MINIMIZE",
+      "requirement": "CU-01/CU-02",
+      "required": true,
+      "status": "not_run",
+      "reason": "Not reached",
+      "plan": {
+        "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+        "initialState": "Current observation of visible parent",
+        "actions": [
+          "Minimize by command",
+          "Reject old geometry without counter change",
+          "Observe/restore and one counter click"
+        ],
+        "expected": {
+          "staleOutcome": "unknown",
+          "staleError": "window_moved",
+          "counterAdded": 1
+        },
+        "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+      },
+      "expected": {
+        "staleOutcome": "unknown",
+        "staleError": "window_moved",
+        "counterAdded": 1
+      },
+      "actual": null,
+      "artifacts": {
+        "frames": [],
+        "fixtureStates": []
+      }
+    },
+    {
+      "id": "A3-DISPLAY-MONITOR",
+      "requirement": "CU-01",
+      "required": true,
+      "status": "not_run",
+      "reason": "Not reached",
+      "plan": {
+        "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+        "initialState": "Known topology",
+        "actions": [
+          "Move onto a different physical monitor",
+          "Fresh capture and counter click"
+        ],
+        "expected": {
+          "monitorChanged": true,
+          "counterAdded": 1
+        },
+        "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+      },
+      "expected": {
+        "monitorChanged": true,
+        "counterAdded": 1
+      },
+      "actual": null,
+      "artifacts": {
+        "frames": [],
+        "fixtureStates": []
+      }
+    },
+    {
+      "id": "A3-DISPLAY-DPI",
+      "requirement": "CU-01",
+      "required": true,
+      "status": "not_run",
+      "reason": "Not reached",
+      "plan": {
+        "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+        "initialState": "Known initial physical DPI",
+        "actions": [
+          "Move to a monitor with a different DPI",
+          "Fresh capture and counter click"
+        ],
+        "expected": {
+          "twoDistinctDpiScales": true,
+          "counterAdded": 1
+        },
+        "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+      },
+      "expected": {
+        "twoDistinctDpiScales": true,
+        "counterAdded": 1
+      },
+      "actual": null,
+      "artifacts": {
+        "frames": [],
+        "fixtureStates": []
+      }
+    },
+    {
+      "id": "A3-RECOVERY-MCP-CANCEL",
+      "requirement": "CU-04",
+      "required": true,
+      "status": "not_run",
+      "reason": "Not exercised by this scoped run. Raw-native cancellation does not establish MCP recovery, timeout, disconnect, crash or failed-cleanup behavior.",
+      "plan": {
+        "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+        "initialState": "Independent owned-process case required",
+        "actions": [
+          "Exercise this failure mode through the product MCP/controller",
+          "Verify process exit, balanced input, quarantine when needed, and lease handoff"
+        ],
+        "expected": {
+          "required": "Separate end-to-end recovery evidence"
+        },
+        "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+      },
+      "expected": {
+        "required": "Separate end-to-end recovery evidence"
+      },
+      "actual": null,
+      "artifacts": {
+        "frames": [],
+        "fixtureStates": []
+      }
+    },
+    {
+      "id": "A3-RECOVERY-TIMEOUT",
+      "requirement": "CU-04",
+      "required": true,
+      "status": "not_run",
+      "reason": "Not exercised by this scoped run. Raw-native cancellation does not establish MCP recovery, timeout, disconnect, crash or failed-cleanup behavior.",
+      "plan": {
+        "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+        "initialState": "Independent owned-process case required",
+        "actions": [
+          "Exercise this failure mode through the product MCP/controller",
+          "Verify process exit, balanced input, quarantine when needed, and lease handoff"
+        ],
+        "expected": {
+          "required": "Separate end-to-end recovery evidence"
+        },
+        "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+      },
+      "expected": {
+        "required": "Separate end-to-end recovery evidence"
+      },
+      "actual": null,
+      "artifacts": {
+        "frames": [],
+        "fixtureStates": []
+      }
+    },
+    {
+      "id": "A3-RECOVERY-DISCONNECT",
+      "requirement": "CU-04",
+      "required": true,
+      "status": "not_run",
+      "reason": "Not exercised by this scoped run. Raw-native cancellation does not establish MCP recovery, timeout, disconnect, crash or failed-cleanup behavior.",
+      "plan": {
+        "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+        "initialState": "Independent owned-process case required",
+        "actions": [
+          "Exercise this failure mode through the product MCP/controller",
+          "Verify process exit, balanced input, quarantine when needed, and lease handoff"
+        ],
+        "expected": {
+          "required": "Separate end-to-end recovery evidence"
+        },
+        "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+      },
+      "expected": {
+        "required": "Separate end-to-end recovery evidence"
+      },
+      "actual": null,
+      "artifacts": {
+        "frames": [],
+        "fixtureStates": []
+      }
+    },
+    {
+      "id": "A3-RECOVERY-CRASH",
+      "requirement": "CU-04",
+      "required": true,
+      "status": "not_run",
+      "reason": "Not exercised by this scoped run. Raw-native cancellation does not establish MCP recovery, timeout, disconnect, crash or failed-cleanup behavior.",
+      "plan": {
+        "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+        "initialState": "Independent owned-process case required",
+        "actions": [
+          "Exercise this failure mode through the product MCP/controller",
+          "Verify process exit, balanced input, quarantine when needed, and lease handoff"
+        ],
+        "expected": {
+          "required": "Separate end-to-end recovery evidence"
+        },
+        "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+      },
+      "expected": {
+        "required": "Separate end-to-end recovery evidence"
+      },
+      "actual": null,
+      "artifacts": {
+        "frames": [],
+        "fixtureStates": []
+      }
+    },
+    {
+      "id": "A3-RECOVERY-FAILED-CLEANUP",
+      "requirement": "CU-04",
+      "required": true,
+      "status": "not_run",
+      "reason": "Not exercised by this scoped run. Raw-native cancellation does not establish MCP recovery, timeout, disconnect, crash or failed-cleanup behavior.",
+      "plan": {
+        "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+        "initialState": "Independent owned-process case required",
+        "actions": [
+          "Exercise this failure mode through the product MCP/controller",
+          "Verify process exit, balanced input, quarantine when needed, and lease handoff"
+        ],
+        "expected": {
+          "required": "Separate end-to-end recovery evidence"
+        },
+        "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+      },
+      "expected": {
+        "required": "Separate end-to-end recovery evidence"
+      },
+      "actual": null,
+      "artifacts": {
+        "frames": [],
+        "fixtureStates": []
+      }
+    },
+    {
+      "id": "A3-LEASE-HANDOFF",
+      "requirement": "CU-04",
+      "required": true,
+      "status": "not_run",
+      "reason": "Not reached",
+      "plan": {
+        "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+        "initialState": "First controller owns session",
+        "actions": [
+          "Close session",
+          "Acquire/release from another controller"
+        ],
+        "expected": {
+          "handoff": true
+        },
+        "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+      },
+      "expected": {
+        "handoff": true
+      },
+      "actual": null,
+      "artifacts": {
+        "frames": [],
+        "fixtureStates": []
+      }
+    },
+    {
+      "id": "A3-CLEANUP",
+      "requirement": "CU-04",
+      "required": true,
+      "status": "pass",
+      "plan": {
+        "target": "Owned, run-scoped WinForms fixture; exact returned HWND and PID",
+        "initialState": "Owned fixture and controllers may be running",
+        "actions": [
+          "Close owned controllers and fixture"
+        ],
+        "expected": {
+          "fixtureExited": true,
+          "controllersClosed": true
+        },
+        "cleanup": "Close the current session and owned fixture; verify lease handoff and process exit"
+      },
+      "expected": {
+        "fixtureExited": true,
+        "controllersClosed": true
+      },
+      "actual": {
+        "fixtureExited": true,
+        "controllersClosed": true,
+        "serverExit": {
+          "pid": 36916,
+          "exited": true,
+          "verification": "ESRCH after transport teardown"
+        }
+      },
+      "artifacts": {
+        "frames": [],
+        "fixtureStates": [
+          {
+            "stage": "after",
+            "path": "states/a3-cleanup-after.json",
+            "sha256": "20bf1169e06286ec352d9824bb2cf072eb84f55912e49e1baa8f28d55b2cbc37"
+          }
+        ]
+      },
+      "startedAt": "2026-10-19T15:36:51.059Z",
+      "finishedAt": "2026-10-19T15:36:51.168Z"
+    }
+  ],
+  "actions": [
+    {
+      "type": "activate",
+      "actionId": "f7a2adc8-c8ff-47f6-926b-78a710aa1474",
+      "observationId": "a4f4de6b-e0ae-4673-bdb0-571c84035887",
+      "outcome": "completed",
+      "nextObservationId": "4aac30c5-7d11-4335-a1b8-65841c752f41"
+    },
+    {
+      "type": "click",
+      "actionId": "bf1e383e-ad20-4577-b738-165cfd1309b7",
+      "observationId": "4aac30c5-7d11-4335-a1b8-65841c752f41",
+      "outcome": "completed",
+      "nextObservationId": "a0de31e0-7011-460d-bdc2-c5fdfe294882"
+    },
+    {
+      "type": "type_text",
+      "actionId": "28899fb5-21c0-427b-9f3b-e2486d9fa6ad",
+      "observationId": "a0de31e0-7011-460d-bdc2-c5fdfe294882",
+      "outcome": "completed",
+      "nextObservationId": "914e7ba5-530f-4604-84d6-5667d9a6b9f2"
+    },
+    {
+      "type": "set_value",
+      "actionId": "c35b961e-25ab-4a10-96cb-4a90506503e1",
+      "observationId": "914e7ba5-530f-4604-84d6-5667d9a6b9f2",
+      "outcome": "completed",
+      "nextObservationId": "8b13f343-d257-4a67-92f1-4a04cf7724c4"
+    },
+    {
+      "type": "click",
+      "actionId": "79e4e265-4d23-4d88-ac7d-c9db3d4d1772",
+      "observationId": "8b13f343-d257-4a67-92f1-4a04cf7724c4",
+      "outcome": "completed",
+      "nextObservationId": "1eaa827d-7ffd-4ce3-b375-74000895daa7"
+    },
+    {
+      "type": "invoke",
+      "actionId": "ef95eadb-c067-43d0-9a9c-a034ce55ee6c",
+      "observationId": "1eaa827d-7ffd-4ce3-b375-74000895daa7",
+      "outcome": "completed",
+      "nextObservationId": "24311f70-608b-4332-b28c-fdf8d329589c"
+    },
+    {
+      "type": "click",
+      "actionId": "56854395-f01d-4b37-a6e5-6975faa06f4c",
+      "observationId": "24311f70-608b-4332-b28c-fdf8d329589c",
+      "outcome": "completed",
+      "nextObservationId": "5877c28f-8cbe-4253-b335-f5d968ff9dd9"
+    },
+    {
+      "type": "click",
+      "actionId": "581b6c9d-bff9-4e99-bd0c-afd71d7854e5",
+      "observationId": "5877c28f-8cbe-4253-b335-f5d968ff9dd9",
+      "outcome": "completed",
+      "nextObservationId": "efb1df56-dfff-4b6a-b67f-25dc31da7705"
+    },
+    {
+      "type": "press_key",
+      "actionId": "2f52e552-cbd3-4ef9-9cf5-2a88e7889479",
+      "observationId": "efb1df56-dfff-4b6a-b67f-25dc31da7705",
+      "outcome": "completed",
+      "nextObservationId": "153ee13b-6ed5-4ab3-b60f-19ba194337f8"
+    },
+    {
+      "type": "scroll",
+      "actionId": "c4a692e1-f71f-49f7-a57f-a3b4d8b87ff4",
+      "observationId": "153ee13b-6ed5-4ab3-b60f-19ba194337f8",
+      "outcome": "completed",
+      "nextObservationId": "e887ad57-6fe9-47be-ba3a-9a3e9cb32160"
+    },
+    {
+      "type": "scroll",
+      "actionId": "810f45e1-3b20-473a-99e0-d862dcf8417b",
+      "observationId": "e887ad57-6fe9-47be-ba3a-9a3e9cb32160",
+      "outcome": "completed",
+      "nextObservationId": "4982da4c-e6f9-4122-9002-67efcc7b553b"
+    },
+    {
+      "type": "drag",
+      "actionId": "6fee917b-257b-4e73-9fac-7e8a97439bad",
+      "observationId": "4982da4c-e6f9-4122-9002-67efcc7b553b",
+      "outcome": "completed",
+      "nextObservationId": "395efa4e-69a9-4898-952f-99f9a57c9a88"
+    },
+    {
+      "type": "click",
+      "actionId": "09c4ad39-e9f8-42d3-95f5-4376dc4eb5cd",
+      "observationId": "9a3da18c-d367-4f25-aae4-66775520f452",
+      "outcome": "completed",
+      "nextObservationId": "6ab11a09-288a-42bf-954b-55bae28705ce"
+    },
+    {
+      "type": "click",
+      "actionId": "2aac6ed3-f5a8-44cc-806f-86fd8f33ac79",
+      "observationId": "6ab11a09-288a-42bf-954b-55bae28705ce",
+      "outcome": "completed",
+      "nextObservationId": "e3f132ea-7095-4d55-8cff-009c15ffed7b"
+    },
+    {
+      "type": "click",
+      "actionId": "10a8920d-814e-4430-9a34-9ccf7d361d7d",
+      "observationId": "e3f132ea-7095-4d55-8cff-009c15ffed7b",
+      "outcome": "completed",
+      "nextObservationId": "7bdad873-d5ef-44cd-9ae3-824aea3b4434"
+    }
+  ],
+  "frames": [
+    {
+      "filename": "frame-001.png",
+      "observationId": "a4f4de6b-e0ae-4673-bdb0-571c84035887",
+      "bytes": 29065,
+      "sha256": "3dcf1cf4f965e78803cf3c8950cc61a7ca3f14307e95cb529bb53e52fa92bfaf",
+      "width": 564,
+      "height": 717,
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      }
+    },
+    {
+      "filename": "frame-002.png",
+      "observationId": "4aac30c5-7d11-4335-a1b8-65841c752f41",
+      "bytes": 29701,
+      "sha256": "d86ddfe3ca030080ef990eb2122336850b62b64c3426c9b34dca186812947c58",
+      "width": 564,
+      "height": 717,
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      }
+    },
+    {
+      "filename": "frame-003.png",
+      "observationId": "a0de31e0-7011-460d-bdc2-c5fdfe294882",
+      "bytes": 29584,
+      "sha256": "f2d6cba479190d86a08b42339dd5849e751944716e4ce6ac4a557b733d28fe66",
+      "width": 564,
+      "height": 717,
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      }
+    },
+    {
+      "filename": "frame-004.png",
+      "observationId": "914e7ba5-530f-4604-84d6-5667d9a6b9f2",
+      "bytes": 32919,
+      "sha256": "7ca3453c72fc47137454a715c805c8d30180616b8bc247a4cc80257bf59876d6",
+      "width": 564,
+      "height": 717,
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      }
+    },
+    {
+      "filename": "frame-005.png",
+      "observationId": "8b13f343-d257-4a67-92f1-4a04cf7724c4",
+      "bytes": 33369,
+      "sha256": "b0dc0d1ebdf674caf22e2f9329d8bbad6a5a0886c1616ec3b62b0ee44ceea133",
+      "width": 564,
+      "height": 717,
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      }
+    },
+    {
+      "filename": "frame-006.png",
+      "observationId": "1eaa827d-7ffd-4ce3-b375-74000895daa7",
+      "bytes": 33402,
+      "sha256": "550f1716f82fa5b9b32befaddf3c24fe31203a260908928cb1b9220ff3260701",
+      "width": 564,
+      "height": 717,
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      }
+    },
+    {
+      "filename": "frame-007.png",
+      "observationId": "24311f70-608b-4332-b28c-fdf8d329589c",
+      "bytes": 33512,
+      "sha256": "9ac41aa9ed2f39ec48ac055383744fa12bf52bca16905cbcb5e75d43b4ae5ca0",
+      "width": 564,
+      "height": 717,
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      }
+    },
+    {
+      "filename": "frame-008.png",
+      "observationId": "5877c28f-8cbe-4253-b335-f5d968ff9dd9",
+      "bytes": 33402,
+      "sha256": "8d369677942d8c3c0e8c73f58bc05c6792306c904e31f3c1f5d54f21b0f009d5",
+      "width": 564,
+      "height": 717,
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      }
+    },
+    {
+      "filename": "frame-009.png",
+      "observationId": "efb1df56-dfff-4b6a-b67f-25dc31da7705",
+      "bytes": 33434,
+      "sha256": "2809870f866f1c2b3d61e0d89d64b44c7d6ef72e0697cf4462376c070480b60f",
+      "width": 564,
+      "height": 717,
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      }
+    },
+    {
+      "filename": "frame-010.png",
+      "observationId": "153ee13b-6ed5-4ab3-b60f-19ba194337f8",
+      "bytes": 33844,
+      "sha256": "8f2659282dc324a876a6c6d68634a74590130584cd42f222a888db66b7af09cd",
+      "width": 564,
+      "height": 717,
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      }
+    },
+    {
+      "filename": "frame-011.png",
+      "observationId": "e887ad57-6fe9-47be-ba3a-9a3e9cb32160",
+      "bytes": 34099,
+      "sha256": "9e0c8f769603364bd490ade54d0f665ac259dee26361128288884920dc6ff103",
+      "width": 564,
+      "height": 717,
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      }
+    },
+    {
+      "filename": "frame-012.png",
+      "observationId": "4982da4c-e6f9-4122-9002-67efcc7b553b",
+      "bytes": 33814,
+      "sha256": "ed269fc0bd7ffe4b411e5e8293d99f378b6fc9c590c23d1310b56e90279a5c6e",
+      "width": 564,
+      "height": 717,
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      }
+    },
+    {
+      "filename": "frame-013.png",
+      "observationId": "395efa4e-69a9-4898-952f-99f9a57c9a88",
+      "bytes": 33808,
+      "sha256": "9cf97a264cb0a305bd9ee5e5ec92c84bd9869d7c2487a45fe76ee487e992a77f",
+      "width": 564,
+      "height": 717,
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      }
+    },
+    {
+      "filename": "frame-014.png",
+      "observationId": "9a3da18c-d367-4f25-aae4-66775520f452",
+      "bytes": 33808,
+      "sha256": "9cf97a264cb0a305bd9ee5e5ec92c84bd9869d7c2487a45fe76ee487e992a77f",
+      "width": 564,
+      "height": 717,
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      }
+    },
+    {
+      "filename": "frame-015.png",
+      "observationId": "6ab11a09-288a-42bf-954b-55bae28705ce",
+      "bytes": 33560,
+      "sha256": "6fb17463136f5fc9fbd77713630be1c4023947656f734b8b5dc122cee45c81e9",
+      "width": 564,
+      "height": 717,
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      }
+    },
+    {
+      "filename": "frame-016.png",
+      "observationId": "e3f132ea-7095-4d55-8cff-009c15ffed7b",
+      "bytes": 32984,
+      "sha256": "635314dc0d085cf8e994a8c4d4e6882daccb23689a878880740f82ad4f3dc2bf",
+      "width": 564,
+      "height": 717,
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      }
+    }
+  ],
+  "rawEvidenceDirectory": ".runtime/computer-live/trace-5973d6a9-7026-4e78-8ad1-1fa67985383e",
+  "limits": [
+    "Fixture-only behavior; no live model host, REPLAY workflow, secure/elevated desktop or complete MCP recovery acceptance."
+  ],
+  "result": "failed",
+  "milestoneStatus": "incomplete",
+  "lifecycle": "completed",
+  "observedAt": "2026-10-19T15:36:51.175Z",
+  "finalState": {
+    "schemaVersion": 1,
+    "runId": "trace-5973d6a9-7026-4e78-8ad1-1fa67985383e",
+    "title": "TRACE Computer Fixture — trace-5973d6a9-7026-4e78-8ad1-1fa67985383e",
+    "text": "TRACE accessibility value trace-5973d6a9-7026-4e78-8ad1-1fa67985383e",
+    "count": 3,
+    "optionChecked": true,
+    "chord": "ctrl+d",
+    "selectionStart": 0,
+    "selectionLength": 5,
+    "selectedText": "TRACE",
+    "modifiers": "None",
+    "controlPressed": false,
+    "shiftPressed": false,
+    "altPressed": false,
+    "scrollY": 0,
+    "scrollRowOffset": 0,
+    "scrollMaximum": 330,
+    "dragX": 100,
+    "dragY": 46,
+    "dragStartX": 100,
+    "dragStartY": 46,
+    "dragStarts": 2,
+    "dragDrops": 2,
+    "dragPressed": false,
+    "dragAreaWidth": 498,
+    "dragAreaHeight": 123,
+    "dragTargetWidth": 120,
+    "dragTargetHeight": 50,
+    "leftButtonDown": false,
+    "dialogOpen": true,
+    "dialogConfirmed": false,
+    "parentEnabled": false,
+    "windowX": 1149,
+    "windowY": 537,
+    "windowWidth": 582,
+    "windowHeight": 726,
+    "minimized": false,
+    "dpiX": 144,
+    "dpiY": 144,
+    "monitorCount": 1,
+    "monitorName": "\\\\.\\DISPLAY1",
+    "monitorX": 0,
+    "monitorY": 0,
+    "monitorWidth": 2880,
+    "monitorHeight": 1800,
+    "appliedCommandId": 0,
+    "lastCommand": "none",
+    "revision": 151,
+    "recordedAt": "2026-10-19T15:36:46.2056205+00:00"
+  },
+  "protocol": {
+    "transport": "stdio",
+    "server": {
+      "name": "trace-computer",
+      "version": "0.1.0-alpha.3"
+    },
+    "toolCount": 6,
+    "toolNames": [
+      "trace_computer_act",
+      "trace_computer_close_session",
+      "trace_computer_doctor",
+      "trace_computer_list_windows",
+      "trace_computer_observe",
+      "trace_computer_open_session"
+    ]
+  },
+  "engine": {
+    "name": "winapp",
+    "version": "0.7.1",
+    "integrity": "verified"
+  },
+  "interruption": {
+    "scope": "Raw-native runProcess primitive; not MCP cancellation",
+    "released": true,
+    "alreadyReleased": false,
+    "ownedNativeExit": "Confirmed by close before recovery callback"
+  },
+  "sourcesUnchangedDuringRun": true,
+  "failure": {
+    "code": "ERR_ASSERTION",
+    "message": "A modal parent must reject input before dispatch\n+ actual - expected\n\n+ 'completed'\n- 'unknown'\n"
+  }
+}

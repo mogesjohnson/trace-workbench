@@ -318,6 +318,7 @@ class WinappBackend {
     await this.identity(window, signal);
     const fresh = await this.inspect(window, signal, 8);
     const geometry = await this.bridge('bounds', window, signal);
+    if (geometry.enabled === false) fail('window_blocked', 'The selected window is disabled. Select its enabled dialog explicitly before input.', { outcome: 'not_dispatched' });
     const captured = captureBounds(bounds(geometry.frameBounds), fresh.bounds);
     if (geometry.minimized || !sameBounds(observation.uiaBounds, fresh.bounds) || !sameBounds(observation.frameBounds, geometry.frameBounds) || !sameBounds(observation.nativeWindowBounds, geometry.windowBounds) || !sameBounds(observation.bounds, captured)) fail('window_moved', 'Window moved or resized since observation. Observe again.');
     const choose = elementId => {
@@ -330,6 +331,7 @@ class WinappBackend {
     switch (action.type) {
       case 'activate': {
         const activated = await this.bridge('activate', window, signal);
+        if (activated.enabled === false) fail('window_blocked', 'The selected window became disabled during activation.', { outcome: 'not_dispatched' });
         if (!activated.foreground) fail('foreground_not_target', 'Windows did not activate the selected window.');
         return { performed: true, type: action.type, engine: 'public-win32-dwm', version: 1, native: activated };
       }
@@ -367,7 +369,15 @@ class WinappBackend {
     // Recheck PID immediately before launching the mutating native command. The CLI also pins the
     // HWND/PID during its native foreground/input operation; the discovery check alone is not relied on.
     await this.identity(window, signal);
-    if (verb !== 'set-value') await this.bridge('activate', window, signal);
+    if (verb !== 'set-value') {
+      const activated = await this.bridge('activate', window, signal);
+      if (activated.enabled === false) fail('window_blocked', 'The selected window became disabled before input.', { outcome: 'not_dispatched' });
+    }
+    else {
+      // UIA values skip foreground activation; recheck the native owner immediately before dispatch.
+      const ready = await this.bridge('bounds', window, signal);
+      if (ready.enabled === false) fail('window_blocked', 'The selected window became disabled before its value operation.', { outcome: 'not_dispatched' });
+    }
     if (action.type === 'type_text' || action.type === 'press_key') {
       const focused = await this.focused(window, signal);
       if (!focused.hasFocus) fail('focus_not_acquired', 'Keyboard focus could not be verified inside the exact selected window.');

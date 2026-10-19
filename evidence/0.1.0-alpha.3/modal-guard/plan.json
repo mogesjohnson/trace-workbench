@@ -1,0 +1,74 @@
+{
+  "caseId": "A3-MODAL-GUARD-REGRESSION",
+  "scope": "Focused guard check; not a third full A3-DIALOG workflow attempt",
+  "initialState": "Owned synthetic modal opened by its fixture command channel; native owner disabled",
+  "actions": [
+    "Read native enabled state",
+    "Request parent activation, click, invocation and value edit; each must reject before input"
+  ],
+  "expected": {
+    "error": "window_blocked",
+    "count": 0,
+    "text": "",
+    "leftButtonDown": false
+  },
+  "cleanup": "Release session; close modal by fixture command; close owned server and fixture",
+  "sources": [
+    {
+      "path": "bin/trace.cjs",
+      "sha256": "2006b9f1554076fe89711067566c882702c66fe5f50677270ed83f88d9d5ee60"
+    },
+    {
+      "path": "src/computer/server.cjs",
+      "sha256": "afe84b975061d6f15d67d0428b86abf93e0ac7c097c887990ef8334f18909222"
+    },
+    {
+      "path": "src/computer/controller.cjs",
+      "sha256": "0daad720ac3d8f461176e1f84e3d1a2dbe3bfca8da6e7e5a5f221ce48e1b282a"
+    },
+    {
+      "path": "src/computer/lease.cjs",
+      "sha256": "3600fa756bda99e15aa695731bc0e5a8f6a0893e1f7e333db4d6742ae561389b"
+    },
+    {
+      "path": "src/computer/winapp-backend.cjs",
+      "sha256": "57c8eb705eec75975fb13adf1a578f13dd2177d50cf7bdb033c1817571f2ed1e"
+    },
+    {
+      "path": "scripts/smoke-computer-live.cjs",
+      "sha256": "fd68323b88a2da7b4e6a84e20402f61eced5379a596f784327899bd0d568f00c"
+    },
+    {
+      "path": "tests/fixtures/computer-app/Program.cs",
+      "sha256": "2a41cccaf50920cfe29b3078d20887d9271e33c2fd543c95f7897b59187cfd3f"
+    },
+    {
+      "path": "tests/fixtures/computer-app/TraceComputerFixture.csproj",
+      "sha256": "6eeb0a93b1ad0b73993fbb70bb248746f147ebd7b6731c50eaf889595439a793"
+    },
+    {
+      "path": "native/TraceWindowBridge/Program.cs",
+      "sha256": "b7b22f680d37aabb26cf2aa660aadc89d1ec0a70c3e919ddc9aa7a5103da85b6"
+    },
+    {
+      "path": "native/TraceWindowBridge/TraceWindowBridge.csproj",
+      "sha256": "48125adff7a0a8b21b33b79c6e38cf535e285f27aaa2ae3bf5306c61602a2d2d"
+    },
+    {
+      "path": "package.json",
+      "sha256": "3058af5a008a623c332af4b7c3057c4c54e9fbabed02f6059f3dc17d99d89c5d"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "45dd03346a9320803000f35ecb7fdc00f8586f44c70871e4f9cdc6df840a59a5"
+    },
+    {
+      "path": "src/computer/winapp-pin.json",
+      "sha256": "18ce4ebee64f47dce17f6a536f62b3ee77037a8c07794ed1564143f7db7cb5bd"
+    },
+    {
+      "path": "scripts/smoke-computer-modal-guard.cjs",
+      "sha256": "a0b4d3202f2758c294638c01fac105dbaecedb5994d59a51252d02c83a401012"
+    }
+  ]
+}
