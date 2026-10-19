@@ -4,7 +4,7 @@
 
 Shared tools that give agents abilities beyond written instructions.
 
-**Version:** `0.1.0-alpha.2` · **Status:** Windows preview
+**Version:** `0.1.0-alpha.3` · **Status:** Windows preview
 
 TRACE provides local tools for **Codex, Claude Code, Grok Build, and Gemini CLI**. The first two skills are **Reverse Engineer Anything** and **Computer Use**. The Windows executor now exposes six MCP tools for discovering windows, observing screenshots and controls, acting, and releasing desktop ownership.
 
@@ -30,15 +30,15 @@ Review each plan before applying it. Setup pins the Windows engine locally; conf
 ## Verified
 
 - **109 tests passed; 1 Windows file-symlink privilege test skipped.**
-- A real stdio MCP run completed **7 actions with 8 fresh PNGs** in an owned Windows fixture.
-- Typing, clicks, editable values, invocation, checkbox and cross-process desktop ownership were verified.
-- Four client registrations and matching skill copies are installed. The existing analysis connection still exposes **207 tools** and passes its static fixture check.
+- A real stdio MCP run completed **16 actions with 22 fresh PNGs** in an owned Windows fixture at 144 DPI.
+- Typing, clicks, editable values, invocation, checkbox, the `ctrl+d` chord, vertical scroll, drag, dialog confirmation, moved and minimized windows, and interrupted left-button recovery were verified.
+- The analysis connection still exposes **207 tools** and passes its static fixture check. Four client registrations were verified with the alpha.2 installation receipt.
 
 [Verification and limits](docs/VERIFICATION.md) · [Observed computer workflow](docs/OBSERVED-WORKFLOW.md)
 
 ## Remaining
 
-Live key/scroll/drag and interrupted-input coverage, Codex/Claude task acceptance, a real REPLAY workflow, clean-machine setup and release gates remain. Grok/Gemini live behavior is unverified. See [SPEC.md](SPEC.md); alpha.2 is not a published release.
+Codex/Claude task acceptance, a real REPLAY workflow, clean-machine setup, and release gates remain. The 19 October live run had one 144 DPI display, so it did not include a DPI change or a second monitor. Grok/Gemini live behavior is unverified. See [SPEC.md](SPEC.md); alpha.3 is not a published release.
 
 ```powershell
 npm test

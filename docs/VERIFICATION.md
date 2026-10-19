@@ -1,5 +1,23 @@
 # Verification
 
+## Computer Use alpha.3
+
+Observed 19 October 2026. Package `0.1.0-alpha.3`; Windows x64; Node.js v26.2.0; winapp `0.7.1`; .NET 9 window bridge. The host display was one 2880×1800 monitor at 144 DPI.
+
+| Check | Observed result | Evidence |
+| --- | --- | --- |
+| Unit tests | 109 passed, 0 failed, 1 file-symlink privilege skip | [Checks](../evidence/0.1.0-alpha.3/checks.json) |
+| Source/build | Syntax, JSON, links, and pins passed for 21 JavaScript files | Checks |
+| Computer MCP | Six tools over stdio; provider ready; no desktop input | Checks |
+| Analysis MCP | 207 tools; owned static fixture unchanged; no paid calls | Checks |
+| Live fixture | 16 actions and 22 fresh PNGs. Key chord `ctrl+d`, vertical scroll of 96 pixels, drag, dialog confirmation, moved-window rejection and retarget, minimized-window restore, and the earlier typing, click, value, invoke, and checkbox checks | [Live receipt](../evidence/0.1.0-alpha.3/computer-live.json), [final frame](../evidence/0.1.0-alpha.3/frames/frame-022.png) |
+| Interrupted hold | The left button was down during a held drag. The window bridge released it, and the next click incremented the fixture counter | Live receipt `interruption` |
+| Frame check | All 22 committed PNG hashes and byte sizes match the receipt. Fixture frames are 564×717; the two dialog frames are 364×187. Frames 010, 011, 012, 017, and 022 were inspected: chord text, rows 4–7 after scroll, the moved drag target, the confirmed dialog, and count 5 | Live receipt and `frames/` |
+
+The fixture applied move and minimize through its own command file so those geometry changes were not themselves TRACE actions. The following action on the old observation returned `window_moved`. A fresh observation then hit the counter. Minimized observation restored the window before the next successful click.
+
+This host had one display, so the run recorded monitor DPI and bounds and did not perform a DPI change or a second-monitor move. Secure desktop, elevated applications, a TRACE process crash during input, and a live model-host session were not part of this run. Hosted CI remains a pull-request result. No alpha.3 release is published.
+
 ## Computer Use alpha.2
 
 Reviewed 19 October 2026. Package `0.1.0-alpha.2`; Windows x64; Node.js 26; winapp `0.7.1`; .NET 9 window bridge.
@@ -41,7 +59,7 @@ REA's aggregate static analysis is `derived`; exact AST observations do not esta
 
 The alpha.1 desktop demonstration used the reference Computer Use executor. It does not prove TRACE's later executor or Claude/Grok/Gemini compatibility. No full live model-host acceptance or native analysis provider was tested in that phase. No paid inference or narration requests were made.
 
-Personal configuration, original application packages, and complete raw analysis stay local in ignored storage. Committed receipts omit private paths and configuration values. Alpha.1 retained six verified Calculator frames; alpha.2 separately retains eight owned-fixture frames.
+Personal configuration, original application packages, and complete raw analysis stay local in ignored storage. Committed receipts omit private paths and configuration values. Alpha.1 retained six verified Calculator frames; alpha.2 retains eight owned-fixture frames; alpha.3 retains 22 owned-fixture frames.
 
 ## Reproduce
 

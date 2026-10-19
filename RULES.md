@@ -1,6 +1,6 @@
 # Project rules
 
-TRACE Workbench gives agents shared executable capabilities. The selected first skills are Reverse Engineer Anything and Computer Use. The alpha.2 implementation includes a Windows executor and MCP server; release acceptance remains governed by [SPEC.md](SPEC.md). Keep implementation, observed verification, and release readiness distinct.
+TRACE Workbench gives agents shared executable capabilities. The selected first skills are Reverse Engineer Anything and Computer Use. The alpha.3 implementation includes a Windows executor, MCP server, and owned-fixture acceptance for the remaining desktop actions; release acceptance remains governed by [SPEC.md](SPEC.md). Keep implementation, observed verification, and release readiness distinct.
 
 ## Implementation
 
