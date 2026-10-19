@@ -1,0 +1,8 @@
+{
+  "name": "trace-owned-analysis-fixture",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Synthetic packaged-app-like input for TRACE static analysis acceptance.",
+  "main": "main.cjs",
+  "license": "MIT"
+}

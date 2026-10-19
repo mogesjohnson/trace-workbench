@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "boundedResult": "passed",
+  "traceSha256": "a9f659cf7c08afaa77fda6cd47a4905041ee352945700f4fe57ece1c30428ea9",
+  "records": 22,
+  "retainedFrames": 6,
+  "driver": "computer_workflow_driver",
+  "reviewers": [
+    "root",
+    "computer_workflow_observer"
+  ],
+  "rootReview": {
+    "openedObservations": [
+      "observation-004",
+      "observation-007"
+    ],
+    "visibleResults": [
+      "12",
+      "36"
+    ],
+    "fullTraceReviewed": true,
+    "finalResultVerified": true
+  },
+  "actionsCompleted": 5,
+  "expression": "12 × 3 =",
+  "result": "36",
+  "initialCaptureMismatchRecoveredBeforeInput": true,
+  "withdrawnNonTargetFrameRetained": false,
+  "accessibilityAvailable": false,
+  "limitations": [
+    "UIA accessibility was null in this runtime; indexed clicking not demonstrated",
+    "Initial capture mismatch recovered before any input; non-target image deleted",
+    "Typing, keyboard chords, scrolling, dragging, editable set_value, modals and multi-window recovery not exercised",
+    "No cross-client Claude/Grok/Gemini compatibility claim"
+  ],
+  "inference": "The trace specifies observable workflow behavior; no replacement executor or private implementation was recovered."
+}
