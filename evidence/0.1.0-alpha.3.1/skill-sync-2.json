@@ -1,0 +1,77 @@
+{
+  "caseId": "A31-SKILL",
+  "requirement": "CFG-01",
+  "status": "pass",
+  "observedAt": "2026-10-20T14:19:28.475Z",
+  "testedSource": {
+    "baseCommit": "f927c60a601cf548d92f9e50f5beaea6f39f710c",
+    "workingTreeModified": true,
+    "skill": "skills/trace-computer-use/SKILL.md",
+    "sourceSha256": "e5ce35431c048cd453c11ef171404fc0cf1bd645c276c3ec6f1060e28b57492d"
+  },
+  "command": "node scripts/sync-computer-skill.cjs --plan, then --apply",
+  "scope": "TRACE-owned SKILL.md copies only; client settings verified unchanged, not written",
+  "priorReceipt": "skill-sync.json (88063b17, preserved)",
+  "copies": [
+    {
+      "path": "~/.agents/skills/trace-computer-use/SKILL.md",
+      "priorSha256": "88063b170f3aefca79d86fa3adb531da300fd083a43564c237a736bd925f355f",
+      "installedSha256": "e5ce35431c048cd453c11ef171404fc0cf1bd645c276c3ec6f1060e28b57492d",
+      "backup": "~/.agents/skills/trace-computer-use/SKILL.md.trace.backup.2026-10-20T14-19-28-448Z-818a8aa8-f356-48d3-b112-b25b2218fa5c",
+      "exactBackupVerified": true
+    },
+    {
+      "path": "~/.claude/skills/trace-computer-use/SKILL.md",
+      "priorSha256": "88063b170f3aefca79d86fa3adb531da300fd083a43564c237a736bd925f355f",
+      "installedSha256": "e5ce35431c048cd453c11ef171404fc0cf1bd645c276c3ec6f1060e28b57492d",
+      "backup": "~/.claude/skills/trace-computer-use/SKILL.md.trace.backup.2026-10-20T14-19-28-457Z-3cb45bfe-05ed-48f7-9a27-56f1c343f705",
+      "exactBackupVerified": true
+    },
+    {
+      "path": "~/.grok/skills/trace-computer-use/SKILL.md",
+      "priorSha256": "88063b170f3aefca79d86fa3adb531da300fd083a43564c237a736bd925f355f",
+      "installedSha256": "e5ce35431c048cd453c11ef171404fc0cf1bd645c276c3ec6f1060e28b57492d",
+      "backup": "~/.grok/skills/trace-computer-use/SKILL.md.trace.backup.2026-10-20T14-19-28-463Z-f3375af7-bf8e-451a-b002-2ec76837511e",
+      "exactBackupVerified": true
+    }
+  ],
+  "discovery": {
+    "command": "computer:config --plan after synchronization",
+    "skillEntries": [
+      {
+        "path": "~/.agents/skills/trace-computer-use",
+        "action": "unchanged"
+      },
+      {
+        "path": "~/.claude/skills/trace-computer-use",
+        "action": "unchanged"
+      },
+      {
+        "path": "~/.grok/skills/trace-computer-use",
+        "action": "unchanged"
+      }
+    ],
+    "serverEntries": [
+      {
+        "client": "codex",
+        "action": "unchanged"
+      },
+      {
+        "client": "claude_code",
+        "action": "unchanged"
+      },
+      {
+        "client": "grok_build",
+        "action": "unchanged"
+      },
+      {
+        "client": "gemini_cli",
+        "action": "unchanged"
+      }
+    ]
+  },
+  "limits": [
+    "Installed copies now match the alpha.3.1 repository instructions; later repository edits require another synchronization",
+    "Host-side skill discovery inside each client UI was not exercised"
+  ]
+}

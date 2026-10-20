@@ -14,7 +14,7 @@ const ROOT = path.resolve(__dirname, '..');
 const BUILD = path.join(ROOT, '.runtime', 'computer-fixture');
 const PROJECT = path.join(ROOT, 'tests', 'fixtures', 'computer-app', 'TraceComputerFixture.csproj');
 const EXECUTABLE = path.join(BUILD, 'bin', 'TraceComputerFixture.exe');
-const DEFAULT_REPORT = path.join(ROOT, 'evidence', '0.1.0-alpha.3', 'review-run', 'computer-live.json');
+const DEFAULT_REPORT = path.join(ROOT, 'evidence', 'live-runs', randomUUID(), 'computer-live.json');
 const execFileAsync = promisify(execFile);
 const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
@@ -84,12 +84,24 @@ async function waitForOwnedProcessExit(pid, { probe = process.kill, timeoutMs = 
 const SOURCE_FILES = [
   'bin/trace.cjs', 'src/computer/server.cjs', 'src/computer/controller.cjs', 'src/computer/lease.cjs',
   'src/computer/winapp-backend.cjs', 'scripts/smoke-computer-live.cjs',
+  'src/computer/activity-indicator.cjs', 'native/TraceActivityIndicator/Program.cs',
+  'native/TraceActivityIndicator/TraceActivityIndicator.csproj',
   'tests/fixtures/computer-app/Program.cs', 'tests/fixtures/computer-app/TraceComputerFixture.csproj',
   'native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj',
   'package.json', 'package-lock.json', 'src/computer/winapp-pin.json',
 ];
 async function sourceHashes() {
   return Promise.all(SOURCE_FILES.map(async (filename) => ({ path: filename, sha256: sha256(await fs.readFile(path.join(ROOT, filename))) })));
+}
+
+async function reserveEvidenceDirectory(reportPath) {
+  const directory = path.dirname(reportPath);
+  await fs.mkdir(path.dirname(directory), { recursive: true });
+  try { await fs.mkdir(directory); }
+  catch (error) {
+    if (error.code === 'EEXIST') throw new Error('Evidence directory already exists; select a fresh run directory to preserve earlier attempts.');
+    throw error;
+  }
 }
 
 function casePlan(id, requirement, initialState, actions, expected, required = true) {
@@ -655,6 +667,7 @@ async function main(args) {
   }
   const relativeReport = path.relative(path.join(ROOT, 'evidence'), reportPath);
   assert.ok(relativeReport && !relativeReport.startsWith('..') && !path.isAbsolute(relativeReport) && reportPath.endsWith('.json'), 'A sanitized report must stay inside evidence/');
+  if (live) await reserveEvidenceDirectory(reportPath);
   await buildFixture();
   if (!live) {
     console.log(JSON.stringify({ result: 'built', executable: path.relative(ROOT, EXECUTABLE), uiLaunched: false }));
@@ -666,4 +679,4 @@ async function main(args) {
 }
 
 if (require.main === module) main(process.argv.slice(2)).catch((error) => { console.error(error.stack || error.message); process.exitCode = 1; });
-module.exports = { buildFixture, main, assertScroll, assertChord, assertDrag, resultState, waitForOwnedProcessExit, rejectedModalParentAction, createMcpController, sourceHashes, stopFixture };
+module.exports = { buildFixture, main, assertScroll, assertChord, assertDrag, resultState, waitForOwnedProcessExit, rejectedModalParentAction, createMcpController, sourceHashes, stopFixture, reserveEvidenceDirectory };

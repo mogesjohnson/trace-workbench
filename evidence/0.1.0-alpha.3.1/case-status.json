@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "milestone": "0.1.0-alpha.3.1",
+  "observedAt": "2026-10-20T14:05:53.689Z",
+  "milestoneStatus": "incomplete",
+  "cases": [
+    {
+      "id": "A31-GLOW",
+      "legacyId": "GLOW-LIVE",
+      "requirement": "CU-04",
+      "status": "fail",
+      "reason": "Second failure of the case: attempt 1 failed and the attempt-2 continuation failed A31-GLOW-VISIBLE. The retry budget is exhausted; a new case needs an owner decision after the fix.",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "fail",
+          "evidence": "glow-attempt-1/receipt.json",
+          "display": "1920x1080 at 144 DPI"
+        },
+        {
+          "attempt": 2,
+          "status": "blocked",
+          "evidence": "glow-interrupted.json",
+          "reason": "Reference executor physical Escape stop before planned input"
+        },
+        {
+          "attempt": 2,
+          "continuation": "independent",
+          "status": "fail",
+          "evidence": "glow-continuation/independent/receipt.json",
+          "display": "2880x1800 at 144 DPI",
+          "subcases": {
+            "A31-GLOW-START": "pass",
+            "A31-GLOW-VISIBLE": "fail",
+            "A31-GLOW-EOF": "pass",
+            "A31-GLOW-PARENT-LOSS": "fail",
+            "A31-GLOW-REFERENCE-CLICK": "blocked",
+            "A31-GLOW-TRACE-CLICK": "blocked"
+          }
+        }
+      ],
+      "subcaseNotes": {
+        "A31-GLOW-START": "Pass: marker readiness for one monitor; fixture foreground and focused window unchanged.",
+        "A31-GLOW-VISIBLE": "Fail: no glow pixels anywhere in the capture while the marker ran; see glow-continuation/topmost-diagnosis.json.",
+        "A31-GLOW-EOF": "Pass: marker process exit confirmed after ordinary session close; no overlay remained.",
+        "A31-GLOW-PARENT-LOSS": "Fail as declared: its pass criterion included a visible glow before the loss. The loss checks themselves held: server and marker exit confirmed, no overlay, lease free.",
+        "A31-GLOW-REFERENCE-CLICK": "Blocked: needs the coordinated Codex reference executor; not run.",
+        "A31-GLOW-TRACE-CLICK": "Blocked: follows the reference click; not run."
+      },
+      "preparation": {
+        "harness": "scripts/accept-glow.cjs",
+        "selfcheck": {
+          "evidence": "glow-continuation/selfcheck/receipt.json",
+          "result": "pass",
+          "sessionOpened": false,
+          "inputDispatched": 0
+        }
+      }
+    },
+    {
+      "id": "A31-SKILL",
+      "requirement": "CFG-01",
+      "status": "pass",
+      "evidence": "skill-sync-2.json"
+    },
+    {
+      "id": "GLOW-LIFECYCLE",
+      "requirement": "CU-04",
+      "status": "fail",
+      "reason": "Lease-before-marker, readiness and loss handling are implemented, but the glow is not shown above activated targets; see topmost-diagnosis.json."
+    },
+    {
+      "id": "GLOW-LIVE",
+      "requirement": "CU-01/CU-04",
+      "status": "fail",
+      "reason": "Tracked by A31-GLOW."
+    },
+    {
+      "id": "GLOW-DIAGNOSTICS",
+      "requirement": "CFG-01",
+      "status": "pass",
+      "scope": "Doctor verified marker source/output integrity without starting it (selfcheck: no marker owned by the server); discovery exclusion is unit-tested.",
+      "evidence": [
+        "glow-continuation/selfcheck/receipt.json",
+        "tests/computer-controller.test.cjs"
+      ]
+    }
+  ],
+  "nextRequiredAction": "Owner decision on a replacement glow acceptance case after the topmost fix, then the coordinated Codex reference-click run. A31-GLOW stays failed."
+}

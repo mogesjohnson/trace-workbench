@@ -1,5 +1,21 @@
 # Verification
 
+## Alpha.3.1 glow continuation
+
+Observed 20 October 2026 on one 2880×1800 monitor at 144 DPI, pinned per run. [Case status](../evidence/0.1.0-alpha.3.1/case-status.json): 160 tests ran, 159 passed with one privilege skip; syntax/JSON/link/pin checks passed for 31 JavaScript files. These noninteractive checks do not establish live acceptance.
+
+| Case | Result | Evidence |
+| --- | --- | --- |
+| Harness self-check (preparation, not an attempt) | Pass: fixture, no-glow capture oracle, process lookup, doctor and discovery; no session, no input | [Receipt](../evidence/0.1.0-alpha.3.1/glow-continuation/selfcheck/receipt.json) |
+| A31-GLOW start/focus | Pass: one-monitor readiness; foreground and focused window unchanged | [Continuation](../evidence/0.1.0-alpha.3.1/glow-continuation/independent/receipt.json) |
+| A31-GLOW visible glow | **Fail:** no glow pixels while the marker ran; the activated full-screen fixture covered it | [Diagnosis](../evidence/0.1.0-alpha.3.1/glow-continuation/topmost-diagnosis.json) |
+| A31-GLOW close/EOF | Pass: marker exit confirmed, no overlay afterwards | Continuation |
+| A31-GLOW parent loss | Fail as declared (its visible-glow precondition failed); server/marker exit, overlay removal and lease release held | Continuation |
+| A31-GLOW reference and TRACE edge clicks | Not run; need the coordinated Codex reference executor | Continuation |
+| A31-SKILL | Pass: three exact backups, copies synchronized to `e5ce3543`, discovery plan unchanged for skills and all four servers | [Receipt](../evidence/0.1.0-alpha.3.1/skill-sync-2.json) |
+
+The marker's visible window never entered the topmost band: WinForms keeps a `TopMost=false` form out of it even after `SetWindowPos(HWND_TOPMOST)`. This is the second A31-GLOW failure after attempt 1, so the case keeps its failed result and needs an owner-approved replacement after the fix.
+
 ## Alpha.3 review corrections
 
 Reviewed 19 October 2026. [Checks and remaining case status](../evidence/0.1.0-alpha.3/review-checks.json): 126 tests passed, one privilege skip; syntax/JSON/links/pins pass for 23 JavaScript files; shared skill validation passed. The pinned engine was reused and the changed native bridge rebuilt.

@@ -23,8 +23,9 @@ const canonical = () => ({ window: { ...window }, bounds: { ...rect }, uiaBounds
 const json = data => ({ stdout: JSON.stringify(data), stderr: '', exitCode: 0 });
 function mock(handler) {
   const calls = [];
-  const backend = new WinappBackend({ platform: 'win32', arch: 'x64', verify: async () => {}, verifyBridge: async () => {}, run: async (executable, args, options) => {
+  const backend = new WinappBackend({ platform: 'win32', arch: 'x64', verify: async () => {}, verifyBridge: async () => {}, verifyIndicator: async () => ({ available: true, integrity: 'verified', protocol: 1 }), run: async (executable, args, options) => {
     calls.push({ executable, args, options });
+    if (args[0] === '--list-runtimes') return { stdout: 'Microsoft.WindowsDesktop.App 9.0.10 [synthetic-runtime]\n', stderr: '', exitCode: 0 };
     if (args[0] === '--version') return { stdout: pin.version + '\n', stderr: '', exitCode: 0 };
     if (handler) {
       const override = await handler(args, calls);
@@ -52,6 +53,43 @@ test('doctor checks actual integrity and version; unsupported host remains unava
   assert.equal((await new WinappBackend({ platform: 'linux' }).doctor()).ready, false);
   const bad = new WinappBackend({ platform: 'win32', arch: 'x64', verify: async () => { throw new BackendError('engine_integrity', 'Changed.'); } });
   assert.equal((await bad.doctor()).code, 'engine_integrity');
+});
+
+test('doctor verifies activity source/output manifest without launching visible UI', async () => {
+  const { backend, calls } = mock();
+  let markerChecks = 0;
+  backend.verifyIndicator = async binaryPath => {
+    markerChecks++;
+    assert.equal(binaryPath, backend.indicatorPath);
+    return { available: true, integrity: 'verified', protocol: 1 };
+  };
+  const result = await backend.doctor();
+  assert.deepEqual(result.activityIndicator, { available: true, integrity: 'verified', protocol: 1 });
+  assert.equal(markerChecks, 1);
+  assert.ok(calls.every(call => call.executable !== backend.indicatorPath));
+});
+
+for (const code of ['indicator_unavailable', 'indicator_stale', 'indicator_integrity'])
+test(`doctor reports ${code} honestly while window discovery remains available`, async () => {
+  const { backend, calls } = mock(args => args[1] === 'list-windows' ? [{ hwnd: 1234, processId: 456, processName: 'TraceFixture', width: 300, height: 400 }] : undefined);
+  backend.verifyIndicator = async () => { throw Object.assign(new Error('Marker unavailable.'), { code }); };
+  const result = await backend.doctor();
+  assert.equal(result.ready, false);
+  assert.equal(result.code, code);
+  assert.equal(calls.length, 0);
+  assert.equal((await backend.listWindows()).length, 1);
+  assert.ok(calls.every(call => call.executable !== backend.indicatorPath));
+});
+
+test('doctor refuses to claim a marker is usable when the .NET Desktop runtime is missing', async () => {
+  const { backend } = mock();
+  const run = backend.run;
+  backend.run = (executable, args, options) => args[0] === '--list-runtimes'
+    ? Promise.resolve({ stdout: 'Microsoft.NETCore.App 9.0.10 [synthetic-runtime]\n', stderr: '', exitCode: 0 })
+    : run(executable, args, options);
+  const result = await backend.doctor();
+  assert.equal(result.ready, false);
+  assert.equal(result.code, 'indicator_runtime');
 });
 
 test('discovery preserves PID and dimensions without inventing unknown x/y', async () => {

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-20T14:12:00Z",
+  "scope": "Diagnosis after the A31-GLOW continuation; standalone marker and a scratch WinForms comparison. No input, no fixture, no screenshot retained.",
+  "testedIndicatorSource": {
+    "path": "native/TraceActivityIndicator/Program.cs",
+    "sha256": "ab9bf1ed13cd85beceaeda8ed14dfd2fba1f7d1c5ed2e71cc8deeb325b423a41",
+    "build": "verified by doctor manifest"
+  },
+  "display": {
+    "monitors": 1,
+    "width": 2880,
+    "height": 1800,
+    "dpi": 144
+  },
+  "observations": [
+    "The visible edge window covered 0,0-2880,1800 and was visible, but its extended style was 0x080900A0 without WS_EX_TOPMOST.",
+    "It stayed directly below the foreground window in z-order for one second after readiness, owned by a hidden WinForms taskbar-owner window.",
+    "SetWindowPos(HWND_TOPMOST) from another process and after removing the owner returned success without making it topmost.",
+    "Edge strips were tinted only where no higher window covered them, so an activated full-screen target hides the glow."
+  ],
+  "comparison": {
+    "method": "Scratch net9.0-windows program creating 40 px layered, transparent, nonactivating windows",
+    "results": {
+      "Form TopMost=false then SetWindowPos(HWND_TOPMOST)": "not topmost",
+      "Form TopMost=true": "topmost",
+      "Form created with WS_EX_TOPMOST": "topmost",
+      "NativeWindow popup with WS_EX_TOPMOST": "topmost"
+    }
+  },
+  "conclusion": "Product defect: the marker never enters the topmost band, so a TRACE-activated or foreground target covers it. Create the edge windows with TopMost=true.",
+  "fix": "Applied with the alpha.3.2 implementation; verified there by a labeled focused regression that cannot promote A31-GLOW."
+}

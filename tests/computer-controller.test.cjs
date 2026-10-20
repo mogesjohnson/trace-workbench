@@ -11,7 +11,18 @@ const { DesktopLease } = require('../src/computer/lease.cjs');
 
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jVdAAAAAASUVORK5CYII=', 'base64');
 const window = { id: '101', pid: 123, processName: 'owned-fixture', title: 'Test', bounds: { x: 10, y: 20, width: 1, height: 1 } };
-async function fixture(t, overrides = {}) {
+function fakeIndicator(overrides = {}) {
+  const failed = new AbortController();
+  return {
+    active: false, startCalls: 0, stopCalls: 0, pid: 987654, signal: failed.signal,
+    async start({ signal } = {}) { signal?.throwIfAborted(); this.startCalls++; this.active = true; return { active: true, monitors: 1, protocol: 1 }; },
+    assertActive() { if (!this.active || this.signal.aborted) throw Object.assign(new Error('Marker unavailable.'), { code: 'indicator_not_active' }); },
+    async stop() { this.stopCalls++; this.active = false; },
+    fail() { this.active = false; failed.abort(Object.assign(new Error('Marker exited.'), { code: 'indicator_exited' })); },
+    ...overrides,
+  };
+}
+async function fixture(t, overrides = {}, indicatorOverrides = {}) {
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'trace-controller-test-'));
   const dispatched = [];
   const backend = {
@@ -25,14 +36,15 @@ async function fixture(t, overrides = {}) {
     ...overrides,
   };
   const leaseDirectory = path.join(directory, 'test-lease');
-  const controller = createComputerController({ backend, runtimeDirectory: directory, lease: new DesktopLease(leaseDirectory) });
+  const indicator = fakeIndicator(indicatorOverrides);
+  const controller = createComputerController({ backend, indicator, runtimeDirectory: directory, lease: new DesktopLease(leaseDirectory) });
   t.after(async () => {
     await controller.close();
     const resolved = path.resolve(directory);
     assert.ok(resolved.startsWith(path.resolve(os.tmpdir()) + path.sep) && path.basename(resolved).startsWith('trace-controller-test-'));
     await fs.rm(resolved, { recursive: true, force: true });
   });
-  return { controller, backend, directory, leaseDirectory, dispatched };
+  return { controller, backend, indicator, directory, leaseDirectory, dispatched };
 }
 async function open(controller) {
   await controller.listWindows();
@@ -80,7 +92,7 @@ test('expired observation cannot dispatch', async t => {
   const { backend, directory, controller: owner, dispatched } = await fixture(t);
   await owner.close();
   let now = 0;
-  const controller = createComputerController({ backend, runtimeDirectory: directory, lease: new DesktopLease(path.join(directory, 'test-lease')), now: () => now, observationTtlMs: 100 });
+  const controller = createComputerController({ backend, indicator: fakeIndicator(), runtimeDirectory: directory, lease: new DesktopLease(path.join(directory, 'test-lease')), now: () => now, observationTtlMs: 100 });
   t.after(() => controller.close());
   const session = await open(controller);
   const observation = await controller.observe(session);
@@ -151,7 +163,7 @@ test('wrong capture path, dimensions and replaced target are rejected before inp
 
 test('competing controllers cannot own the same desktop and close releases ownership', async t => {
   const { controller, backend, directory } = await fixture(t);
-  const competitor = createComputerController({ backend, runtimeDirectory: directory, lease: new DesktopLease(path.join(directory, 'test-lease')) });
+  const competitor = createComputerController({ backend, indicator: fakeIndicator(), runtimeDirectory: directory, lease: new DesktopLease(path.join(directory, 'test-lease')) });
   t.after(() => competitor.close());
   const session = await open(controller);
   await competitor.listWindows();
@@ -205,8 +217,8 @@ test('different artifact runtimes still contend for the same OS-user desktop lea
   // Preserve the default OS-user lease derivation without competing with a live agent.
   const user = os.userInfo();
   t.mock.method(os, 'userInfo', () => ({ ...user, homedir: path.join(directory, 'isolated-os-user') }));
-  const first = createComputerController({ backend, runtimeDirectory: path.join(directory, 'a') });
-  const second = createComputerController({ backend, runtimeDirectory: path.join(directory, 'b') });
+  const first = createComputerController({ backend, indicator: fakeIndicator(), runtimeDirectory: path.join(directory, 'a') });
+  const second = createComputerController({ backend, indicator: fakeIndicator(), runtimeDirectory: path.join(directory, 'b') });
   t.after(async () => { await first.close(); await second.close(); });
   const session = await open(first);
   await second.listWindows();
@@ -220,7 +232,7 @@ test('cancellation during lease acquisition releases ownership without publishin
   await unused.close();
   const cancellation = new AbortController();
   let released = false;
-  const controller = createComputerController({ backend, runtimeDirectory: directory, lease: {
+  const controller = createComputerController({ backend, indicator: fakeIndicator(), runtimeDirectory: directory, lease: {
     async acquire() { cancellation.abort(); },
     async release() { released = true; },
   } });
@@ -242,4 +254,120 @@ test('Windows OS lease excludes another process and releases after a crash', { s
   await lease.acquire('parent');
   await lease.assert('parent');
   await lease.release('parent');
+});
+
+test('doctor and discovery never start a marker and exclude indicator targets', async t => {
+  const { controller, backend, indicator } = await fixture(t);
+  backend.listWindows = async () => [window, { ...window, id: '202', pid: indicator.pid }, { ...window, id: '303', pid: 888, processName: 'TraceActivityIndicator' }];
+  assert.equal((await controller.doctor()).ready, true);
+  assert.deepEqual((await controller.listWindows()).windows, [window]);
+  assert.equal(indicator.startCalls, 0);
+  await assert.rejects(controller.openSession({ windowId: '303' }), { code: 'unknown_window' });
+});
+
+test('marker starts only after desktop ownership and closes before ownership release', async t => {
+  const { controller: unused, backend, directory } = await fixture(t);
+  await unused.close();
+  const events = [];
+  const indicator = fakeIndicator({
+    async start() { events.push('marker-start'); this.active = true; return { active: true, monitors: 2, protocol: 1 }; },
+    async stop() { events.push('marker-stop'); this.active = false; },
+  });
+  const controller = createComputerController({ backend, indicator, runtimeDirectory: directory, lease: {
+    async acquire() { events.push('lease-acquire'); }, async assert() {}, async release() { events.push('lease-release'); },
+  } });
+  t.after(() => controller.close());
+  const session = await open(controller);
+  assert.deepEqual(events, ['lease-acquire', 'marker-start']);
+  assert.deepEqual(session.activityIndicator, { active: true, monitors: 2, protocol: 1 });
+  await controller.closeSession(session);
+  assert.deepEqual(events, ['lease-acquire', 'marker-start', 'marker-stop', 'lease-release']);
+});
+
+test('failed marker startup publishes no session, dispatches no input and releases desktop ownership', async t => {
+  const { controller, indicator, leaseDirectory, dispatched } = await fixture(t, {}, {
+    async start() { this.startCalls++; throw Object.assign(new Error('No marker.'), { code: 'indicator_timeout' }); },
+  });
+  await assert.rejects(open(controller), { code: 'indicator_timeout' });
+  assert.equal(indicator.startCalls, 1);
+  assert.equal(indicator.stopCalls, 1);
+  assert.deepEqual(dispatched, []);
+  const competitor = new DesktopLease(leaseDirectory);
+  await competitor.acquire('after-start-failure');
+  await competitor.release('after-start-failure');
+});
+
+test('startup cancellation stops the marker and releases the acquired lease', async t => {
+  const abort = new AbortController();
+  const { controller, indicator, leaseDirectory } = await fixture(t, {}, {
+    async start() { this.startCalls++; this.active = true; abort.abort(); return { active: true, monitors: 1, protocol: 1 }; },
+  });
+  await controller.listWindows();
+  await assert.rejects(controller.openSession({ windowId: window.id }, { signal: abort.signal }), { name: 'AbortError' });
+  assert.equal(indicator.active, false);
+  const competitor = new DesktopLease(leaseDirectory);
+  await competitor.acquire('after-cancel'); await competitor.release('after-cancel');
+});
+
+test('lost marker prevents subsequent observations and input without clearing the failure', async t => {
+  const { controller, indicator, dispatched } = await fixture(t);
+  const session = await open(controller);
+  const observation = await controller.observe(session);
+  indicator.fail();
+  await assert.rejects(controller.act({ ...session, observationId: observation.observationId, action: { type: 'activate' } }), { code: 'indicator_not_active' });
+  await assert.rejects(controller.observe(session), { code: 'indicator_not_active' });
+  assert.deepEqual(dispatched, []);
+  // Read-only discovery/doctor remain available for diagnosis and cleanup.
+  assert.equal((await controller.doctor()).ready, true);
+  assert.equal((await controller.listWindows()).windows.length, 1);
+  await controller.closeSession(session);
+});
+
+test('marker loss aborts in-flight native input, preserves uncertainty and does not retry', async t => {
+  const { controller, backend, indicator, dispatched } = await fixture(t);
+  const session = await open(controller);
+  const observation = await controller.observe(session);
+  let started;
+  const running = new Promise(resolve => { started = resolve; });
+  backend.act = async ({ signal, action }) => {
+    dispatched.push(action);
+    started();
+    await new Promise((resolve, reject) => signal.addEventListener('abort', () => reject(signal.reason), { once: true }));
+  };
+  const pending = controller.act({ ...session, observationId: observation.observationId, action: { type: 'drag', fromX: 0, fromY: 0, toX: 0, toY: 0 } });
+  await running;
+  indicator.fail();
+  const result = await pending;
+  assert.equal(result.outcome, 'unknown');
+  assert.equal(result.error.code, 'indicator_exited');
+  assert.match(result.nextStep, /marker was lost.*do not replay automatically/);
+  assert.equal(dispatched.length, 1);
+  await assert.rejects(controller.act({ ...session, observationId: observation.observationId, action: { type: 'activate' } }), { code: 'indicator_not_active' });
+});
+
+test('failed marker stop still releases lease and reports unconfirmed cleanup', async t => {
+  let failures = 1;
+  const { controller, leaseDirectory } = await fixture(t, {}, {
+    async stop() { this.stopCalls++; this.active = false; if (failures-- > 0) throw Object.assign(new Error('Marker exit unconfirmed.'), { code: 'indicator_stop_unconfirmed' }); },
+  });
+  const session = await open(controller);
+  await assert.rejects(controller.closeSession(session), { code: 'indicator_stop_unconfirmed', cleanupCodes: ['indicator_stop_unconfirmed'] });
+  const competitor = new DesktopLease(leaseDirectory);
+  await competitor.acquire('after-stop-failure'); await competitor.release('after-stop-failure');
+  await assert.rejects(controller.observe(session), { code: 'unknown_session' });
+});
+
+test('whole-controller cleanup attempts backend, marker and lease even after errors', async t => {
+  let stopFailures = 1;
+  const { controller, backend, indicator, leaseDirectory } = await fixture(t, {}, {
+    async stop() { this.stopCalls++; this.active = false; if (stopFailures-- > 0) throw Object.assign(new Error('Marker exit unconfirmed.'), { code: 'indicator_stop_unconfirmed' }); },
+  });
+  await open(controller);
+  let backendClosed = 0;
+  backend.close = async () => { backendClosed++; throw Object.assign(new Error('Backend close failed.'), { code: 'backend_close_failed' }); };
+  await assert.rejects(controller.close(), { code: 'backend_close_failed', cleanupCodes: ['backend_close_failed', 'indicator_stop_unconfirmed'] });
+  assert.equal(backendClosed, 1);
+  assert.equal(indicator.active, false);
+  const competitor = new DesktopLease(leaseDirectory);
+  await competitor.acquire('after-controller-close'); await competitor.release('after-controller-close');
 });

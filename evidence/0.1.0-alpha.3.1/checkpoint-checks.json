@@ -1,0 +1,9 @@
+{
+  "observedDate": "2026-10-19",
+  "scope": "Noninteractive checks of the unfinished glow checkpoint; no new desktop input or implementation",
+  "unit": {"command": "npm test", "tests": 158, "passed": 157, "failed": 0, "skipped": 1, "skipReason": "Windows file-symlink privilege unavailable"},
+  "source": {"command": "npm run check", "result": "pass", "javascriptFiles": 28},
+  "desktopAcceptance": {"status": "incomplete", "retainedFailure": "glow-attempt-1/receipt.json", "retainedInterruption": "glow-interrupted.json", "remaining": ["Physical click-through", "Owned parent-loss cleanup"]},
+  "implementationHold": true,
+  "releasePublished": false
+}
