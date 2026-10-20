@@ -12,9 +12,10 @@ Observed 20 October 2026 on one 2880×1800 monitor at 144 DPI, pinned per run. [
 | A31-GLOW close/EOF | Pass: marker exit confirmed, no overlay afterwards | Continuation |
 | A31-GLOW parent loss | Fail as declared (its visible-glow precondition failed); server/marker exit, overlay removal and lease release held | Continuation |
 | A31-GLOW reference and TRACE edge clicks | Not run; need the coordinated Codex reference executor | Continuation |
+| Focused regression after the topmost fix (cannot promote A31-GLOW) | Pass: glow tinted both sampled edges over the activated fixture; focus unchanged; marker exit after close and after abrupt server loss; lease free | [Receipt](../evidence/0.1.0-alpha.3.1/glow-regression/receipt.json) |
 | A31-SKILL | Pass: three exact backups, copies synchronized to `e5ce3543`, discovery plan unchanged for skills and all four servers | [Receipt](../evidence/0.1.0-alpha.3.1/skill-sync-2.json) |
 
-The marker's visible window never entered the topmost band: WinForms keeps a `TopMost=false` form out of it even after `SetWindowPos(HWND_TOPMOST)`. This is the second A31-GLOW failure after attempt 1, so the case keeps its failed result and needs an owner-approved replacement after the fix.
+The marker's visible window never entered the topmost band: WinForms keeps a `TopMost=false` form out of it even after `SetWindowPos(HWND_TOPMOST)`. This is the second A31-GLOW failure after attempt 1, so the case keeps its failed result. Creating the edge windows with `TopMost=true` fixed visibility in the focused regression; an owner-approved replacement case is still required.
 
 ## Alpha.3 review corrections
 

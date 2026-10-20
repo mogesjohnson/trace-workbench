@@ -86,5 +86,13 @@
       ]
     }
   ],
-  "nextRequiredAction": "Owner decision on a replacement glow acceptance case after the topmost fix, then the coordinated Codex reference-click run. A31-GLOW stays failed."
+  "nextRequiredAction": "Owner decision on a replacement glow acceptance case after the topmost fix, then the coordinated Codex reference-click run. A31-GLOW stays failed.",
+  "focusedRegression": {
+    "id": "A31-GLOW-REGRESSION",
+    "status": "pass",
+    "evidence": "glow-regression/receipt.json",
+    "fix": "native/TraceActivityIndicator/Program.cs creates edge windows with TopMost=true",
+    "scope": "Start/focus, visible glow over the activated full-screen fixture, close/EOF and parent loss on 2880x1800 at 144 DPI. Edge clicks were outside the regression.",
+    "effect": "Does not promote A31-GLOW; a replacement case needs an owner decision."
+  }
 }
