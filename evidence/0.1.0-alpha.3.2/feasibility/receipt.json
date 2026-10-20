@@ -1,0 +1,214 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A32-PROBE",
+  "observedAt": "2026-10-20T14:28:09.309Z",
+  "runtime": {
+    "node": "v26.2.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "supervisorSha256": "e023de22015a2dd6a2f362b4284a5fbbfd8924c245c5617aba0d8ab3a8df1f23",
+  "testedSource": {
+    "baseCommit": "ef4c4ac66f02258ed96315323d903a0bfaef4051",
+    "workingTreeModified": true,
+    "files": {
+      "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+      "native/TraceSupervisor/Program.cs": "c37bb0bb3745776af3b6cbd99f4e82d8cd7b033a4dea10d6649be788b3b5ba43",
+      "native/TraceSupervisor/Native.cs": "4b85b1eded9aed2f902ed0cc905890526367780c836a1d58078daca450e1d30f",
+      "native/TraceSupervisor/InputState.cs": "32fe225ac1dafecb21f54d9c8f1b1b278457989ba9d46c960f77b8697af88b27",
+      "native/TraceSupervisor/Probe.cs": "b15a11d020ab0ed3bdfed23655b9f01072104094c8c48645ada6db7eb5a8224e",
+      "scripts/probe-supervision.cjs": "0ef0ed57bcbf545030eed83ed2d8dfd96c1382c73bc3f390b43f10a4f10b1a72",
+      "src/computer/lease.cjs": "3600fa756bda99e15aa695731bc0e5a8f6a0893e1f7e333db4d6742ae561389b",
+      "tests/fixtures/computer-app/Program.cs": "2a41cccaf50920cfe29b3078d20887d9271e33c2fd543c95f7897b59187cfd3f"
+    }
+  },
+  "cases": {
+    "P-JOB-MOUSE": {
+      "status": "pass",
+      "actual": {
+        "pass": true,
+        "job": {
+          "assigned": true,
+          "breakawayDenied": true,
+          "childInJob": true,
+          "providerReport": "{\"provider\":\"controlled-test\",\"mode\":\"hold-mouse\",\"held\":[1],\"pid\":46112}"
+        },
+        "heldIndependently": {
+          "1": true
+        },
+        "childExitAfterOwnerKill": {
+          "exited": true,
+          "afterMs": 1
+        },
+        "stillDownAfterKill": {
+          "1": true
+        },
+        "release": {
+          "attempted": [
+            1
+          ],
+          "remainingDown": [],
+          "released": true
+        },
+        "releasedIndependently": {
+          "1": false
+        },
+        "fixtureForeground": true
+      },
+      "durationMs": 1055
+    },
+    "P-JOB-CHORD": {
+      "status": "pass",
+      "actual": {
+        "pass": true,
+        "job": {
+          "assigned": true,
+          "breakawayDenied": true,
+          "childInJob": true,
+          "providerReport": "{\"provider\":\"controlled-test\",\"mode\":\"hold-keys\",\"held\":[160,162],\"pid\":32952}"
+        },
+        "heldIndependently": {
+          "160": true,
+          "162": true
+        },
+        "childExitAfterOwnerKill": {
+          "exited": true,
+          "afterMs": 0
+        },
+        "stillDownAfterKill": {
+          "160": true,
+          "162": true
+        },
+        "release": {
+          "attempted": [
+            160,
+            162
+          ],
+          "remainingDown": [],
+          "released": true
+        },
+        "releasedIndependently": {
+          "160": false,
+          "162": false
+        },
+        "fixtureForeground": true
+      },
+      "durationMs": 978
+    },
+    "P-JOB-TYPING": {
+      "status": "pass",
+      "actual": {
+        "pass": true,
+        "job": {
+          "assigned": true,
+          "breakawayDenied": true,
+          "childInJob": true,
+          "providerReport": "{\"provider\":\"controlled-test\",\"mode\":\"type-hold\",\"held\":[67],\"pid\":20372}"
+        },
+        "heldIndependently": {
+          "67": true
+        },
+        "childExitAfterOwnerKill": {
+          "exited": true,
+          "afterMs": 0
+        },
+        "stillDownAfterKill": {
+          "67": true
+        },
+        "release": {
+          "attempted": [
+            67
+          ],
+          "remainingDown": [],
+          "released": true
+        },
+        "releasedIndependently": {
+          "67": false
+        },
+        "fixtureForeground": true,
+        "fixtureTextAdded": "abc"
+      },
+      "durationMs": 1169
+    },
+    "P-LEASE-EXCLUSION": {
+      "status": "fail",
+      "actual": {
+        "pass": false,
+        "pipe": "\\\\.\\pipe\\trace-computer-8073519d38ae76b76ec33d60b2992663",
+        "nodeWhileNative": "lease_unavailable",
+        "nodeAfterNativeDeath": "acquired",
+        "nativeWhileNode": "busy",
+        "nativeAfterNode": "held"
+      },
+      "durationMs": 335
+    },
+    "P-PARENT-DEATH": {
+      "status": "fail",
+      "error": {
+        "code": "ERR_ASSERTION",
+        "message": "Watcher did not record parent death"
+      },
+      "durationMs": 8421
+    },
+    "P-ESCAPE-INJECTED": {
+      "status": "pass",
+      "actual": {
+        "pass": true,
+        "events": [
+          {
+            "Down": true,
+            "Injected": true,
+            "ms": 3
+          },
+          {
+            "Down": false,
+            "Injected": true,
+            "ms": 4
+          }
+        ],
+        "physicalEscape": false
+      },
+      "durationMs": 2452
+    },
+    "P-ESCAPE-PHYSICAL": {
+      "status": "not_run",
+      "reason": "Needs the owner to press the physical key; run --physical-escape separately"
+    }
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ],
+    "pinned": {
+      "monitors": 1,
+      "width": 2880,
+      "height": 1800,
+      "dpi": 144,
+      "match": true
+    }
+  },
+  "fixture": {
+    "activation": {
+      "foreground": true
+    },
+    "point": "empty lower-right client area"
+  },
+  "fixtureExit": {
+    "exited": true,
+    "afterMs": 0
+  },
+  "finalKeysDown": [],
+  "result": "fail",
+  "completedAt": "2026-10-20T14:28:28.528Z"
+}
