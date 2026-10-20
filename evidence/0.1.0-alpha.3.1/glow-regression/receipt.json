@@ -1,0 +1,250 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A31-GLOW-REGRESSION",
+  "legacyCaseId": "GLOW-LIVE",
+  "attempt": null,
+  "continuation": "regression",
+  "runId": "8e537957-bd96-4b13-b417-82488b019f31",
+  "plan": {
+    "path": "plan.json",
+    "sha256": "1d6208b558df2752bf7afff89fcf3141b6e3618c95899c1ba0b2952e3152a267"
+  },
+  "testedSource": {
+    "baseCommit": "ef4c4ac66f02258ed96315323d903a0bfaef4051",
+    "workingTreeModified": true,
+    "files": {
+      "bin/trace.cjs": "2006b9f1554076fe89711067566c882702c66fe5f50677270ed83f88d9d5ee60",
+      "src/computer/server.cjs": "afe84b975061d6f15d67d0428b86abf93e0ac7c097c887990ef8334f18909222",
+      "src/computer/controller.cjs": "b7e12840bef625eb7941d26d90c10f99044ca206a2bb66dbdefaed6fee53a225",
+      "src/computer/lease.cjs": "3600fa756bda99e15aa695731bc0e5a8f6a0893e1f7e333db4d6742ae561389b",
+      "src/computer/winapp-backend.cjs": "40a56d5136f9c032c86c66ad717e0a85361ed0992059b4b17309a24044d3613d",
+      "src/computer/activity-indicator.cjs": "42de964cb8fca0f5c30a6c30f1a40173df5f072224339fef6f006ed4ffe2093b",
+      "native/TraceActivityIndicator/Program.cs": "262b2c70d7f1f271c45d2e66bb1faf6a8d299df87274b12a57540df425645459",
+      "native/TraceActivityIndicator/TraceActivityIndicator.csproj": "07f888cffc6600a3f52173b5eee9ed4b0dd7ce0b4dd7f26e377dc06fc3a50b5a",
+      "native/TraceWindowBridge/Program.cs": "b7b22f680d37aabb26cf2aa660aadc89d1ec0a70c3e919ddc9aa7a5103da85b6",
+      "native/TraceWindowBridge/TraceWindowBridge.csproj": "48125adff7a0a8b21b33b79c6e38cf535e285f27aaa2ae3bf5306c61602a2d2d",
+      "tests/fixtures/glow-app/Program.cs": "11abfdfe317c006ede7565c0e1ed43bf818926794bbe2243e251024d36a46097",
+      "tests/fixtures/glow-app/TraceGlowFixture.csproj": "cda1d4a7fc15c3688217cbfcbced6b789ff09ac83bda6cdb8e8109452c261cc6",
+      "scripts/smoke-computer-glow.cjs": "a7d6828250e6fb0322305a63b75e975686263a765635f334cf2d89ac510eaaf7",
+      "scripts/accept-glow.cjs": "2c3b9e06a4060a1fd2841ea8721f827295ec0520761350dcbbbf88769f512b82",
+      "package.json": "2383986545da18f71adb2186fa57733e3347bc373fb6bf8063b9eebb1e2ab9ca",
+      "package-lock.json": "382cb88e6f2040de4f61af724d82478c948ac8ef786265682e148dfd7f838116"
+    }
+  },
+  "runtime": {
+    "node": "v26.2.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "lifecycle": "completed",
+  "subcases": {
+    "A31-GLOW-START": {
+      "status": "pass",
+      "actual": {
+        "before": {
+          "foregroundWindowId": "1838174",
+          "foregroundPid": 26036,
+          "focusedWindowId": "1838174",
+          "fixtureForeground": true
+        },
+        "after": {
+          "foregroundWindowId": "1838174",
+          "foregroundPid": 26036,
+          "focusedWindowId": "1838174",
+          "fixtureForeground": true
+        },
+        "activityIndicator": {
+          "active": true,
+          "monitors": 1,
+          "protocol": 1
+        },
+        "markerPid": 38640,
+        "doctor": {
+          "ready": true,
+          "activityIndicator": {
+            "available": true,
+            "integrity": "verified",
+            "protocol": 1
+          }
+        }
+      }
+    },
+    "A31-GLOW-VISIBLE": {
+      "status": "pass",
+      "actual": {
+        "bands": {
+          "width": 2880,
+          "height": 1800,
+          "sampleRow": 450,
+          "sampleColumn": 1440,
+          "tintedLeft": 11,
+          "tintedTop": 11,
+          "backgroundLeft": 7,
+          "backgroundTop": 7
+        },
+        "captureAttempts": [
+          {
+            "attempt": 1,
+            "status": "pass"
+          }
+        ]
+      }
+    },
+    "A31-GLOW-EOF": {
+      "status": "pass",
+      "actual": {
+        "markerExit": {
+          "pid": 38640,
+          "exited": true,
+          "verification": "ESRCH",
+          "elapsedMs": 0
+        },
+        "bands": {
+          "width": 2880,
+          "height": 1800,
+          "sampleRow": 450,
+          "sampleColumn": 1440,
+          "tintedLeft": 0,
+          "tintedTop": 0,
+          "backgroundLeft": 24,
+          "backgroundTop": 24
+        },
+        "captureAttempts": [
+          {
+            "attempt": 1,
+            "status": "pass"
+          }
+        ],
+        "serverExit": {
+          "pid": 27672,
+          "exited": true,
+          "verification": "ESRCH",
+          "elapsedMs": 0
+        }
+      }
+    },
+    "A31-GLOW-PARENT-LOSS": {
+      "status": "pass",
+      "actual": {
+        "start": {
+          "before": {
+            "foregroundWindowId": "1838174",
+            "foregroundPid": 26036,
+            "focusedWindowId": "1838174",
+            "fixtureForeground": true
+          },
+          "after": {
+            "foregroundWindowId": "1838174",
+            "foregroundPid": 26036,
+            "focusedWindowId": "1838174",
+            "fixtureForeground": true
+          },
+          "focusUnchanged": true,
+          "markerPid": 45076
+        },
+        "bandsBefore": {
+          "width": 2880,
+          "height": 1800,
+          "sampleRow": 450,
+          "sampleColumn": 1440,
+          "tintedLeft": 11,
+          "tintedTop": 11,
+          "backgroundLeft": 7,
+          "backgroundTop": 7
+        },
+        "serverExit": {
+          "pid": 31880,
+          "exited": true,
+          "verification": "ESRCH",
+          "elapsedMs": 0
+        },
+        "markerExit": {
+          "pid": 45076,
+          "exited": true,
+          "verification": "ESRCH",
+          "elapsedMs": 0
+        },
+        "bandsAfter": {
+          "width": 2880,
+          "height": 1800,
+          "sampleRow": 450,
+          "sampleColumn": 1440,
+          "tintedLeft": 0,
+          "tintedTop": 0,
+          "backgroundLeft": 24,
+          "backgroundTop": 24
+        },
+        "leaseFree": true
+      }
+    },
+    "A31-GLOW-REFERENCE-CLICK": {
+      "status": "not_run",
+      "actual": null,
+      "reason": "Outside the focused regression"
+    },
+    "A31-GLOW-TRACE-CLICK": {
+      "status": "not_run",
+      "actual": null,
+      "reason": "Outside the focused regression"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "glow-active.png",
+      "sha256": "cba972b341c8eac906ca0b31a99a50ef446db2398b009cd33ffe9844fe6c509b"
+    },
+    {
+      "path": "glow-after-close.png",
+      "sha256": "ee71bb13d0ebd28d4014afb84fc53a52226c87f5415888baaf17fdb8d863ec17"
+    },
+    {
+      "path": "glow-before-parent-loss.png",
+      "sha256": "cba972b341c8eac906ca0b31a99a50ef446db2398b009cd33ffe9844fe6c509b"
+    },
+    {
+      "path": "glow-after-parent-loss.png",
+      "sha256": "ee71bb13d0ebd28d4014afb84fc53a52226c87f5415888baaf17fdb8d863ec17"
+    }
+  ],
+  "cleanup": {
+    "fixture": {
+      "exitCode": 0,
+      "pid": 26036
+    },
+    "indicatorProcessesRemaining": 0
+  },
+  "display": {
+    "monitors": 1,
+    "primary": {
+      "x": 0,
+      "y": 0,
+      "width": 2880,
+      "height": 1800
+    },
+    "dpi": 144,
+    "source": "owned PerMonitorV2 fixture Screen.PrimaryScreen.Bounds and DeviceDpi; monitor count from Screen.AllScreens",
+    "pinned": {
+      "monitors": 1,
+      "width": 2880,
+      "height": 1800,
+      "dpi": 144
+    },
+    "match": true
+  },
+  "initial": {
+    "count": 0,
+    "mouseClickCount": 0,
+    "activationCount": 0,
+    "leftButtonDown": false
+  },
+  "setup": {
+    "activation": {
+      "foreground": true,
+      "enabled": true,
+      "method": "public-win32-dwm"
+    }
+  },
+  "sourcesUnchangedDuringRun": true,
+  "result": "pending",
+  "observedAt": "2026-10-20T14:32:53.982Z"
+}
