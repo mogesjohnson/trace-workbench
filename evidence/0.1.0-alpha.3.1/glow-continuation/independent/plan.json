@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A31-GLOW",
+  "legacyCaseId": "GLOW-LIVE",
+  "attempt": 2,
+  "continuation": "independent",
+  "declaredBeforeUiLaunch": true,
+  "priorResults": [
+    {
+      "path": "evidence/0.1.0-alpha.3.1/glow-attempt-1/receipt.json",
+      "status": "fail"
+    },
+    {
+      "path": "evidence/0.1.0-alpha.3.1/glow-retry-plan.json",
+      "status": "declared corrective retry"
+    },
+    {
+      "path": "evidence/0.1.0-alpha.3.1/glow-interrupted.json",
+      "status": "blocked by the reference executor physical Escape stop before planned input"
+    }
+  ],
+  "failureBudget": "Attempt 1 failed. This continues attempt 2, the one corrective retry. A failed subcase ends A31-GLOW as fail; a blocked subcase keeps it pending. A self-check is harness preparation, not an attempt.",
+  "display": {
+    "pinned": {
+      "monitors": 1,
+      "width": 2880,
+      "height": 1800,
+      "dpi": 144
+    },
+    "mismatch": "blocks every live subcase in this run"
+  },
+  "target": "New owned full-screen synthetic primary-monitor fixture; exact returned HWND and PID",
+  "initialState": {
+    "count": 0,
+    "mouseClickCount": 0,
+    "activationCount": 0,
+    "leftButtonDown": false,
+    "privateApplicationContent": false
+  },
+  "setup": "Activate the fixture through the source-owned window bridge before any marker starts; this is preparation, not a TRACE action",
+  "subcases": {
+    "A31-GLOW-START": {
+      "expected": "Marker readiness for one monitor; fixture stays foreground with the same focused window before and after marker start",
+      "runInThisMode": true
+    },
+    "A31-GLOW-VISIBLE": {
+      "expected": "Desktop capture shows tinted left and top edge bands; the fixture verifies the interior is unchanged background",
+      "runInThisMode": true
+    },
+    "A31-GLOW-EOF": {
+      "expected": "Ordinary session close ends the marker process within 5 s; a later capture has no overlay and background edge bands",
+      "runInThisMode": true
+    },
+    "A31-GLOW-PARENT-LOSS": {
+      "expected": "Abrupt termination of the owning MCP server ends the marker within 5 s; no overlay remains; the desktop lease is free",
+      "runInThisMode": true
+    },
+    "A31-GLOW-REFERENCE-CLICK": {
+      "expected": "Count 0 -> 1 after exactly one reference-executor edge click through the glow",
+      "runInThisMode": false
+    },
+    "A31-GLOW-TRACE-CLICK": {
+      "expected": "Count 1 -> 2 after exactly one TRACE MCP edge click through the glow",
+      "runInThisMode": false
+    }
+  },
+  "classification": "A TRACE MCP error or oracle mismatch fails the subcase; harness or environment errors block it with the recorded error",
+  "measurementRetries": "A desktop capture may be repeated up to three times; captures dispatch no input",
+  "inputActions": [],
+  "cleanup": "Close owned sessions and servers, verify marker and server exit by PID, close the fixture through its command file and verify its exit",
+  "limits": [
+    "One monitor; topology transitions deferred",
+    "Fixture-only behavior; not host acceptance",
+    "Glow lifecycle owned by the Node MCP server in this build; alpha.3.2 moves it under the native supervisor"
+  ]
+}

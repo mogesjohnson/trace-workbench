@@ -2,7 +2,7 @@
 
 Status reviewed 20 October 2026. This is the acceptance baseline for the first usable release; the package identifies the implementation as `0.1.0-alpha.3.1`, an unfinished glow checkpoint. Versions do not mark milestone cases complete.
 
-Before continuing implementation or acceptance, read the [owner-approved normal-desktop v0.1 plan](docs/V0.1-PLAN.md) and [agent handoff](agent-scratchpad.md). Implementation is currently on hold. The owner selected the current account, a synthetic REPLAY demo, and the tested single-monitor configuration; broader display acceptance is deferred beyond v0.1 without changing historical evidence.
+Before continuing implementation or acceptance, read the [owner-approved normal-desktop v0.1 plan](docs/V0.1-PLAN.md) and [agent handoff](agent-scratchpad.md). On 20 October 2026 the owner resumed implementation through `0.1.0-alpha.3.3` with the [Claude handoff](docs/CLAUDE-HANDOFF.md); alpha.4 and releases remain out of scope. The owner selected the current account, a synthetic REPLAY demo, and the tested single-monitor configuration; broader display acceptance is deferred beyond v0.1 without changing historical evidence.
 
 ## Product and scope
 
@@ -49,7 +49,9 @@ The reviewed preview keeps original evidence and both failed complete-case attem
 - **A3-WINDOW / CU-01, CU-02:** move, minimize and restore the target between observation and action. Stale geometry must reject input; a fresh capture must restore valid bounds and hit the intended control once.
 - **A3-DISPLAY / CU-01 — deferred beyond v0.1 by the owner on 19 October 2026:** test two DPI scales and a monitor transition before claiming broader display support. Record scale/topology, PNG dimensions and physical bounds; verify coordinate hits after each transition. Historical blocked results remain intact. The v0.1 gate covers the actual single-monitor configuration named in its acceptance receipts.
 
-### `0.1.0-alpha.3.1` — visible desktop ownership and glow completion (pending)
+### `0.1.0-alpha.3.1` — visible desktop ownership and glow completion (incomplete)
+
+Status 20 October 2026 ([case status](evidence/0.1.0-alpha.3.1/case-status.json)): **A31-GLOW failed** for the second time, so its retry budget is exhausted. The attempt-2 continuation found the marker never entered the topmost band, so an activated full-screen target hid the glow ([diagnosis](evidence/0.1.0-alpha.3.1/glow-continuation/topmost-diagnosis.json)). Start, focus and close/EOF checks passed; the reference and TRACE edge clicks were not run. A replacement glow case needs an owner decision after the fix. **A31-SKILL passed** ([receipt](evidence/0.1.0-alpha.3.1/skill-sync-2.json)).
 
 - **GLOW-LIFECYCLE / CU-04:** acquire the desktop lease before starting the marker; publish a session only after native readiness. Show a nonactivating, click-through glow on every attached monitor until input/recovery and session cleanup finish. Marker startup failure rejects the session; marker loss stops further input and cancels in-flight work.
 - **GLOW-LIVE / CU-01, CU-04:** declare an owned synthetic target, expected edge click count and exact cleanup. Verify visible edges on available monitors, unchanged native foreground/focus on marker start, physical clicks through the edge, and process/overlay removal after EOF and owned parent termination. Retain source hashes, independent target state and sanitized screen evidence. Missing topology changes remain blocked.

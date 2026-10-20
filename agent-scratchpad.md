@@ -4,7 +4,8 @@ Reviewed 20 October 2026. Start with the [owner-approved plan and review refinem
 
 ## Owner direction
 
-- Implementation is on hold until the owner resumes it. This handoff and the existing glow checkpoint do not authorize another desktop test or new implementation.
+- On 20 October 2026 the owner resumed implementation through `0.1.0-alpha.3.3` with [the Claude prompt](docs/CLAUDE-HANDOFF.md), including bounded owned-fixture tests. Alpha.4 host/REPLAY work and releases remain out of scope.
+- A31-GLOW failed for the second time on 20 October (glow hidden under an activated target; marker never topmost) and its retry budget is exhausted. A31-SKILL passed. See `evidence/0.1.0-alpha.3.1/case-status.json`.
 - Claude is the primary implementer after resumption. Later, Codex will perform the Computer Use demonstration with Claude observing and reviewing evidence.
 - Use the owner's normal, visible Windows 11 Home account. Preflight and pin the actual single-monitor mode per run; historical 2880×1800 and 1920×1080 receipts both report 144 DPI and their difference is unexplained. Broader display transitions remain deferred beyond v0.1.
 - The REPLAY demonstration uses synthetic content and owned profiles. Windows upgrades and background desktop work are outside this plan; no paid TTS is needed.

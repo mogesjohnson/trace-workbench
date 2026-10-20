@@ -117,4 +117,4 @@ async function main(args = process.argv.slice(2)) {
   return live(options);
 }
 if (require.main === module) main().then(result => process.stdout.write(JSON.stringify(result) + '\n')).catch(error => { process.stderr.write(error.message + '\n'); process.exitCode = 1; });
-module.exports = { parse, main, sourceHashes };
+module.exports = { parse, main, sourceHashes, verify, command, waitFor, BINARY, SOURCES };
