@@ -253,3 +253,18 @@ test("computer server communicates over real stdio with no stdout logging or des
   await client.close();
   assert.equal(stderr.trim(), "SYNTHETIC_CONTROLLER_CLOSED");
 });
+
+test("observe accepts only an integer accessibilityDepth from 1 to 32; actions cannot carry one", async (t) => {
+  const { client, fake } = await connection(t);
+  const observed = await client.callTool({ name: "trace_computer_observe", arguments: { sessionId: "s", accessibilityDepth: 12 } });
+  assert.notEqual(observed.isError, true);
+  assert.deepEqual(fake.calls.find((call) => call.method === "observe").args[0], { sessionId: "s", accessibilityDepth: 12 });
+  for (const accessibilityDepth of [0, 33, 8.5, "8"]) {
+    const rejected = await client.callTool({ name: "trace_computer_observe", arguments: { sessionId: "s", accessibilityDepth } });
+    assert.equal(rejected.isError, true);
+  }
+  const forged = await client.callTool({ name: "trace_computer_act", arguments: { sessionId: "s", observationId: "o", action: { type: "invoke", elementId: "e", accessibilityDepth: 32 } } });
+  assert.equal(forged.isError, true);
+  assert.equal(fake.calls.filter((call) => call.method === "observe").length, 1);
+  assert.equal(fake.calls.filter((call) => call.method === "act").length, 0);
+});

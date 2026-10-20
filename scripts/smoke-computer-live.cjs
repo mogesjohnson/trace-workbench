@@ -61,7 +61,7 @@ async function rejectedModalParentAction(dispatch) {
     if (error.code !== 'unknown_element') throw error;
     return 'unknown_element'; // Controller validation rejected a provider-reported disabled element.
   }
-  assert.equal(result.outcome, 'unknown', 'A modal parent must reject input before dispatch');
+  assert.equal(result.outcome, 'not_dispatched', 'A modal parent must reject input before dispatch');
   assert.ok(['window_blocked', 'foreground_not_target', 'stale_element'].includes(result.error?.code), 'Unexpected parent-action error; do not treat it as modal safety evidence');
   assert.notEqual(result.error?.inputRecoveryRequired, true, 'Quarantine cannot pass a modal-parent case');
   return result.error.code;
@@ -266,8 +266,8 @@ async function runLive(reportPath) {
     casePlan('A3-INPUT-DRAG', 'CU-03', 'Known target location and client dimensions', ['Drag +90 X, +16 Y; clamp to area'], { endpoint: 'Declared from baseline before input', dropsAdded: 1 }),
     casePlan('A3-RECOVERY-PRIMITIVE-CANCEL', 'CU-04/supporting-only', 'Released button, stationary drag target', ['Start raw native held drag', 'Await actual left-button press', 'Cancel; await native exit and release', 'Reobserve, click counter once'], { released: true, alreadyReleased: false, positionUnchanged: true, dropsAdded: 1, subsequentClickAdded: 1 }),
     casePlan('A3-DIALOG', 'CU-01', 'Enabled parent; no dialog', ['Open modal child once', 'Observe disabled owner and reject parent action', 'Select child explicitly, confirm', 'Close child and reacquire parent'], { parentEnabledWhileOpen: false, parentCountUnchanged: true, dialogConfirmed: true, parentEnabledAfterClose: true }),
-    casePlan('A3-WINDOW-MOVE', 'CU-01/CU-02', 'Current observation of parent', ['Move fixture by command', 'Reject old geometry without counter change', 'Fresh capture and one counter click'], { staleOutcome: 'unknown', staleError: 'window_moved', counterAdded: 1 }),
-    casePlan('A3-WINDOW-MINIMIZE', 'CU-01/CU-02', 'Current observation of visible parent', ['Minimize by command', 'Reject old geometry without counter change', 'Observe/restore and one counter click'], { staleOutcome: 'unknown', staleError: 'window_moved', counterAdded: 1 }),
+    casePlan('A3-WINDOW-MOVE', 'CU-01/CU-02', 'Current observation of parent', ['Move fixture by command', 'Reject old geometry without counter change', 'Fresh capture and one counter click'], { staleOutcome: 'not_dispatched', staleError: 'window_moved', counterAdded: 1 }),
+    casePlan('A3-WINDOW-MINIMIZE', 'CU-01/CU-02', 'Current observation of visible parent', ['Minimize by command', 'Reject old geometry without counter change', 'Observe/restore and one counter click'], { staleOutcome: 'not_dispatched', staleError: 'window_moved', counterAdded: 1 }),
     casePlan('A3-DISPLAY-MONITOR', 'CU-01', 'Known topology', ['Move onto a different physical monitor', 'Fresh capture and counter click'], { monitorChanged: true, counterAdded: 1 }),
     casePlan('A3-DISPLAY-DPI', 'CU-01', 'Known initial physical DPI', ['Move to a monitor with a different DPI', 'Fresh capture and counter click'], { twoDistinctDpiScales: true, counterAdded: 1 }),
     ...['MCP-CANCEL', 'TIMEOUT', 'DISCONNECT', 'CRASH', 'FAILED-CLEANUP'].map((name) => casePlan(`A3-RECOVERY-${name}`, 'CU-04', 'Independent owned-process case required', ['Exercise this failure mode through the product MCP/controller', 'Verify process exit, balanced input, quarantine when needed, and lease handoff'], { required: 'Separate end-to-end recovery evidence' })),
@@ -573,12 +573,12 @@ async function runLive(reportPath) {
         parentEnabledAfterClose: after.parentEnabled, parentGuard,
         openingOutcome: opening.outcome, uncertaintyResolvedBy: 'Intended dialog visible, owner disabled, input released; no opening input replay' };
     });
-    await runCase('A3-WINDOW-MOVE', { staleOutcome: 'unknown', staleError: 'window_moved', counterAdded: 1 }, async () => {
+    await runCase('A3-WINDOW-MOVE', { staleOutcome: 'not_dispatched', staleError: 'window_moved', counterAdded: 1 }, async () => {
       const before = await receiptWhere(() => true, 'move baseline');
       const stale = current;
       await command('move', (state) => state.windowX !== before.windowX || state.windowY !== before.windowY, 'window moved');
       const rejected = await dispatch({ type: 'click', elementId: target(stale, 'Increment counter').id });
-      assert.equal(rejected.outcome, 'unknown');
+      assert.equal(rejected.outcome, 'not_dispatched');
       assert.equal(rejected.error?.code, 'window_moved');
       assert.equal((await receiptWhere(() => true, 'count after moved rejection')).count, before.count);
       await keep(await controller.observe({ sessionId: session.sessionId }));
@@ -587,11 +587,11 @@ async function runLive(reportPath) {
       const after = await receiptWhere((state) => state.count === before.count + 1, 'fresh click after move');
       return { staleOutcome: rejected.outcome, staleError: rejected.error.code, counterAdded: after.count - before.count };
     });
-    await runCase('A3-WINDOW-MINIMIZE', { staleOutcome: 'unknown', staleError: 'window_moved', counterAdded: 1 }, async () => {
+    await runCase('A3-WINDOW-MINIMIZE', { staleOutcome: 'not_dispatched', staleError: 'window_moved', counterAdded: 1 }, async () => {
       const before = await receiptWhere(() => true, 'minimize baseline');
       await command('minimize', (state) => state.minimized, 'window minimized');
       const rejected = await dispatch({ type: 'click', elementId: target(current, 'Increment counter').id });
-      assert.equal(rejected.outcome, 'unknown');
+      assert.equal(rejected.outcome, 'not_dispatched');
       assert.equal(rejected.error?.code, 'window_moved');
       assert.equal((await receiptWhere(() => true, 'count after minimized rejection')).count, before.count);
       await keep(await controller.observe({ sessionId: session.sessionId }));
