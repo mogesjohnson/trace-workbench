@@ -2,6 +2,8 @@
 
 Status reviewed 19 October 2026. This is the acceptance baseline for the first usable release; the package currently identifies the implementation as `0.1.0-alpha.3`. The version identifies a preview; it does not mark every milestone case complete.
 
+Before continuing implementation or acceptance, read the [owner-approved normal-desktop v0.1 plan](docs/V0.1-PLAN.md) and [agent handoff](agent-scratchpad.md). Implementation is currently on hold. The owner selected the current account, a synthetic REPLAY demo, and the tested single-monitor configuration; broader display acceptance is deferred beyond v0.1 without changing historical evidence.
+
 ## Product and scope
 
 TRACE gives AI agents executable capabilities through a shared local MCP interface and accompanying skill instructions. The first two selected skills are **Reverse Engineer Anything** and **Computer Use**, in that order. TRACE remains the product name.
@@ -44,7 +46,7 @@ The reviewed preview keeps original evidence and both failed complete-case attem
 - **A3-RECOVERY / CU-04:** interrupt real native input through cancellation and timeout; exercise disconnect and server crash. Prove owned-process exit, released input and lease handoff. Failed cleanup must report uncertainty, block further input and retain recovery evidence.
 - **A3-DIALOG / CU-01:** open a real modal dialog; verify native parent-disabled state and pre-input `window_blocked` rejection for parent clicks, invocation and values, even if UIA children appear enabled. Select/observe the dialog explicitly, complete or dismiss it and recover the parent session. A modeless child does not pass.
 - **A3-WINDOW / CU-01, CU-02:** move, minimize and restore the target between observation and action. Stale geometry must reject input; a fresh capture must restore valid bounds and hit the intended control once.
-- **A3-DISPLAY / CU-01:** test two DPI scales and a monitor transition. Record scale/topology, PNG dimensions and physical bounds; verify coordinate hits after each transition. Unavailable configurations remain `blocked`, not passed by simulation.
+- **A3-DISPLAY / CU-01 — deferred beyond v0.1 by the owner on 19 October 2026:** test two DPI scales and a monitor transition before claiming broader display support. Record scale/topology, PNG dimensions and physical bounds; verify coordinate hits after each transition. Historical blocked results remain intact. The v0.1 gate covers the actual single-monitor configuration named in its acceptance receipts.
 
 ### `0.1.0-alpha.4` — host and real-app acceptance (pending)
 
