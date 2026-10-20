@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "milestone": "0.1.0-alpha.3.2",
+  "caseId": "A32-PROBE",
+  "requirement": "CU-04",
+  "status": "fail",
+  "observedAt": "2026-10-20T14:31:19.432Z",
+  "phaseStatus": "blocked by the failed feasibility probe; supervisor session, recovery CLI and A32-* acceptance were not implemented",
+  "attempts": [
+    {
+      "attempt": 1,
+      "evidence": "feasibility/receipt.json",
+      "result": "fail",
+      "cases": {
+        "P-JOB-MOUSE": "pass",
+        "P-JOB-CHORD": "pass",
+        "P-JOB-TYPING": "pass",
+        "P-LEASE-EXCLUSION": "fail",
+        "P-PARENT-DEATH": "fail",
+        "P-ESCAPE-INJECTED": "pass",
+        "P-ESCAPE-PHYSICAL": "not_run"
+      },
+      "failures": {
+        "P-LEASE-EXCLUSION": "Exclusion held both ways, but Node reported lease_unavailable instead of desktop_busy while the native pipe allowed one instance.",
+        "P-PARENT-DEATH": "No detection was recorded: libuv puts ordinary Node children in a kill-on-close job, so the attached watcher died with its parent."
+      }
+    },
+    {
+      "attempt": 2,
+      "evidence": "feasibility-attempt-2/receipt.json",
+      "result": "fail",
+      "cases": {
+        "P-JOB-MOUSE": "pass",
+        "P-JOB-CHORD": "pass",
+        "P-JOB-TYPING": "fail",
+        "P-LEASE-EXCLUSION": "pass",
+        "P-PARENT-DEATH": "pass",
+        "P-ESCAPE-INJECTED": "pass",
+        "P-ESCAPE-PHYSICAL": "not_run"
+      },
+      "correctiveChanges": [
+        "Native lease pipe allows unlimited instances like libuv, so Node reports desktop_busy",
+        "Parent-death watcher is spawned detached; attached behavior is recorded as a finding"
+      ],
+      "failures": {
+        "P-JOB-TYPING": "Held, post-kill and released key states were all confirmed independently, but the typed characters did not reach the fixture text box (text stayed empty). The probe did not verify text-box focus before typing, so delivery is unproven."
+      }
+    }
+  ],
+  "demonstrated": [
+    "Kill-on-close job self-assignment, breakaway refusal and child termination when the job owner dies (both attempts).",
+    "Held left button, Ctrl+Shift and a held letter key stay down after their owner dies and are released and independently verified (both attempts).",
+    "Native and Node desktop leases exclude each other in both directions; with unlimited instances Node reports desktop_busy (attempt 2).",
+    "A detached child observes stdin EOF in 3 ms and parent exit in 6 ms; an attached child is killed with its Node parent (attempt 2).",
+    "Injected Escape events are flagged as injected by the low-level hook (both attempts)."
+  ],
+  "findings": [
+    "A supervisor must be spawned detached from Node; otherwise libuv kills it with the server and no cleanup can run.",
+    "The native lease pipe must allow unlimited instances so older Node servers report desktop_busy."
+  ],
+  "notRun": {
+    "P-ESCAPE-PHYSICAL": "Needs the owner to press the physical key; not run after the probe failed."
+  },
+  "nextRequiredAction": "Owner decision: accept the combined evidence or authorize a new focused typing-delivery probe that verifies text-box focus first. A32-* stays blocked until then."
+}
