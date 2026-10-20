@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "runId": "targeting-8355bc83-7260-4976-864c-1bb5cfbd2e78",
+  "declaredBeforeUiLaunch": true,
+  "display": {
+    "pinned": {
+      "monitors": 1,
+      "width": 2880,
+      "height": 1800,
+      "dpi": 144
+    },
+    "mismatch": "blocks every case"
+  },
+  "target": "Owned run-scoped WinForms fixture; exact returned HWND and PID",
+  "cases": {
+    "A33-DEPTH": {
+      "requirement": "CU-01/CU-02",
+      "budget": "New case: one attempt plus one corrective retry",
+      "actions": [
+        "Observe at default depth: the deep counter is absent and the tree is truncated",
+        "Observe at depth 16 and invoke the deep counter once",
+        "Disable, then move, then remove it; each stale action is rejected before dispatch",
+        "An action carrying accessibilityDepth is refused by the schema"
+      ],
+      "expected": {
+        "defaultDepthFindsDeep": false,
+        "deepCountAfterInvoke": 1,
+        "rejections": [
+          "stale_element",
+          "stale_element",
+          "stale_element"
+        ],
+        "deepCountFinal": 1,
+        "forgedDepthRejected": true
+      }
+    },
+    "A33-OUTCOME": {
+      "requirement": "CU-02",
+      "budget": "New case: one attempt plus one corrective retry",
+      "actions": [
+        "Moved window, blocked window, unsupported scroll and changed focus each rejected",
+        "Stale-element rejections come from A33-DEPTH"
+      ],
+      "expected": {
+        "outcome": "not_dispatched",
+        "fixtureStateUnchanged": true,
+        "focusPreparationRecorded": true
+      }
+    },
+    "A3-WINDOW": {
+      "requirement": "CU-01/CU-02",
+      "budget": "Focused continuation; original run retained; one corrective retry",
+      "actions": [
+        "Move between observation and action: stale action rejected; fresh observation hits the counter once",
+        "Minimize: stale action rejected; observation restores; one counter hit"
+      ],
+      "expected": {
+        "staleOutcome": "not_dispatched",
+        "staleError": "window_moved",
+        "counterAddedPerTransition": 1
+      }
+    },
+    "A3-DIALOG": {
+      "requirement": "CU-01",
+      "budget": "Focused continuation after two failed full-harness attempts; final permitted attempt, no retry",
+      "actions": [
+        "Open the modal through TRACE",
+        "Parent invoke, element click and value are rejected with window_blocked",
+        "Hand off to the exact dialog: confirm, then close it through TRACE",
+        "Return to the parent: enabled, one counter hit"
+      ],
+      "expected": {
+        "parentEnabledWhileOpen": false,
+        "parentRejections": 3,
+        "dialogConfirmed": true,
+        "parentEnabledAfterClose": true,
+        "counterAdded": 1
+      }
+    }
+  },
+  "cleanup": "Close sessions, the MCP server and the fixture; verify server and fixture exit"
+}

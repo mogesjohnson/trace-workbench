@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "milestone": "0.1.0-alpha.3.3",
+  "observedAt": "2026-10-20T14:43:32.292Z",
+  "milestoneStatus": "incomplete",
+  "display": {
+    "monitors": 1,
+    "width": 2880,
+    "height": 1800,
+    "dpi": 144,
+    "pinnedPerRun": true
+  },
+  "cases": [
+    {
+      "id": "A33-DEPTH",
+      "requirement": "CU-01/CU-02",
+      "status": "pass",
+      "evidence": "targeting/receipt.json",
+      "summary": "Default depth did not expose the deep counter; depth 16 did, and one invoke raised it to exactly 1 with the post-action observation still at depth 16. Disabling, moving and removing it each produced not_dispatched stale_element with the counter unchanged; an action carrying accessibilityDepth was refused."
+    },
+    {
+      "id": "A33-OUTCOME",
+      "requirement": "CU-02",
+      "status": "pass",
+      "evidence": "targeting/receipt.json",
+      "summary": "Moved window, blocked window, horizontal scroll and moved focus each returned not_dispatched with fixture state unchanged; the focus case recorded the preparatory activation separately. Stale-element coverage comes from A33-DEPTH."
+    },
+    {
+      "id": "A3-DIALOG",
+      "requirement": "CU-01",
+      "status": "pass",
+      "evidence": "targeting/receipt.json",
+      "scope": "Focused continuation; the two earlier full-harness attempts remain failed.",
+      "summary": "TRACE opened the modal; parent invoke, coordinate click and value were rejected with window_blocked and no state change. The exact dialog session confirmed and closed it (the close returned unknown because its window disappeared; fixture state proved the intended result, with no replay). The parent session was enabled again and one counter hit landed."
+    },
+    {
+      "id": "A3-WINDOW",
+      "requirement": "CU-01/CU-02",
+      "status": "fail",
+      "attempts": [
+        {
+          "evidence": "targeting/receipt.json",
+          "status": "fail",
+          "reason": "Move passed. After minimize the stale action was rejected, but the next observation captured the window before it was restored (coordinate_space)."
+        },
+        {
+          "evidence": "window-retry/receipt.json",
+          "status": "fail",
+          "reason": "Corrective retry after a settle wait: the window never left the minimized state because bridge activation skipped SW_RESTORE for a foreground iconic window."
+        }
+      ],
+      "reason": "Two failures; the retry budget is exhausted.",
+      "focusedRegression": {
+        "id": "A3-WINDOW-REGRESSION",
+        "status": "pass",
+        "evidence": "window-regression/receipt.json",
+        "fix": "cd1feff restores a foreground iconic window; c4d453f waits for settled geometry",
+        "effect": "Cannot promote A3-WINDOW; a replacement case needs an owner decision."
+      }
+    }
+  ],
+  "reusedEvidence": "The bridge restore fix and settle wait only change observation of a minimized window; the A33-DEPTH, A33-OUTCOME and A3-DIALOG runs never minimized the target, so their passes are kept without rerun.",
+  "notInScope": [
+    "A3-RECOVERY and CU-04 recovery depend on the blocked alpha.3.2 supervisor",
+    "A3-DISPLAY deferred beyond v0.1"
+  ],
+  "nextRequiredAction": "Owner decisions on replacement cases for A3-WINDOW and A31-GLOW and on unblocking alpha.3.2; hosted CI billing."
+}

@@ -5,18 +5,40 @@ Reviewed 20 October 2026. Start with the [owner-approved plan and review refinem
 ## Owner direction
 
 - On 20 October 2026 the owner resumed implementation through `0.1.0-alpha.3.3` with [the Claude prompt](docs/CLAUDE-HANDOFF.md), including bounded owned-fixture tests. Alpha.4 host/REPLAY work and releases remain out of scope.
-- A31-GLOW failed for the second time on 20 October (glow hidden under an activated target; marker never topmost) and its retry budget is exhausted. A31-SKILL passed. See `evidence/0.1.0-alpha.3.1/case-status.json`.
+- Implementation through alpha.3.3 ran on 20 October; see **Session result** below. Further implementation needs the owner decisions listed there.
 - Claude is the primary implementer after resumption. Later, Codex will perform the Computer Use demonstration with Claude observing and reviewing evidence.
 - Use the owner's normal, visible Windows 11 Home account. Preflight and pin the actual single-monitor mode per run; historical 2880×1800 and 1920×1080 receipts both report 144 DPI and their difference is unexplained. Broader display transitions remain deferred beyond v0.1.
 - The REPLAY demonstration uses synthetic content and owned profiles. Windows upgrades and background desktop work are outside this plan; no paid TTS is needed.
 
-## Repository starting points
+## Session result (20 October 2026)
 
-- PR [#7](https://github.com/mogesjohnson/trace-workbench/pull/7) merged as `e20568b`; that is the base of this documentation branch, `docs/v0.1-normal-desktop-plan`.
-- Existing glow work is committed and pushed on `feat/desktop-activity-glow` at `a29e373` (two commits), in draft PR [#9](https://github.com/mogesjohnson/trace-workbench/pull/9). Live acceptance is unfinished. This documentation branch contains the plan, not the implementation.
-- Merge the plan documentation first, then reconcile its `SPEC.md` changes with the glow branch without dropping the plan or historical evidence.
-- Latest noninteractive checkpoint suite: 158 tests, 157 passed, zero failed, one file-symlink privilege skip. Source checks passed for 28 JavaScript files. These checks do not establish live desktop acceptance.
-- Earlier 153-pass/one-skip results and four parser-test passes were separate runs; the latest full suite above is a subsequent observation.
+Stacked draft PRs (hosted CI cannot start because of account billing; nothing was merged):
+[#10](https://github.com/mogesjohnson/trace-workbench/pull/10) plan ← [#9](https://github.com/mogesjohnson/trace-workbench/pull/9) alpha.3.1 ← [#11](https://github.com/mogesjohnson/trace-workbench/pull/11) glow topmost fix ← [#12](https://github.com/mogesjohnson/trace-workbench/pull/12) alpha.3.2 probe (blocked). The alpha.3.3 PR stacks on #12 (the probe adds no runtime code).
+
+| Case | Status | Evidence |
+| --- | --- | --- |
+| A31-GLOW | fail ×2, budget exhausted; topmost fix verified by a focused regression | `evidence/0.1.0-alpha.3.1/case-status.json` |
+| A31-SKILL | pass | `evidence/0.1.0-alpha.3.1/skill-sync-2.json` |
+| A32-PROBE | fail ×2: phase blocked; A32-OWNER/RECOVERY/QUARANTINE/STOP not implemented | `evidence/0.1.0-alpha.3.2/probe-status.json` |
+| A33-DEPTH, A33-OUTCOME | pass | `evidence/0.1.0-alpha.3.3/case-status.json` |
+| A3-DIALOG | pass (focused continuation) | same |
+| A3-WINDOW | fail ×2, budget exhausted; bridge restore fix verified by a focused regression | same |
+
+Fixed and verified:
+- The glow is now topmost (`TopMost=true`).
+- Bridge activation restores a foreground minimized window.
+- Observation waits for restored geometry to settle.
+- Depth is retained server-side and reused for the action.
+- `not_dispatched` is reported for proven pre-dispatch rejection.
+- Installed skill copies are synchronized to `e7d12ba7` with backups.
+
+Latest checks: `npm test` ran 172 tests, 171 passed with one privilege skip; `npm run check` passed.
+
+Next required actions (owner):
+- Decide replacement cases for A31-GLOW and A3-WINDOW.
+- Accept the probe evidence, or authorize a focused typing-delivery probe, to unblock alpha.3.2. That probe must check text-box focus first. Spawn the supervisor detached and give its lease pipe unlimited instances.
+- Schedule the Codex reference-click run.
+- Fix hosted CI billing.
 
 ## Accepted delivery order
 
@@ -43,7 +65,7 @@ Use the plan's case definitions and release gates before selecting implementatio
 
 - Current desktop ownership is a Node-held lease in `src/computer/lease.cjs`. A Node crash can release that lease while a native input child survives; existing cleanup/unit checks do not prove safe crash handoff.
 - The native supervisor and durable quarantine are proposed work, not implemented capabilities. Prove native child exit, balanced input, ownership, and recovery before claiming crash safety.
-- Claude's review `988853b2` was checked against `a29e373`: enforced recovery/quarantine covers mouse gestures, not `send-keys`; deep action reinspection is fixed at 8; caught backend rejections return top-level `unknown`; TRACE has no verified physical Escape stop. `A32-*` and `A33-*` now define the fixes. No product fixes were made during the documentation review.
+- Claude's review `988853b2` findings: alpha.3.3 fixed depth reinspection and pre-dispatch outcomes. Keyboard balancing, durable quarantine and the TRACE-owned physical Escape stop remain unimplemented while alpha.3.2 is blocked.
 - The shared canonical, Claude, and Grok skill copies were backed up and synchronized to SHA-256 prefix `88063b17`; see `evidence/0.1.0-alpha.3.1/skill-sync.json` for exact hashes. Later repository focus/TTL instruction changes have not been synchronized to those installed copies.
 - Resume from a declared case plan with exact target, expected state, bounded retry, independent result checks, and owned cleanup. Preserve failures; a focused regression cannot promote a failed whole workflow.
 

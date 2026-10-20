@@ -66,7 +66,8 @@ internal static class Program
     private static void Activate(nint hwnd, uint pid)
     {
         GuardEnabled(hwnd, pid);
-        if (GetForegroundWindow() == hwnd) return;
+        // A minimized window can remain the foreground window; it still needs SW_RESTORE.
+        if (GetForegroundWindow() == hwnd && !IsIconic(hwnd)) return;
         var current = GetCurrentThreadId();
         var target = GetWindowThreadProcessId(hwnd, out _);
         var foreground = GetWindowThreadProcessId(GetForegroundWindow(), out _);

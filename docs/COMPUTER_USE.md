@@ -26,10 +26,10 @@ The configured command is the installed Node executable plus this checkout's abs
 ## Use the tools
 
 1. Check `trace_computer_doctor`, then discover windows with `trace_computer_list_windows`.
-2. Open a session for the exact returned `windowId`. A cyan-to-violet screen-edge glow indicates TRACE owns a desktop session; it stays visible until session cleanup.
-3. Observe and inspect the returned PNG and accessibility elements.
+2. Open a session for the exact returned `windowId`. A cyan-to-violet screen-edge glow indicates TRACE owns a desktop session. It stays above activated windows until session cleanup.
+3. Observe and inspect the returned PNG and accessibility elements. `accessibilityDepth` (1–32, default 8) reads deeper trees; the response reports the effective depth and truncation, and the action reuses that depth.
 4. Perform one action with that `sessionId` and latest `observationId`. Coordinates are integer pixels relative to the returned image; element bounds are physical screen coordinates.
-5. Inspect the new observation before continuing. After an unknown outcome, observe again and determine whether input already occurred.
+5. Inspect the new observation before continuing. `not_dispatched` means the requested input was never sent (any preparatory activation is listed separately); `unknown` means it may have been. After either, observe again before deciding; never replay automatically.
 6. Close the session to release desktop ownership. The target application remains open.
 
 The server supports activation, coordinate/element clicks, typing, allowed key chords, vertical wheel scrolling, dragging, accessibility invocation and editable values. Actual tested coverage and limitations are recorded in [verification](VERIFICATION.md) and [the specification](../SPEC.md).

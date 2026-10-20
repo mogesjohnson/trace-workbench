@@ -1,0 +1,691 @@
+{
+  "schemaVersion": 1,
+  "runId": "targeting-8355bc83-7260-4976-864c-1bb5cfbd2e78",
+  "plan": {
+    "path": "plan.json",
+    "sha256": "b687898628cddaf58bd418263f5d5be35ec4edeae988340b8f430418882815c1"
+  },
+  "testedSource": {
+    "baseCommit": "7f30743257e0ea75a2d991f6a181a2cad12b3ee0",
+    "workingTreeModified": true,
+    "files": {
+      "bin/trace.cjs": "2006b9f1554076fe89711067566c882702c66fe5f50677270ed83f88d9d5ee60",
+      "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+      "src/computer/controller.cjs": "e5a5a069719bbb7044479bc0e5938930b795ff081b6a824f3670b1cbf1778ff8",
+      "src/computer/lease.cjs": "3600fa756bda99e15aa695731bc0e5a8f6a0893e1f7e333db4d6742ae561389b",
+      "src/computer/winapp-backend.cjs": "3f6b4f23368a52eeaf4d215023bb0664ea73ea657397ce57a5c139a52ea3cf19",
+      "src/computer/activity-indicator.cjs": "42de964cb8fca0f5c30a6c30f1a40173df5f072224339fef6f006ed4ffe2093b",
+      "native/TraceActivityIndicator/Program.cs": "262b2c70d7f1f271c45d2e66bb1faf6a8d299df87274b12a57540df425645459",
+      "native/TraceWindowBridge/Program.cs": "b7b22f680d37aabb26cf2aa660aadc89d1ec0a70c3e919ddc9aa7a5103da85b6",
+      "tests/fixtures/computer-app/Program.cs": "064a750a8cba970510b45d8ea3a1102fcc2102c0882afde0a017a12e9cafbaf4",
+      "scripts/accept-targeting.cjs": "a122988e40e1584dedbdc17554d282ae73b0373d1dc9d70a196d0ac739e00425",
+      "scripts/smoke-computer-live.cjs": "6327ec795cd0a9fba6e34fd0834653c0e200578dcb8873e3eb75fbaf35330f56",
+      "package.json": "2383986545da18f71adb2186fa57733e3347bc373fb6bf8063b9eebb1e2ab9ca",
+      "package-lock.json": "382cb88e6f2040de4f61af724d82478c948ac8ef786265682e148dfd7f838116"
+    }
+  },
+  "runtime": {
+    "node": "v26.2.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "cases": {
+    "A33-DEPTH": {
+      "status": "pass",
+      "actual": {
+        "pass": true,
+        "defaultDepth": {
+          "truncated": true,
+          "depth": 8
+        },
+        "deepDepth": {
+          "truncated": false,
+          "depth": 16
+        },
+        "deepCountAfterInvoke": 1,
+        "invokeOutcome": "completed",
+        "postActionDepth": 16,
+        "rejections": {
+          "deep-disable": {
+            "outcome": "not_dispatched",
+            "code": "stale_element",
+            "preparation": [],
+            "unchanged": true,
+            "pass": true
+          },
+          "deep-move": {
+            "outcome": "not_dispatched",
+            "code": "stale_element",
+            "preparation": [],
+            "unchanged": true,
+            "pass": true
+          },
+          "deep-remove": {
+            "outcome": "not_dispatched",
+            "code": "stale_element",
+            "preparation": [],
+            "unchanged": true,
+            "pass": true
+          }
+        },
+        "forgedDepth": "ERR_ASSERTION",
+        "deepCountFinal": 1,
+        "counted": 1
+      },
+      "fixtureBefore": {
+        "count": 0,
+        "deepCount": 0,
+        "deepEnabled": true,
+        "deepPresent": true,
+        "text": "",
+        "scrollY": 0,
+        "dialogOpen": false,
+        "dialogConfirmed": false,
+        "parentEnabled": true,
+        "minimized": false,
+        "focusedControl": "traceTextInput",
+        "leftButtonDown": false,
+        "modifiers": "None"
+      },
+      "fixtureAfter": {
+        "count": 0,
+        "deepCount": 1,
+        "deepEnabled": true,
+        "deepPresent": false,
+        "text": "",
+        "scrollY": 0,
+        "dialogOpen": false,
+        "dialogConfirmed": false,
+        "parentEnabled": true,
+        "minimized": false,
+        "focusedControl": "traceOpenDialog",
+        "leftButtonDown": false,
+        "modifiers": "None"
+      }
+    },
+    "A33-OUTCOME": {
+      "status": "pass",
+      "actual": {
+        "pass": true,
+        "results": {
+          "movedWindow": {
+            "outcome": "not_dispatched",
+            "code": "window_moved",
+            "preparation": [],
+            "unchanged": true,
+            "pass": true
+          },
+          "unsupportedScroll": {
+            "outcome": "not_dispatched",
+            "code": "unsupported_action",
+            "preparation": [],
+            "unchanged": true,
+            "pass": true
+          },
+          "focusChanged": {
+            "outcome": "not_dispatched",
+            "code": "focus_changed",
+            "preparation": [
+              {
+                "step": "activation",
+                "status": "foreground"
+              }
+            ],
+            "unchanged": true,
+            "pass": true
+          },
+          "blockedWindow": {
+            "outcome": "not_dispatched",
+            "code": "window_blocked",
+            "preparation": [],
+            "unchanged": true,
+            "pass": true
+          },
+          "staleElement": {
+            "reference": "A33-DEPTH rejections",
+            "pass": true
+          }
+        }
+      },
+      "fixtureBefore": {
+        "count": 0,
+        "deepCount": 1,
+        "deepEnabled": true,
+        "deepPresent": false,
+        "text": "",
+        "scrollY": 0,
+        "dialogOpen": false,
+        "dialogConfirmed": false,
+        "parentEnabled": true,
+        "minimized": false,
+        "focusedControl": "traceOpenDialog",
+        "leftButtonDown": false,
+        "modifiers": "None"
+      },
+      "fixtureAfter": {
+        "count": 0,
+        "deepCount": 1,
+        "deepEnabled": true,
+        "deepPresent": false,
+        "text": "",
+        "scrollY": 0,
+        "dialogOpen": false,
+        "dialogConfirmed": false,
+        "parentEnabled": true,
+        "minimized": false,
+        "focusedControl": "traceOption",
+        "leftButtonDown": false,
+        "modifiers": "None"
+      }
+    },
+    "A3-WINDOW": {
+      "status": "fail",
+      "error": {
+        "code": "coordinate_space",
+        "message": "PNG dimensions do not match exact DWM capture bounds. No scaling is assumed."
+      },
+      "fixtureBefore": {
+        "count": 0,
+        "deepCount": 1,
+        "deepEnabled": true,
+        "deepPresent": false,
+        "text": "",
+        "scrollY": 0,
+        "dialogOpen": false,
+        "dialogConfirmed": false,
+        "parentEnabled": true,
+        "minimized": false,
+        "focusedControl": "traceOption",
+        "leftButtonDown": false,
+        "modifiers": "None"
+      },
+      "fixtureAfter": {
+        "count": 1,
+        "deepCount": 1,
+        "deepEnabled": true,
+        "deepPresent": false,
+        "text": "",
+        "scrollY": 0,
+        "dialogOpen": false,
+        "dialogConfirmed": false,
+        "parentEnabled": true,
+        "minimized": false,
+        "focusedControl": "traceIncrement",
+        "leftButtonDown": false,
+        "modifiers": "None"
+      }
+    },
+    "A3-DIALOG": {
+      "status": "pass",
+      "actual": {
+        "pass": true,
+        "openingOutcome": "completed",
+        "parentEnabledWhileOpen": false,
+        "parent": {
+          "invoke": {
+            "outcome": "not_dispatched",
+            "code": "window_blocked",
+            "preparation": [],
+            "unchanged": true,
+            "pass": true
+          },
+          "click": {
+            "outcome": "not_dispatched",
+            "code": "window_blocked",
+            "preparation": [],
+            "unchanged": true,
+            "pass": true
+          },
+          "value": {
+            "outcome": "not_dispatched",
+            "code": "window_blocked",
+            "preparation": [],
+            "unchanged": true,
+            "pass": true
+          }
+        },
+        "confirmOutcome": "completed",
+        "closeOutcome": "unknown",
+        "closeResolvedBy": "Fixture reported dialog closed and owner enabled; no replay",
+        "parentEnabledAfterClose": true,
+        "counterAdded": 1
+      },
+      "fixtureBefore": {
+        "count": 1,
+        "deepCount": 1,
+        "deepEnabled": true,
+        "deepPresent": false,
+        "text": "",
+        "scrollY": 0,
+        "dialogOpen": false,
+        "dialogConfirmed": false,
+        "parentEnabled": true,
+        "minimized": false,
+        "focusedControl": "traceIncrement",
+        "leftButtonDown": false,
+        "modifiers": "None"
+      },
+      "fixtureAfter": {
+        "count": 2,
+        "deepCount": 1,
+        "deepEnabled": true,
+        "deepPresent": false,
+        "text": "",
+        "scrollY": 0,
+        "dialogOpen": false,
+        "dialogConfirmed": true,
+        "parentEnabled": true,
+        "minimized": false,
+        "focusedControl": "traceIncrement",
+        "leftButtonDown": false,
+        "modifiers": "None"
+      }
+    }
+  },
+  "actions": [
+    {
+      "label": "invoke deep counter",
+      "type": "invoke",
+      "outcome": "completed",
+      "error": null,
+      "preparation": null
+    },
+    {
+      "label": "stale deep after deep-disable",
+      "type": "invoke",
+      "outcome": "not_dispatched",
+      "error": "stale_element",
+      "preparation": []
+    },
+    {
+      "label": "stale deep after deep-move",
+      "type": "invoke",
+      "outcome": "not_dispatched",
+      "error": "stale_element",
+      "preparation": []
+    },
+    {
+      "label": "stale deep after deep-remove",
+      "type": "invoke",
+      "outcome": "not_dispatched",
+      "error": "stale_element",
+      "preparation": []
+    },
+    {
+      "label": "stale geometry",
+      "type": "invoke",
+      "outcome": "not_dispatched",
+      "error": "window_moved",
+      "preparation": []
+    },
+    {
+      "label": "horizontal scroll",
+      "type": "scroll",
+      "outcome": "not_dispatched",
+      "error": "unsupported_action",
+      "preparation": []
+    },
+    {
+      "label": "focus text input",
+      "type": "click",
+      "outcome": "completed",
+      "error": null,
+      "preparation": null
+    },
+    {
+      "label": "type after focus moved",
+      "type": "type_text",
+      "outcome": "not_dispatched",
+      "error": "focus_changed",
+      "preparation": [
+        {
+          "step": "activation",
+          "status": "foreground"
+        }
+      ]
+    },
+    {
+      "label": "blocked parent",
+      "type": "invoke",
+      "outcome": "not_dispatched",
+      "error": "window_blocked",
+      "preparation": []
+    },
+    {
+      "label": "stale after move",
+      "type": "invoke",
+      "outcome": "not_dispatched",
+      "error": "window_moved",
+      "preparation": []
+    },
+    {
+      "label": "counter after move",
+      "type": "invoke",
+      "outcome": "completed",
+      "error": null,
+      "preparation": null
+    },
+    {
+      "label": "stale after minimize",
+      "type": "invoke",
+      "outcome": "not_dispatched",
+      "error": "window_moved",
+      "preparation": []
+    },
+    {
+      "label": "open dialog",
+      "type": "click",
+      "outcome": "completed",
+      "error": null,
+      "preparation": null
+    },
+    {
+      "label": "parent invoke while modal",
+      "type": "invoke",
+      "outcome": "not_dispatched",
+      "error": "window_blocked",
+      "preparation": []
+    },
+    {
+      "label": "parent click while modal",
+      "type": "click",
+      "outcome": "not_dispatched",
+      "error": "window_blocked",
+      "preparation": []
+    },
+    {
+      "label": "parent value while modal",
+      "type": "set_value",
+      "outcome": "not_dispatched",
+      "error": "window_blocked",
+      "preparation": []
+    },
+    {
+      "label": "confirm dialog",
+      "type": "invoke",
+      "outcome": "completed",
+      "error": null,
+      "preparation": null
+    },
+    {
+      "label": "close dialog",
+      "type": "invoke",
+      "outcome": "unknown",
+      "error": "window_changed",
+      "preparation": null
+    },
+    {
+      "label": "parent counter after dialog",
+      "type": "invoke",
+      "outcome": "completed",
+      "error": null,
+      "preparation": null
+    }
+  ],
+  "frames": [
+    {
+      "path": "frames/frame-001.png",
+      "sha256": "3348527c0f7b8962846491334a3bc70200f0fcd98ec97440c71cd0322ed0dcb0",
+      "label": "session parent",
+      "observationId": "2ad6f82f-ed4b-4781-8792-34807506a1f7",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-002.png",
+      "sha256": "3348527c0f7b8962846491334a3bc70200f0fcd98ec97440c71cd0322ed0dcb0",
+      "label": "default depth",
+      "observationId": "c550e39a-ed1d-4156-8bff-e19d9af715f5",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-003.png",
+      "sha256": "88e092f8eefc705423dd91a5a08e77a3d1b44e6a816fdd7f537c696cb6ed5b91",
+      "label": "depth 16",
+      "observationId": "4939ece3-d359-4111-b4f8-639ac0e43e0a",
+      "depth": 16,
+      "truncated": false
+    },
+    {
+      "path": "frames/frame-004.png",
+      "sha256": "8117292fea4163c12601a4227b850ff243859cfd2e2c7c549be07b9007648b76",
+      "label": "after invoke deep counter",
+      "observationId": "47562f07-5ecd-4099-97fc-fcce9a1a5f2f",
+      "depth": 16,
+      "truncated": false
+    },
+    {
+      "path": "frames/frame-005.png",
+      "sha256": "8117292fea4163c12601a4227b850ff243859cfd2e2c7c549be07b9007648b76",
+      "label": "before deep-disable",
+      "observationId": "e8ed8f4c-d52a-44b1-833a-3dac25c45601",
+      "depth": 16,
+      "truncated": false
+    },
+    {
+      "path": "frames/frame-006.png",
+      "sha256": "87a5484138f9607e74a53f3625564afa4fe13a592f3dc6f4bb428ef71168b57f",
+      "label": "before deep-move",
+      "observationId": "7f2d130f-bccf-40a8-b707-1b31491bea07",
+      "depth": 16,
+      "truncated": false
+    },
+    {
+      "path": "frames/frame-007.png",
+      "sha256": "4d9ff1f2a3efbcef026039534eedeb69781c9cbb6c6b6b98805549d6b01f3b37",
+      "label": "before deep-remove",
+      "observationId": "cbcb57fb-2636-4fd7-af62-40579656b1c6",
+      "depth": 16,
+      "truncated": false
+    },
+    {
+      "path": "frames/frame-008.png",
+      "sha256": "bffc9c59651175858ac29004f3d8a8d282c70c7645abb20ece8a14bec2a79e7a",
+      "label": "before forged depth",
+      "observationId": "9c9802c4-6c7d-4870-9338-ff5d8344087f",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-009.png",
+      "sha256": "bffc9c59651175858ac29004f3d8a8d282c70c7645abb20ece8a14bec2a79e7a",
+      "label": "before move",
+      "observationId": "8106c7ed-edf9-42dd-8cec-b173daa52aa4",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-010.png",
+      "sha256": "aebe5642d12f9e21ad28467eb77cc99fc42232c70c607943ff6919aabdc9b93e",
+      "label": "before scroll",
+      "observationId": "279bbbc5-54e7-4a32-ac42-59a6ec6ae673",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-011.png",
+      "sha256": "aebe5642d12f9e21ad28467eb77cc99fc42232c70c607943ff6919aabdc9b93e",
+      "label": "before focus",
+      "observationId": "3acd0288-d3c6-48b3-901d-3c19cac221b4",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-012.png",
+      "sha256": "498b7546aeeb630a26b0a4a39133feb838e2b733d589d3ea449d86df4bd99ff6",
+      "label": "after focus text input",
+      "observationId": "0d436eee-671d-4ef0-8673-b733d8fd9eed",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-013.png",
+      "sha256": "02c08ec16cb0197a28dfc275adad80c2349fc9e361549b215dc8c9184c6bbad2",
+      "label": "before blocked parent",
+      "observationId": "a43758e3-1ed5-476d-bbb5-7e17f918b06d",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-014.png",
+      "sha256": "02c08ec16cb0197a28dfc275adad80c2349fc9e361549b215dc8c9184c6bbad2",
+      "label": "after outcome cases",
+      "observationId": "b8a3e78b-52e3-4180-8f26-1b185300dd43",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-015.png",
+      "sha256": "02c08ec16cb0197a28dfc275adad80c2349fc9e361549b215dc8c9184c6bbad2",
+      "label": "before move",
+      "observationId": "b662a3ac-4c40-4127-a589-fe8c316faed5",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-016.png",
+      "sha256": "1154957f30a3deb4b9c86e5f8b1236fa011cb82ac51a7bdabd539a88dfd30cdd",
+      "label": "fresh after move",
+      "observationId": "eea01243-148f-45d4-b722-863ddb92168e",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-017.png",
+      "sha256": "9d2c4902f52978f862237a8c158cb19fb7f272c8d14e6cc45791450f1a28a3b4",
+      "label": "after counter after move",
+      "observationId": "18b8921f-5130-426e-b922-c94c779e87fd",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-018.png",
+      "sha256": "9d2c4902f52978f862237a8c158cb19fb7f272c8d14e6cc45791450f1a28a3b4",
+      "label": "before minimize",
+      "observationId": "7e99ad4c-39b5-4743-93d2-a905248c7b16",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-019.png",
+      "sha256": "9d2c4902f52978f862237a8c158cb19fb7f272c8d14e6cc45791450f1a28a3b4",
+      "label": "before dialog",
+      "observationId": "72cf54ad-89a4-40ec-861a-71d7cc64cc92",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-020.png",
+      "sha256": "5362768b6529bac06444f88249006a607d5070bee5ca4258ffbff790e7351bfd",
+      "label": "after open dialog",
+      "observationId": "7f291b74-997a-4d5d-8665-0e9114bd79f8",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-021.png",
+      "sha256": "5362768b6529bac06444f88249006a607d5070bee5ca4258ffbff790e7351bfd",
+      "label": "parent after invoke rejection",
+      "observationId": "dcf84b28-cb34-4b36-811b-7faa9d612a1d",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-022.png",
+      "sha256": "5362768b6529bac06444f88249006a607d5070bee5ca4258ffbff790e7351bfd",
+      "label": "parent after click rejection",
+      "observationId": "0664fbbf-126f-4a19-b5a5-24f3e0b04b42",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-023.png",
+      "sha256": "9069e111a061b98f4ca86d4201d17170e5efa50beb7b9c347ea02f07b3a164a4",
+      "label": "session dialog",
+      "observationId": "823a3f64-495a-47dc-ae01-7e758278cb26",
+      "depth": 8,
+      "truncated": false
+    },
+    {
+      "path": "frames/frame-024.png",
+      "sha256": "4491070a7fd1f851cd07b506226695cac00f615e79a8ea535f4d85ea86c38bb5",
+      "label": "after confirm dialog",
+      "observationId": "7da6e610-3875-4056-b877-dcb292e24c40",
+      "depth": 8,
+      "truncated": false
+    },
+    {
+      "path": "frames/frame-025.png",
+      "sha256": "9d3668ac789dab68842dff809ddf2efc92c225ef06f0f53dd39d76fe2a3fe613",
+      "label": "session parent",
+      "observationId": "4c1a1794-1daf-4d75-ad9d-6dc7ffa24000",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-026.png",
+      "sha256": "831bb4dccdde2157f8e2579716d8f23f5cc74397183d93c103d7e188309f3113",
+      "label": "after parent counter after dialog",
+      "observationId": "9fb1fd8f-bf6f-43db-8c6f-290e3f7d904e",
+      "depth": 8,
+      "truncated": true
+    }
+  ],
+  "cleanup": {
+    "server": {
+      "pid": 35024,
+      "exited": true,
+      "verification": "ESRCH after transport teardown"
+    },
+    "fixtureExited": true,
+    "finalState": {
+      "count": 2,
+      "deepCount": 1,
+      "deepEnabled": true,
+      "deepPresent": false,
+      "text": "",
+      "scrollY": 0,
+      "dialogOpen": false,
+      "dialogConfirmed": true,
+      "parentEnabled": true,
+      "minimized": false,
+      "focusedControl": "traceIncrement",
+      "leftButtonDown": false,
+      "modifiers": "None"
+    }
+  },
+  "fixtureExecutableSha256": "91a349eff621f7dab598d7073c32693d76d689e501acaedc22f5cf7f57074795",
+  "display": {
+    "monitors": 1,
+    "width": 2880,
+    "height": 1800,
+    "dpi": 144,
+    "pinned": {
+      "monitors": 1,
+      "width": 2880,
+      "height": 1800,
+      "dpi": 144
+    },
+    "match": true
+  },
+  "protocol": {
+    "transport": "stdio",
+    "server": {
+      "name": "trace-computer",
+      "version": "0.1.0-alpha.3.1"
+    },
+    "toolCount": 6,
+    "toolNames": [
+      "trace_computer_act",
+      "trace_computer_close_session",
+      "trace_computer_doctor",
+      "trace_computer_list_windows",
+      "trace_computer_observe",
+      "trace_computer_open_session"
+    ]
+  },
+  "sourcesUnchangedDuringRun": true,
+  "result": "fail",
+  "observedAt": "2026-10-20T14:41:25.584Z"
+}

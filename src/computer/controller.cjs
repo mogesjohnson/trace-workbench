@@ -21,6 +21,9 @@ function safeError(error) {
     if (['native_drained', 'not_dispatched', 'process_exit_unconfirmed'].includes(recovery.reason)) result.recovery.reason = recovery.reason;
     if (typeof recovery.code === 'string' && /^[a-z_]{1,64}$/.test(recovery.code)) result.recovery.code = recovery.code;
   }
+  if (Array.isArray(error.details?.preparation)) {
+    result.preparation = error.details.preparation.filter(item => item?.step === 'activation').map(item => ({ step: 'activation', status: ['started', 'foreground', 'not_foreground'].includes(item.status) ? item.status : 'unknown' }));
+  }
   if (result.code === 'input_recovery_required' || recovery?.released === false || recovery?.reason === 'process_exit_unconfirmed') result.inputRecoveryRequired = true;
   return result;
 }
@@ -31,6 +34,13 @@ function defaultRuntimeDirectory() {
     return process.env.TRACE_COMPUTER_RUNTIME;
   }
   return path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), '.local', 'share'), 'TRACE', 'computer');
+}
+
+const DEFAULT_DEPTH = 8;
+function validateDepth(depth) {
+  if (depth === undefined) return DEFAULT_DEPTH;
+  if (!Number.isInteger(depth) || depth < 1 || depth > 32) throw fail('invalid_depth', 'accessibilityDepth must be an integer from 1 to 32.');
+  return depth;
 }
 
 function validateAction(action, observation) {
@@ -136,14 +146,16 @@ function createComputerController(options = {}) {
     // No typed text, values, screenshots, or full window inventory in the journal.
     await fs.appendFile(path.join(session.directory, 'events.jsonl'), `${JSON.stringify({ at: new Date(now()).toISOString(), sessionId: session.id, ...event })}\n`);
   }
-  async function observeInternal(session, signal) {
+  async function observeInternal(session, signal, depth = DEFAULT_DEPTH) {
     signal = markedSignal(signal);
     await lease.assert(session.id);
     await currentWindow(session, signal);
     session.observation = null;
     const observationId = randomUUID();
     const screenshotPath = path.join(session.directory, `${observationId}.png`);
-    const snapshot = await backend.observe({ window: session.window, screenshotPath, signal });
+    const snapshot = await backend.observe({ window: session.window, screenshotPath, signal, depth });
+    // The effective depth stays server-side with the observation; actions cannot replace it.
+    snapshot.depth = Number.isInteger(snapshot.depth) ? snapshot.depth : depth;
     if (!identityMatches(snapshot.window, session.window)) throw fail('window_changed', 'Observation returned a different window identity.');
     const bounds = snapshot.bounds;
     if (!bounds || !['x', 'y', 'width', 'height'].every(key => Number.isFinite(bounds[key])) || bounds.width < 1 || bounds.height < 1) throw fail('invalid_observation', 'Backend returned invalid window bounds.');
@@ -159,7 +171,8 @@ function createComputerController(options = {}) {
       sessionId: session.id, observationId, window: snapshot.window, bounds,
       elements: snapshot.elements ?? [], observedAt: new Date(observedAtMs).toISOString(),
       coordinateSpace: 'window-local-physical-pixels', captureMethod: snapshot.captureMethod ?? 'native-window',
-      accessibility: { truncated: snapshot.truncated === true, depth: snapshot.depth ?? null },
+      accessibility: { truncated: snapshot.truncated === true, depth: snapshot.depth },
+      ...(snapshot.restoredFromMinimized === true ? { preparation: [{ step: 'restore', status: 'restored' }] } : {}),
       screenshot: { data: bytes.toString('base64'), mimeType: 'image/png', width, height, sha256: createHash('sha256').update(bytes).digest('hex') },
     };
     session.observation = { id: observationId, observedAtMs, snapshot, result };
@@ -206,7 +219,9 @@ function createComputerController(options = {}) {
         }
       }, callOptions);
     },
-    observe({ sessionId }, callOptions) { return queued(signal => observeInternal(getSession(sessionId), signal), callOptions); },
+    observe({ sessionId, accessibilityDepth }, callOptions) {
+      return queued(signal => observeInternal(getSession(sessionId), signal, validateDepth(accessibilityDepth)), callOptions);
+    },
     act({ sessionId, observationId, action }, callOptions) {
       return queued(async signal => {
         const session = getSession(sessionId);
@@ -228,14 +243,18 @@ function createComputerController(options = {}) {
           signal.throwIfAborted();
           indicator.assertActive();
           const nativeResult = await backend.act({ window: session.window, observation: observation.snapshot, action: checked, signal });
-          const fresh = await observeInternal(session, signal);
+          const fresh = await observeInternal(session, signal, observation.snapshot.depth);
           await record(session, { type: 'action_completed', actionId, observationId: fresh.observationId });
           return { actionId, outcome: 'completed', verification: 'fresh_observation', nativeResult, observation: fresh };
         } catch (error) {
           session.observation = null;
-          await record(session, { type: 'action_unknown', actionId, errorCode: error.code ?? 'backend_error' }).catch(() => {});
+          const outcome = error.details?.outcome === 'not_dispatched' ? 'not_dispatched' : 'unknown';
+          await record(session, { type: outcome === 'not_dispatched' ? 'action_not_dispatched' : 'action_unknown', actionId, errorCode: error.code ?? 'backend_error' }).catch(() => {});
           const projected = safeError(error);
-          return { actionId, outcome: 'unknown', error: projected, nextStep: indicator.signal.aborted
+          if (outcome === 'not_dispatched' && !indicator.signal.aborted && !projected.inputRecoveryRequired) {
+            return { actionId, outcome, error: projected, nextStep: 'The requested input was not sent. Observe again and resolve the reported condition before at most one new attempt.' };
+          }
+          return { actionId, outcome, error: projected, nextStep: indicator.signal.aborted
             ? 'The visible activity marker was lost. Input is stopped. Verify the action outcome and input cleanup, then close the session before reopening; do not replay automatically.'
             : projected.inputRecoveryRequired
             ? 'Input is quarantined. Check the owned input process and button state before restarting TRACE; observation alone does not clear this condition.'
@@ -273,4 +292,4 @@ function createComputerController(options = {}) {
   };
 }
 
-module.exports = { createComputerController, defaultRuntimeDirectory, validateAction };
+module.exports = { createComputerController, defaultRuntimeDirectory, validateAction, validateDepth };
