@@ -1,0 +1,253 @@
+{
+  "schemaVersion": 1,
+  "runId": "targeting-f263a551-21b6-44bc-8f03-74b44c6cb80c",
+  "plan": {
+    "path": "plan.json",
+    "sha256": "d7024e33a734cbfac5bc7ea8331c8eb6505c3d5ac7f89025bdcd74eefc0693ea"
+  },
+  "testedSource": {
+    "baseCommit": "7f30743257e0ea75a2d991f6a181a2cad12b3ee0",
+    "workingTreeModified": true,
+    "files": {
+      "bin/trace.cjs": "2006b9f1554076fe89711067566c882702c66fe5f50677270ed83f88d9d5ee60",
+      "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+      "src/computer/controller.cjs": "e5a5a069719bbb7044479bc0e5938930b795ff081b6a824f3670b1cbf1778ff8",
+      "src/computer/lease.cjs": "3600fa756bda99e15aa695731bc0e5a8f6a0893e1f7e333db4d6742ae561389b",
+      "src/computer/winapp-backend.cjs": "8667fc7c83374b34430c49c6695b741389781f7393f91dc6c5c5de30d26ff26f",
+      "src/computer/activity-indicator.cjs": "42de964cb8fca0f5c30a6c30f1a40173df5f072224339fef6f006ed4ffe2093b",
+      "native/TraceActivityIndicator/Program.cs": "262b2c70d7f1f271c45d2e66bb1faf6a8d299df87274b12a57540df425645459",
+      "native/TraceWindowBridge/Program.cs": "5c5726aa6f007d5e35cb6debae020a13226e3bc154861cb658c108d6d4befd35",
+      "tests/fixtures/computer-app/Program.cs": "064a750a8cba970510b45d8ea3a1102fcc2102c0882afde0a017a12e9cafbaf4",
+      "scripts/accept-targeting.cjs": "c28b8975eca2a58cd10e2789bcdb27bb76aa7b154f3118df3dd95ba0c68a9898",
+      "scripts/smoke-computer-live.cjs": "6327ec795cd0a9fba6e34fd0834653c0e200578dcb8873e3eb75fbaf35330f56",
+      "package.json": "2383986545da18f71adb2186fa57733e3347bc373fb6bf8063b9eebb1e2ab9ca",
+      "package-lock.json": "382cb88e6f2040de4f61af724d82478c948ac8ef786265682e148dfd7f838116"
+    }
+  },
+  "runtime": {
+    "node": "v26.2.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "cases": {
+    "A3-WINDOW-REGRESSION": {
+      "status": "pass",
+      "actual": {
+        "pass": true,
+        "transitions": {
+          "move": {
+            "stale": {
+              "outcome": "not_dispatched",
+              "code": "window_moved",
+              "preparation": [],
+              "unchanged": true,
+              "pass": true
+            },
+            "freshBounds": {
+              "x": 1318,
+              "y": 617,
+              "width": 564,
+              "height": 717
+            },
+            "hitOutcome": "completed",
+            "counterAdded": 1,
+            "pass": true
+          },
+          "minimize": {
+            "stale": {
+              "outcome": "not_dispatched",
+              "code": "window_moved",
+              "preparation": [],
+              "unchanged": true,
+              "pass": true
+            },
+            "freshBounds": {
+              "x": 1318,
+              "y": 617,
+              "width": 564,
+              "height": 717
+            },
+            "restoredByObservation": true,
+            "hitOutcome": "completed",
+            "counterAdded": 1,
+            "pass": true
+          }
+        }
+      },
+      "fixtureBefore": {
+        "count": 0,
+        "deepCount": 0,
+        "deepEnabled": true,
+        "deepPresent": true,
+        "text": "",
+        "scrollY": 0,
+        "dialogOpen": false,
+        "dialogConfirmed": false,
+        "parentEnabled": true,
+        "minimized": false,
+        "focusedControl": "traceTextInput",
+        "leftButtonDown": false,
+        "modifiers": "None"
+      },
+      "fixtureAfter": {
+        "count": 2,
+        "deepCount": 0,
+        "deepEnabled": true,
+        "deepPresent": true,
+        "text": "",
+        "scrollY": 0,
+        "dialogOpen": false,
+        "dialogConfirmed": false,
+        "parentEnabled": true,
+        "minimized": false,
+        "focusedControl": "traceIncrement",
+        "leftButtonDown": false,
+        "modifiers": "None"
+      }
+    }
+  },
+  "actions": [
+    {
+      "label": "stale after move",
+      "type": "invoke",
+      "outcome": "not_dispatched",
+      "error": "window_moved",
+      "preparation": []
+    },
+    {
+      "label": "counter after move",
+      "type": "invoke",
+      "outcome": "completed",
+      "error": null,
+      "preparation": null
+    },
+    {
+      "label": "stale after minimize",
+      "type": "invoke",
+      "outcome": "not_dispatched",
+      "error": "window_moved",
+      "preparation": []
+    },
+    {
+      "label": "counter after minimize",
+      "type": "invoke",
+      "outcome": "completed",
+      "error": null,
+      "preparation": null
+    }
+  ],
+  "frames": [
+    {
+      "path": "frames/frame-001.png",
+      "sha256": "88e092f8eefc705423dd91a5a08e77a3d1b44e6a816fdd7f537c696cb6ed5b91",
+      "label": "session parent",
+      "observationId": "889efedb-eca1-4ee2-be7f-c09cb4ce8f04",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-002.png",
+      "sha256": "3348527c0f7b8962846491334a3bc70200f0fcd98ec97440c71cd0322ed0dcb0",
+      "label": "before move",
+      "observationId": "b7b5a701-dc49-4487-a961-732c94889dc6",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-003.png",
+      "sha256": "88e092f8eefc705423dd91a5a08e77a3d1b44e6a816fdd7f537c696cb6ed5b91",
+      "label": "fresh after move",
+      "observationId": "de05f9ba-24fe-49b4-bb5a-53584e4a0036",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-004.png",
+      "sha256": "d3d96ed5b21b15b01eb213742b1edb42e372ac3662285ccea6647d0656a3ddbc",
+      "label": "after counter after move",
+      "observationId": "54c0cd10-7da7-4fff-8a71-f2270225308a",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-005.png",
+      "sha256": "d3d96ed5b21b15b01eb213742b1edb42e372ac3662285ccea6647d0656a3ddbc",
+      "label": "before minimize",
+      "observationId": "2531b24a-a74a-428b-88ad-c0f157583627",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-006.png",
+      "sha256": "d3d96ed5b21b15b01eb213742b1edb42e372ac3662285ccea6647d0656a3ddbc",
+      "label": "fresh after minimize",
+      "observationId": "ed3db367-adbc-4761-9bcd-6cae42e215d4",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-007.png",
+      "sha256": "776f337bacedced2a9c5ded382f25e4cce9abf5a154a8a5052f6bbd4be32b8f3",
+      "label": "after counter after minimize",
+      "observationId": "8010eb7e-1a74-496f-a781-0c4b5e52cf7d",
+      "depth": 8,
+      "truncated": true
+    }
+  ],
+  "cleanup": {
+    "server": {
+      "pid": 37448,
+      "exited": true,
+      "verification": "ESRCH after transport teardown"
+    },
+    "fixtureExited": true,
+    "finalState": {
+      "count": 2,
+      "deepCount": 0,
+      "deepEnabled": true,
+      "deepPresent": true,
+      "text": "",
+      "scrollY": 0,
+      "dialogOpen": false,
+      "dialogConfirmed": false,
+      "parentEnabled": true,
+      "minimized": false,
+      "focusedControl": "traceIncrement",
+      "leftButtonDown": false,
+      "modifiers": "None"
+    }
+  },
+  "fixtureExecutableSha256": "91a349eff621f7dab598d7073c32693d76d689e501acaedc22f5cf7f57074795",
+  "display": {
+    "monitors": 1,
+    "width": 2880,
+    "height": 1800,
+    "dpi": 144,
+    "pinned": {
+      "monitors": 1,
+      "width": 2880,
+      "height": 1800,
+      "dpi": 144
+    },
+    "match": true
+  },
+  "protocol": {
+    "transport": "stdio",
+    "server": {
+      "name": "trace-computer",
+      "version": "0.1.0-alpha.3.1"
+    },
+    "toolCount": 6,
+    "toolNames": [
+      "trace_computer_act",
+      "trace_computer_close_session",
+      "trace_computer_doctor",
+      "trace_computer_list_windows",
+      "trace_computer_observe",
+      "trace_computer_open_session"
+    ]
+  },
+  "sourcesUnchangedDuringRun": true,
+  "result": "pass",
+  "observedAt": "2026-10-20T14:43:32.292Z"
+}

@@ -43,8 +43,12 @@ internal sealed class FixtureWindow : Form
     private readonly Label dragTarget;
     private readonly System.Windows.Forms.Timer commands;
     private readonly PanelWheelFilter wheelFilter;
+    private readonly Panel deepHost;
+    private readonly Panel deepInnermost;
+    private readonly Button deepButton;
     private Form? dialog;
     private int count;
+    private int deepCount;
     private int revision;
     private int appliedCommandId;
     private string chord = "none";
@@ -103,6 +107,21 @@ internal sealed class FixtureWindow : Form
             Location = new Point(24, 214), AutoSize = true, TabIndex = 2
         };
         Controls.Add(option);
+
+        // A counter nested twelve panes deep; observing it needs an accessibility depth beyond 8.
+        deepHost = new Panel { Name = "traceDeepHost", AccessibleName = "Deep host", Location = new Point(330, 210), Size = new Size(200, 36) };
+        var container = deepHost;
+        for (var level = 1; level <= 12; level++)
+        {
+            var next = new Panel { Name = $"traceDeepLevel{level}", AccessibleName = $"Deep level {level}", Dock = DockStyle.Fill };
+            container.Controls.Add(next);
+            container = next;
+        }
+        deepInnermost = container;
+        deepButton = new Button { Name = "traceDeepCounter", AccessibleName = "Deep counter", Text = "Deep counter", Dock = DockStyle.Fill, TabStop = false };
+        deepButton.Click += (_, _) => { deepCount++; WriteReceipt(); };
+        deepInnermost.Controls.Add(deepButton);
+        Controls.Add(deepHost);
 
         Controls.Add(new Label { Text = "Scrollable controls", Location = new Point(24, 254), AutoSize = true });
         scrolling = new ScrollFixturePanel
@@ -236,6 +255,13 @@ internal sealed class FixtureWindow : Form
             Location = new Point(24, 52), Size = new Size(170, 36)
         };
         confirm.Click += (_, _) => { dialogConfirmed = true; confirm.Text = "Dialog confirmed"; WriteReceipt(); };
+        var close = new Button
+        {
+            Name = "traceCloseDialog", AccessibleName = "Close dialog", Text = "Close dialog",
+            Location = new Point(206, 52), Size = new Size(130, 36)
+        };
+        close.Click += (_, _) => owned.Close();
+        owned.Controls.Add(close);
         owned.Controls.Add(new Label { Text = "Owned synthetic dialog", Location = new Point(24, 18), AutoSize = true });
         owned.Controls.Add(confirm);
         owned.Shown += (_, _) => { dialogOpen = true; WriteReceipt(); };
@@ -258,7 +284,7 @@ internal sealed class FixtureWindow : Form
         {
             if (!File.Exists(commandsPath)) return;
             var command = JsonSerializer.Deserialize<FixtureCommand>(File.ReadAllText(commandsPath), CommandJson);
-            if (command is null || command.Id <= appliedCommandId || command.Op is not ("move" or "minimize" or "restore" or "move-monitor" or "close-dialog" or "open-dialog")) return;
+            if (command is null || command.Id <= appliedCommandId || command.Op is not ("move" or "minimize" or "restore" or "move-monitor" or "close-dialog" or "open-dialog" or "deep-disable" or "deep-enable" or "deep-move" or "deep-remove" or "focus-option")) return;
             appliedCommandId = command.Id;
             lastCommand = command.Op;
             switch (command.Op)
@@ -269,6 +295,11 @@ internal sealed class FixtureWindow : Form
                 case "move-monitor": MoveToOtherMonitor(); break;
                 case "close-dialog": dialog?.Close(); break;
                 case "open-dialog": ShowOwnedDialog(); break;
+                case "deep-disable": deepButton.Enabled = false; break;
+                case "deep-enable": deepButton.Enabled = true; break;
+                case "deep-move": deepHost.Left += 12; break;
+                case "deep-remove": deepInnermost.Controls.Remove(deepButton); break;
+                case "focus-option": option.Focus(); break;
             }
             WriteReceipt();
         }
@@ -299,6 +330,9 @@ internal sealed class FixtureWindow : Form
         {
             schemaVersion = 1, runId, title = Text, text = textInput.Text,
             count, optionChecked = option.Checked, chord,
+            deepCount, deepEnabled = deepButton.Enabled, deepPresent = deepButton.Parent is not null,
+            deepScreenX = deepButton.Parent is null ? -1 : deepButton.PointToScreen(Point.Empty).X,
+            focusedControl = ActiveControl?.Name ?? "none",
             selectionStart = textInput.SelectionStart, selectionLength = textInput.SelectionLength,
             selectedText = textInput.SelectedText,
             modifiers = ModifierKeys.ToString(),

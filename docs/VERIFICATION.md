@@ -1,5 +1,30 @@
 # Verification
 
+## Alpha.3.3 observation and result contracts
+
+Observed 20 October 2026 on one 2880×1800 monitor at 144 DPI, pinned per run, through the production stdio MCP server and the owned computer fixture ([case status](../evidence/0.1.0-alpha.3.3/case-status.json)). Unit tests: 172 ran, 171 passed, one privilege skip.
+
+| Case | Result | Evidence |
+| --- | --- | --- |
+| A33-DEPTH | Pass: the deep counter (14 levels down) is absent at depth 8, present at 16, and invoked exactly once. After it was disabled, moved or removed, each stale action returned `not_dispatched`. A client-supplied depth on an action was refused | [Run](../evidence/0.1.0-alpha.3.3/targeting/receipt.json) |
+| A33-OUTCOME | Pass: moved window, blocked window, horizontal scroll and moved focus each returned `not_dispatched` with fixture state unchanged; preparatory activation recorded separately | Run |
+| A3-DIALOG (focused continuation) | Pass: parent invoke/click/value rejected with `window_blocked`; the exact dialog was confirmed and closed through TRACE (close returned `unknown` and was resolved by fixture state without replay); parent enabled and hit once | Run |
+| A3-WINDOW | **Fail ×2**, budget exhausted: the first run captured a minimized window before restore; the retry exposed bridge activation skipping restore for a foreground minimized window | [Run](../evidence/0.1.0-alpha.3.3/targeting/receipt.json), [retry](../evidence/0.1.0-alpha.3.3/window-retry/receipt.json) |
+| A3-WINDOW focused regression (cannot promote) | Pass after both fixes: stale move/minimize actions not dispatched; observation restored the window; one counter hit each | [Regression](../evidence/0.1.0-alpha.3.3/window-regression/receipt.json) |
+| Skill synchronization | Pass: three exact backups; copies match `e7d12ba7`; discovery plan unchanged | [Receipt](../evidence/0.1.0-alpha.3.3/skill-sync.json) |
+
+## Alpha.3.2 feasibility probe
+
+[Probe status](../evidence/0.1.0-alpha.3.2/probe-status.json): **failed in both allowed attempts**, so alpha.3.2 is blocked.
+
+- Both attempts confirmed:
+  - kill-on-close job ownership, refused breakaway and child termination;
+  - held mouse, chord and key release, verified from a separate process;
+  - injected-Escape detection.
+- Attempt 2 also confirmed lease exclusion with Node and detached parent-death detection.
+- Attempt 2 did not prove typed-character delivery.
+- Finding: a supervisor must be spawned detached, because libuv kills attached Node children with their parent.
+
 ## Alpha.3.1 glow continuation
 
 Observed 20 October 2026 on one 2880×1800 monitor at 144 DPI, pinned per run. [Case status](../evidence/0.1.0-alpha.3.1/case-status.json): 160 tests ran, 159 passed with one privilege skip; syntax/JSON/link/pin checks passed for 31 JavaScript files. These noninteractive checks do not establish live acceptance.

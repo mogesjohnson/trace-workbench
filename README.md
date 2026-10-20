@@ -4,9 +4,9 @@
 
 Shared tools that give agents abilities beyond written instructions.
 
-**Version:** `0.1.0-alpha.3` · **Status:** Windows preview
+**Version:** `0.1.0-alpha.3.3` · **Status:** Windows preview, milestone acceptance incomplete
 
-TRACE provides local tools for **Codex, Claude Code, Grok Build, and Gemini CLI**. The first two skills are **Reverse Engineer Anything** and **Computer Use**. The Windows executor now exposes six MCP tools for discovering windows, observing screenshots and controls, acting, and releasing desktop ownership.
+TRACE provides local tools for **Codex, Claude Code, Grok Build, and Gemini CLI**. The first two skills are **Reverse Engineer Anything** and **Computer Use**. The Windows executor exposes six MCP tools for discovering windows, observing screenshots and controls, acting, and releasing desktop ownership. A screen-edge glow shows when TRACE owns the desktop.
 
 Read the [specification and remaining acceptance](SPEC.md). [Skill status](SKILLS.md) and [future skills under review](docs/CAPABILITIES.md) distinguish selected work from research.
 
@@ -29,16 +29,25 @@ Review each plan before applying it. Setup pins the Windows engine locally; conf
 
 ## Verified
 
-- **126 tests passed; 1 Windows file-symlink privilege test skipped.**
-- Owned-fixture MCP evidence covers exact key/selection, bidirectional scrolling and drag/drop results. Original action/window evidence and both failed review attempts are preserved.
-- A native disabled-window guard rejects activation, clicks, invocation and value changes before input, including when UIA children appear enabled. A focused MCP/native regression passed; it does not establish complete modal/recovery acceptance.
-- The analysis connection still exposes **207 tools** and passes its static fixture check. Four client registrations were verified with the alpha.2 installation receipt.
+- **172 tests run, 171 passed; 1 Windows file-symlink privilege test skipped.**
+- Observation reads the accessibility tree 8 levels deep by default and up to 32 on request; the action reuses that depth. Live: a control 14 levels deep was invoked exactly once.
+- Rejected actions report `not_dispatched` when input provably never started, and `unknown` when it may have. Live: moved, blocked, unsupported-scroll and changed-focus cases left the fixture unchanged.
+- A focused modal workflow passed: the blocked parent rejected input, and the exact dialog was confirmed and closed through TRACE.
+- The session glow now stays above activated windows (focused regression). A minimized target is restored and settles before capture (focused regression).
+- The analysis connection exposes **207 tools**. Four client registrations and three skill copies match the current instructions.
 
 [Verification and limits](docs/VERIFICATION.md) · [Observed computer workflow](docs/OBSERVED-WORKFLOW.md)
 
 ## Remaining
 
-Complete modal/recovery acceptance, Codex/Claude tasks, a real REPLAY workflow, clean-machine setup and release gates remain. One 144 DPI display did not permit DPI/monitor transitions. Grok/Gemini live behavior is unverified. See [SPEC.md](SPEC.md); alpha.3 is an incomplete preview, not a published release. Current local input uses the active desktop; an isolated background worker is proposed.
+- **Failed cases:** A31-GLOW and A3-WINDOW each failed twice, so their retry budgets are exhausted; replacement cases need owner approval.
+- **Blocked:** alpha.3.2 native supervision (recovery, durable quarantine, physical Escape stop) is blocked by its failed feasibility probe.
+- **Not started:** Codex/Claude host tasks, the REPLAY workflow, clean-machine setup and release gates.
+- **Hosted CI:** cannot run because of account billing.
+- **Unverified:** Grok/Gemini live behavior.
+- **Deferred:** display transitions.
+
+See [SPEC.md](SPEC.md). No release is published.
 
 ```powershell
 npm test

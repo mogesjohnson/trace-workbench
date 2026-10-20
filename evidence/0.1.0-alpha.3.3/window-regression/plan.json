@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "runId": "targeting-f263a551-21b6-44bc-8f03-74b44c6cb80c",
+  "declaredBeforeUiLaunch": true,
+  "display": {
+    "pinned": {
+      "monitors": 1,
+      "width": 2880,
+      "height": 1800,
+      "dpi": 144
+    },
+    "mismatch": "blocks every case"
+  },
+  "target": "Owned run-scoped WinForms fixture; exact returned HWND and PID",
+  "cases": {
+    "A3-WINDOW-REGRESSION": {
+      "requirement": "CU-01/CU-02",
+      "budget": "Focused regression after a fix; cannot promote or retry the original case",
+      "actions": [
+        "Move between observation and action: stale action rejected; fresh observation hits the counter once",
+        "Minimize: stale action rejected; observation restores; one counter hit"
+      ],
+      "expected": {
+        "staleOutcome": "not_dispatched",
+        "staleError": "window_moved",
+        "counterAddedPerTransition": 1
+      }
+    }
+  },
+  "cleanup": "Close sessions, the MCP server and the fixture; verify server and fixture exit"
+}
