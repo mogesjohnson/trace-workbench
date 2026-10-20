@@ -1,0 +1,15 @@
+{
+  "caseId": "GLOW-LIVE",
+  "attempt": 2,
+  "status": "blocked",
+  "observedAt": "2026-10-19T19:51:16.2959180Z",
+  "reason": "Public Computer Use reported user stop via physical Escape; no further Computer Use calls made.",
+  "plannedPhysicalClicksDispatched": 0,
+  "fixtureSourceSha256": "11abfdfe317c006ede7565c0e1ed43bf818926794bbe2243e251024d36a46097",
+  "cleanup": "Owned fixture close command issued; launcher completion checked separately",
+  "remaining": [
+    "Physical click-through acceptance",
+    "Owned parent-loss acceptance",
+    "Final documentation and GitHub glow PR"
+  ]
+}

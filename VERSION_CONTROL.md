@@ -12,7 +12,7 @@ Keep one implementation commit, one verification commit, and one documentation c
 
 ## Versions and releases
 
-The current implementation is `0.1.0-alpha.3`; `0.1.0-alpha.1` established the analysis foundation and `0.1.0-alpha.2` added the Computer Use executor. TRACE's product version is independent of upstream package and skill versions. Keep the package manifest, lockfile, and release notes consistent when changing a version. [SPEC.md](SPEC.md) records milestone acceptance.
+The current implementation is `0.1.0-alpha.3.1`, adding visible desktop-session ownership while alpha.3 acceptance remains incomplete. `0.1.0-alpha.1` established analysis and `0.1.0-alpha.2` added the Computer Use executor. TRACE's product version is independent of upstream package and skill versions. Keep the package manifest, lockfile, and release notes consistent when changing a version. [SPEC.md](SPEC.md) records milestone acceptance.
 
 Use `v<package-version>` tags for published releases. A merged PR is not a release. Publish only after the version, artifacts, required checks, and known limits are recorded. Report CI account or billing failures as release blockers, with the run linked.
 

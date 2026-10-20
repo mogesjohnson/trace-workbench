@@ -1,6 +1,6 @@
 # TRACE specification
 
-Status reviewed 19 October 2026. This is the acceptance baseline for the first usable release; the package currently identifies the implementation as `0.1.0-alpha.3`. The version identifies a preview; it does not mark every milestone case complete.
+Status reviewed 19 October 2026. This is the acceptance baseline for the first usable release; the package currently identifies the implementation as `0.1.0-alpha.3.1`. The version identifies a preview; it does not mark every milestone case complete.
 
 ## Product and scope
 
@@ -46,6 +46,12 @@ The reviewed preview keeps original evidence and both failed complete-case attem
 - **A3-WINDOW / CU-01, CU-02:** move, minimize and restore the target between observation and action. Stale geometry must reject input; a fresh capture must restore valid bounds and hit the intended control once.
 - **A3-DISPLAY / CU-01:** test two DPI scales and a monitor transition. Record scale/topology, PNG dimensions and physical bounds; verify coordinate hits after each transition. Unavailable configurations remain `blocked`, not passed by simulation.
 
+### `0.1.0-alpha.3.1` — visible desktop ownership
+
+- **GLOW-LIFECYCLE / CU-04:** acquire the desktop lease before starting the marker; publish a session only after native readiness. Show a nonactivating, click-through glow on every attached monitor until input/recovery and session cleanup finish. Marker startup failure rejects the session; marker loss stops further input and cancels in-flight work.
+- **GLOW-LIVE / CU-01, CU-04:** declare an owned synthetic target, expected edge click count and exact cleanup. Verify visible edges on available monitors, unchanged native foreground/focus on marker start, physical clicks through the edge, and process/overlay removal after EOF and owned parent termination. Retain source hashes, independent target state and sanitized screen evidence. Missing topology changes remain blocked.
+- **GLOW-DIAGNOSTICS / CFG-01:** diagnostics verify helper source/output hashes and the .NET 9 Desktop runtime without showing UI; discovery excludes the helper. Existing acceptance remains at its recorded scope.
+
 ### `0.1.0-alpha.4` — host and real-app acceptance (pending)
 
 - **A4-HOST / HOST-01:** separate Codex and Claude receipts show both skills discovered, actual image/evidence inspection, an owned-target task with an exact final state, recovery from a failed action and session cleanup. Other host live runs remain optional and labeled unverified.
@@ -59,13 +65,13 @@ The reviewed preview keeps original evidence and both failed complete-case attem
 
 ## Current operating limits
 
-- Windows x64, a supported Node.js runtime, .NET 9 SDK for building the bridge, and .NET 9 runtime for executing it.
+- Windows x64, a supported Node.js runtime, .NET 9 SDK with Windows Desktop reference pack for local helpers, and .NET 9 Desktop runtime for the activity marker.
 - Physical input uses an unlocked interactive desktop. Secure/elevated desktop automation is outside the initial release scope.
 - Screenshots must match exact DWM/window geometry and remain within the 6 MiB image limit. Accessibility inspection currently has a bounded tree depth.
 - Vertical wheel input uses 120-unit notches at an observed element's center; horizontal wheel input is unsupported.
 - The desktop lease coordinates TRACE processes for one OS user. It cannot prevent human input or unrelated automation from interfering; target/focus checks remain necessary.
 - Journals record action metadata and artifact references. They do not implement durable task resume or undo external service changes.
-- Local input uses the active interactive desktop; another user account or Task View desktop is not a verified background mode. An isolated VM/remote worker remains proposed and needs proof that host input/focus remain untouched.
+- Local input uses the active interactive desktop; another account alone or Task View does not establish background Computer Use. [Restricted-account, hidden-desktop, Child Session and VM/remote worker research](docs/BACKGROUND_WORKER.md) separates command containment from independent GUI operation; no background backend is verified.
 
 ## Future skills
 

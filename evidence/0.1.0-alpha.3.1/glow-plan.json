@@ -1,0 +1,20 @@
+{
+  "caseId": "GLOW-LIVE",
+  "declaredBeforeUiLaunch": true,
+  "target": "New owned fullscreen synthetic primary-monitor fixture; exact returned HWND and PID",
+  "initialState": {"count": 0, "privateApplicationContent": false},
+  "actions": [
+    "Select the fixture through public Computer Use and retain native foreground/focus baseline",
+    "Open actual TRACE stdio MCP session; verify readiness and unchanged native foreground/focus",
+    "Capture actual layered-window pixels over the guarded synthetic background",
+    "Fresh observation; one public Computer Use physical edge click; verify count 1",
+    "Fresh TRACE MCP observation; one physical edge click; verify count 2",
+    "Close session normally; verify helper exit and absent edge glow",
+    "Start a marker bound to a separately owned test parent; terminate only that parent; verify helper exit and absent glow",
+    "Close owned fixture and MCP process; verify process exit"
+  ],
+  "expected": {"focusPreservedOnStart": true, "visibleGlow": true, "countAfterReferenceClick": 1, "countAfterMcpClick": 2, "markerExitAfterEof": true, "markerExitAfterParentTermination": true},
+  "cleanup": "Close session/server, close fixture through its owned command file, terminate only an owned test parent if still live; retain failed results",
+  "retryLimit": "One corrective retry with changed precondition/code and fresh observation; second failure stops that case",
+  "limits": ["One available primary monitor; real topology transitions blocked", "No full alpha.3 recovery/modal, paid model or real REPLAY acceptance"]
+}

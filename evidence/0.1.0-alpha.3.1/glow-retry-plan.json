@@ -1,0 +1,12 @@
+{
+  "caseId": "GLOW-LIVE",
+  "attempt": 2,
+  "declaredBeforeUiLaunch": true,
+  "priorResult": "glow-attempt-1/receipt.json",
+  "changedPrecondition": "New fixture separates Button.Click activation from left MouseClick counts, logs down/up/click state and timestamps, and removes automatic button focus. Require no held input and count zero before each first physical action.",
+  "fixtureSourceSha256": "11abfdfe317c006ede7565c0e1ed43bf818926794bbe2243e251024d36a46097",
+  "expected": {"initialMouseClicks": 0, "afterReferencePhysicalClick": 1, "afterMcpPhysicalClick": 2, "leftButtonReleased": true, "focusPreservedOnMarkerStart": true, "visibleGlow": true, "markerGoneAfterEof": true, "markerGoneAfterOwnedParentDeath": true},
+  "coordinates": "Reference executor uses its returned logical-image dimensions; TRACE uses returned PNG physical pixels. Derive the edge center separately for each fresh observation.",
+  "cleanup": "Close owned session/server, close fixture, independently confirm owned process exit. Second failure stops this case; no third attempt.",
+  "limits": ["Primary available monitor only; topology transitions blocked", "Other alpha.3 acceptance remains incomplete"]
+}

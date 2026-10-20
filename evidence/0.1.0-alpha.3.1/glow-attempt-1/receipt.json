@@ -1,0 +1,82 @@
+{
+  "caseId": "GLOW-LIVE",
+  "status": "fail",
+  "observedAt": "2026-10-19T19:49:30.120Z",
+  "testedSource": {
+    "baseCommit": "a68fe5b",
+    "workingTreeModified": true,
+    "files": {
+      "native/TraceActivityIndicator/Program.cs": "ab9bf1ed13cd85beceaeda8ed14dfd2fba1f7d1c5ed2e71cc8deeb325b423a41",
+      "native/TraceActivityIndicator/TraceActivityIndicator.csproj": "07f888cffc6600a3f52173b5eee9ed4b0dd7ce0b4dd7f26e377dc06fc3a50b5a",
+      "src/computer/activity-indicator.cjs": "42de964cb8fca0f5c30a6c30f1a40173df5f072224339fef6f006ed4ffe2093b",
+      "src/computer/controller.cjs": "b7e12840bef625eb7941d26d90c10f99044ca206a2bb66dbdefaed6fee53a225",
+      "src/computer/winapp-backend.cjs": "40a56d5136f9c032c86c66ad717e0a85361ed0992059b4b17309a24044d3613d",
+      "tests/fixtures/glow-app/Program.cs": "9d29f33cd29d478cc9708f8af82cca87c8f92ab883e30878b9fcaae5016de3cb",
+      "tests/fixtures/glow-app/TraceGlowFixture.csproj": "cda1d4a7fc15c3688217cbfcbced6b789ff09ac83bda6cdb8e8109452c261cc6",
+      "scripts/smoke-computer-glow.cjs": "d74c7257fd07466d9fe96e42930e05446ae74e73198210e5941dc6dcaad4853a",
+      "package.json": "2383986545da18f71adb2186fa57733e3347bc373fb6bf8063b9eebb1e2ab9ca",
+      "package-lock.json": "382cb88e6f2040de4f61af724d82478c948ac8ef786265682e148dfd7f838116"
+    }
+  },
+  "protocol": {
+    "transport": "stdio"
+  },
+  "session": {
+    "sessionId": "1193de6f-530d-4d7c-948d-f8fde9099076",
+    "window": {
+      "id": "1379932",
+      "pid": 3252,
+      "processName": "TraceGlowFixture",
+      "title": "TRACE owned glow acceptance fixture",
+      "bounds": {
+        "x": null,
+        "y": null,
+        "width": 1920,
+        "height": 1080
+      }
+    },
+    "activityIndicator": {
+      "active": true,
+      "monitors": 1,
+      "protocol": 1
+    }
+  },
+  "expectedCountBeforeClicks": 0,
+  "actualCountBeforeClicks": 5,
+  "plannedPhysicalClicksDispatched": 0,
+  "sourceOfUnexpectedActivation": "unresolved; no action request was dispatched",
+  "focusPreservedOnStart": true,
+  "visualGlow": "reviewed visible cyan/violet edges around synthetic primary screen",
+  "normalStop": "reviewed absent marker after session close",
+  "cleanup": {
+    "marker": {
+      "pid": 10132,
+      "exited": true,
+      "verification": "ESRCH after transport teardown"
+    },
+    "server": {
+      "pid": 16016,
+      "exited": true,
+      "verification": "ESRCH after transport teardown"
+    },
+    "fixture": {
+      "pid": 3252,
+      "exited": true,
+      "verification": "ESRCH after transport teardown"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "glow-active.png",
+      "sha256": "5c83bd2767f54bb959ef12987455d0993c2725224e3d7caf9a9546fa3b2e2439"
+    },
+    {
+      "path": "glow-stopped.png",
+      "sha256": "718a16aa277708674f88449491b756874963b671268ec1726d8b5c3fcedda07e"
+    },
+    {
+      "path": "unexpected-before-clicks.json",
+      "sha256": "7005e32dba7641378369f87fa3359481f40044f8f6b5e41fb143e8a14a1921e8"
+    }
+  ]
+}
