@@ -9,6 +9,8 @@ const { pipeline } = require('node:stream/promises');
 const { createWriteStream } = require('node:fs');
 const { pin, DEFAULT_BINARY, DEFAULT_BRIDGE, verifyFiles, runProcess, bridgeSourceHashes } = require('../src/computer/winapp-backend.cjs');
 const { DEFAULT_INDICATOR, OUTPUTS, indicatorSourceHashes, verifyIndicatorFiles } = require('../src/computer/activity-indicator.cjs');
+const { DEFAULT_SUPERVISOR, OUTPUTS: SUPERVISOR_OUTPUTS, supervisorSourceHashes, verifySupervisorFiles } = require('../src/computer/supervisor.cjs');
+const { DEFAULT_CLIPBOARD, CLIPBOARD_OUTPUTS, clipboardSourceHashes, verifyClipboardFiles } = require('../src/method/clipboard-provider.cjs');
 const ROOT = path.resolve(__dirname, '..');
 
 function plan() {
@@ -17,7 +19,7 @@ function plan() {
     platform: pin.platform, architecture: pin.architecture,
     source: pin.url, archiveSha256: pin.archiveSha256,
     destination: path.dirname(DEFAULT_BINARY),
-    changes: ['Download and verify a pinned release under the ignored .runtime directory.', 'Extract locally; preserve any existing engine runtime.', 'Build the source-owned window bridge under .runtime with the installed .NET 9 SDK.', 'Build the source-owned activity indicator using an empty local package feed; no indicator downloads.'],
+    changes: ['Download and verify a pinned release under the ignored .runtime directory.', 'Extract locally; preserve any existing engine runtime.', 'Build the source-owned window bridge under .runtime with the installed .NET 9 SDK.', 'Build the source-owned activity indicator using an empty local package feed; no indicator downloads.', 'Build and verify the source-owned native input supervisor under .runtime.', 'Build the source-owned text-only transactional clipboard helper without reading or changing clipboard contents.'],
     requirements: ['Windows x64', '.NET 9 SDK with Windows Desktop reference pack to build local helpers; .NET 9 Desktop runtime to run the indicator'],
     globalChanges: false
   };
@@ -53,6 +55,40 @@ async function download(url, output) {
     else callback(null, chunk);
   } });
   await pipeline(Readable.fromWeb(response.body), limit, createWriteStream(output, { flags: 'wx' }));
+}
+
+async function buildSupervisor({ root = ROOT, binaryPath = DEFAULT_SUPERVISOR, run = runProcess } = {}) {
+  const output = path.dirname(binaryPath), parent = path.dirname(output);
+  const emptyFeed = path.join(parent, 'empty-package-feed');
+  await fs.mkdir(emptyFeed, { recursive: true });
+  const sources = await supervisorSourceHashes(root);
+  const result = await run('dotnet', ['publish', path.join(root, 'native', 'TraceSupervisor', 'TraceSupervisor.csproj'), '--configuration', 'Release', '--output', output, '--artifacts-path', path.join(parent, 'artifacts'), '--source', emptyFeed, '--nologo'], { timeoutMs: 120000, maxOutputBytes: 1024 * 1024 });
+  if (result.exitCode !== 0) throw new Error('Native supervisor build failed. Install the .NET 9 SDK; no packages were downloaded.');
+  if (JSON.stringify(sources) !== JSON.stringify(await supervisorSourceHashes(root))) throw new Error('Supervisor source changed during build; manifest was not updated.');
+  const files = {};
+  for (const name of SUPERVISOR_OUTPUTS) files[name] = crypto.createHash('sha256').update(await fs.readFile(path.join(output, name))).digest('hex');
+  const stage = path.join(parent, `manifest-${crypto.randomUUID()}.tmp`);
+  await fs.writeFile(stage, JSON.stringify({ version: 1, sources, files }, null, 2) + '\n', { flag: 'wx' });
+  await fs.rename(stage, path.join(parent, 'manifest.json'));
+  await verifySupervisorFiles(binaryPath, root);
+  return { built: true, runtime: '.NET 9 Desktop', sourceManifest: 'verified', packageDownloads: false };
+}
+
+async function buildClipboard({ root = ROOT, binaryPath = DEFAULT_CLIPBOARD, run = runProcess } = {}) {
+  const output = path.dirname(binaryPath), parent = path.dirname(output);
+  const emptyFeed = path.join(parent, 'empty-package-feed');
+  await fs.mkdir(emptyFeed, { recursive: true });
+  const sources = await clipboardSourceHashes(root);
+  const result = await run('dotnet', ['publish', path.join(root, 'native', 'TraceClipboard', 'TraceClipboard.csproj'), '--configuration', 'Release', '--output', output, '--artifacts-path', path.join(parent, 'artifacts'), '--source', emptyFeed, '--nologo'], { timeoutMs: 120000, maxOutputBytes: 1024 * 1024 });
+  if (result.exitCode !== 0) throw new Error('Clipboard helper build failed. Install the .NET 9 SDK; no packages were downloaded.');
+  if (JSON.stringify(sources) !== JSON.stringify(await clipboardSourceHashes(root))) throw new Error('Clipboard source changed during build; manifest was not updated.');
+  const files = {};
+  for (const name of CLIPBOARD_OUTPUTS) files[name] = crypto.createHash('sha256').update(await fs.readFile(path.join(output, name))).digest('hex');
+  const temporary = path.join(parent, `manifest-${crypto.randomUUID()}.tmp`);
+  await fs.writeFile(temporary, JSON.stringify({ version: 1, sources, files }, null, 2) + '\n', { flag: 'wx' });
+  await fs.rename(temporary, path.join(parent, 'manifest.json'));
+  await verifyClipboardFiles(binaryPath, root);
+  return { built: true, mode: 'text-only', sourceManifest: 'verified', packageDownloads: false, clipboardContentsRead: false, clipboardContentsChanged: false };
 }
 
 async function installEngine() {
@@ -97,7 +133,9 @@ async function install() {
   for (const name of ['TraceWindowBridge.exe', 'TraceWindowBridge.dll', 'TraceWindowBridge.runtimeconfig.json', 'TraceWindowBridge.deps.json']) files[name] = crypto.createHash('sha256').update(await fs.readFile(path.join(output, name))).digest('hex');
   await fs.writeFile(path.join(parent, 'manifest.json'), JSON.stringify({ version: 1, sources: await bridgeSourceHashes(), files }, null, 2) + '\n');
   const activityIndicator = await buildActivityIndicator();
-  return { ...engine, bridge: { built: true, runtime: '.NET 9', destination: output, sourceManifest: 'verified' }, activityIndicator };
+  const supervisor = await buildSupervisor();
+  const clipboard = await buildClipboard();
+  return { ...engine, bridge: { built: true, runtime: '.NET 9', destination: output, sourceManifest: 'verified' }, activityIndicator, supervisor, clipboard };
 }
 
 async function main(args = process.argv.slice(2)) {
@@ -106,4 +144,4 @@ async function main(args = process.argv.slice(2)) {
 }
 
 if (require.main === module) main().then(result => process.stdout.write(JSON.stringify(result, null, 2) + '\n')).catch(error => { process.stderr.write(`Computer setup failed: ${error.message}\n`); process.exitCode = 1; });
-module.exports = { plan, main, buildActivityIndicator };
+module.exports = { plan, main, buildActivityIndicator, buildSupervisor, buildClipboard };

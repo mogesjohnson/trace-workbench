@@ -8,7 +8,9 @@ const { DesktopLease } = require('./lease.cjs');
 const { ActivityIndicator } = require('./activity-indicator.cjs');
 
 const fail = (code, message) => Object.assign(new Error(message), { code });
-const identityMatches = (a, b) => a && b && a.id === b.id && a.pid === b.pid && a.processName === b.processName;
+const identityMatches = (a, b) => a && b && a.id === b.id && a.pid === b.pid && a.processName === b.processName
+  && (b.processCreationTime === undefined || a.processCreationTime === b.processCreationTime)
+  && (b.sessionId === undefined || a.sessionId === b.sessionId);
 function safeError(error) {
   const result = { code: error.code ?? 'backend_error', message: String(error.message).slice(0, 1500) };
   if (['unknown', 'not_dispatched'].includes(error.details?.outcome)) result.outcome = error.details.outcome;
@@ -16,9 +18,11 @@ function safeError(error) {
   if (recovery && typeof recovery.attempted === 'boolean') {
     result.recovery = { attempted: recovery.attempted };
     if (typeof recovery.released === 'boolean') result.recovery.released = recovery.released;
+    if (typeof recovery.processExitConfirmed === 'boolean') result.recovery.processExitConfirmed = recovery.processExitConfirmed;
     if (recovery.button === 'left') result.recovery.button = 'left';
     if (recovery.method === 'public-win32-sendinput') result.recovery.method = recovery.method;
-    if (['native_drained', 'not_dispatched', 'process_exit_unconfirmed'].includes(recovery.reason)) result.recovery.reason = recovery.reason;
+    if (recovery.method === 'declared-sendinput') result.recovery.method = recovery.method;
+    if (['native_drained', 'not_dispatched', 'process_exit_unconfirmed', 'cancelled', 'native_timeout', 'physical_escape', 'parent_exited', 'stdin_eof', 'normal_exit', 'operation_failed', 'input_release_unconfirmed'].includes(recovery.reason)) result.recovery.reason = recovery.reason;
     if (typeof recovery.code === 'string' && /^[a-z_]{1,64}$/.test(recovery.code)) result.recovery.code = recovery.code;
   }
   if (Array.isArray(error.details?.preparation)) {
@@ -89,8 +93,8 @@ function createComputerController(options = {}) {
   const runtimeDirectory = path.resolve(options.runtimeDirectory ?? defaultRuntimeDirectory());
   // Artifact directories may differ between hosts. Desktop ownership must not.
   // userInfo comes from the OS rather than the configurable artifact path.
-  const lease = options.lease ?? new DesktopLease(path.join(os.userInfo().homedir, '.trace-desktop-lease'));
-  const indicator = options.indicator ?? new ActivityIndicator();
+  const lease = options.lease ?? backend.supervisor ?? new DesktopLease(path.join(os.userInfo().homedir, '.trace-desktop-lease'));
+  const indicator = options.indicator ?? backend.supervisor?.indicator() ?? new ActivityIndicator();
   const observationTtlMs = options.observationTtlMs ?? 60000;
   const now = options.now ?? Date.now;
   const shutdown = new AbortController();
@@ -134,8 +138,8 @@ function createComputerController(options = {}) {
     }
   }
   async function currentWindow(session, signal) {
-    const windows = await backend.listWindows({ signal });
-    const current = windows.find(window => window.id === session.window.id);
+    const current = backend.currentWindow ? await backend.currentWindow(session.window, { signal })
+      : (await backend.listWindows({ signal })).find(window => window.id === session.window.id);
     if (!identityMatches(current, session.window)) {
       session.observation = null;
       throw fail('window_changed', 'The selected window closed or its process identity changed. Open a new session.');
@@ -172,6 +176,8 @@ function createComputerController(options = {}) {
       elements: snapshot.elements ?? [], observedAt: new Date(observedAtMs).toISOString(),
       coordinateSpace: 'window-local-physical-pixels', captureMethod: snapshot.captureMethod ?? 'native-window',
       accessibility: { truncated: snapshot.truncated === true, depth: snapshot.depth },
+      focused: snapshot.focused ? { ...snapshot.focused } : { available: false, code: 'focus_unavailable' },
+      targetState: snapshot.targetState ?? { available: false },
       ...(snapshot.restoredFromMinimized === true ? { preparation: [{ step: 'restore', status: 'restored' }] } : {}),
       screenshot: { data: bytes.toString('base64'), mimeType: 'image/png', width, height, sha256: createHash('sha256').update(bytes).digest('hex') },
     };
@@ -195,7 +201,9 @@ function createComputerController(options = {}) {
       return queued(async signal => {
         const selected = discovered.get(windowId);
         if (!selected) throw fail('unknown_window', 'Select a windowId returned by list_windows.');
-        const current = targetWindows(await backend.listWindows({ signal })).find(window => window.id === windowId);
+        if (selected.identity?.available === false) throw fail('window_identity_unavailable', 'The selected window identity could not be inspected. Choose an available target.');
+        const current = backend.currentWindow ? await backend.currentWindow(selected, { signal })
+          : targetWindows(await backend.listWindows({ signal })).find(window => window.id === windowId);
         if (!identityMatches(selected, current)) throw fail('window_changed', 'The discovered window changed. Refresh the window list.');
         const id = randomUUID();
         await lease.acquire(id);
