@@ -16,6 +16,7 @@ const { buildFixture } = require('./smoke-computer-live.cjs');
 const { launchOwnedFixture } = require('./accept-clipboard.cjs');
 const { stateOf, validateDisplay, compareDisplay } = require('./accept-supervisor-recovery.cjs');
 const continuation = require('./live-acceptance-continuation.cjs');
+const attribution = require('./claude-settings-attribution.cjs');
 const ROOT = path.resolve(__dirname, '..');
 const CLAUDE = path.join(os.homedir(), '.local/bin/claude.exe');
 const SERVER = 'trace-acceptance';
@@ -723,10 +724,12 @@ function compareSettings(before, after) {
   }
   return { preserved: changes.every(change => change.kind === 'formatting_only'), changes };
 }
-// Private attribution input only: changed key names to depth 2, never values. Nested
-// names can be private paths, so this result must stay under ignored .runtime/.
+// Private attribution input only: changed key names to depth 2 (depth 3 under projects, whose
+// second level is a project path), never values. Names can be private paths, so this result
+// must stay under ignored .runtime/.
 function changedKeyPaths(before, after) {
-  const paths = [];
+  const paths = [], object = item => item && typeof item === 'object' && !Array.isArray(item);
+  const changed = (x, y) => [...new Set([...Object.keys(x), ...Object.keys(y)])].sort().filter(child => canonicalJson(x[child]) !== canonicalJson(y[child]));
   for (const [source] of SETTING_SOURCES) {
     const a = before[source], b = after[source];
     if ((!a && !b) || (a && b && a.bytes.equals(b.bytes))) continue;
@@ -734,10 +737,16 @@ function changedKeyPaths(before, after) {
     for (const key of [...new Set([...Object.keys(a.value), ...Object.keys(b.value)])].sort()) {
       const x = a.value[key], y = b.value[key];
       if (canonicalJson(x) === canonicalJson(y)) continue;
-      const nested = [x, y].every(item => item && typeof item === 'object' && !Array.isArray(item))
-        ? [...new Set([...Object.keys(x), ...Object.keys(y)])].sort().filter(child => canonicalJson(x[child]) !== canonicalJson(y[child])) : [];
+      // A project entry that appears or disappears is compared against an empty entry.
+      const projects = key === 'projects' && [x, y].every(item => item === undefined || object(item));
+      const nested = projects || [x, y].every(object) ? changed(x ?? {}, y ?? {}) : [];
       if (!nested.length) paths.push({ source, path: [key] });
-      for (const child of nested) paths.push({ source, path: [key, child] });
+      for (const child of nested) {
+        const p = x?.[child], q = y?.[child];
+        if (projects && [p, q].every(item => item === undefined || object(item))) {
+          for (const grandchild of changed(p ?? {}, q ?? {})) paths.push({ source, path: [key, child, grandchild] });
+        } else paths.push({ source, path: [key, child] });
+      }
     }
   }
   return paths;
@@ -976,8 +985,20 @@ async function run(options) {
           && receipt.settingsIntervals.postHost?.preserved === true ? 'host_window_candidate' : receipt.settingsWriterExclusion ? 'contaminated_or_unattributed' : 'unattributed';
         if (finalSettings) {
           try {
+            const host = hostBeforeSettings && hostAfterSettings ? changedKeyPaths(hostBeforeSettings, hostAfterSettings) : undefined;
+            let hostClassification;
+            if (host) {
+              // Key classes come from the exact host binary's own routine sets. Only counts are shareable.
+              const table = await attribution.loadTable().catch(() => null);
+              const binary = receipt.testedSource?.claudeExecutableSha256;
+              const entry = table?.table.entries.find(item => item.claudeExecutableSha256 === binary);
+              hostClassification = attribution.classifyChangedPaths(host, entry, directory && path.join(directory, 'workspace'));
+              receipt.settingsKeyAttribution = { interval: 'host', tableSha256: table?.sha256 ?? null, binaryInTable: !!entry,
+                windowAttribution: receipt.settingsAttribution, counts: hostClassification.counts,
+                scope: 'Classes name keys the exact host binary treats as routine saved state; they do not establish preservation. Any change blocks.' };
+            }
             receipt.privateSettingsDiff = await writePrivateSettingsDiff(evidence, { overall: changedKeyPaths(beforeSettings, finalSettings),
-              ...(hostBeforeSettings && hostAfterSettings ? { host: changedKeyPaths(hostBeforeSettings, hostAfterSettings) } : {}),
+              ...(host ? { host, hostClassification: hostClassification.classified } : {}),
               ...(hostAfterSettings ? { postHost: changedKeyPaths(hostAfterSettings, finalSettings) } : {}) });
           } catch { receipt.privateSettingsDiff = { written: false }; }
         }

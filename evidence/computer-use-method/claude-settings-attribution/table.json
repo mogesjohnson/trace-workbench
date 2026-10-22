@@ -1,0 +1,276 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Claude client-state key classes per exact Claude Code binary, for host settings attribution under contract claude-queued-host-settings-v1. Anchors: globalSaver and projectSaver contain their saver literal and test-config branch; routineGlobalKeys and routineProjectKeys are the parsed Set literals; globalCheck and projectCheck consult those sets; globalContentionSkip and projectContentionSkip show the savers calling those checks before skipping a contended fallback write.",
+  "generatedBy": "node scripts/claude-settings-attribution.cjs --binary <claude.exe>",
+  "verifyWith": "node scripts/claude-settings-attribution.cjs --binary <claude.exe> --verify evidence/computer-use-method/claude-settings-attribution/table.json",
+  "entries": [
+    {
+      "claudeExecutableSha256": "f6bc9de38f507c36c9a3bb0085a59a27e32156e2208252bf1707c4e3ef309114",
+      "size": 295628960,
+      "version": "2.1.306",
+      "gitSha": "01ae8327ca9931db91a0802d6e8e377419dd44e6",
+      "routineGlobalKeys": [
+        "numStartups",
+        "skillUsage",
+        "pluginUsage",
+        "memoryUsageCount",
+        "promptQueueUseCount",
+        "btwUseCount",
+        "queuedCommandUpHintCount",
+        "lspRecommendationIgnoredCount",
+        "promptSuggestionUnusedStreak",
+        "tipsHistory",
+        "tipLifetimeShownCounts",
+        "tipsHistoryByCommand",
+        "seenNotifications",
+        "announcementImpressions",
+        "savedModelSuccessorShown",
+        "subagentConfigWarningShown",
+        "subagentConfigChecks",
+        "subagentConfigClassifierCalls",
+        "lastShownEmergencyTip",
+        "subscriptionNoticeCount",
+        "subscriptionUpsellShownCount",
+        "passesUpsellSeenCount",
+        "fullscreenUpsellSeenCount",
+        "fullscreenDownsellSeenCount",
+        "voiceLangHintShownCount",
+        "voiceFooterHintSeenCount",
+        "experimentNoticesSeenCount",
+        "cachedGrowthBookFeatures",
+        "cachedGrowthBookFeaturesAt",
+        "cachedArtifactRoster",
+        "artifactRosterDenied",
+        "promoStartupStatusCache",
+        "unusedLimitResetStatusCache",
+        "apiCreditLinkStatusCache",
+        "cachedDynamicConfigs",
+        "cachedExperimentFeatures",
+        "cachedExperimentData",
+        "firstStartTime",
+        "claudeCodeFirstTokenDate",
+        "startupPrefetchedAt"
+      ],
+      "routineProjectKeys": [
+        "lastCost",
+        "lastAPIDuration",
+        "lastAPIDurationWithoutRetries",
+        "lastToolDuration",
+        "lastDuration",
+        "lastStartTime",
+        "lastLinesAdded",
+        "lastLinesRemoved",
+        "lastTotalInputTokens",
+        "lastTotalOutputTokens",
+        "lastTotalCacheCreationInputTokens",
+        "lastTotalCacheReadInputTokens",
+        "lastTotalWebSearchRequests",
+        "lastFpsAverage",
+        "lastFpsLow1Pct",
+        "lastSessionId",
+        "lastGracefulShutdown",
+        "lastVersionBase",
+        "lastModelUsage",
+        "lastSessionMetrics",
+        "exampleFiles",
+        "exampleFilesGeneratedAt",
+        "seenTeamArtifactPaths",
+        "hasUnseenTeamArtifacts",
+        "hasClaudeMdExternalIncludesWarningShown",
+        "history",
+        "projectOnboardingSeenCount",
+        "hasCompletedProjectOnboarding",
+        "devIntentsDetected"
+      ],
+      "anchors": {
+        "globalSaver": {
+          "offset": 246955884,
+          "length": 296,
+          "sha256": "380aeb21a808da342bf747868020f43e6c9c6e2f83bda24ab2f9ab1170f6840e"
+        },
+        "projectSaver": {
+          "offset": 246983549,
+          "length": 599,
+          "sha256": "506bb49ddb2c2b90ac88b3f81a8b68c728789b022e23d3f0ed3b755e3597f651"
+        },
+        "routineGlobalKeys": {
+          "offset": 246951623,
+          "length": 993,
+          "sha256": "4e7d963d4aab12d70b43509e8886437af8ca426e22890bca68fb82911c3f227b"
+        },
+        "routineProjectKeys": {
+          "offset": 246952629,
+          "length": 645,
+          "sha256": "21a9a75a677a8c52ad8fcfb4daa7bb3f3fb9c3606aba04f603c4e6056c28e377"
+        },
+        "globalContentionSkip": {
+          "offset": 246955884,
+          "length": 903,
+          "sha256": "020db4c96201d2c6d764350fb86e268ec9509474232087d9c646fc7cdb2178fc"
+        },
+        "projectContentionSkip": {
+          "offset": 246983549,
+          "length": 1204,
+          "sha256": "6eeff35e9f87dfe49ebb4ce7baf8785c37c01eec6d435d700f47c195c41e0856"
+        },
+        "globalCheck": {
+          "offset": 246953634,
+          "length": 185,
+          "sha256": "2a1e897da35a596275d1927ef49728fa3b554f066907eecd58332f86cee95d36"
+        },
+        "projectCheck": {
+          "offset": 246953406,
+          "length": 39,
+          "sha256": "ca979489c848078dbccd34bf57db30090d0f8da9c7ceca15c52d32ae571758f3"
+        }
+      },
+      "review": {
+        "inspectedOn": "2026-10-22",
+        "inspectedBy": "claude-code",
+        "method": "Static inspection of the exact binary. scripts/claude-settings-attribution.cjs locates each anchor by a stable literal, requires it to be unique, and checks the structural predicates listed in purpose; offsets and hashes let a reader re-check the same bytes without copying vendor code.",
+        "finding": "The global saver (literal saveGlobalConfig) and the per-project saver (literal saveCurrentProjectConfig, which writes projects[<current project>]) each skip an unlocked fallback write after lock contention when every changed key is in the routine global set, or every changed key of each project entry is in the routine project set.",
+        "limits": [
+          "A class names the code path that treats a key as routine saved state; it does not establish that a change is harmless or preserved.",
+          "Keys starting with cached hold feature, experiment or roster data and can change host behavior.",
+          "New project entries, other projects, settings.json sources and keys outside both sets stay unclassified.",
+          "An entry applies only to its exact binary hash."
+        ],
+        "version": "2.1.306"
+      }
+    },
+    {
+      "claudeExecutableSha256": "c9796ba22a9221586b36371b36f5b66198d66eb4badf6a4cf4a5f7b07becea53",
+      "size": 297376928,
+      "version": "2.1.308",
+      "gitSha": "320f66eb8f834be58a10c98283ebef19e3640c37",
+      "routineGlobalKeys": [
+        "numStartups",
+        "skillUsage",
+        "pluginUsage",
+        "memoryUsageCount",
+        "promptQueueUseCount",
+        "btwUseCount",
+        "queuedCommandUpHintCount",
+        "lspRecommendationIgnoredCount",
+        "promptSuggestionUnusedStreak",
+        "tipsHistory",
+        "tipLifetimeShownCounts",
+        "tipsHistoryByCommand",
+        "seenNotifications",
+        "announcementImpressions",
+        "savedModelSuccessorShown",
+        "subagentConfigWarningShown",
+        "subagentConfigChecks",
+        "subagentConfigClassifierCalls",
+        "lastShownEmergencyTip",
+        "subscriptionNoticeCount",
+        "subscriptionUpsellShownCount",
+        "passesUpsellSeenCount",
+        "fullscreenUpsellSeenCount",
+        "fullscreenDownsellSeenCount",
+        "voiceLangHintShownCount",
+        "voiceFooterHintSeenCount",
+        "experimentNoticesSeenCount",
+        "cachedGrowthBookFeatures",
+        "cachedGrowthBookFeaturesAt",
+        "cachedArtifactRoster",
+        "artifactRosterDenied",
+        "promoStartupStatusCache",
+        "unusedLimitResetStatusCache",
+        "apiCreditLinkStatusCache",
+        "cachedDynamicConfigs",
+        "cachedExperimentFeatures",
+        "cachedExperimentData",
+        "firstStartTime",
+        "claudeCodeFirstTokenDate",
+        "startupPrefetchedAt"
+      ],
+      "routineProjectKeys": [
+        "lastCost",
+        "lastAPIDuration",
+        "lastAPIDurationWithoutRetries",
+        "lastToolDuration",
+        "lastDuration",
+        "lastStartTime",
+        "lastLinesAdded",
+        "lastLinesRemoved",
+        "lastTotalInputTokens",
+        "lastTotalOutputTokens",
+        "lastTotalCacheCreationInputTokens",
+        "lastTotalCacheReadInputTokens",
+        "lastTotalWebSearchRequests",
+        "lastFpsAverage",
+        "lastFpsLow1Pct",
+        "lastSessionId",
+        "lastGracefulShutdown",
+        "lastVersionBase",
+        "lastModelUsage",
+        "lastSessionMetrics",
+        "exampleFiles",
+        "exampleFilesGeneratedAt",
+        "seenTeamArtifactPaths",
+        "hasUnseenTeamArtifacts",
+        "hasClaudeMdExternalIncludesWarningShown",
+        "history",
+        "projectOnboardingSeenCount",
+        "hasCompletedProjectOnboarding",
+        "devIntentsDetected"
+      ],
+      "anchors": {
+        "globalSaver": {
+          "offset": 248266265,
+          "length": 296,
+          "sha256": "d8735108d9c375849669e2705beab799f3cfd5e9c943745b9e0c0ec281039f18"
+        },
+        "projectSaver": {
+          "offset": 248293936,
+          "length": 599,
+          "sha256": "340c7e084d6281ab65743e309df608ea15f708ef69cd237cf6c70b9f12f9b816"
+        },
+        "routineGlobalKeys": {
+          "offset": 248262004,
+          "length": 993,
+          "sha256": "4e7d963d4aab12d70b43509e8886437af8ca426e22890bca68fb82911c3f227b"
+        },
+        "routineProjectKeys": {
+          "offset": 248263010,
+          "length": 645,
+          "sha256": "21a9a75a677a8c52ad8fcfb4daa7bb3f3fb9c3606aba04f603c4e6056c28e377"
+        },
+        "globalContentionSkip": {
+          "offset": 248266265,
+          "length": 903,
+          "sha256": "fb9506bca1890b9bf970d8858869edd3758651fb5ce7da510919ec24a36e46b3"
+        },
+        "projectContentionSkip": {
+          "offset": 248293936,
+          "length": 1200,
+          "sha256": "64fc00888f67fd6369f5b0c7420a295fccd1dc007ca19ed9c1394a1734e8643c"
+        },
+        "globalCheck": {
+          "offset": 248264015,
+          "length": 185,
+          "sha256": "b5095d6560f0a1e2a1786d7c24688db38d8d495724572d513094e165e18f6d89"
+        },
+        "projectCheck": {
+          "offset": 248263787,
+          "length": 39,
+          "sha256": "287e72b6e144f34e482632cd4ab2df1a0c531839a5c8a4bb01e4682cce42ae20"
+        }
+      },
+      "review": {
+        "inspectedOn": "2026-10-22",
+        "inspectedBy": "claude-code",
+        "method": "Static inspection of the exact binary. scripts/claude-settings-attribution.cjs locates each anchor by a stable literal, requires it to be unique, and checks the structural predicates listed in purpose; offsets and hashes let a reader re-check the same bytes without copying vendor code.",
+        "finding": "The global saver (literal saveGlobalConfig) and the per-project saver (literal saveCurrentProjectConfig, which writes projects[<current project>]) each skip an unlocked fallback write after lock contention when every changed key is in the routine global set, or every changed key of each project entry is in the routine project set.",
+        "limits": [
+          "A class names the code path that treats a key as routine saved state; it does not establish that a change is harmless or preserved.",
+          "Keys starting with cached hold feature, experiment or roster data and can change host behavior.",
+          "New project entries, other projects, settings.json sources and keys outside both sets stay unclassified.",
+          "An entry applies only to its exact binary hash."
+        ],
+        "version": "2.1.308"
+      }
+    }
+  ]
+}

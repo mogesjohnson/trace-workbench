@@ -409,7 +409,7 @@ test('private settings snapshots distinguish JSON formatting, semantic changes, 
   assert.equal(compareSettings(before, await fingerprintSettings(path.resolve('synthetic-home'), io)).changes[1].after, 'unparseable');
 });
 
-test('private changed-key paths keep depth-2 names without values and skip formatting-only sources', async () => {
+test('private changed-key paths keep depth-2 (depth-3 under projects) names without values and skip formatting-only sources', async () => {
   let values = { '.claude.json': '{"projects":{"PATH_A":{"n":1},"PATH_B":{"n":1}},"numStartups":1,"keep":"SECRET_VALUE"}', '.claude/settings.json': '{"a":1}' };
   const io = { readFile: async file => {
     const relative = path.relative(path.resolve('synthetic-home'), file).replaceAll('\\', '/');
@@ -419,8 +419,14 @@ test('private changed-key paths keep depth-2 names without values and skip forma
   const before = await fingerprintSettings(path.resolve('synthetic-home'), io);
   values = { '.claude.json': '{"projects":{"PATH_A":{"n":2},"PATH_B":{"n":1}},"numStartups":2,"keep":"SECRET_VALUE","added":{"x":"NEW_VALUE"}}', '.claude/settings.json': '{ "a": 1 }' };
   const paths = changedKeyPaths(before, await fingerprintSettings(path.resolve('synthetic-home'), io));
-  assert.deepEqual(paths, [{ source: 'clientState', path: ['added'] }, { source: 'clientState', path: ['numStartups'] }, { source: 'clientState', path: ['projects', 'PATH_A'] }]);
+  assert.deepEqual(paths, [{ source: 'clientState', path: ['added'] }, { source: 'clientState', path: ['numStartups'] }, { source: 'clientState', path: ['projects', 'PATH_A', 'n'] }]);
   for (const value of ['SECRET_VALUE', 'NEW_VALUE', 'PATH_B']) assert.equal(JSON.stringify(paths).includes(value), false);
+  // A new project entry is compared against an empty one; a non-object project value stays at depth 2.
+  values['.claude.json'] = '{"projects":{"PATH_A":{"n":1},"PATH_B":{"n":1},"PATH_C":{"lastCost":1,"m":{"deep":"DEEP_VALUE"}},"PATH_D":5},"numStartups":1,"keep":"SECRET_VALUE"}';
+  const added = changedKeyPaths(before, await fingerprintSettings(path.resolve('synthetic-home'), io));
+  assert.deepEqual(added, [{ source: 'clientState', path: ['projects', 'PATH_C', 'lastCost'] }, { source: 'clientState', path: ['projects', 'PATH_C', 'm'] },
+    { source: 'clientState', path: ['projects', 'PATH_D'] }]);
+  assert.equal(JSON.stringify(added).includes('DEEP_VALUE'), false);
   values['.claude/settings.json'] = 'malformed';
   assert.deepEqual(changedKeyPaths(before, await fingerprintSettings(path.resolve('synthetic-home'), io)).at(-1), { source: 'userSettings', path: [], whole: true });
 });
