@@ -130,6 +130,29 @@ After desktop preflight, provision fresh grants and approved import/export roots
 
 Real host acceptance remains separate. The [Claude Code harness](https://github.com/mogesjohnson/replay-studio/blob/221502e8c0af25fb1929ff8f200c4774659b7b87/scripts/claude-code-smoke.cjs) demonstrates a temporary strict MCP profile, actual external host version/tool receipts and independent final-state checks without modifying user configuration; its historical REPLAY pass does not prove TRACE skill discovery or native recovery. HOST-01 still needs those steps in actual Codex and actual Claude sessions. SDK scripts, subagents and this Codex preparation cannot substitute for a Claude host. Authentication/quota, live UI accessibility identifiers, physical-stop preflight, the two-instance feasibility check and final artifacts remain unverified.
 
+## REPLAY production adapter
+
+On 22 October 2026 Claude added the production runtime and durable manual command loop for the fixed-stage workflow ([runtime](../scripts/replay-workflow-runtime.cjs), [workflow](../scripts/accept-replay-workflow.cjs)). **Nothing has run live; no APP-01 attempt is claimed or consumed.**
+
+- **Start (owner go-ahead required):** `node scripts/accept-replay-workflow.cjs <fresh directory> --live --owner-decision "<reference>"`, run in the background. A read-only preflight runs first: display, recovery, input access, all keys up, native helper files, the prepared fixture build, the REPLAY package pins and harness load. If it fails, nothing is created. Run it from a checkout that has `.runtime`; only the main checkout has it today.
+- **Advance:** `node scripts/accept-replay-workflow.cjs --advance <directory> <stage> [--input <file.json>]`, one stage at a time in the declared order. `--advance <directory> abort` and `--status <directory>` are also available. Each command id is consumed once and answered in `responses/<id>.json`. Every mutation's REPLAY request ID is written to `receipt.json` as pending before dispatch. A failed stage, abort, interrupt or 30-minute idle reads REPLAY jobs and capture state (read-only), then closes transports, revokes grants and proves the exact app and fixture generations exited. Nothing is retried.
+- **Owned fixture:** provision launches the hash-verified prepared computer fixture as a run-owned child, alongside the two isolated REPLAY instances.
+- **Root's TRACE evidence:** the plan's `evidenceInputs` name what root supplies. Inputs are TRACE session IDs, plus an observation ID for `fixture-ready`. The adapter accepts them only when the local TRACE journal shows that session opened on the exact target after launch, the required number of completed actions after the stage began, and no unknown or unterminated input. The final observation PNG hash must match.
+- **Independent state behind the TRACE evidence:**
+
+  | Stage | Independent check |
+  | --- | --- |
+  | Fixture demonstration | The fixture's own state shows the declared text and at least two increments. |
+  | Editor controls | REPLAY's preview ends paused past position 2.2, and the saved recipe still matches exactly. |
+  | Completed playback | The preview clock advances. |
+  | Root review | Every produced review frame hash is listed with an observation. |
+- **Offline verification** ([receipt](../evidence/computer-use-method/replay-adapter/offline-checks.json)):
+  - Tests: 25 focused tests pass. The full suite has 478 tests: 472 pass, 6 skipped.
+  - Media path: the production media path, run on synthetic media that imitates REPLAY's export, passes the expected export. It rejects missing blur, missing callout and late narration with the intended codes.
+  - TRACE evidence path: run on a real local TRACE journal, it rejects a wrong PID and a session opened before the target launched.
+  - Package pins match the pinned REPLAY build.
+- **Still unproven until a live run:** whether the real fixture has enough texture in the privacy region (the stage measures this and blocks before any mutation if it falls short), capture, editing, TRACE editor control, export, playback and cleanup.
+
 ## Continue without repeating work
 
 Read the newest receipts and source hashes, inspect any live process handle before treating a run as stopped, and run only unfinished or affected checks. A terminal process with a stale running receipt needs a terminal evidence record; restarting it is not verification. Rebuild helpers only after their sources change. Keep private paths/configuration/payloads under ignored runtime storage, and retain sanitized receipts in the repository.
