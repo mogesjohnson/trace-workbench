@@ -1,0 +1,21 @@
+{
+  "source": "actual-connected-codex",
+  "step": "cleanup-only",
+  "tools": [
+    {
+      "name": "trace_computer_close_session",
+      "arguments": {
+        "sessionId": "03d902dc-7da2-41c9-809f-1531674ba13b"
+      },
+      "result": {
+        "sessionId": "03d902dc-7da2-41c9-809f-1531674ba13b",
+        "closed": true
+      }
+    }
+  ],
+  "adjudication": {
+    "by": "active-codex-model",
+    "actualConversationEvidenceReviewed": true
+  },
+  "reason": "Actual stale_observation error is proven pre-input but does not carry the top-level outcome expected by the harness. Stop without increment/replay; preserve independent exact Unicode and counter 0."
+}

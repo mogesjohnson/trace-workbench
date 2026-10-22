@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "selection": {
+    "decisionId": "owner-supplemental-five-20261022",
+    "caseId": "R31-GLOW-NATIVE",
+    "contract": "glow-sky-physical-point-v1",
+    "ownerDecision": {
+      "ref": "evidence/live-acceptance-continuation/owner-decision.json",
+      "sha256": "02c8b46faaef411a217d4965de83a0bac7e2592d792be1ad6a2e262f0aa7619a"
+    },
+    "historicalAttemptsUsed": 2,
+    "originals": [
+      {
+        "ref": "evidence/replacement-acceptance/r31-glow-native/attempt-1/receipt.json",
+        "sha256": "c11e25b9c7b2f70371b4c1967411a9a2ac84a6615cde3b1c51ef0e83cc58c710"
+      },
+      {
+        "ref": "evidence/replacement-acceptance/r31-glow-native/attempt-2/receipt.json",
+        "sha256": "162638516bcbc0a4cfc9b9471b9141910754aae704e46ff941722e1ce6a37c85"
+      }
+    ]
+  },
+  "claims": [
+    {
+      "decisionId": "owner-supplemental-five-20261022",
+      "caseId": "R31-GLOW-NATIVE",
+      "contract": "glow-sky-physical-point-v1",
+      "ownerDecision": {
+        "ref": "evidence/live-acceptance-continuation/owner-decision.json",
+        "sha256": "02c8b46faaef411a217d4965de83a0bac7e2592d792be1ad6a2e262f0aa7619a"
+      },
+      "historicalAttemptsUsed": 2,
+      "originals": [
+        {
+          "ref": "evidence/replacement-acceptance/r31-glow-native/attempt-1/receipt.json",
+          "sha256": "c11e25b9c7b2f70371b4c1967411a9a2ac84a6615cde3b1c51ef0e83cc58c710"
+        },
+        {
+          "ref": "evidence/replacement-acceptance/r31-glow-native/attempt-2/receipt.json",
+          "sha256": "162638516bcbc0a4cfc9b9471b9141910754aae704e46ff941722e1ce6a37c85"
+        }
+      ],
+      "claimId": "ac4b43a7-c95c-49b1-8183-8604e594c3be",
+      "continuationAttempt": 1,
+      "lifetimeAttemptOrdinal": 3,
+      "claimedAt": "2026-10-22T14:29:24.288Z"
+    }
+  ]
+}

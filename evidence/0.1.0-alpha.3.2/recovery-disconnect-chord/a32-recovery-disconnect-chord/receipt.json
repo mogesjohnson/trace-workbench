@@ -1,0 +1,49 @@
+{
+  "caseId": "A32-RECOVERY-DISCONNECT-CHORD",
+  "input": "chord",
+  "failure": "disconnect",
+  "status": "fail",
+  "startedAt": "2026-10-21T22:14:57.067Z",
+  "cleanup": {
+    "connectionClosed": true,
+    "inputState": {
+      "available": true,
+      "at": "2026-10-21T22:15:22.250Z",
+      "phase": "native closed; owned fixture not yet closed",
+      "down": []
+    },
+    "fixtureExited": true,
+    "recovery": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    }
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "initialKeys": [],
+  "target": {
+    "windowId": "34472342",
+    "pid": 17664,
+    "processCreationTime": "134370944974404050"
+  },
+  "error": {
+    "code": "acceptance_timeout",
+    "message": "Timed out waiting for controlled job dispatch."
+  },
+  "completedAt": "2026-10-21T22:15:22.458Z"
+}

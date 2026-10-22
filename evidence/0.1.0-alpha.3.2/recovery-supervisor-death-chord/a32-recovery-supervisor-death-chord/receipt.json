@@ -1,0 +1,101 @@
+{
+  "caseId": "A32-RECOVERY-SUPERVISOR-DEATH-CHORD",
+  "input": "chord",
+  "failure": "supervisor-death",
+  "status": "pass",
+  "startedAt": "2026-10-21T22:21:39.259Z",
+  "cleanup": {
+    "connectionClosed": true,
+    "supervisorExited": true,
+    "inputChildExited": true,
+    "inputState": {
+      "available": true,
+      "at": "2026-10-21T22:22:02.303Z",
+      "phase": "native closed; owned fixture not yet closed",
+      "down": []
+    },
+    "foregroundPreparation": {
+      "preparation": "fixture-foreground-anchor",
+      "prepared": true,
+      "activationAttempted": true,
+      "cleanupConfirmed": true,
+      "code": null
+    },
+    "fixtureExited": true,
+    "recovery": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    }
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "initialKeys": [],
+  "target": {
+    "windowId": "4130756",
+    "pid": 7376,
+    "processCreationTime": "134370948996320224"
+  },
+  "controlled": {
+    "pid": 44356,
+    "processCreationTime": "134370949104946180",
+    "inJob": true,
+    "supervisorPid": 31392
+  },
+  "held": {
+    "160": true,
+    "162": true
+  },
+  "interruptedAt": "2026-10-21T22:21:50.665Z",
+  "childExitIndependently": true,
+  "quarantine": {
+    "survivesReadOnlyChecks": true,
+    "separateArtifactRoot": true,
+    "blocksNewSession": true,
+    "doctorCode": "input_recovery_required",
+    "openCode": "input_recovery_required"
+  },
+  "recoveryApply": {
+    "recovered": true,
+    "recoveryRequired": false,
+    "processExitConfirmed": true,
+    "released": true,
+    "attempted": [
+      160,
+      162
+    ],
+    "remainingDown": []
+  },
+  "keysAfter": [],
+  "effect": {
+    "text": "",
+    "count": 0,
+    "unchangedAfterCleanup": true
+  },
+  "followup": {
+    "outcome": "completed",
+    "before": 0,
+    "after": 1,
+    "exactIncrement": 1,
+    "provider": "pinned-engine"
+  },
+  "requestResult": {
+    "outcome": "unknown",
+    "code": "supervisor_exited"
+  },
+  "completedAt": "2026-10-21T22:22:04.381Z"
+}

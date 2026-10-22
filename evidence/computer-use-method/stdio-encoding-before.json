@@ -1,0 +1,31 @@
+{
+  "caseId": "PRIVATE-STDIO-UTF8",
+  "observedAt": "2026-10-21T22:40:38.174Z",
+  "scope": "Actual redirected clipboard-helper info pipes only; zero ClipboardService construction, clipboard reads/writes or desktop input.",
+  "executableSha256": "ae80186cda2e3e0b9ca712623d8551f0e61e772dba69622c200925988503d297",
+  "source": {
+    "native/TraceClipboard/TraceClipboard.csproj": "d8f8afbfc5799ba4136b06372e31276c67130736f9a2f5e1c325ce43848a419b",
+    "native/TraceClipboard/Program.cs": "9688a8026062366755d8a83082edf12d5f21f2e3fe54eef4f2762d951ead911c",
+    "native/TraceClipboard/ClipboardService.cs": "feeef723c22fb069259febb262f23c38b020ef2354f7e5e9671625f4023da1b7",
+    "native/TraceClipboard/Win32Clipboard.cs": "3947b10fb8c76c2c7400feb4ef5404278edbd214b23c0b0444de9db4265847fd",
+    "native/TraceClipboard/SelfTests.cs": "c41efe00ab3ab0a0291e7db28d1bfe0b06b4b44c6fc870c136a96c61a8b0e1c8"
+  },
+  "splitUnicode": {
+    "exitCode": 0,
+    "signal": null,
+    "processExited": true,
+    "idExact": false,
+    "infoResponses": 1,
+    "errors": [],
+    "stderrPresent": false
+  },
+  "malformedUtf8": {
+    "exitCode": 0,
+    "signal": null,
+    "processExited": true,
+    "idExact": false,
+    "infoResponses": 1,
+    "errors": [],
+    "stderrPresent": false
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "caseId": "A32-RECOVERY-SUPERVISOR-DEATH-TYPING",
+  "attempt": 1,
+  "continuationOfPreparation": "../0.1.0-alpha.3.2/recovery-supervisor-death-typing/preparation-termination.json",
+  "target": "Fresh owned synthetic fixture through production stdio MCP with labeled controlled typing",
+  "actions": [
+    "Preflight current display, keys and quarantine",
+    "Ground and verify owned edit focus",
+    "Start one literal abc controlled hold",
+    "Kill exact native owner via private source-owned control",
+    "Independently prove child exit and durable quarantine",
+    "Read-only checks preserve quarantine; verified recovery balances input",
+    "One distinct counter followup; sequential cleanup"
+  ],
+  "scope": "First actual execution of this cell; earlier plan-only preparation is not a live retry"
+}

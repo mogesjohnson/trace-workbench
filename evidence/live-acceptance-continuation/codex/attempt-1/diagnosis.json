@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CODEX-TRACE-SKILL-NATIVE",
+  "continuationAttempt": 1,
+  "lifetimeAttemptOrdinal": 3,
+  "source": "Active Codex model stopped this run before input; this is not a human abort instruction.",
+  "status": "blocked",
+  "reason": "agent_preinput_observation_deadline",
+  "observation": {
+    "id": "37bce53b-4daa-4b74-8dc9-736735c1a668",
+    "observedAt": "2026-10-22T14:26:37.575Z",
+    "clockCheckedAt": "2026-10-22T14:27:38Z",
+    "ttlMs": 60000
+  },
+  "actualPrimaryInputs": 0,
+  "actualCloseTool": {
+    "name": "trace_computer_close_session",
+    "arguments": {
+      "sessionId": "03622e99-50cc-4e4c-9561-485b5cb5e31b"
+    },
+    "result": {
+      "sessionId": "03622e99-50cc-4e4c-9561-485b5cb5e31b",
+      "closed": true
+    }
+  },
+  "cleanup": "The terminal lifecycle receipt independently confirms supervisor/marker generation exits, all-up input, clear recovery, unchanged attached host Node generation and owned fixture exit.",
+  "changedPreconditionRequired": "Record opening metadata before the final observation; permit explicit capture-only refresh without advancing semantic steps and require the actual latest session-bound observation before input.",
+  "historicalReceiptPreserved": true,
+  "limits": [
+    "No click, Unicode typing, stale invocation or counter effect was attempted.",
+    "The driver's owner_aborted code denotes the agent's explicit --abort command; it does not attribute an abort to the user."
+  ]
+}

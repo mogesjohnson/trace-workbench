@@ -41,6 +41,35 @@ internal interface IClipboardStore
     void Archive(string token);
 }
 
+// Identifier-only diagnostics. No arbitrary registered name, data bytes, sequence, owner or
+// transaction identity is collected. A pending recovery is observed, never loaded or cleared.
+internal static class ClipboardFormatInspection
+{
+    internal const int MaximumFormats = 64;
+    internal static object Inspect(Func<IDisposable> open, Func<IReadOnlyList<uint>> enumerate, Func<bool> recoveryExists)
+    {
+        using var held = open();
+        var formats = enumerate();
+        if (formats.Count > MaximumFormats || formats.Distinct().Count() != formats.Count || formats.Any(id => id is 0 or > 65535))
+            throw new ClipboardFailure("clipboard_format_inspection_invalid");
+        var supported = formats.Where(ClipboardService.Supported.Contains).Order().ToArray();
+        var unsupported = formats.Where(id => !ClipboardService.Supported.Contains(id)).ToArray();
+        var categories = unsupported.GroupBy(Category).OrderBy(group => group.Key, StringComparer.Ordinal)
+            .Select(group => new { category = group.Key, count = group.Count() }).ToArray();
+        bool pending = recoveryExists();
+        return new { mode = "text-only", inspection = "format-identifiers-only", supported = unsupported.Length == 0,
+            supportedFormatIds = supported, formatCount = formats.Count, unsupportedCount = unsupported.Length, categories,
+            recoveryPending = pending, ready = unsupported.Length == 0 && !pending,
+            code = pending ? "clipboard_recovery_required" : unsupported.Length > 0 ? "clipboard_unsupported_formats" : (string?)null,
+            contentsRead = false, contentsChanged = false, recoveryWritten = false };
+    }
+    private static string Category(uint id) => id switch {
+        2 or 3 or 8 or 9 or 14 or 17 => "image", 15 => "file-list",
+        >= 0xC000 => "registered", >= 0x0300 and <= 0x03FF => "graphics-object",
+        >= 0x0200 and <= 0x02FF => "private", <= 0x01FF => "standard-other", _ => "other"
+    };
+}
+
 // The service never returns snapshot plaintext. Only opaque identity, byte counts and hashes
 // leave this process. Unsupported formats are rejected before any EmptyClipboard call.
 internal sealed class ClipboardService(IClipboardBackend backend, IClipboardStore store) : IDisposable

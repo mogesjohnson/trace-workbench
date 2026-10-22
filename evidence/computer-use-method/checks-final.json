@@ -1,0 +1,26 @@
+{
+  "observedAt": "2026-10-22T03:15:35.594Z",
+  "commands": {
+    "npm test": {
+      "exitCode": 0,
+      "tests": 356,
+      "passed": 350,
+      "failed": 0,
+      "skipped": 6
+    },
+    "npm run check": {
+      "exitCode": 0,
+      "javascriptFiles": 76
+    }
+  },
+  "native": "native-pure-utf8.json",
+  "logs": {
+    "tests-final.log": {
+      "sha256": "b995523e444db95768db8432db2ef39d618d8cfd5fede30c47866d3b6fdf1bfe"
+    },
+    "check-final.log": {
+      "sha256": "15281c90d9b1fe91c724a6ea0570af3ab25de221d28a3de43a96022d4b4c1a1f"
+    }
+  },
+  "scope": "Final source/pure/injected tests; optional real browser runtimes and symlink privileges are separate from live acceptance."
+}

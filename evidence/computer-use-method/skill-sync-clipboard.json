@@ -1,0 +1,153 @@
+{
+  "observedAt": "2026-10-21T12:53:11.976Z",
+  "applied": true,
+  "allMatch": true,
+  "sourceSha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2",
+  "sourceBundleSha256": "eef2b2e450667e19311b7c183f619d941886fe74c8b4be26a44f425c820ae901",
+  "serverEntries": [
+    {
+      "client": "codex",
+      "action": "unchanged"
+    },
+    {
+      "client": "claude_code",
+      "action": "unchanged"
+    },
+    {
+      "client": "grok_build",
+      "action": "unchanged"
+    },
+    {
+      "client": "gemini_cli",
+      "action": "unchanged"
+    }
+  ],
+  "entries": [
+    {
+      "path": "~/.agents/skills/trace-computer-use",
+      "action": "unchanged",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "action": "unchanged",
+          "priorSha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2",
+          "sha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2"
+        },
+        {
+          "path": "manifest.json",
+          "action": "unchanged",
+          "priorSha256": "eef2b2e450667e19311b7c183f619d941886fe74c8b4be26a44f425c820ae901",
+          "sha256": "eef2b2e450667e19311b7c183f619d941886fe74c8b4be26a44f425c820ae901"
+        },
+        {
+          "path": "references/acceptance.md",
+          "action": "unchanged",
+          "priorSha256": "203d0bc54752393cac34096819baa0e6e33fb27d8ce0db1dc6e1169348d30fb8",
+          "sha256": "203d0bc54752393cac34096819baa0e6e33fb27d8ce0db1dc6e1169348d30fb8"
+        },
+        {
+          "path": "references/operation-and-recovery.md",
+          "action": "unchanged",
+          "priorSha256": "5efb6909910608fbeb90be2f04e4a719eb1635d6be987584fa34c886047bc003",
+          "sha256": "5efb6909910608fbeb90be2f04e4a719eb1635d6be987584fa34c886047bc003"
+        },
+        {
+          "path": "references/readiness-routing.md",
+          "action": "unchanged",
+          "priorSha256": "2c1cc72ede6d5462a3dc2fa37a82a2f7b15a089740303861b7ef521ccf349979",
+          "sha256": "2c1cc72ede6d5462a3dc2fa37a82a2f7b15a089740303861b7ef521ccf349979"
+        }
+      ]
+    },
+    {
+      "path": "~/.claude/skills/trace-computer-use",
+      "action": "unchanged",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "action": "unchanged",
+          "priorSha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2",
+          "sha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2"
+        },
+        {
+          "path": "manifest.json",
+          "action": "unchanged",
+          "priorSha256": "eef2b2e450667e19311b7c183f619d941886fe74c8b4be26a44f425c820ae901",
+          "sha256": "eef2b2e450667e19311b7c183f619d941886fe74c8b4be26a44f425c820ae901"
+        },
+        {
+          "path": "references/acceptance.md",
+          "action": "unchanged",
+          "priorSha256": "203d0bc54752393cac34096819baa0e6e33fb27d8ce0db1dc6e1169348d30fb8",
+          "sha256": "203d0bc54752393cac34096819baa0e6e33fb27d8ce0db1dc6e1169348d30fb8"
+        },
+        {
+          "path": "references/operation-and-recovery.md",
+          "action": "unchanged",
+          "priorSha256": "5efb6909910608fbeb90be2f04e4a719eb1635d6be987584fa34c886047bc003",
+          "sha256": "5efb6909910608fbeb90be2f04e4a719eb1635d6be987584fa34c886047bc003"
+        },
+        {
+          "path": "references/readiness-routing.md",
+          "action": "unchanged",
+          "priorSha256": "2c1cc72ede6d5462a3dc2fa37a82a2f7b15a089740303861b7ef521ccf349979",
+          "sha256": "2c1cc72ede6d5462a3dc2fa37a82a2f7b15a089740303861b7ef521ccf349979"
+        }
+      ]
+    },
+    {
+      "path": "~/.grok/skills/trace-computer-use",
+      "action": "unchanged",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "action": "unchanged",
+          "priorSha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2",
+          "sha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2"
+        },
+        {
+          "path": "manifest.json",
+          "action": "unchanged",
+          "priorSha256": "eef2b2e450667e19311b7c183f619d941886fe74c8b4be26a44f425c820ae901",
+          "sha256": "eef2b2e450667e19311b7c183f619d941886fe74c8b4be26a44f425c820ae901"
+        },
+        {
+          "path": "references/acceptance.md",
+          "action": "unchanged",
+          "priorSha256": "203d0bc54752393cac34096819baa0e6e33fb27d8ce0db1dc6e1169348d30fb8",
+          "sha256": "203d0bc54752393cac34096819baa0e6e33fb27d8ce0db1dc6e1169348d30fb8"
+        },
+        {
+          "path": "references/operation-and-recovery.md",
+          "action": "unchanged",
+          "priorSha256": "5efb6909910608fbeb90be2f04e4a719eb1635d6be987584fa34c886047bc003",
+          "sha256": "5efb6909910608fbeb90be2f04e4a719eb1635d6be987584fa34c886047bc003"
+        },
+        {
+          "path": "references/readiness-routing.md",
+          "action": "unchanged",
+          "priorSha256": "2c1cc72ede6d5462a3dc2fa37a82a2f7b15a089740303861b7ef521ccf349979",
+          "sha256": "2c1cc72ede6d5462a3dc2fa37a82a2f7b15a089740303861b7ef521ccf349979"
+        }
+      ]
+    }
+  ],
+  "rollbackChecks": [
+    {
+      "destination": "~/.agents/skills/trace-computer-use",
+      "conflicts": 0,
+      "dryRun": true
+    },
+    {
+      "destination": "~/.claude/skills/trace-computer-use",
+      "conflicts": 0,
+      "dryRun": true
+    },
+    {
+      "destination": "~/.grok/skills/trace-computer-use",
+      "conflicts": 0,
+      "dryRun": true
+    }
+  ],
+  "scope": "Added clipboard quiescence and real adapter guidance; exact backups outside skill discovery; no client setting change or actual rollback"
+}

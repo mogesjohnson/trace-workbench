@@ -1,0 +1,19 @@
+'use strict';
+// Separate owned-window preparation; no injected input, clipboard access or recovery apply.
+const fs=require('node:fs/promises'),path=require('node:path'),{randomUUID}=require('node:crypto');
+const {launchOwnedFixture}=require('../scripts/accept-clipboard.cjs');
+const {command}=require('../scripts/accept-supervisor-quarantine.cjs');
+(async()=>{
+ const directory=path.join(__dirname,'glow-anchor',randomUUID());await fs.mkdir(directory,{recursive:true});
+ const before={status:await command(['status']),access:await command(['input-access'])};
+ if(before.status.recoveryRequired||(!before.access.observable&&before.access.code!=='foreground_access_denied'))throw Error('preparation_blocked');
+ const fixture=await launchOwnedFixture({executable:path.join(__dirname,'computer-fixture/bin/TraceComputerFixture.exe'),directory});
+ let observation;for(let i=0;i<30;i++){observation=await command(['input-access']);if(observation.observable)break;await new Promise(r=>setTimeout(r,100));}
+ let keys=null;if(observation.observable)keys=await command(['keystate','all']);
+ const receipt={scope:'Separate ordinary owned anchor preparation; no input, recovery clearing or case promotion.',before,after:{access:observation,keys},target:{pid:fixture.pid,title:fixture.title},ready:observation.observable===true&&keys?.down.length===0};
+ await fs.writeFile(path.join(directory,'preparation.json'),JSON.stringify(receipt,null,2));
+ console.log(JSON.stringify({directory,ready:receipt.ready,target:receipt.target,code:observation.code,keysDown:keys?.down}));
+ while(true){try{await fs.access(path.join(directory,'close'));break;}catch(e){if(e.code!=='ENOENT')throw e;}await new Promise(r=>setTimeout(r,100));}
+ const status=await command(['status']);if(status.recoveryRequired)throw Error('cleanup_unknown');
+ console.log(JSON.stringify({cleanup:await fixture.close()}));
+})().catch(e=>{console.error(e.code||e.message);process.exitCode=1});

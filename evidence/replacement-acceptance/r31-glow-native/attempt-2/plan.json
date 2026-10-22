@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "planContract": 1,
+  "caseId": "R31-GLOW-NATIVE",
+  "replaces": [
+    "A31-GLOW",
+    "GLOW-LIVE"
+  ],
+  "historicalStatus": "exhausted fail; regression kept separate",
+  "attempt": 2,
+  "ownerDecision": "evidence/replacement-acceptance/owner-decision.json",
+  "referenceExecutor": "OpenAI bundled Computer Use sky",
+  "executionRequiresExplicitOwnerDecision": true,
+  "declaredBeforeUiLaunch": true,
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "target": "Fresh exact owned full-screen non-topmost synthetic glow fixture",
+  "initial": {
+    "count": 0,
+    "mouseClickCount": 0,
+    "activationCount": 0,
+    "mouseDownCount": 0,
+    "mouseUpCount": 0,
+    "keysDown": []
+  },
+  "actions": [
+    "Open actual MCP session; verify Node→detached native supervisor→marker and unchanged focus",
+    "Verify actual safe desktop pixels show glow",
+    "One EXTERNAL reference-executor left edge click gives count1",
+    "One fresh observed TRACE MCP coordinate edge click gives count2",
+    "Ordinary session close: owner/marker exit within5s, absent glow, clear recovery and free lease",
+    "Second session: visible glow and unchanged focus; private owned Node self-termination; exact Node/native/marker exit within5s, absent glow and lease handoff"
+  ],
+  "bounds": {
+    "referenceWaitMs": 60000,
+    "helperExitMs": 5000,
+    "captureAttemptsPerFrame": 3,
+    "referenceClicks": 1,
+    "traceClicks": 1
+  },
+  "referenceProof": "Actual external tool receipt must be retained separately; private checkpoint metadata binds its executor, target generation, screen point and time.",
+  "cleanup": "Close any remaining owner/MCP; verify exact helper exit and independent all-up while fixture remains; close fixture; persist terminal receipt.",
+  "budget": "One attempt plus one matching corrective attempt with changed precondition, no input replay or historical promotion.",
+  "limits": [
+    "Selected single-monitor mode only",
+    "Private host mode none supplies ordinary production backend/native ownership; no controlled input replacement",
+    "Two TRACE clicks, UIA invocation or synthetic fixture activation cannot replace the external reference click",
+    "No model-host/release acceptance"
+  ]
+}

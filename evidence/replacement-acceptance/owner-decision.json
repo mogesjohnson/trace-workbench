@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-10-22 03:20:10 UTC",
+  "source": "Direct user response in this Codex conversation",
+  "decision": "Approve all five replacement tests",
+  "caseIds": [
+    "R31-GLOW-NATIVE",
+    "R3-WINDOW-COORDINATES",
+    "R32-PRODUCTION-OWNER",
+    "R32-CANCEL-MOUSE-COMPLETE",
+    "R32-CANCEL-TYPING-COMPLETE"
+  ],
+  "contract": "docs/REPLACEMENT_ACCEPTANCE_PLAN.md",
+  "attemptBudget": {
+    "initial": 1,
+    "corrective": 1,
+    "maximum": 2
+  },
+  "historicalOutcomes": "Preserved; no retroactive promotion"
+}

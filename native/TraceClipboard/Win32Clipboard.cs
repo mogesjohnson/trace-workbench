@@ -43,9 +43,16 @@ internal sealed class Win32Clipboard : IClipboardBackend
     }
 
     public IDisposable Open()
+        => OpenBounded(window);
+
+    // No Win32Clipboard instance: inspection creates no owner window, mutex or registered marker.
+    internal static object InspectFormats() => ClipboardFormatInspection.Inspect(
+        () => OpenBounded(0), EnumerateFormats, () => File.Exists(ProtectedClipboardStore.StatePath));
+
+    private static IDisposable OpenBounded(nint owner)
     {
         var clock = Stopwatch.StartNew();
-        while (!OpenClipboard(window))
+        while (!OpenClipboard(owner))
         {
             if (clock.ElapsedMilliseconds >= 800) throw new ClipboardFailure("clipboard_busy");
             Thread.Sleep(15);
@@ -54,6 +61,9 @@ internal sealed class Win32Clipboard : IClipboardBackend
     }
 
     public IReadOnlyList<uint> Formats()
+        => EnumerateFormats();
+
+    private static IReadOnlyList<uint> EnumerateFormats()
     {
         var result = new List<uint>();
         uint format = 0;
@@ -67,7 +77,7 @@ internal sealed class Win32Clipboard : IClipboardBackend
                 return result;
             }
             result.Add(format);
-            if (result.Count > 64) throw new ClipboardFailure("clipboard_unsupported_formats");
+            if (result.Count > ClipboardFormatInspection.MaximumFormats) throw new ClipboardFailure("clipboard_unsupported_formats");
         }
     }
 

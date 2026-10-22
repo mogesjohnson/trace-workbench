@@ -1,0 +1,17 @@
+{
+  "driverSha256": "322be75b2b7d5c8e432befa81a05d26fda54cfcfff10e5260fba6eeb6ee8b286",
+  "completed": [
+    "A32-RECOVERY-TIMEOUT-TYPING",
+    "A32-RECOVERY-DISCONNECT-MOUSE"
+  ],
+  "stoppedAt": "A32-RECOVERY-DISCONNECT-CHORD",
+  "reason": "Private controlled-start journal replacement failed with EPERM before invoking controlled provider; no automatic replay",
+  "terminalHandle": 67585,
+  "exitCode": 0,
+  "anchorCleanup": {
+    "exactPid": 28864,
+    "independentExitConfirmed": true,
+    "priorPrintedExitFlagWasIncorrect": true
+  },
+  "limits": "Individual case receipts remain authoritative. The orchestrator stopping at the first failure is not full matrix acceptance."
+}

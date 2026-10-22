@@ -1,0 +1,36 @@
+'use strict';
+const fs=require('node:fs/promises'),path=require('node:path'),crypto=require('node:crypto');
+const ROOT=path.resolve(__dirname,'..');
+const {createClipboardProvider,clipboardSourceHashes}=require('../src/method/clipboard-provider.cjs');
+const {sameSupportedBytes}=require('../scripts/accept-clipboard.cjs');
+async function main(){
+ const directory=path.join(ROOT,'evidence/computer-use-method/clipboard/native-roundtrip');
+ await fs.mkdir(path.dirname(directory),{recursive:true});await fs.mkdir(directory);
+ const plan={caseId:'METHOD-CLIPBOARD-NATIVE-ROUNDTRIP',declaredBeforeSnapshot:true,target:'Current clipboard, supported text-only formats',actions:['Reject unsupported formats before mutation','Privately snapshot original supported bytes','Write one synthetic Unicode string and verify readback','Restore with sequence/owner guard','Compare original bytes through a fresh helper in memory'],input:'No fixture, UI action, key or paste is launched',privacy:'Never persist original bytes, hashes, format counts, sequences or tokens',cleanup:'Guarded restore and helper close; uncertain recovery remains protected'};
+ await fs.writeFile(path.join(directory,'plan.json'),JSON.stringify(plan,null,2)+'\n',{flag:'wx'});
+ const receipt={caseId:plan.caseId,status:'running',startedAt:new Date().toISOString(),inputDispatched:false,testedSource:await clipboardSourceHashes(),cleanup:{}};
+ const provider=createClipboardProvider();let original,verifier;
+ try{
+  if(!(await provider.doctor()).ready)throw Object.assign(new Error(),{code:'clipboard_unavailable'});
+  original=await provider.snapshot();
+  const write=await provider.writeText({token:original.token,text:'TRACE native clipboard roundtrip — café Ελληνικά 日本語 🙂'});
+  receipt.syntheticReadbackVerified=write.verified===true&&(await provider.readback({token:original.token})).matches===true;
+  const restored=await provider.restore({token:original.token,inputQuiescent:true});
+  receipt.restoreVerified=restored.restored===true&&restored.verified===true;
+  receipt.cleanup.primary=await provider.close();
+  verifier=createClipboardProvider();if(!(await verifier.doctor()).ready)throw Object.assign(new Error(),{code:'clipboard_verifier_unavailable'});
+  const after=await verifier.snapshot();receipt.independentSupportedBytesRestored=sameSupportedBytes(original,after);
+  receipt.status=receipt.syntheticReadbackVerified&&receipt.restoreVerified&&receipt.independentSupportedBytesRestored?'pass':'fail';
+ }catch(error){receipt.status='blocked';receipt.error={code:/^[a-z_]{1,80}$/.test(error.code||'')?error.code:'clipboard_case_failed'};}
+ finally{
+  if(original&&!receipt.restoreVerified){try{receipt.cleanup.finalRestore=await provider.restore({token:original.token,inputQuiescent:true}).then(v=>({restored:v.restored===true,verified:v.verified===true}));}catch(error){receipt.cleanup.finalRestore={code:/^[a-z_]{1,80}$/.test(error.code||'')?error.code:'clipboard_restore_unknown'};}}
+  // close has no original metadata in its public result. Protected recovery is never abandoned.
+  try{receipt.cleanup.primary=await provider.close();}catch{receipt.cleanup.primary={cleanup:'unknown'};}
+  if(verifier)try{receipt.cleanup.verifier=await verifier.close();}catch{receipt.cleanup.verifier={cleanup:'unknown'};}
+  original=null;
+  if(receipt.cleanup.primary.cleanup!=='confirmed'||(verifier&&receipt.cleanup.verifier.cleanup!=='confirmed'))receipt.status='blocked';
+  receipt.completedAt=new Date().toISOString();await fs.writeFile(path.join(directory,'receipt.json'),JSON.stringify(receipt,null,2)+'\n');
+ }
+ console.log(JSON.stringify({status:receipt.status,error:receipt.error,syntheticReadbackVerified:receipt.syntheticReadbackVerified,restoreVerified:receipt.restoreVerified,independentSupportedBytesRestored:receipt.independentSupportedBytesRestored,cleanup:receipt.cleanup}));
+}
+main().catch(error=>{console.error(error.code||'case_failed');process.exitCode=1});

@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 
 namespace TraceSupervisor;
@@ -84,6 +85,46 @@ internal static class Json
 
 internal static class Stdio
 {
+    // Node writes UTF-8 bytes to this private pipe. Never inherit a console code page
+    // or accept replacement characters before a request can reach dispatch.
+    internal static StreamReader OpenInput(Stream stream) => new(stream,
+        new UTF8Encoding(false, true), detectEncodingFromByteOrderMarks: false);
+
+    private sealed class SplitBytes(byte[] bytes) : MemoryStream(bytes)
+    {
+        public override int Read(byte[] buffer, int offset, int count) => base.Read(buffer, offset, Math.Min(count, 1));
+        public override int Read(Span<byte> buffer) => base.Read(buffer[..Math.Min(buffer.Length, 1)]);
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+            => base.ReadAsync(buffer[..Math.Min(buffer.Length, 1)], cancellationToken);
+    }
+
+    // In-memory protocol checks only: no desktop, providers or input APIs.
+    internal static void TestInput()
+    {
+        static void Require(bool condition) { if (!condition) throw new TraceError("selftest_failed", "Private UTF-8 protocol check failed."); }
+        const string literal = "café 日本語 \U0001F680";
+        using (var reader = OpenInput(new SplitBytes(Encoding.UTF8.GetBytes("{\"id\":\"" + literal + "\"}\n"))))
+        {
+            var line = reader.ReadLineAsync().GetAwaiter().GetResult();
+            using var request = JsonDocument.Parse(line!);
+            Require(request.RootElement.GetProperty("id").GetString() == literal);
+            Require(reader.ReadLineAsync().GetAwaiter().GetResult() is null);
+        }
+        foreach (var invalid in new byte[][] { [0xC3, 0x28], [0xC0, 0xAF], [0xED, 0xA0, 0x80], [0xF0, 0x9F] })
+        {
+            var handled = false; var rejected = false;
+            using var reader = OpenInput(new SplitBytes([.. Encoding.UTF8.GetBytes("{\"id\":\""), .. invalid]));
+            try
+            {
+                var line = reader.ReadLineAsync().GetAwaiter().GetResult();
+                using var request = JsonDocument.Parse(line!);
+                handled = true;
+            }
+            catch (DecoderFallbackException) { rejected = true; }
+            Require(rejected && !handled);
+        }
+    }
+
     // Children get their own redirected pipes; they must not inherit the protocol handles to Node.
     public static void MakePrivate()
     {

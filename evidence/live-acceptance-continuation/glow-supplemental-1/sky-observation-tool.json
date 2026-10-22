@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "source": "Actual Sky get_window_state returned to the active Codex model; no Sky click was sent.",
+  "operation": "get_window_state",
+  "target": {
+    "id": "1314090",
+    "pid": 54376,
+    "processCreationTime": "134371529643363446",
+    "sessionId": 1
+  },
+  "observedAt": "2026-10-22T14:29:49.864Z",
+  "accessibility": {
+    "focused_element": "0 window TRACE owned glow acceptance fixture Secondary Actions: Raise ID: traceGlowFixture",
+    "tree": "Window: \"TRACE owned glow acceptance fixture\", App: TraceGlowFixture.exe.\n\t0 window TRACE owned glow acceptance fixture Secondary Actions: Raise ID: traceGlowFixture\n\t\t1 button TRACE edge click counter ID: traceGlowEdgeButton"
+  },
+  "modelInspection": "The actual returned image showed the owned dark full-screen fixture with visible edge glow and the single small left-edge button. No foreign content appeared.",
+  "referenceClicks": 0,
+  "traceClicks": 0,
+  "historicalReceiptPreserved": true
+}

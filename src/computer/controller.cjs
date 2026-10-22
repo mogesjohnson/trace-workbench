@@ -236,10 +236,12 @@ function createComputerController(options = {}) {
         signal = markedSignal(signal);
         await lease.assert(sessionId);
         const observation = session.observation;
-        if (!observation || observation.id !== observationId) throw fail('stale_observation', 'Use the latest observationId. Every action consumes it.');
+        // These guards run before backend.act. Preserve that proof on the rejected
+        // promise; the public MCP boundary must not infer dispatch from a code name.
+        if (!observation || observation.id !== observationId) throw Object.assign(fail('stale_observation', 'Use the latest observationId. Every action consumes it.'), { details: { outcome: 'not_dispatched' } });
         if (now() - observation.observedAtMs > observationTtlMs) {
           session.observation = null;
-          throw fail('stale_observation', 'Observation expired. Observe again before input.');
+          throw Object.assign(fail('stale_observation', 'Observation expired. Observe again before input.'), { details: { outcome: 'not_dispatched' } });
         }
         const checked = validateAction(action, observation.result);
         session.observation = null;
@@ -247,18 +249,21 @@ function createComputerController(options = {}) {
         signal.throwIfAborted();
         const actionId = randomUUID();
         await record(session, { type: 'action_started', actionId, observationId, actionType: checked.type });
+        let nativeCompleted = false;
         try {
           signal.throwIfAborted();
           indicator.assertActive();
           const nativeResult = await backend.act({ window: session.window, observation: observation.snapshot, action: checked, signal });
+          nativeCompleted = true;
           const fresh = await observeInternal(session, signal, observation.snapshot.depth);
           await record(session, { type: 'action_completed', actionId, observationId: fresh.observationId });
           return { actionId, outcome: 'completed', verification: 'fresh_observation', nativeResult, observation: fresh };
         } catch (error) {
           session.observation = null;
-          const outcome = error.details?.outcome === 'not_dispatched' ? 'not_dispatched' : 'unknown';
+          const outcome = !nativeCompleted && error.details?.outcome === 'not_dispatched' ? 'not_dispatched' : 'unknown';
           await record(session, { type: outcome === 'not_dispatched' ? 'action_not_dispatched' : 'action_unknown', actionId, errorCode: error.code ?? 'backend_error' }).catch(() => {});
           const projected = safeError(error);
+          if (nativeCompleted && projected.outcome === 'not_dispatched') projected.outcome = 'unknown';
           if (outcome === 'not_dispatched' && !indicator.signal.aborted && !projected.inputRecoveryRequired) {
             return { actionId, outcome, error: projected, nextStep: 'The requested input was not sent. Observe again and resolve the reported condition before at most one new attempt.' };
           }

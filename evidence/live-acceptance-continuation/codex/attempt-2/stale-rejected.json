@@ -1,0 +1,24 @@
+{
+  "source": "actual-connected-codex",
+  "step": "stale-rejected",
+  "tools": [
+    {
+      "name": "trace_computer_act",
+      "arguments": {
+        "sessionId": "03d902dc-7da2-41c9-809f-1531674ba13b",
+        "observationId": "669c28aa-3edb-4487-8e24-618f961f7fd2",
+        "action": {
+          "type": "invoke",
+          "elementId": "traceIncrement"
+        }
+      },
+      "result": {
+        "error": {
+          "code": "stale_observation",
+          "message": "Use the latest observationId. Every action consumes it."
+        }
+      }
+    }
+  ],
+  "modelInspection": "The actual tool rejected the deliberately consumed pretyping observation. No retry is inferred; independent state must retain exact Unicode and count 0."
+}

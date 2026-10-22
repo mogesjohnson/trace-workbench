@@ -1,0 +1,8 @@
+{
+  "caseId": "A32-RECOVERY-CANCEL-MOUSE",
+  "input": "mouse",
+  "failure": "cancel",
+  "status": "running",
+  "startedAt": "2026-10-21T02:47:04.445Z",
+  "cleanup": {}
+}

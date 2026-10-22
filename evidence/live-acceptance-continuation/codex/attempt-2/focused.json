@@ -1,0 +1,809 @@
+{
+  "source": "actual-connected-codex",
+  "step": "focused",
+  "tools": [
+    {
+      "name": "trace_computer_act",
+      "arguments": {
+        "sessionId": "03d902dc-7da2-41c9-809f-1531674ba13b",
+        "observationId": "6a85b164-1fe4-4569-967f-f184c129622e",
+        "action": {
+          "type": "click",
+          "elementId": "traceTextInput"
+        }
+      },
+      "result": {
+        "actionId": "3bff2dd6-8c42-4c5b-b260-5c3f7d89fb57",
+        "outcome": "completed",
+        "verification": "fresh_observation",
+        "nativeResult": {
+          "performed": true,
+          "type": "click",
+          "engine": "winapp",
+          "version": "0.7.1",
+          "preparation": [
+            {
+              "step": "activation",
+              "status": "foreground"
+            }
+          ],
+          "native": {
+            "elementId": "txt-tracetextinput-5371",
+            "clickType": "click",
+            "x": 1434,
+            "y": 713,
+            "hwnd": 10358094
+          }
+        },
+        "observation": {
+          "sessionId": "03d902dc-7da2-41c9-809f-1531674ba13b",
+          "observationId": "669c28aa-3edb-4487-8e24-618f961f7fd2",
+          "window": {
+            "id": "10358094",
+            "pid": 48020,
+            "processName": "TraceComputerFixture",
+            "title": "TRACE Computer Fixture — clipboard-f298e72c-16cc-4265-a119-998ad6d8d6c3",
+            "bounds": {
+              "x": 1158,
+              "y": 537,
+              "width": 564,
+              "height": 717
+            },
+            "processCreationTime": "134371532499124622",
+            "sessionId": 1,
+            "ownerWindowId": null
+          },
+          "bounds": {
+            "x": 1158,
+            "y": 537,
+            "width": 564,
+            "height": 717
+          },
+          "elements": [
+            {
+              "id": "win-tracefixturewin-5235",
+              "name": "TRACE Computer Fixture — clipboard-f298e72c-16cc-4265-a119-998ad6d8d6c3",
+              "controlType": "Window",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceFixtureWindow",
+              "className": "WindowsForms10.Window.8.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1149,
+                "y": 537,
+                "width": 582,
+                "height": 726
+              }
+            },
+            {
+              "id": "lbl-tracedesktopacc-51a1",
+              "name": "TRACE desktop acceptance fixture",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1184,
+                "y": 600,
+                "width": 307,
+                "height": 28
+              }
+            },
+            {
+              "id": "lbl-ownedsyntheticc-471f",
+              "name": "Owned synthetic controls. No external application access.",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1184,
+                "y": 630,
+                "width": 509,
+                "height": 28
+              }
+            },
+            {
+              "id": "lbl-textinput-4b8b",
+              "name": "Text input",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1184,
+                "y": 670,
+                "width": 97,
+                "height": 28
+              }
+            },
+            {
+              "id": "traceTextInput",
+              "name": "TRACE text input",
+              "controlType": "Edit",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceTextInput",
+              "className": "WindowsForms10.Edit.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1184,
+                "y": 696,
+                "width": 500,
+                "height": 34
+              }
+            },
+            {
+              "id": "traceIncrement",
+              "name": "Increment counter",
+              "controlType": "Button",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceIncrement",
+              "className": "WindowsForms10.Button.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1184,
+                "y": 741,
+                "width": 280,
+                "height": 36
+              }
+            },
+            {
+              "id": "traceCounter",
+              "name": "Counter value",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceCounter",
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1480,
+                "y": 749,
+                "width": 85,
+                "height": 28
+              }
+            },
+            {
+              "id": "traceOption",
+              "name": "Enable option",
+              "controlType": "CheckBox",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceOption",
+              "className": "WindowsForms10.Button.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1184,
+                "y": 796,
+                "width": 160,
+                "height": 32
+              }
+            },
+            {
+              "id": "traceDeepHost",
+              "name": "Deep host",
+              "controlType": "Pane",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceDeepHost",
+              "className": "WindowsForms10.Window.8.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1490,
+                "y": 792,
+                "width": 200,
+                "height": 36
+              }
+            },
+            {
+              "id": "traceDeepLevel1",
+              "name": "Deep level 1",
+              "controlType": "Pane",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceDeepLevel1",
+              "className": "WindowsForms10.Window.8.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1490,
+                "y": 792,
+                "width": 200,
+                "height": 36
+              }
+            },
+            {
+              "id": "traceDeepLevel2",
+              "name": "Deep level 2",
+              "controlType": "Pane",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceDeepLevel2",
+              "className": "WindowsForms10.Window.8.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1490,
+                "y": 792,
+                "width": 200,
+                "height": 36
+              }
+            },
+            {
+              "id": "traceDeepLevel3",
+              "name": "Deep level 3",
+              "controlType": "Pane",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceDeepLevel3",
+              "className": "WindowsForms10.Window.8.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1490,
+                "y": 792,
+                "width": 200,
+                "height": 36
+              }
+            },
+            {
+              "id": "traceDeepLevel4",
+              "name": "Deep level 4",
+              "controlType": "Pane",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceDeepLevel4",
+              "className": "WindowsForms10.Window.8.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1490,
+                "y": 792,
+                "width": 200,
+                "height": 36
+              }
+            },
+            {
+              "id": "traceDeepLevel5",
+              "name": "Deep level 5",
+              "controlType": "Pane",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceDeepLevel5",
+              "className": "WindowsForms10.Window.8.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1490,
+                "y": 792,
+                "width": 200,
+                "height": 36
+              }
+            },
+            {
+              "id": "traceDeepLevel6",
+              "name": "Deep level 6",
+              "controlType": "Pane",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceDeepLevel6",
+              "className": "WindowsForms10.Window.8.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1490,
+                "y": 792,
+                "width": 200,
+                "height": 36
+              }
+            },
+            {
+              "id": "traceDeepLevel7",
+              "name": "Deep level 7",
+              "controlType": "Pane",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceDeepLevel7",
+              "className": "WindowsForms10.Window.8.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1490,
+                "y": 792,
+                "width": 200,
+                "height": 36
+              }
+            },
+            {
+              "id": "lbl-scrollablecontr-48bf",
+              "name": "Scrollable controls",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1184,
+                "y": 836,
+                "width": 174,
+                "height": 28
+              }
+            },
+            {
+              "id": "traceScrollPanel",
+              "name": "Scrollable fixture panel",
+              "controlType": "Pane",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceScrollPanel",
+              "className": "WindowsForms10.Window.8.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1184,
+                "y": 863,
+                "width": 500,
+                "height": 150
+              }
+            },
+            {
+              "id": "traceScrollRow1",
+              "name": "Fixture row 1",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceScrollRow1",
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1197,
+                "y": 872,
+                "width": 125,
+                "height": 28
+              }
+            },
+            {
+              "id": "traceScrollRow2",
+              "name": "Fixture row 2",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceScrollRow2",
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1197,
+                "y": 906,
+                "width": 125,
+                "height": 28
+              }
+            },
+            {
+              "id": "traceScrollRow3",
+              "name": "Fixture row 3",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceScrollRow3",
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1197,
+                "y": 940,
+                "width": 125,
+                "height": 28
+              }
+            },
+            {
+              "id": "traceScrollRow4",
+              "name": "Fixture row 4",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceScrollRow4",
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1197,
+                "y": 974,
+                "width": 125,
+                "height": 28
+              }
+            },
+            {
+              "id": "traceScrollRow5",
+              "name": "Fixture row 5",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceScrollRow5",
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1197,
+                "y": 1008,
+                "width": 125,
+                "height": 28
+              }
+            },
+            {
+              "id": "traceScrollRow6",
+              "name": "Fixture row 6",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceScrollRow6",
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1197,
+                "y": 1042,
+                "width": 125,
+                "height": 28
+              }
+            },
+            {
+              "id": "traceScrollRow7",
+              "name": "Fixture row 7",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceScrollRow7",
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1197,
+                "y": 1076,
+                "width": 125,
+                "height": 28
+              }
+            },
+            {
+              "id": "traceScrollRow8",
+              "name": "Fixture row 8",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceScrollRow8",
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1197,
+                "y": 1110,
+                "width": 125,
+                "height": 28
+              }
+            },
+            {
+              "id": "traceScrollRow9",
+              "name": "Fixture row 9",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceScrollRow9",
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1197,
+                "y": 1144,
+                "width": 125,
+                "height": 28
+              }
+            },
+            {
+              "id": "traceScrollRow10",
+              "name": "Fixture row 10",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceScrollRow10",
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1197,
+                "y": 1178,
+                "width": 136,
+                "height": 28
+              }
+            },
+            {
+              "id": "traceScrollRow11",
+              "name": "Fixture row 11",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceScrollRow11",
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1197,
+                "y": 1212,
+                "width": 136,
+                "height": 28
+              }
+            },
+            {
+              "id": "traceScrollRow12",
+              "name": "Fixture row 12",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceScrollRow12",
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1197,
+                "y": 1246,
+                "width": 136,
+                "height": 28
+              }
+            },
+            {
+              "id": "traceScrollRow13",
+              "name": "Fixture row 13",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceScrollRow13",
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1197,
+                "y": 1280,
+                "width": 136,
+                "height": 28
+              }
+            },
+            {
+              "id": "traceScrollRow14",
+              "name": "Fixture row 14",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceScrollRow14",
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1197,
+                "y": 1314,
+                "width": 136,
+                "height": 28
+              }
+            },
+            {
+              "id": "NonClientVerticalScrollBar",
+              "name": "Vertical",
+              "controlType": "ScrollBar",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "NonClientVerticalScrollBar",
+              "bounds": {
+                "x": 1657,
+                "y": 864,
+                "width": 26,
+                "height": 148
+              }
+            },
+            {
+              "id": "UpButton",
+              "name": "Line up",
+              "controlType": "Button",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "UpButton",
+              "bounds": {
+                "x": 1657,
+                "y": 864,
+                "width": 26,
+                "height": 26
+              }
+            },
+            {
+              "id": "ScrollbarThumb",
+              "name": "Position",
+              "controlType": "Thumb",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "ScrollbarThumb",
+              "bounds": {
+                "x": 1657,
+                "y": 890,
+                "width": 26,
+                "height": 30
+              }
+            },
+            {
+              "id": "DownPageButton",
+              "name": "Page down",
+              "controlType": "Button",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "DownPageButton",
+              "bounds": {
+                "x": 1657,
+                "y": 920,
+                "width": 26,
+                "height": 66
+              }
+            },
+            {
+              "id": "DownButton",
+              "name": "Line down",
+              "controlType": "Button",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "DownButton",
+              "bounds": {
+                "x": 1657,
+                "y": 986,
+                "width": 26,
+                "height": 26
+              }
+            },
+            {
+              "id": "lbl-dragthebluetarg-5407",
+              "name": "Drag the blue target within the outlined area",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1184,
+                "y": 1032,
+                "width": 400,
+                "height": 28
+              }
+            },
+            {
+              "id": "traceDragArea",
+              "name": "Drag area",
+              "controlType": "Pane",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceDragArea",
+              "className": "WindowsForms10.Window.8.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1184,
+                "y": 1060,
+                "width": 500,
+                "height": 125
+              }
+            },
+            {
+              "id": "traceDragTarget",
+              "name": "Draggable target",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceDragTarget",
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1195,
+                "y": 1091,
+                "width": 120,
+                "height": 50
+              }
+            },
+            {
+              "id": "traceOpenDialog",
+              "name": "Open dialog",
+              "controlType": "Button",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceOpenDialog",
+              "className": "WindowsForms10.Button.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1184,
+                "y": 1200,
+                "width": 150,
+                "height": 36
+              }
+            },
+            {
+              "id": "traceChord",
+              "name": "Last chord",
+              "controlType": "Text",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "traceChord",
+              "className": "WindowsForms10.Static.app.0.2042806_r3_ad1",
+              "bounds": {
+                "x": 1350,
+                "y": 1208,
+                "width": 155,
+                "height": 28
+              }
+            },
+            {
+              "id": "TitleBar",
+              "name": "",
+              "controlType": "TitleBar",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "TitleBar",
+              "bounds": {
+                "x": 1184,
+                "y": 540,
+                "width": 536,
+                "height": 42
+              }
+            },
+            {
+              "id": "SystemMenuBar",
+              "name": "System",
+              "controlType": "MenuBar",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "SystemMenuBar",
+              "bounds": {
+                "x": 1160,
+                "y": 548,
+                "width": 33,
+                "height": 33
+              }
+            },
+            {
+              "id": "mnu-system-2be4",
+              "name": "System",
+              "controlType": "MenuItem",
+              "enabled": true,
+              "offscreen": false,
+              "bounds": {
+                "x": 1160,
+                "y": 548,
+                "width": 33,
+                "height": 33
+              }
+            },
+            {
+              "id": "Minimize-Restore",
+              "name": "Minimize",
+              "controlType": "Button",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "Minimize-Restore",
+              "bounds": {
+                "x": 1509,
+                "y": 538,
+                "width": 71,
+                "height": 44
+              }
+            },
+            {
+              "id": "Maximize-Restore",
+              "name": "Maximize",
+              "controlType": "Button",
+              "enabled": false,
+              "offscreen": false,
+              "automationId": "Maximize-Restore",
+              "bounds": {
+                "x": 1580,
+                "y": 538,
+                "width": 70,
+                "height": 44
+              }
+            },
+            {
+              "id": "Close",
+              "name": "Close",
+              "controlType": "Button",
+              "enabled": true,
+              "offscreen": false,
+              "automationId": "Close",
+              "bounds": {
+                "x": 1650,
+                "y": 538,
+                "width": 71,
+                "height": 44
+              }
+            }
+          ],
+          "observedAt": "2026-10-22T14:35:14.609Z",
+          "coordinateSpace": "window-local-physical-pixels",
+          "captureMethod": "window-capture-dwm-bounds",
+          "accessibility": {
+            "truncated": true,
+            "depth": 8
+          },
+          "focused": {
+            "available": true,
+            "hasFocus": true,
+            "elementId": "traceTextInput",
+            "name": "TRACE text input",
+            "controlType": "Edit",
+            "provenance": "winapp-get-focused",
+            "binding": "observed-control",
+            "nativeSelector": "txt-tracetextinput-5371"
+          },
+          "targetState": {
+            "enabled": true,
+            "minimized": false,
+            "foreground": true,
+            "ownerWindowId": null,
+            "provenance": "public-win32-dwm"
+          },
+          "screenshot": {
+            "mimeType": "image/png",
+            "width": 564,
+            "height": 717,
+            "sha256": "732d64cb26fc9c05c37ec315be442c13664d8d6fcd9b0354a7905cd023bfb01c",
+            "contentIndex": 1
+          }
+        }
+      }
+    }
+  ],
+  "modelInspection": "Inspected actual post-click PNG: caret is in the empty TRACE text input, counter remains 0. Public focus identifies the unique observed Edit; the lifecycle independently checks focusedControl before advancing.",
+  "images": [
+    {
+      "ref": "evidence/live-acceptance-continuation/codex/attempt-2/focused-1.png",
+      "sha256": "732d64cb26fc9c05c37ec315be442c13664d8d6fcd9b0354a7905cd023bfb01c"
+    }
+  ]
+}

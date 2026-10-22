@@ -1,0 +1,53 @@
+{
+  "caseId": "CODEX-TRACE-SKILL-NATIVE",
+  "contract": "codex-utf8-host-v1",
+  "proposal": true,
+  "claimsAttempt": false,
+  "acceptancePlan": "docs/LIVE_ACCEPTANCE_CONTINUATION.md",
+  "historicalAttemptsUsed": 2,
+  "continuationMaximum": 2,
+  "lifetimeAttemptOrdinals": [
+    3,
+    4
+  ],
+  "originals": [
+    {
+      "ref": "evidence/computer-use-method/codex-host-attempt-1/receipt.json",
+      "sha256": "b7d53fbabff03d480b9f1d5f0b6430ad30948cff2f814dd0000b47daaf5f0a61"
+    },
+    {
+      "ref": "evidence/computer-use-method/codex-host-attempt-2/receipt.json",
+      "sha256": "15d564c1a2673bba35e90fb70cc17d8993429f2e169701214640bc54196882a1"
+    }
+  ],
+  "continuationAttempt": 1,
+  "lifetimeAttemptOrdinal": 3,
+  "ownerDecision": "evidence/live-acceptance-continuation/owner-decision.json",
+  "host": "Actual connected Codex conversation",
+  "payload": "TRACE Codex verified café 日本語",
+  "initial": {
+    "text": "",
+    "count": 0
+  },
+  "actions": [
+    "discovery",
+    "opened",
+    "focused",
+    "typed",
+    "stale-rejected",
+    "fresh-counter",
+    "closed"
+  ],
+  "expected": {
+    "text": "TRACE Codex verified café 日本語",
+    "count": 1
+  },
+  "cleanup": "Close actual MCP session; independently verify supervisor and marker exit, attached host Node generation remains alive, all-up input and clear recovery while fixture is alive; close retained fixture.",
+  "evidence": "Each ordered checkpoint uses an evidence-relative JSON envelope: source actual-connected-codex, step, tools [{name, arguments, result}], images [{ref, sha256}], modelInspection. discovery includes skillReads; opened includes chain. Commands only record independent checks; they do not establish actual MCP calls or image inspection.",
+  "notProven": [
+    "Other hosts",
+    "REA analysis",
+    "REPLAY",
+    "Release readiness"
+  ]
+}

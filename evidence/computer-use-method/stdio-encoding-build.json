@@ -1,0 +1,28 @@
+{
+  "at": "2026-10-21T22:42:08.748Z",
+  "scope": "Local UTF-8 helper rebuild; no native desktop input or clipboard API calls",
+  "results": [
+    {
+      "helper": "supervisor",
+      "status": "fulfilled",
+      "value": {
+        "built": true,
+        "runtime": ".NET 9 Desktop",
+        "sourceManifest": "verified",
+        "packageDownloads": false
+      }
+    },
+    {
+      "helper": "clipboard",
+      "status": "fulfilled",
+      "value": {
+        "built": true,
+        "mode": "text-only",
+        "sourceManifest": "verified",
+        "packageDownloads": false,
+        "clipboardContentsRead": false,
+        "clipboardContentsChanged": false
+      }
+    }
+  ]
+}

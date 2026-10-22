@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "planContract": 1,
+  "caseId": "R32-CANCEL-TYPING-COMPLETE",
+  "replaces": [
+    "A32-RECOVERY-CANCEL-TYPING",
+    "A32-PROBE-FOCUSED-TYPING",
+    "A32-PROBE-FOCUSED-TYPING-REGRESSION"
+  ],
+  "historicalStatus": "Original two blocked cancellation attempts and exhausted focused-typing failures retained unchanged.",
+  "acceptancePlan": "docs/REPLACEMENT_ACCEPTANCE_PLAN.md",
+  "ownerDecision": "evidence/replacement-acceptance/owner-decision.json",
+  "executionRequiresExplicitOwnerDecision": true,
+  "attempt": 1,
+  "declaredBeforeUiLaunch": true,
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "target": "One fresh exact synthetic computer fixture through the production MCP/controller/native supervisor controlled-provider path.",
+  "initial": {
+    "count": 0,
+    "text": "",
+    "keysDown": [],
+    "recoveryRequired": false
+  },
+  "actions": [
+    "One pinned-engine focus click on the uniquely observed text input; require public bound focus and independent traceTextInput focus",
+    "One MCP type_text literal abc; private controlled type-hold abc with C down",
+    "Independently prove held input/job dispatch, then cancel this one request via standard SDK AbortSignal",
+    "Require unknown delivery, native cancelled, exact owned input exit and independently all-up input, clear recovery and native-owner exit",
+    "After cleanup, one newly declared pinned-engine counter invocation under a distinct artifact root; count 0 to 1"
+  ],
+  "expected": {
+    "nativeCode": "cancelled",
+    "primaryOutcome": "unknown",
+    "countBeforeFollowup": 0,
+    "countAfterFollowup": 1,
+    "text": "^abc+$; exact string retained, repeated C count recorded, stable after cleanup",
+    "provider": "controlled; setup/followup pinned-engine"
+  },
+  "cleanup": "Settle/cancel the one request; close native/MCP; prove process exit and input release while fixture accessible; close owned fixture; persist terminal outcome.",
+  "budget": "One attempt plus at most one exact same replacement attempt-1 fail/blocked corrective retry with explicit change. No third attempt or replay.",
+  "limits": [
+    "Owner decision reference is required metadata, never inferred approval.",
+    "No historical outcome is modified.",
+    "No public MCP schema/provider behavior changes.",
+    "No host/release/physical-stop acceptance."
+  ],
+  "status": "pass",
+  "launched": true,
+  "startedAt": "2026-10-22T03:26:05.726Z",
+  "fixtureSha256": "e861021c8d4caeb46ceaec3bd4c08f5d241c828dcaeef90007621457ca4110fb",
+  "testedSource": {
+    "baseCommit": "2870cb9f307a3be5315266e1c7a0eecf725c4f53",
+    "workingTreeModified": true,
+    "files": {
+      "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+      "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+      "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+      "native/TraceSupervisor/Program.cs": "c8dc9e6fd440542b624fe93850bdafb4469f72ff81ff33942e96fd3ce5697202",
+      "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+      "native/TraceSupervisor/Session.cs": "d3f7ad4a1d147c593f75912ae5f26d19d7f4de1fb397ef084c64994050e78ca1",
+      "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+      "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+      "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+      "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+      "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+      "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5",
+      "src/computer/lease.cjs": "3600fa756bda99e15aa695731bc0e5a8f6a0893e1f7e333db4d6742ae561389b",
+      "src/computer/activity-indicator.cjs": "42de964cb8fca0f5c30a6c30f1a40173df5f072224339fef6f006ed4ffe2093b",
+      "native/TraceWindowBridge/Program.cs": "eb113326de356280bc4219b21c2b99a1553a066dd170bf9898070ea484bfab46",
+      "native/TraceActivityIndicator/Program.cs": "262b2c70d7f1f271c45d2e66bb1faf6a8d299df87274b12a57540df425645459",
+      "tests/fixtures/supervised-mcp.cjs": "eeade5db7a43d000bc4c7e6a21dac0c32c3c6b5096d1fdaae98812e0faad2399",
+      "tests/fixtures/computer-app/Program.cs": "064a750a8cba970510b45d8ea3a1102fcc2102c0882afde0a017a12e9cafbaf4",
+      "scripts/replacement-acceptance-common.cjs": "b62ca0d06d5c2b657d2373698776c44ff4ec7ae5993b2e183fa7bd3aab274b8b",
+      "scripts/accept-replacement-recovery.cjs": "343d723ad88a1ae60b1bb96b0b38ad936d63b5b453d6c4aacfafb2adc33b531c",
+      "scripts/accept-supervisor-quarantine.cjs": "7f5f401c584c669885acbdeaf9bb94fe90498d457610ab83b5604351ab2432fd",
+      "scripts/accept-supervisor-recovery.cjs": "5ee71bd15d0f744e0c7a6d21fc472871bc79de82ea4e16f821fceb577319bdf3",
+      "scripts/smoke-computer-live.cjs": "6327ec795cd0a9fba6e34fd0834653c0e200578dcb8873e3eb75fbaf35330f56",
+      "package.json": "59e9d00fbe2ac420227f5ffae91cff8fb1f073a5dabc93eaad17e412d968faa1",
+      "package-lock.json": "e6a7b9932ff2169daa29da61bec38f1439bf95d3a19ea728041d523f69630dda"
+    }
+  },
+  "primary": {
+    "caseId": "R32-CANCEL-TYPING-COMPLETE",
+    "status": "pass",
+    "error": null,
+    "receipt": "controlled-recovery/receipt.json"
+  },
+  "effect": {
+    "text": "abc",
+    "repeatedCCount": 0
+  },
+  "completedAt": "2026-10-22T03:26:34.063Z"
+}

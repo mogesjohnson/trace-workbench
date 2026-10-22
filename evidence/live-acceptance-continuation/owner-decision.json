@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "status": "approved",
+  "source": "direct-owner",
+  "decisionId": "owner-supplemental-five-20261022",
+  "approvedAt": "2026-10-22T13:43:26.443Z",
+  "ownerReply": "Approve all five supplemental cases",
+  "replyTo": "call_cc8f65dd36ee430d802bb04b1d866780",
+  "plan": {
+    "ref": "docs/LIVE_ACCEPTANCE_CONTINUATION.md",
+    "sha256": "d8344990f4189a20458762120bd49786b478893a4f921f6c4e61e7625528b3d7"
+  },
+  "cases": [
+    {
+      "caseId": "R31-GLOW-NATIVE",
+      "contract": "glow-sky-physical-point-v1",
+      "historicalAttemptsUsed": 2,
+      "continuationMaximum": 2
+    },
+    {
+      "caseId": "CODEX-TRACE-SKILL-NATIVE",
+      "contract": "codex-utf8-host-v1",
+      "historicalAttemptsUsed": 2,
+      "continuationMaximum": 2
+    },
+    {
+      "caseId": "A32-QUARANTINE-ACK-TYPING",
+      "contract": "typing-ack-idle-anchor-v1",
+      "historicalAttemptsUsed": 2,
+      "continuationMaximum": 2
+    },
+    {
+      "caseId": "CLAUDE-TRACE-SKILL-NATIVE",
+      "contract": "claude-queued-host-settings-v1",
+      "historicalAttemptsUsed": 2,
+      "continuationMaximum": 2
+    },
+    {
+      "caseId": "METHOD-CLIPBOARD-UNICODE-PASTE",
+      "contract": "clipboard-supported-snapshot-v1",
+      "historicalAttemptsUsed": 2,
+      "continuationMaximum": 2
+    }
+  ],
+  "preserveEarlierResults": true,
+  "noOtherCaseBudgetChanges": true
+}

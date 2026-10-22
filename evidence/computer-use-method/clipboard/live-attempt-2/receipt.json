@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "caseId": "METHOD-CLIPBOARD-UNICODE-PASTE",
+  "status": "blocked",
+  "startedAt": "2026-10-22T04:02:47.612Z",
+  "snapshot": {
+    "supported": false,
+    "originalMetadataRetained": false
+  },
+  "paste": {
+    "attempted": false,
+    "requests": 0,
+    "dispatches": 0
+  },
+  "cleanup": {
+    "mcp": {
+      "closed": true
+    },
+    "input": {
+      "safe": true,
+      "keysReleased": true,
+      "recoveryRequired": false
+    },
+    "ownedResourcesClosed": true,
+    "clipboard": {
+      "cleanup": "confirmed",
+      "mode": "text-only"
+    },
+    "confirmed": true,
+    "privateArtifactsRemoved": true
+  },
+  "error": {
+    "code": "clipboard_unsupported_formats"
+  },
+  "completedAt": "2026-10-22T04:02:49.184Z",
+  "attempt": 2,
+  "testedSource": {
+    "baseCommit": "2870cb9f307a3be5315266e1c7a0eecf725c4f53",
+    "workingTreeModified": true,
+    "files": {
+      "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+      "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+      "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+      "native/TraceSupervisor/Program.cs": "c8dc9e6fd440542b624fe93850bdafb4469f72ff81ff33942e96fd3ce5697202",
+      "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+      "native/TraceSupervisor/Session.cs": "d3f7ad4a1d147c593f75912ae5f26d19d7f4de1fb397ef084c64994050e78ca1",
+      "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+      "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+      "native/TraceClipboard/TraceClipboard.csproj": "d8f8afbfc5799ba4136b06372e31276c67130736f9a2f5e1c325ce43848a419b",
+      "native/TraceClipboard/Program.cs": "c4ef30107b10ab6e25bc70ae966b188bec76879efa2ca54c4150eb6306740604",
+      "native/TraceClipboard/ClipboardService.cs": "feeef723c22fb069259febb262f23c38b020ef2354f7e5e9671625f4023da1b7",
+      "native/TraceClipboard/Win32Clipboard.cs": "3947b10fb8c76c2c7400feb4ef5404278edbd214b23c0b0444de9db4265847fd",
+      "native/TraceClipboard/SelfTests.cs": "52e2c85dc72896d0a7d313a6745e16dd1a089be7bebd2ce816962dae3337d70a",
+      "scripts/accept-clipboard.cjs": "7cd0471710bbe764580b93678ef9fb7066ad39ed1e61cbcf84e8a03eabdffd2c",
+      "scripts/accept-supervisor-recovery.cjs": "5ee71bd15d0f744e0c7a6d21fc472871bc79de82ea4e16f821fceb577319bdf3",
+      "scripts/smoke-computer-live.cjs": "6327ec795cd0a9fba6e34fd0834653c0e200578dcb8873e3eb75fbaf35330f56",
+      "src/method/clipboard-provider.cjs": "f3b1b739541812d99686f79fa516f4c183e59122bd650c79e541ea141145c603",
+      "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+      "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+      "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5",
+      "bin/trace.cjs": "fc954e4462621132997ece0d16ee0b7a8f2a986e23c761c1462af5cca5193433",
+      "tests/fixtures/computer-app/Program.cs": "064a750a8cba970510b45d8ea3a1102fcc2102c0882afde0a017a12e9cafbaf4",
+      "tests/fixtures/computer-app/TraceComputerFixture.csproj": "6eeb0a93b1ad0b73993fbb70bb248746f147ebd7b6731c50eaf889595439a793"
+    },
+    "fixtureSha256": "e861021c8d4caeb46ceaec3bd4c08f5d241c828dcaeef90007621457ca4110fb"
+  },
+  "runtime": {
+    "node": "v26.2.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  }
+}

@@ -15,7 +15,8 @@ const failure = code => Object.assign(new Error(code), { code });
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const tokenValid = token => typeof token === 'string' && /^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(token);
 const sequenceValid = value => Number.isInteger(value) && value > 0 && value <= 0xffffffff;
-const commands = new Set(['info', 'snapshot', 'write_text', 'readback', 'defer_restore', 'restore', 'recover', 'recovery_info', 'abandon', 'close']);
+const commands = new Set(['info', 'inspect_formats', 'snapshot', 'write_text', 'readback', 'defer_restore', 'restore', 'recover', 'recovery_info', 'abandon', 'close']);
+const formatCategories = new Set(['image', 'file-list', 'standard-other', 'registered', 'graphics-object', 'private', 'other']);
 
 async function clipboardSourceHashes(root = ROOT) {
   const hashes = {};
@@ -113,6 +114,7 @@ function createClipboardProvider({ environment = 'local', id = `clipboard:${envi
     id, channel: 'app-connector', usesDesktop: false, available: false,
     environments: [environment], apps: ['clipboard'], capabilities: ['clipboard-text-transaction'],
     constraints: { mode: 'text-only', supportedFormats: [1, 7, 13, 16],
+      formatSupportInspection: 'read-only-identifiers-only',
       acquireDesktopLease: false, snapshotContentReturned: false, recovery: 'dpapi-current-user',
       clipboardScope: 'current interactive window station; caller owns paste/input targeting' },
     doctor() { return exclusive(async () => {
@@ -126,6 +128,36 @@ function createClipboardProvider({ environment = 'local', id = `clipboard:${envi
         return { ready: provider.available, mode: 'text-only', recoveryPending: response.recoveryPending === true,
           code: provider.available ? null : 'clipboard_recovery_required', transport: injected ? 'injected' : 'source-owned-private-stdio' };
       } catch (error) { return { ready: false, code: error.code || 'clipboard_provider_unavailable' }; }
+    }); },
+    inspectFormats() { return exclusive(async () => {
+      if (!injected && platform !== 'win32') throw failure('clipboard_unsupported_platform');
+      if (!injected) { await verify(helperPath); wire ??= createClipboardTransport({ helperPath, timeoutMs }); }
+      const response = await request('inspect_formats');
+      const allowed = new Set(['mode', 'inspection', 'supported', 'supportedFormatIds', 'formatCount', 'unsupportedCount', 'categories',
+        'recoveryPending', 'ready', 'code', 'contentsRead', 'contentsChanged', 'recoveryWritten']);
+      if (!response || typeof response !== 'object' || Array.isArray(response) || Object.keys(response).some(key => !allowed.has(key))
+        || response.mode !== 'text-only' || response.inspection !== 'format-identifiers-only'
+        || response.contentsRead !== false || response.contentsChanged !== false || response.recoveryWritten !== false
+        || typeof response.recoveryPending !== 'boolean' || typeof response.supported !== 'boolean'
+        || !Number.isInteger(response.formatCount) || response.formatCount < 0 || response.formatCount > 64
+        || !Number.isInteger(response.unsupportedCount) || response.unsupportedCount < 0 || response.unsupportedCount > response.formatCount
+        || !Array.isArray(response.supportedFormatIds) || response.supportedFormatIds.length > 4
+        || new Set(response.supportedFormatIds).size !== response.supportedFormatIds.length
+        || response.supportedFormatIds.some(id => ![1, 7, 13, 16].includes(id))
+        || response.supportedFormatIds.length + response.unsupportedCount !== response.formatCount
+        || !Array.isArray(response.categories) || response.categories.length > formatCategories.size
+        || new Set(response.categories.map(item => item?.category)).size !== response.categories.length
+        || response.categories.some(item => !item || Object.keys(item).some(key => !['category', 'count'].includes(key))
+          || !formatCategories.has(item.category) || !Number.isInteger(item.count) || item.count < 1 || item.count > 64)
+        || response.categories.reduce((sum, item) => sum + item.count, 0) !== response.unsupportedCount
+        || response.supported !== (response.unsupportedCount === 0)
+        || response.ready !== (response.supported && !response.recoveryPending)
+        || response.code !== (response.recoveryPending ? 'clipboard_recovery_required' : response.supported ? null : 'clipboard_unsupported_formats'))
+        throw failure('clipboard_invalid_response');
+      return { mode: 'text-only', inspection: 'format-identifiers-only', supported: response.supported,
+        supportedFormatIds: [...response.supportedFormatIds], formatCount: response.formatCount, unsupportedCount: response.unsupportedCount,
+        categories: response.categories.map(({ category, count }) => ({ category, count })), recoveryPending: response.recoveryPending,
+        ready: response.ready, code: response.code, contentsRead: false, contentsChanged: false, recoveryWritten: false };
     }); },
     snapshot() { return exclusive(async () => {
       if (!provider.available) throw failure('clipboard_provider_unavailable');

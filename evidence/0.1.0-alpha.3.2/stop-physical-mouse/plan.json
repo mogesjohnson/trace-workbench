@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A32-STOP-MOUSE",
+  "caseName": "mouse",
+  "attempt": 1,
+  "declaredBeforeUiLaunch": true,
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "target": "Fresh exact owned synthetic WinForms fixture; public focus identity independently checked",
+  "physicalRequired": true,
+  "preparationWaitSeconds": 60,
+  "physicalObservationWaitSeconds": 60,
+  "inputOperationDeadlineMs": 15000,
+  "input": "Source-owned left-button hold at a measured empty fixture point",
+  "phases": [
+    "Prepare owned fixture/session/focus; publish private PREPARED start/ready paths before any held input",
+    "Wait at most 60 seconds for root to create the start file; rediscover fresh target evidence",
+    "Start one controlled held-input operation, independently confirm held state, publish READY file",
+    "Request one actual physical Escape immediately; the 15-second production operation deadline remains unchanged",
+    "Verify native physical metadata/latency <=1000ms, actual child exit and all-up within 15000ms, and no later dispatch admission",
+    "Verify the stopped session rejects a later action until explicitly closed; a new planned session performs one different counter action"
+  ],
+  "lateTap": "If native timeout releases input before the actual key arrives, stop this case as blocked; never re-hold or replay automatically.",
+  "expected": {
+    "physical": true,
+    "exactFollowupIncrement": 1,
+    "cleanupKeysDown": [],
+    "cleanupRecoveryRequired": false
+  },
+  "limits": [
+    "MOUSE/KEYBOARD pass only from a real non-injected low-level hook event. Synthetic events cannot pass them.",
+    "Held provider is controlled; focus setup, injected Escape case and counter follow-up use the pinned engine.",
+    "Literal held C may autorepeat in the synthetic edit; exact text is retained and must stop changing after cleanup."
+  ],
+  "budget": "One attempt plus one corrective retry with matching previous case and explicit changed precondition; preserve every outcome."
+}

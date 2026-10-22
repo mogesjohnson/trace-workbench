@@ -1,0 +1,86 @@
+{
+  "caseId": "A32-RECOVERY-CANCEL-CHORD",
+  "input": "chord",
+  "failure": "cancel",
+  "status": "pass",
+  "startedAt": "2026-10-21T12:33:16.890Z",
+  "cleanup": {
+    "connectionClosed": true,
+    "inputChildExited": true,
+    "inputState": {
+      "available": true,
+      "at": "2026-10-21T12:33:50.231Z",
+      "phase": "native closed; owned fixture not yet closed",
+      "down": []
+    },
+    "fixtureExited": true,
+    "recovery": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    }
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "initialKeys": [],
+  "target": {
+    "windowId": "3739610",
+    "pid": 49416,
+    "processCreationTime": "134370595974716259"
+  },
+  "controlled": {
+    "pid": 54512,
+    "processCreationTime": "134370596159350011",
+    "inJob": true,
+    "supervisorPid": 3044
+  },
+  "held": {
+    "160": true,
+    "162": true
+  },
+  "interruptedAt": "2026-10-21T12:33:36.114Z",
+  "childExitIndependently": true,
+  "nativeOutcome": {
+    "code": "cancelled",
+    "outcome": "unknown",
+    "recovery": {
+      "attempted": true,
+      "released": true,
+      "processExitConfirmed": true,
+      "method": "declared-sendinput",
+      "reason": "cancelled",
+      "childPid": 54512,
+      "childCreated": "134370596159350011",
+      "declaredKeysDown": [],
+      "stopCleanupMs": null
+    }
+  },
+  "keysAfter": [],
+  "effect": {
+    "text": "",
+    "count": 0,
+    "unchangedAfterCleanup": true
+  },
+  "followup": {
+    "outcome": "completed",
+    "before": 0,
+    "after": 1,
+    "exactIncrement": 1,
+    "provider": "pinned-engine"
+  },
+  "completedAt": "2026-10-21T12:33:50.551Z"
+}

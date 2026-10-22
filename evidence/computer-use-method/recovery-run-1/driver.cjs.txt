@@ -1,0 +1,49 @@
+'use strict';
+const fs=require('node:fs/promises'),path=require('node:path'),{spawn,execFile}=require('node:child_process'),{promisify}=require('node:util'),{randomUUID}=require('node:crypto');
+const ROOT=path.resolve(__dirname,'..'),exec=promisify(execFile),delay=ms=>new Promise(r=>setTimeout(r,ms));
+const {run}=require('../scripts/accept-supervisor-recovery.cjs');
+const {prepareAcceptanceForeground}=require('../scripts/acceptance-foreground.cjs');
+const {WinappBackend,DEFAULT_BRIDGE}=require('../src/computer/winapp-backend.cjs');
+const {DEFAULT_SUPERVISOR}=require('../src/computer/supervisor.cjs');
+const command=async args=>JSON.parse((await exec(DEFAULT_SUPERVISOR,args,{windowsHide:true})).stdout);
+async function inspectSafety(proof){
+ const recovery=await command(['status']),input=await command(['keystate','all']);
+ return {available:proof.inputChildExitVerified===true&&proof.nativeOwnerExitVerified===true&&proof.mcpClosed===true,
+  leaseActive:false,nativeOperationActive:false,inputChildExitVerified:proof.inputChildExitVerified,
+  input:{available:true,down:input.down},recovery:{available:true,...recovery}};
+}
+async function main(){
+ const remaining=[['timeout','typing'],...['disconnect','node-death','supervisor-death'].flatMap(f=>['mouse','chord','typing'].map(i=>[f,i]))];
+ const access=await command(['input-access']);if(!access.observable)throw new Error('foreground_unavailable_before_launch');
+ const keys=await command(['keystate','all']);if(keys.down.length)throw new Error('input_held_before_launch');
+ if((await command(['status'])).recoveryRequired)throw new Error('recovery_pending_before_launch');
+ for(const [f,i] of remaining)try{await fs.access(path.join(ROOT,`evidence/0.1.0-alpha.3.2/recovery-${f}-${i}`));throw new Error('existing_case_directory');}catch(e){if(e.code!=='ENOENT')throw e;}
+ const privateRoot=path.join(ROOT,'.runtime','matrix-anchor-'+randomUUID());await fs.mkdir(privateRoot);
+ await fs.writeFile(path.join(privateRoot,'plan.json'),JSON.stringify({setup:'Owned non-topmost foreground anchor between closed native cases',remaining,activation:'Fixed verified public Win32 bridge under global exclusion lease; no injected input',scope:'No exhausted cancellation cases or passed cells rerun',cleanup:'Confirm exact anchor identity then close only retained ChildProcess'},null,2));
+ const executable=path.join(ROOT,'.runtime/computer-fixture/bin/TraceComputerFixture.exe'),runId='matrix-anchor-'+randomUUID(),statePath=path.join(privateRoot,'fixture.json');
+ const child=spawn(executable,['--run-id',runId,'--receipt',statePath,'--commands',path.join(privateRoot,'commands.json')],{stdio:'ignore',windowsHide:false});
+ let anchor;try{
+  for(let i=0;i<100;i++){try{await fs.access(statePath);break;}catch{}await delay(50);}
+  const backend=new WinappBackend();const matches=(await backend.listWindows()).filter(w=>w.pid===child.pid&&w.title===`TRACE Computer Fixture — ${runId}`);await backend.close();
+  if(matches.length!==1)throw new Error('anchor_discovery_failed');
+  const target=matches[0];anchor={hwnd:target.id,pid:target.pid,processCreationTime:target.processCreationTime,sessionId:target.sessionId};
+  await fs.writeFile(path.join(privateRoot,'owner.json'),JSON.stringify(anchor));
+  const emptyProof={inputChildExitVerified:true,nativeOwnerExitVerified:true,mcpClosed:true};
+  const prepareForeground=proof=>prepareAcceptanceForeground({anchor,inspectSafety:()=>inspectSafety(proof)});
+  const initial=await prepareForeground(emptyProof);console.log(JSON.stringify({phase:'ANCHOR',...initial}));if(!initial.prepared)throw new Error('anchor_preparation_failed');
+  for(const [failure,input] of remaining){
+   const v=await run({mode:'live',attempt:1,directory:path.join(ROOT,`evidence/0.1.0-alpha.3.2/recovery-${failure}-${input}`),caseId:`A32-RECOVERY-${failure.toUpperCase()}-${input.toUpperCase()}`,prepareForeground});
+   const receipt=JSON.parse(await fs.readFile(path.join(ROOT,`evidence/0.1.0-alpha.3.2/recovery-${failure}-${input}/a32-recovery-${failure}-${input}/receipt.json`)));
+   console.log(JSON.stringify({phase:'CELL',status:v.status,cases:v.cases,preparation:receipt.cleanup.foregroundPreparation}));
+   if(v.status!=='pass'||receipt.cleanup.foregroundPreparation?.prepared!==true)break;
+  }
+ }finally{
+  let exact=false;if(anchor)try{const actual=JSON.parse((await exec(DEFAULT_BRIDGE,['identity',anchor.hwnd,String(anchor.pid)],{windowsHide:true})).stdout);exact=actual.processCreationTime===anchor.processCreationTime&&actual.sessionId===anchor.sessionId;}catch{}
+  let released=false;try{released=(await command(['status'])).recoveryRequired===false&&(await command(['keystate','all'])).down.length===0;}catch{}
+  if(exact&&released){child.kill();await Promise.race([new Promise(r=>child.once('exit',r)),delay(5000)]);}
+  else if(!anchor&&released){child.kill();await delay(200);}
+  else child.unref();
+  console.log(JSON.stringify({phase:'ANCHOR-CLEANUP',exactIdentity:exact,inputReleased:released,exited:child.exitCode!==null,retained:child.exitCode===null}));
+ }
+}
+main().catch(e=>{console.error(e.code||e.message);process.exitCode=1});

@@ -97,9 +97,10 @@ internal sealed class SupervisorSession : IDisposable
     {
         try
         {
+            using var input = Stdio.OpenInput(Console.OpenStandardInput());
             while (!closing)
             {
-                var line = await Console.In.ReadLineAsync();
+                var line = await input.ReadLineAsync();
                 if (line is null) { Stop("stdin_eof"); return; }
                 string id = "invalid";
                 try
@@ -458,6 +459,7 @@ internal static class SupervisorSelfTest
     public static object Run()
     {
         static void Require(bool condition) { if (!condition) throw new TraceError("selftest_failed", "A non-input supervisor contract check failed."); }
+        Stdio.TestInput();
         var self = ProcessIdentity.Self();
         using var same = self.OpenExact(); Require(same is not null);
         Require(OperationProcess.Quote("") == "\"\"");
@@ -528,6 +530,6 @@ internal static class SupervisorSelfTest
         var failedClose = failedCleanup.Run(() => throw cleanupError);
         Require(failedClose.IsFaulted && ReferenceEquals(failedClose, failedCleanup.Run(() => Task.CompletedTask))
             && ReferenceEquals(failedClose.Exception?.InnerException, cleanupError));
-        return new { passed = true, checks = 24, desktopInput = 0, scope = "identity/PID reuse, declarations, DPAPI, bounded release, fault ACK binding, final dispatch admission and joined once-only cleanup; injected primitives only" };
+        return new { passed = true, checks = 25, desktopInput = 0, scope = "strict UTF-8 input, identity/PID reuse, declarations, DPAPI, bounded release, fault ACK binding, final dispatch admission and joined once-only cleanup; injected primitives only" };
     }
 }

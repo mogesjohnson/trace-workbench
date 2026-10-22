@@ -1,0 +1,17 @@
+✔ known recipe actually launches shell:false non-GUI child with exact Unicode document and profile arguments (118.8081ms)
+ℹ {"scope":"actual-source-owned-non-GUI-child","shell":false,"unicodeArgumentPreserved":true,"documentBytesIndependentlyVerified":true,"ownedChildClosed":true,"desktopInput":false}
+✔ attach verifies actual PID and creation generation without launching and preserves attached resources (86.3013ms)
+✔ invalid document paths and arbitrary executable/argument fields fail before any child exists (8.0118ms)
+✔ actual process lifetime revalidation prevents stale reads and killing a PID-replacement candidate (89.5672ms)
+✔ uncertain post-launch inspection retains the owned process and never falls back to another launch (83.3005ms)
+✔ wrong-generation attach is rejected without launch fallback or terminating the actual process (82.1347ms)
+✔ exact application slot selects the correct profile among ready providers of the same app (86.176ms)
+✔ unsuccessful owned-process termination retains cleanup quarantine and cannot report ready (86.3787ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 737.0357

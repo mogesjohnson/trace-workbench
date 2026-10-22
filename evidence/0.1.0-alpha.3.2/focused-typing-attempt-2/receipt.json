@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A32-PROBE-FOCUSED-TYPING",
+  "observedAt": "2026-10-20T18:53:52.754Z",
+  "testedSource": {
+    "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+    "workingTreeModified": true,
+    "files": {
+      "native/TraceSupervisor/InputState.cs": "b4a978bc93b29519758ada457f08a996fcde97fc6b016a6e5d6c50aff4dc114c",
+      "native/TraceSupervisor/Native.cs": "d873c81be87bd2e35aedd9f8730d328e99b15d0f59ae8eaba8546b23ed433c0b",
+      "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+      "native/TraceSupervisor/Program.cs": "81575415bdc7bb6c5b9a5b05c52dfaf0363c028ce2202d80f27718d0545ee570",
+      "native/TraceSupervisor/Recovery.cs": "f7df458ed4f976a0c8c962dfb7a0f1cea64623b118152e96ec89046c930a5e17",
+      "native/TraceSupervisor/Session.cs": "7216724fb2af6c2a2f11807ae8e16197f78c447bb8064a1bcca38e7aa2d220ce",
+      "native/TraceSupervisor/SessionProcess.cs": "8e65ad7dc3f8adfe543e8050dd1692e7c07def7adbfb537757bfe3ea3e0ce4bc",
+      "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+      "src/computer/supervisor.cjs": "11ca759f98691916d450c1057c1a02eaa9980ca51f3053e65fdf28ccdb328770",
+      "src/computer/controller.cjs": "2326015fbf731a06691c30624e2a35819089485767df0620d1a67618049ce524",
+      "src/computer/winapp-backend.cjs": "90147678361ab62711463cb19dbcd30a40baa51d13268939dc8992a73960c823",
+      "native/TraceWindowBridge/Program.cs": "c230e79ac6bf8c364a988dc30dae94df784260f6c371cc40e03da07d330c43c5",
+      "tests/fixtures/computer-app/Program.cs": "064a750a8cba970510b45d8ea3a1102fcc2102c0882afde0a017a12e9cafbaf4",
+      "scripts/accept-supervised-typing.cjs": "22000decb2af1980fb170e18cfc658e06e9652bb5344cc2c9bd319506c6cb872"
+    }
+  },
+  "runtime": {
+    "node": "v26.2.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "status": "fail",
+  "cleanup": {
+    "controllerClosed": true,
+    "fixtureExited": true,
+    "finalKeysDown": [],
+    "recovery": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    }
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "initialKeySamples": [
+    [],
+    [],
+    []
+  ],
+  "fixtureSha256": "6461490c7c06332d52a5580f39cf632d885fa86b519661964cc8c96285d04dd2",
+  "error": {
+    "code": "invalid_bounds",
+    "message": "The selected window has no positive visible bounds."
+  },
+  "completedAt": "2026-10-20T18:53:57.824Z"
+}

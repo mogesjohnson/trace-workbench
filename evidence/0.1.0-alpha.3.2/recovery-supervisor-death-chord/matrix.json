@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "declaredBeforeUiLaunch": true,
+  "caseId": "A32-RECOVERY-MATRIX",
+  "attempt": 1,
+  "target": "One fresh owned synthetic WinForms fixture per cell, bound by discovered HWND/PID/creation time",
+  "initial": {
+    "text": "",
+    "count": 0,
+    "keysDown": [],
+    "display": {
+      "monitors": 1,
+      "displays": [
+        {
+          "device": "\\\\.\\DISPLAY1",
+          "primary": true,
+          "dpi": 144,
+          "bounds": {
+            "x": 0,
+            "y": 0,
+            "width": 2880,
+            "height": 1800
+          }
+        }
+      ]
+    }
+  },
+  "capture": {
+    "coordinateSpace": "window-local-physical-pixels",
+    "dpiAwareness": "PER_MONITOR_AWARE_V2",
+    "imageDimensions": "Original observed target-window PNG dimensions; no resizing or guessed scaling."
+  },
+  "substitution": "Private launch-file-selected backend substitutes one final pinned-engine dispatch with the source-owned controlled provider. Public tools/action schemas stay unchanged.",
+  "expected": [
+    "Physical input is independently observed held before interruption",
+    "Owned input child exit is independently established before release is accepted",
+    "Declared keyboard/buttons are independently all released",
+    "An ordinary pinned-engine follow-up increments the owned fixture exactly once",
+    "Supervisor death retains per-user quarantine; check does not clear it; a competing artifact-root owner is blocked; verified apply clears it"
+  ],
+  "literalEffect": "Interrupted type-hold produces ab followed by one or more c characters because the deliberately held final key can autorepeat; retain exact observed synthetic text and verify it stops changing after cleanup.",
+  "cells": [
+    {
+      "id": "A32-RECOVERY-SUPERVISOR-DEATH-CHORD",
+      "failure": "supervisor-death",
+      "input": "chord"
+    }
+  ],
+  "cleanup": "Close native/MCP ownership before the owned fixture; preserve uncertainty and stop the matrix after a failed or blocked cell.",
+  "betweenCases": "Optional private preparation of a separately owned ordinary anchor only after independent input-child/native-owner exit, closed MCP, all-up input and clear recovery. Preparation is recorded separately and never substitutes for recovery proof.",
+  "budget": "One attempt plus one corrective retry, only with explicit prior evidence and a changed precondition. Fresh directories never erase earlier outcomes.",
+  "outsideScope": {
+    "physicalEscape": "not_run: requires an actual physical key press",
+    "failedCleanupAcknowledgement": "not_run: requires a native two-phase fault seam after independent real-input release confirmation",
+    "pinnedEngineDispatch": "Only setup and follow-up use the pinned engine; held input is the labeled controlled provider.",
+    "liveModelHosts": "not_run"
+  },
+  "observedAt": "2026-10-21T22:21:37.851Z",
+  "testedSource": {
+    "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+    "workingTreeModified": true,
+    "files": {
+      "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+      "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+      "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+      "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+      "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+      "native/TraceSupervisor/Session.cs": "1c8e32cd8f45c9aa9a7b4d13de9d705257b995a92398054d6c85b4b5d0e7fe56",
+      "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+      "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+      "scripts/accept-supervisor-recovery.cjs": "27baa43ea58d3279abbaa100aba80399ab9035c4531f969f50d177980505d14d",
+      "tests/fixtures/supervised-mcp.cjs": "eeade5db7a43d000bc4c7e6a21dac0c32c3c6b5096d1fdaae98812e0faad2399",
+      "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+      "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+      "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+      "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5",
+      "scripts/acceptance-foreground.cjs": "1cd017f2bf19324772add70aa89747c04387d50e82d26bb56ad4268ad68eae81"
+    }
+  },
+  "cases": [
+    {
+      "caseId": "A32-RECOVERY-SUPERVISOR-DEATH-CHORD",
+      "status": "pass",
+      "error": null,
+      "receipt": "a32-recovery-supervisor-death-chord/receipt.json"
+    }
+  ],
+  "fixtureSha256": "6461490c7c06332d52a5580f39cf632d885fa86b519661964cc8c96285d04dd2",
+  "status": "pass",
+  "completedAt": "2026-10-21T22:22:04.383Z"
+}

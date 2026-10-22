@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-22T03:31:13.922Z",
+  "source": "User brought exact owned readiness fixture forward; independent native recheck",
+  "access": {
+    "observable": true,
+    "code": null,
+    "win32Error": null,
+    "foregroundPresent": true,
+    "foregroundPid": 47972,
+    "currentPid": 34632,
+    "currentSessionId": 1,
+    "requestedDesktopAccess": 9,
+    "requestedProcessAccess": 4096,
+    "requestedTokenAccess": 8,
+    "currentIntegrityRid": 8192,
+    "foregroundIntegrityRid": 8192,
+    "scope": "read-only access diagnostics; no key/button state inferred when inaccessible"
+  },
+  "keys": {
+    "down": []
+  },
+  "recovery": {
+    "recoveryRequired": false,
+    "ready": true,
+    "code": null
+  }
+}

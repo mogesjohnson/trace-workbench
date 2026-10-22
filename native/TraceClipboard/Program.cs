@@ -13,8 +13,9 @@ internal static class Program
         ClipboardService? service = null;
         try
         {
+            using var input = OpenInput(Console.OpenStandardInput());
             string? line;
-            while ((line = ReadBoundedLine()) is not null)
+            while ((line = ReadBoundedLine(input)) is not null)
             {
                 string? id = null;
                 try
@@ -28,10 +29,11 @@ internal static class Program
                         "readback" or "defer_restore" or "abandon" => ["id", "command", "token"],
                         "restore" => ["id", "command", "token", "inputQuiescent"],
                         "recover" => ["id", "command", "inputQuiescent"],
-                        "info" or "snapshot" or "recovery_info" or "close" => ["id", "command"], _ => [] };
+                        "info" or "inspect_formats" or "snapshot" or "recovery_info" or "close" => ["id", "command"], _ => [] };
                     if (allowed.Length == 0 || request.EnumerateObject().Any(p => !allowed.Contains(p.Name))) throw new ClipboardFailure("invalid_request");
                     object result;
                     if (command == "info") result = Info();
+                    else if (command == "inspect_formats") result = Win32Clipboard.InspectFormats();
                     else if (command == "close") result = service?.Close() ?? (File.Exists(ProtectedClipboardStore.StatePath)
                         ? new { cleanup = "unknown", code = "clipboard_recovery_required", recoveryRetained = true }
                         : (object)new { cleanup = "confirmed" });
@@ -64,12 +66,16 @@ internal static class Program
         supportedFormats = new uint[] { 1, 7, 13, 16 }, recoveryProtection = "dpapi-current-user",
         transport = "private-inherited-stdio", desktopInput = false };
     private static void Write(object value) { Console.WriteLine(JsonSerializer.Serialize(value)); Console.Out.Flush(); }
-    private static string? ReadBoundedLine()
+    // This inherited pipe carries Node UTF-8, independent of the current console code page.
+    // Invalid bytes fail outside the request handler before any clipboard service is created.
+    internal static StreamReader OpenInput(Stream stream) => new(stream,
+        new UTF8Encoding(false, true), detectEncodingFromByteOrderMarks: false);
+    internal static string? ReadBoundedLine(TextReader input)
     {
         var builder = new StringBuilder();
         while (true)
         {
-            var value = Console.In.Read();
+            var value = input.Read();
             if (value == -1) return builder.Length == 0 ? null : builder.ToString();
             if (value == '\n') return builder.ToString();
             if (builder.Length >= 300000) throw new ClipboardFailure("request_too_large");

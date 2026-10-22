@@ -1,0 +1,36 @@
+{
+  "caseId": "A32-RECOVERY-CANCEL-MOUSE",
+  "input": "mouse",
+  "failure": "cancel",
+  "status": "fail",
+  "startedAt": "2026-10-20T19:05:53.229Z",
+  "cleanup": {
+    "keysDown": [],
+    "recovery": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    }
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        }
+      }
+    ]
+  },
+  "error": {
+    "code": "ERR_ASSERTION",
+    "message": "Expected values to be strictly equal:\n\n1920 !== 2880\n"
+  },
+  "completedAt": "2026-10-20T19:05:53.547Z"
+}
