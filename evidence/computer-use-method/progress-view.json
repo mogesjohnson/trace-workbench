@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "caseId": "GAP-PROGRESS-DOCUMENT",
+  "status": "pass",
+  "at": "2026-10-22T14:19:13.775Z",
+  "scope": "Local documentation artifact, reference validation, desktop/mobile render and filter inspection; no live acceptance claim.",
+  "checkpoints": {
+    "verified": 12,
+    "active": 7,
+    "pending": 2,
+    "externalGate": 1,
+    "total": 22,
+    "checklistPercent": 55
+  },
+  "measurement": "Unweighted checkpoint count; not remaining effort/time, feature parity or release readiness.",
+  "checks": {
+    "localEvidenceReferencesExist": true,
+    "desktopRenderedAndInspected": "1280x1000",
+    "mobileRenderedAndInspected": "390x844",
+    "mobileHorizontalOverflow": false,
+    "allFilterVisibleCards": 22,
+    "verifiedFilterVisibleCards": 12
+  },
+  "files": {
+    "docs/gap-progress.json": "678ba9330a83d6178c1e722f515978f4f42eeabe1939f6dbd03f74489728d35e",
+    "docs/GAP_CLOSURE_PLAN.md": "bf442555c53461627b9818796b9aefbb7f03b1ef9cf65ddd097ebd32a13f6381",
+    "docs/GAP_CLOSURE_PROGRESS.html": "4134d647a9fb26a3851d4b7ee3081895f1b46e3184abc49b30ec968c111a7430",
+    "scripts/render-gap-progress.cjs": "62219f669b0cad7160e5e332a1fffa1ca68487e84fcb994b54766709bec52dc0"
+  }
+}

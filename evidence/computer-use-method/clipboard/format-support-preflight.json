@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CLIPBOARD-FORMAT-SUPPORT-PREFLIGHT",
+  "at": "2026-10-22T13:34:39.761Z",
+  "scope": "Identifier-only diagnostic; does not consume or pass the exhausted paste acceptance case.",
+  "build": {
+    "built": true,
+    "sourceManifest": "verified",
+    "packageDownloads": false
+  },
+  "pure": {
+    "mode": "pure-fake-clipboard",
+    "passed": 20,
+    "failed": 0,
+    "clipboardApiCalls": 0,
+    "clipboardWrites": 0
+  },
+  "sources": {
+    "native/TraceClipboard/TraceClipboard.csproj": "d8f8afbfc5799ba4136b06372e31276c67130736f9a2f5e1c325ce43848a419b",
+    "native/TraceClipboard/Program.cs": "9a25c528383dd64c9e3531d1c81e920bae5ef5b2524f70356bf60c6aba7849c1",
+    "native/TraceClipboard/ClipboardService.cs": "f4478e397e6ca3f4ec73c89ffb45daa30183216f61222100c9788e68652b6621",
+    "native/TraceClipboard/Win32Clipboard.cs": "6c71d6d9ef074fb89dce083e503d5ccdab443ebdbc07755007a4ffea6004f065",
+    "native/TraceClipboard/SelfTests.cs": "25e9ab73a094f7b2698a5fa91e80fa14bf4719a43c32097acc2ca280f05bc49d",
+    "src/method/clipboard-provider.cjs": "aed186b84f2d1d43f37d4cbf35eeee12768327a719265122bb6ac78fe3b4a926",
+    "tests/method-clipboard.test.cjs": "636cc964f2014c3788352c77eb763bf3fe62e0f45b359612fdef845bc90a621b"
+  },
+  "inspection": {
+    "mode": "text-only",
+    "inspection": "format-identifiers-only",
+    "supported": false,
+    "supportedFormatIds": [
+      1,
+      7,
+      13,
+      16
+    ],
+    "formatCount": 7,
+    "unsupportedCount": 3,
+    "categories": [
+      {
+        "category": "registered",
+        "count": 3
+      }
+    ],
+    "recoveryPending": false,
+    "ready": false,
+    "code": "clipboard_unsupported_formats",
+    "contentsRead": false,
+    "contentsChanged": false,
+    "recoveryWritten": false
+  },
+  "cleanup": {
+    "cleanup": "confirmed",
+    "mode": "text-only"
+  },
+  "restrictions": {
+    "snapshotOperations": 0,
+    "clipboardDataRead": false,
+    "clipboardMutations": 0,
+    "pasteOperations": 0,
+    "nativeInput": 0,
+    "recoveryWritten": false
+  }
+}

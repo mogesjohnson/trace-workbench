@@ -7,8 +7,14 @@ async function dispatch(args) {
   if (args[0] !== 'computer') return runCli(args);
   const [command, ...extra] = args.slice(1);
   if (!command || command === '--help' || command === 'help') {
-    process.stdout.write('TRACE Computer Use\n\n  trace-workbench computer mcp     Serve computer tools over stdio\n  trace-workbench computer doctor  Check the pinned Windows engine\n\nSetup: node scripts/setup-computer.cjs --plan, then --apply\n');
+    process.stdout.write('TRACE Computer Use\n\n  trace-workbench computer mcp     Serve computer tools over stdio\n  trace-workbench computer doctor  Check the pinned Windows engine\n  trace-workbench computer recover --check|--apply  Inspect or verify native cleanup\n\nSetup: node scripts/setup-computer.cjs --plan, then --apply\n');
     return 0;
+  }
+  if (command === 'recover') {
+    if (extra.length !== 1 || !['--check', '--apply'].includes(extra[0])) throw new Error('Use computer recover --check or --apply.');
+    const result = await require('../src/computer/supervisor.cjs').recovery(extra[0]);
+    process.stdout.write(`${JSON.stringify(result)}\n`);
+    return extra[0] === '--apply' && (result.recovered !== true || result.recoveryRequired === true) ? 1 : 0;
   }
   if (extra.length) throw new Error('Computer commands accept no extra options.');
   if (command === 'mcp') {

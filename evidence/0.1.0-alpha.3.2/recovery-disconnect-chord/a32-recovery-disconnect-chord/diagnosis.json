@@ -1,0 +1,10 @@
+{
+  "code": "private_journal_publish_failed",
+  "evidence": [
+    "primary/events.json.tmp contains controlled-start not present in published primary/events.json",
+    "Controller private journal records action_unknown errorCode EPERM at the same time",
+    "ControlledBackend records controlled-start before calling supervisor.run"
+  ],
+  "scope": "Source and retained file evidence establish the private journal publication failed before the controlled provider was invoked. The original primary outcome remains unknown and the acceptance result remains fail.",
+  "change": "Bounded retries of journal rename only; never retries input. Persist settled primary outcome even if held-dispatch polling fails."
+}

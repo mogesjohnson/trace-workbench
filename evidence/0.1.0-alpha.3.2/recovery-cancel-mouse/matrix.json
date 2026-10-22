@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "declaredBeforeUiLaunch": true,
+  "caseId": "A32-RECOVERY-MATRIX",
+  "attempt": 1,
+  "target": "One fresh owned synthetic WinForms fixture per cell, bound by discovered HWND/PID/creation time",
+  "initial": {
+    "text": "",
+    "count": 0,
+    "keysDown": [],
+    "display": {
+      "monitors": 1,
+      "width": 2880,
+      "height": 1800,
+      "dpi": 144
+    }
+  },
+  "substitution": "Private launch-file-selected backend substitutes one final pinned-engine dispatch with the source-owned controlled provider. Public tools/action schemas stay unchanged.",
+  "expected": [
+    "Physical input is independently observed held before interruption",
+    "Owned input child exit is independently established before release is accepted",
+    "Declared keyboard/buttons are independently all released",
+    "An ordinary pinned-engine follow-up increments the owned fixture exactly once",
+    "Supervisor death retains per-user quarantine; check does not clear it; a competing artifact-root owner is blocked; verified apply clears it"
+  ],
+  "literalEffect": "Interrupted type-hold produces ab followed by one or more c characters because the deliberately held final key can autorepeat; retain exact observed synthetic text and verify it stops changing after cleanup.",
+  "cells": [
+    {
+      "id": "A32-RECOVERY-CANCEL-MOUSE",
+      "failure": "cancel",
+      "input": "mouse"
+    }
+  ],
+  "cleanup": "Close native/MCP ownership before the owned fixture; preserve uncertainty and stop the matrix after a failed or blocked cell.",
+  "budget": "One attempt plus one corrective retry, only with explicit prior evidence and a changed precondition. Fresh directories never erase earlier outcomes.",
+  "outsideScope": {
+    "physicalEscape": "not_run: requires an actual physical key press",
+    "failedCleanupAcknowledgement": "not_run: requires a native two-phase fault seam after independent real-input release confirmation",
+    "pinnedEngineDispatch": "Only setup and follow-up use the pinned engine; held input is the labeled controlled provider.",
+    "liveModelHosts": "not_run"
+  },
+  "observedAt": "2026-10-20T19:05:52.034Z",
+  "testedSource": {
+    "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+    "workingTreeModified": true,
+    "files": {
+      "native/TraceSupervisor/InputState.cs": "72f130714f56a67976510a7bbe7732af45cc295265c80622130f826916f5d09a",
+      "native/TraceSupervisor/Native.cs": "45f4d02b4bda2725dbd49decdaa142726d7a98ded4b945d6ecb8c05369e962b3",
+      "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+      "native/TraceSupervisor/Program.cs": "dba15ba3e26b9af014cd71e68ec474b1968b8a4a93e3ff5507ac141e9be14382",
+      "native/TraceSupervisor/Recovery.cs": "8d2841a01644c6181ed5dccf24af1313bfa73540308ca8542bb49a57d324c35c",
+      "native/TraceSupervisor/Session.cs": "e6c8747a7c5f5226573184e7eeff45ed7e9c8fd3cac483bed29df64c616f7ceb",
+      "native/TraceSupervisor/SessionProcess.cs": "c3d4db80be2f8a7e9fe88f4f44f5e0d8ae8787cc2c514aa9af2d9be9f035afec",
+      "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+      "scripts/accept-supervisor-recovery.cjs": "2481eaf4190744793b1e9753b040c33bace516f190a327d9fb4e65ca1109c040",
+      "tests/fixtures/supervised-mcp.cjs": "80ed229e7f1fc61bcd976f7c4c09312aa0d983afa9b0e24a52d4c1b96fbfa445",
+      "src/computer/supervisor.cjs": "d2f57d8d88171b63eb67e0cd81adefd110d02f94ff3309bb622aa9b2cb19356f",
+      "src/computer/controller.cjs": "bad7aef77da825f43db7e91ebdb78eed3aeb7dfe2e72860aa287523fe4902e13",
+      "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+      "src/computer/winapp-backend.cjs": "57e633b40a8468e9a75ed44c8460d7c5221a6d161572ee296ffc4a61e66c5adb"
+    }
+  },
+  "cases": [
+    {
+      "caseId": "A32-RECOVERY-CANCEL-MOUSE",
+      "status": "fail",
+      "error": {
+        "code": "ERR_ASSERTION",
+        "message": "Expected values to be strictly equal:\n\n1920 !== 2880\n"
+      },
+      "receipt": "a32-recovery-cancel-mouse/receipt.json"
+    }
+  ],
+  "fixtureSha256": "6461490c7c06332d52a5580f39cf632d885fa86b519661964cc8c96285d04dd2",
+  "status": "incomplete",
+  "completedAt": "2026-10-20T19:05:53.550Z"
+}

@@ -1,0 +1,46 @@
+{
+  "caseId": "A32-RECOVERY-TIMEOUT-MOUSE",
+  "input": "mouse",
+  "failure": "timeout",
+  "status": "fail",
+  "startedAt": "2026-10-21T02:56:02.658Z",
+  "cleanup": {
+    "inputState": {
+      "available": true,
+      "at": "2026-10-21T02:56:02.864Z",
+      "phase": "native closed; owned fixture not yet closed",
+      "down": [
+        32
+      ]
+    },
+    "recovery": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    }
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "initialKeys": [
+    76
+  ],
+  "error": {
+    "code": "input_busy",
+    "message": "Human/other input is held before this case; no takeover started."
+  },
+  "completedAt": "2026-10-21T02:56:03.055Z"
+}

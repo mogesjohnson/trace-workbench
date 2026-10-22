@@ -1,0 +1,12 @@
+✔ METHOD-BROWSER actual headless Edge fills, submits, reads and verifies once after lost reply (1530.1735ms)
+ℹ {"scope":"real-owned-loopback-page","browser":"155.0.4283.62","playwright":"1.62.1","headless":true,"desktopInput":false,"saveCount":1,"verifiedResult":"Saved: Résumé 日本語","ownedTabClosed":true}
+✔ METHOD-BROWSER actual navigation invalidates captures and disabled controls never dispatch (1067.9117ms)
+✔ METHOD-BROWSER attached pages remain open and owned tab disposal is explicit (812.8958ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3516.9358

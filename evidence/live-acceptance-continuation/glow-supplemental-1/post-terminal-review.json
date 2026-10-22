@@ -1,0 +1,81 @@
+{
+  "scope": "Post-terminal read-only reconstruction from retained files and pure serializer proof. No live checkpoint, click, liveness or passing case is established.",
+  "preservedReceipt": {
+    "ref": "evidence/live-acceptance-continuation/glow-supplemental-1/receipt.json",
+    "sha256": "1e448b086180161f7cf79684b0ee173b42b9da7579444a77a527dcf8d30299e3",
+    "status": "fail",
+    "continuationAttempt": 1,
+    "lifetimeAttemptOrdinal": 3
+  },
+  "serializer": {
+    "inferredClrType": "System.Byte[]",
+    "serializedCapture": "{\"sanitizedInteriorRgb\":\"GBwo\"}"
+  },
+  "retainedFacts": {
+    "terminalReady": false,
+    "terminalCounters": {
+      "count": 0,
+      "mouseClickCount": 0,
+      "activationCount": 0,
+      "mouseDownCount": 0,
+      "mouseUpCount": 0
+    },
+    "button": {
+      "x": 1,
+      "y": 856,
+      "width": 12,
+      "height": 88
+    },
+    "countOracle": "left-button-mouseclick-events",
+    "skyObservation": {
+      "executor": "Sky",
+      "unique": true,
+      "elementId": "traceGlowEdgeButton",
+      "elementIndex": 1,
+      "sampledAt": "2026-10-22T14:29:49.864Z",
+      "target": {
+        "windowId": "1314090",
+        "pid": 54376,
+        "processCreationTime": "134371529643363446",
+        "windowsSessionId": 1
+      },
+      "display": {
+        "monitors": 1,
+        "primary": true,
+        "device": "\\\\.\\DISPLAY1",
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        },
+        "dpiX": 144,
+        "dpiY": 144,
+        "captureWidth": 2880,
+        "captureHeight": 1800
+      }
+    },
+    "measuredGlowBounds": {
+      "x": 0,
+      "y": 856,
+      "width": 14,
+      "height": 88
+    }
+  },
+  "dataChecks": {
+    "beforeFrameHashMatchesReceipt": true,
+    "activeFrameHashMatchesReceipt": true,
+    "skyTargetMatchesReceipt": true,
+    "skyDisplayMatchesReceipt": true,
+    "skyExpectedElement": true,
+    "measuredGlowOverlapsButton": true,
+    "terminalCannotProveLiveReady": true,
+    "receiptUnchanged": true
+  },
+  "unavailableHistoricalFields": [
+    "Exact prevalidation candidate was not retained by the old driver",
+    "Actual per-frame capture metadata was overwritten by subsequent fixture status publication",
+    "Exact initial sample timestamps and prevalidation fixture snapshot were not retained"
+  ],
+  "conclusion": "The numeric-array-only RGB check rejects the proven System.Byte[] wire shape GBwo. Other retained target/display/element/counter/glow-region fields show no additional mismatch; missing historical samples cannot be reconstructed as live proof."
+}

@@ -1,0 +1,83 @@
+{
+  "caseId": "A32-RECOVERY-NODE-DEATH-CHORD",
+  "input": "chord",
+  "failure": "node-death",
+  "status": "pass",
+  "startedAt": "2026-10-21T22:20:24.982Z",
+  "cleanup": {
+    "connectionClosed": true,
+    "supervisorExited": true,
+    "inputChildExited": true,
+    "inputState": {
+      "available": true,
+      "at": "2026-10-21T22:20:45.350Z",
+      "phase": "native closed; owned fixture not yet closed",
+      "down": []
+    },
+    "foregroundPreparation": {
+      "preparation": "fixture-foreground-anchor",
+      "prepared": true,
+      "activationAttempted": true,
+      "cleanupConfirmed": true,
+      "code": null
+    },
+    "fixtureExited": true,
+    "recovery": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    }
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "initialKeys": [],
+  "target": {
+    "windowId": "14877988",
+    "pid": 51208,
+    "processCreationTime": "134370948253125797"
+  },
+  "controlled": {
+    "pid": 47860,
+    "processCreationTime": "134370948358738487",
+    "inJob": true,
+    "supervisorPid": 44904
+  },
+  "held": {
+    "160": true,
+    "162": true
+  },
+  "interruptedAt": "2026-10-21T22:20:36.028Z",
+  "childExitIndependently": true,
+  "keysAfter": [],
+  "effect": {
+    "text": "",
+    "count": 0,
+    "unchangedAfterCleanup": true
+  },
+  "followup": {
+    "outcome": "completed",
+    "before": 0,
+    "after": 1,
+    "exactIncrement": 1,
+    "provider": "pinned-engine"
+  },
+  "requestResult": {
+    "outcome": "unknown",
+    "code": "CONNECTION_CLOSED"
+  },
+  "completedAt": "2026-10-21T22:20:47.159Z"
+}

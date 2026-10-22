@@ -10,14 +10,17 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        // This path must precede every Form, Screen, input and clipboard API.
+        if (args.SequenceEqual(new[] { "--self-test-status" })) return StatusPublisherSelfTest.Run();
         if (args.Length != 6 || args[0] != "--directory" || !Path.IsPathFullyQualified(args[1]) || args[2] != "--parent-pid" || !int.TryParse(args[3], out int parentPid) || parentPid <= 0 || args[4] != "--lifetime-ms" || !int.TryParse(args[5], out int lifetime) || lifetime < 10000 || lifetime > 300000) return 2;
         try
         {
             using var parent = Process.GetProcessById(parentPid);
             if (parent.HasExited || !Directory.Exists(args[1])) return 3;
             Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
-            Application.Run(new DiagnosticWindow(Path.GetFullPath(args[1]), parent, lifetime));
-            return 0;
+            using var window = new DiagnosticWindow(Path.GetFullPath(args[1]), parent, lifetime);
+            Application.Run(window);
+            return window.StatusPublicationFailed ? 10 : 0;
         }
         catch { return 1; }
     }
@@ -43,6 +46,8 @@ internal sealed class DiagnosticWindow : Form
     private object? lastMouseClick;
     private object? lastActivation;
     private bool ready;
+    private readonly StatusPublisher statusPublisher = new();
+    public bool StatusPublicationFailed => statusPublisher.Failure is not null;
     private string lastId = "none";
     private object lastCommand = new { id = "none", type = "none", status = "not_run" };
 
@@ -82,9 +87,9 @@ internal sealed class DiagnosticWindow : Form
         Controls.Add(edge);
         Shown += (_, _) => {
             SetWindowPos(Handle, IntPtr.Zero, monitor.X, monitor.Y, monitor.Width, monitor.Height, 0x40);
-            ActiveControl = null; ready = true; WriteStatus(); timer.Start();
+            ActiveControl = null; ready = true; WriteStatus(); if (!StatusPublicationFailed) timer.Start();
         };
-        FormClosed += (_, _) => { ready = false; timer.Stop(); WriteStatus(); };
+        FormClosed += (_, _) => { ready = false; timer.Stop(); if (!StatusPublicationFailed) WriteStatus(); };
         timer.Tick += (_, _) => Tick();
     }
 
@@ -221,6 +226,7 @@ internal sealed class DiagnosticWindow : Form
 
     private void WriteStatus()
     {
+        if (StatusPublicationFailed) return;
         var button = edge.RectangleToScreen(edge.ClientRectangle);
         var receipt = new {
             version = 1, ready, pid = Environment.ProcessId, windowId = Handle.ToInt64().ToString(),
@@ -231,13 +237,15 @@ internal sealed class DiagnosticWindow : Form
             button = new { x = button.X, y = button.Y, width = button.Width, height = button.Height },
             input = InputSnapshot(), focus = FocusSnapshot(), lastCommand,
         };
-        try
+        if (!statusPublisher.Publish(Path.Combine(directory, "status.json"), JsonSerializer.SerializeToUtf8Bytes(receipt)))
         {
-            string temporary = Path.Combine(directory, "status.tmp");
-            File.WriteAllText(temporary, JsonSerializer.Serialize(receipt));
-            File.Move(temporary, Path.Combine(directory, "status.json"), true);
+            // Latch before Close: FormClosed must never recursively publish or show a dialog.
+            ready = false; timer.Stop();
+            string terminal = JsonSerializer.Serialize(statusPublisher.Failure);
+            try { Console.Error.WriteLine(terminal); } catch { }
+            try { File.WriteAllText(Path.Combine(directory, $"status-publication-failure-{Environment.ProcessId}.json"), terminal); } catch { }
+            Close();
         }
-        catch (IOException) { }
     }
 
     protected override void Dispose(bool disposing) { if (disposing) timer.Dispose(); base.Dispose(disposing); }
@@ -257,4 +265,108 @@ internal sealed class DiagnosticWindow : Form
     [DllImport("user32.dll")] private static extern bool EnumWindows(WindowVisitor visitor, IntPtr parameter);
     [DllImport("dwmapi.dll")] private static extern int DwmGetWindowAttribute(IntPtr window, uint attribute, out int value, int size);
     [DllImport("user32.dll")] private static extern bool SetWindowPos(IntPtr window, IntPtr after, int x, int y, int width, int height, uint flags);
+}
+
+internal sealed record StatusPublicationFailure(string code, string phase, int publishAttempts, string errorType, int win32Error);
+
+// No UI callbacks are accepted: only the same atomic rename is retried, never event delivery.
+internal sealed class StatusPublisher
+{
+    internal const int MaximumPublishAttempts = 7;
+    private readonly Action<string, byte[]> write;
+    private readonly Action<string, string> publish;
+    private readonly Action<string> delete;
+    private readonly Action<int> pause;
+    public StatusPublicationFailure? Failure { get; private set; }
+    public StatusPublisher(Action<string, byte[]>? write = null, Action<string, string>? publish = null,
+        Action<string>? delete = null, Action<int>? pause = null)
+    {
+        this.write = write ?? File.WriteAllBytes;
+        this.publish = publish ?? ((temporary, destination) => File.Move(temporary, destination, true));
+        this.delete = delete ?? File.Delete;
+        this.pause = pause ?? Thread.Sleep;
+    }
+    internal static bool Retryable(Exception error) => error is IOException or UnauthorizedAccessException
+        && (error.HResult & 0xffff) is 5 or 32 or 33;
+    public bool Publish(string destination, byte[] payload)
+    {
+        if (Failure is not null) return false;
+        string temporary = Path.Combine(Path.GetDirectoryName(destination)!, $"status-{Guid.NewGuid():N}.tmp");
+        int attempts = 0; string phase = "write";
+        try
+        {
+            write(temporary, payload); // Exactly once, even if writing fails.
+            phase = "publish";
+            while (true)
+            {
+                attempts++;
+                try { publish(temporary, destination); return true; }
+                catch (Exception error) when (Retryable(error) && attempts < MaximumPublishAttempts) { pause(1 << attempts); }
+            }
+        }
+        catch (Exception error)
+        {
+            Failure = new("status_publication_failed", phase, attempts, error.GetType().Name, error.HResult & 0xffff);
+            try { delete(temporary); } catch { }
+            return false;
+        }
+    }
+}
+
+internal static class StatusPublisherSelfTest
+{
+    private static void Require(bool condition) { if (!condition) throw new InvalidOperationException("status_selftest_failed"); }
+    public static int Run()
+    {
+        string owned = Path.Combine(Path.GetTempPath(), $"trace-glow-status-selftest-{Guid.NewGuid():N}");
+        var checks = new List<string>();
+        try
+        {
+            byte[] payload = System.Text.Encoding.UTF8.GetBytes("{\"mouseUpCount\":1,\"unicode\":\"✓\"}");
+            var temporaries = new HashSet<string>(); int writes = 0, attempts = 0, pauses = 0;
+            var transient = new StatusPublisher((file, bytes) => { writes++; Require(bytes.SequenceEqual(payload)); Require(temporaries.Add(file)); },
+                (_, _) => { attempts++; if (attempts == 1) throw new IOException("sharing", unchecked((int)0x80070020)); if (attempts == 2) throw new UnauthorizedAccessException(); },
+                _ => { }, _ => pauses++);
+            Require(transient.Publish(Path.Combine(owned, "status.json"), payload));
+            Require(writes == 1 && attempts == 3 && pauses == 2 && transient.Failure is null); checks.Add("transient-sharing-and-access-denied-publish-only");
+            Require(transient.Publish(Path.Combine(owned, "status.json"), payload)); Require(temporaries.Count == 2); checks.Add("unique-temporary-per-publication");
+            foreach (var error in new Exception[] { new UnauthorizedAccessException(), new IOException("sharing", unchecked((int)0x80070020)),
+                new IOException("lock", unchecked((int)0x80070021)), new IOException("disk", unchecked((int)0x80070070)), new InvalidOperationException("unknown") })
+            {
+                writes = attempts = pauses = 0;
+                var failed = new StatusPublisher((_, _) => writes++, (_, _) => { attempts++; throw error; }, _ => { }, _ => pauses++);
+                Require(!failed.Publish(Path.Combine(owned, "status.json"), payload));
+                int expected = StatusPublisher.Retryable(error) ? StatusPublisher.MaximumPublishAttempts : 1;
+                Require(writes == 1 && attempts == expected && pauses == expected - 1 && failed.Failure?.publishAttempts == expected);
+                Require(!failed.Publish(Path.Combine(owned, "status.json"), payload)); Require(writes == 1 && attempts == expected);
+            }
+            checks.Add("permanent-and-unknown-failures-bounded-and-latched");
+            writes = attempts = 0;
+            var writeFailure = new StatusPublisher((_, _) => { writes++; throw new UnauthorizedAccessException(); }, (_, _) => attempts++, _ => { });
+            Require(!writeFailure.Publish(Path.Combine(owned, "status.json"), payload)); Require(writes == 1 && attempts == 0 && writeFailure.Failure?.phase == "write");
+            checks.Add("write-failure-never-replays-payload");
+            Directory.CreateDirectory(owned); string destination = Path.Combine(owned, "status.json");
+            File.WriteAllText(destination, "old"); FileStream? held = new(destination, FileMode.Open, FileAccess.Read, FileShare.Read);
+            int realAttempts = 0, realWrites = 0, realPauses = 0;
+            try
+            {
+                var actual = new StatusPublisher((file, bytes) => { realWrites++; File.WriteAllBytes(file, bytes); },
+                    (temporary, target) => { realAttempts++; File.Move(temporary, target, true); }, pause: _ => { realPauses++; held.Dispose(); held = null; });
+                Require(actual.Publish(destination, payload)); Require(realWrites == 1 && realAttempts == 2 && realPauses == 1);
+                Require(File.ReadAllBytes(destination).SequenceEqual(payload)); Require(Directory.GetFiles(owned, "*.tmp").Length == 0);
+            }
+            finally { held?.Dispose(); }
+            checks.Add("owned-real-file-lock-roundtrip-and-exact-bytes");
+            Console.WriteLine(JsonSerializer.Serialize(new { pass = true, checks, uiCreated = 0, inputActions = 0, clipboardOperations = 0,
+                eventReplays = 0, maximumPublishAttempts = StatusPublisher.MaximumPublishAttempts, maximumPauseMs = 126 }));
+            return 0;
+        }
+        catch (Exception error) { Console.Error.WriteLine(JsonSerializer.Serialize(new { pass = false, code = "status_selftest_failed", errorType = error.GetType().Name, uiCreated = 0, inputActions = 0, clipboardOperations = 0 })); return 1; }
+        finally
+        {
+            // Only the exact file created by this test is removed. Preserve unexpected
+            // leftovers for diagnosis instead of recursively deleting a computed path.
+            try { File.Delete(Path.Combine(owned, "status.json")); Directory.Delete(owned); } catch { }
+        }
+    }
 }

@@ -1,0 +1,12 @@
+{
+  "caseId": "A32-RECOVERY-SUPERVISOR-DEATH-TYPING",
+  "status": "not_run",
+  "caseLaunched": false,
+  "originalPlanPreserved": true,
+  "reason": "Outer orchestrator returned exit code1 after writing the display/plan and before creating a case receipt or launching the case. Exact subprocess error output was not retained; no failed input is inferred.",
+  "terminal": {
+    "handle": 84416,
+    "exitCode": 1
+  },
+  "changedPrecondition": "All owned anchor/native processes have exited; fixture build passed before any new live launch. New first-live directory will preserve this preparation separately."
+}

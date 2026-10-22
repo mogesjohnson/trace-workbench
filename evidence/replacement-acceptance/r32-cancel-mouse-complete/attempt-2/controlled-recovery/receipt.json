@@ -1,0 +1,326 @@
+{
+  "caseId": "R32-CANCEL-MOUSE-COMPLETE",
+  "input": "mouse",
+  "failure": "cancel",
+  "status": "pass",
+  "startedAt": "2026-10-22T03:24:53.294Z",
+  "cleanup": {
+    "exactOwnedExit": {
+      "node": {
+        "identity": {
+          "pid": 29536,
+          "parent": 35024,
+          "name": "node.exe",
+          "sessionId": 1,
+          "created": "2026-10-22T03:24:53.7829010Z",
+          "processCreationTime": "134371130937829014",
+          "user": "S-1-5-21-285404682-2824134172-2955879870-1001",
+          "session": 1
+        },
+        "exited": true
+      },
+      "supervisor": {
+        "identity": {
+          "pid": 49728,
+          "parent": 29536,
+          "name": "TraceSupervisor.exe",
+          "sessionId": 1,
+          "created": "2026-10-22T03:24:54.7491560Z",
+          "processCreationTime": "134371130947491564",
+          "user": "S-1-5-21-285404682-2824134172-2955879870-1001",
+          "session": 1
+        },
+        "exited": true
+      },
+      "marker": {
+        "identity": {
+          "pid": 21672,
+          "parent": 49728,
+          "name": "TraceActivityIndicator.exe",
+          "sessionId": 1,
+          "created": "2026-10-22T03:24:54.9171260Z",
+          "processCreationTime": "134371130949171265",
+          "user": "S-1-5-21-285404682-2824134172-2955879870-1001",
+          "session": 1
+        },
+        "exited": true
+      },
+      "inputChild": {
+        "identity": {
+          "pid": 38752,
+          "processCreationTime": "134371131070547629",
+          "user": "S-1-5-21-285404682-2824134172-2955879870-1001",
+          "session": 1
+        },
+        "exited": true
+      }
+    },
+    "followupExactOwnedExit": {
+      "node": {
+        "identity": {
+          "pid": 52780,
+          "parent": 35024,
+          "name": "node.exe",
+          "sessionId": 1,
+          "created": "2026-10-22T03:25:09.6165030Z",
+          "processCreationTime": "134371131096165037",
+          "user": "S-1-5-21-285404682-2824134172-2955879870-1001",
+          "session": 1
+        },
+        "exited": true
+      },
+      "supervisor": {
+        "identity": {
+          "pid": 33964,
+          "parent": 52780,
+          "name": "TraceSupervisor.exe",
+          "sessionId": 1,
+          "created": "2026-10-22T03:25:10.5510750Z",
+          "processCreationTime": "134371131105510752",
+          "user": "S-1-5-21-285404682-2824134172-2955879870-1001",
+          "session": 1
+        },
+        "exited": true
+      },
+      "marker": {
+        "identity": {
+          "pid": 41504,
+          "parent": 33964,
+          "name": "TraceActivityIndicator.exe",
+          "sessionId": 1,
+          "created": "2026-10-22T03:25:10.7305680Z",
+          "processCreationTime": "134371131107305686",
+          "user": "S-1-5-21-285404682-2824134172-2955879870-1001",
+          "session": 1
+        },
+        "exited": true
+      }
+    },
+    "connectionClosed": true,
+    "supervisorExited": true,
+    "inputChildExited": true,
+    "inputState": {
+      "available": true,
+      "at": "2026-10-22T03:25:19.779Z",
+      "phase": "native closed; owned fixture not yet closed",
+      "down": []
+    },
+    "fixtureExited": true,
+    "exactFixtureExit": {
+      "identity": {
+        "pid": 25104,
+        "processCreationTime": "134371130936053819",
+        "user": "S-1-5-21-285404682-2824134172-2955879870-1001",
+        "session": 1
+      },
+      "exited": true
+    },
+    "recovery": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    }
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "initialKeys": [],
+  "target": {
+    "windowId": "17369158",
+    "pid": 25104,
+    "processCreationTime": "134371130936053819",
+    "sessionId": 1
+  },
+  "ownership": {
+    "node": {
+      "pid": 29536,
+      "parent": 35024,
+      "name": "node.exe",
+      "sessionId": 1,
+      "created": "2026-10-22T03:24:53.7829010Z",
+      "processCreationTime": "134371130937829014",
+      "user": "S-1-5-21-285404682-2824134172-2955879870-1001",
+      "session": 1
+    },
+    "supervisor": {
+      "pid": 49728,
+      "parent": 29536,
+      "name": "TraceSupervisor.exe",
+      "sessionId": 1,
+      "created": "2026-10-22T03:24:54.7491560Z",
+      "processCreationTime": "134371130947491564",
+      "user": "S-1-5-21-285404682-2824134172-2955879870-1001",
+      "session": 1
+    },
+    "marker": {
+      "pid": 21672,
+      "parent": 49728,
+      "name": "TraceActivityIndicator.exe",
+      "sessionId": 1,
+      "created": "2026-10-22T03:24:54.9171260Z",
+      "processCreationTime": "134371130949171265",
+      "user": "S-1-5-21-285404682-2824134172-2955879870-1001",
+      "session": 1
+    },
+    "fixture": {
+      "pid": 25104,
+      "processCreationTime": "134371130936053819",
+      "user": "S-1-5-21-285404682-2824134172-2955879870-1001",
+      "session": 1
+    }
+  },
+  "focus": {
+    "public": {
+      "available": true,
+      "hasFocus": true,
+      "elementId": "traceTextInput",
+      "name": "TRACE text input",
+      "controlType": "Edit",
+      "provenance": "winapp-get-focused",
+      "binding": "observed-control",
+      "nativeSelector": "txt-tracetextinput-4f61"
+    },
+    "element": {
+      "id": "traceTextInput",
+      "name": "TRACE text input",
+      "controlType": "Edit",
+      "enabled": true,
+      "offscreen": false,
+      "automationId": "traceTextInput",
+      "className": "WindowsForms10.Edit.app.0.2042806_r3_ad1",
+      "bounds": {
+        "x": 1184,
+        "y": 696,
+        "width": 500,
+        "height": 34
+      }
+    },
+    "independent": {
+      "focusedControl": "traceTextInput",
+      "text": "",
+      "count": 0
+    },
+    "observationId": "74136040-5a00-4f43-b5f0-b65c13fc1f7a",
+    "boundObservedMatches": 1
+  },
+  "controlled": {
+    "pid": 38752,
+    "processCreationTime": "134371131070547629",
+    "inJob": true,
+    "supervisorPid": 49728,
+    "identity": {
+      "pid": 38752,
+      "processCreationTime": "134371131070547629",
+      "user": "S-1-5-21-285404682-2824134172-2955879870-1001",
+      "session": 1
+    }
+  },
+  "held": {
+    "1": true
+  },
+  "interruptedAt": "2026-10-22T03:25:08.861Z",
+  "childExitIndependently": true,
+  "nativeOutcome": {
+    "code": "cancelled",
+    "outcome": "unknown",
+    "recovery": {
+      "attempted": true,
+      "released": true,
+      "processExitConfirmed": true,
+      "method": "declared-sendinput",
+      "reason": "cancelled",
+      "childPid": 38752,
+      "childCreated": "134371131070547629",
+      "declaredKeysDown": [],
+      "stopCleanupMs": null
+    }
+  },
+  "keysAfter": [],
+  "effect": {
+    "text": "",
+    "count": 0,
+    "unchangedAfterCleanup": true
+  },
+  "followupOwnership": {
+    "node": {
+      "pid": 52780,
+      "parent": 35024,
+      "name": "node.exe",
+      "sessionId": 1,
+      "created": "2026-10-22T03:25:09.6165030Z",
+      "processCreationTime": "134371131096165037",
+      "user": "S-1-5-21-285404682-2824134172-2955879870-1001",
+      "session": 1
+    },
+    "supervisor": {
+      "pid": 33964,
+      "parent": 52780,
+      "name": "TraceSupervisor.exe",
+      "sessionId": 1,
+      "created": "2026-10-22T03:25:10.5510750Z",
+      "processCreationTime": "134371131105510752",
+      "user": "S-1-5-21-285404682-2824134172-2955879870-1001",
+      "session": 1
+    },
+    "marker": {
+      "pid": 41504,
+      "parent": 33964,
+      "name": "TraceActivityIndicator.exe",
+      "sessionId": 1,
+      "created": "2026-10-22T03:25:10.7305680Z",
+      "processCreationTime": "134371131107305686",
+      "user": "S-1-5-21-285404682-2824134172-2955879870-1001",
+      "session": 1
+    },
+    "fixture": {
+      "pid": 25104,
+      "processCreationTime": "134371130936053819",
+      "user": "S-1-5-21-285404682-2824134172-2955879870-1001",
+      "session": 1
+    }
+  },
+  "followup": {
+    "outcome": "completed",
+    "before": 0,
+    "after": 1,
+    "exactIncrement": 1,
+    "provider": "pinned-engine"
+  },
+  "primaryOutcome": {
+    "status": "pass",
+    "error": null,
+    "nativeOutcome": {
+      "code": "cancelled",
+      "outcome": "unknown",
+      "recovery": {
+        "attempted": true,
+        "released": true,
+        "processExitConfirmed": true,
+        "method": "declared-sendinput",
+        "reason": "cancelled",
+        "childPid": 38752,
+        "childCreated": "134371131070547629",
+        "declaredKeysDown": [],
+        "stopCleanupMs": null
+      }
+    }
+  },
+  "requestResult": {
+    "outcome": "unknown",
+    "code": "REQUEST_TIMEOUT"
+  },
+  "completedAt": "2026-10-22T03:25:20.025Z"
+}

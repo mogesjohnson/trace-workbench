@@ -1,0 +1,76 @@
+{
+  "caseId": "METHOD-BROWSER-FINAL-VALIDATION-FRESHNESS",
+  "observedAt": "2026-10-21T12:45:35.848Z",
+  "status": "pass",
+  "scope": "Two new actual headless navigation regressions plus one affected actual coordinator submission case. Historical browser receipts remain unchanged.",
+  "command": "node --test --test-name-pattern 'actual headless Edge fills|navigation during final semantic check' tests/method-browser.test.cjs",
+  "privatePrerequisites": {
+    "TRACE_PLAYWRIGHT_MODULE": "<absolute installed Playwright module directory outside checkout>",
+    "TRACE_BROWSER_EXECUTABLE": "<absolute installed Chromium-compatible browser executable>"
+  },
+  "runtime": {
+    "node": "v26.2.0",
+    "playwright": "1.62.1",
+    "browser": "Microsoft Edge 155.0.4283.62",
+    "headless": true,
+    "desktopInput": false
+  },
+  "results": {
+    "selectedTests": 3,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "exitCode": 0
+  },
+  "regressionBeforeFix": {
+    "selectedTests": 2,
+    "failed": 2,
+    "actual": "Allowed replacement was submitted to the fixture result route. Outside-scope replacement still called the Playwright click mutator once. These were actual owned Page navigations during the final awaited isEnabled check; no user browser profile or native desktop input was used."
+  },
+  "cases": [
+    {
+      "name": "actual headless Edge fills, submits, reads and verifies once after lost reply",
+      "actual": {
+        "serverSaveCount": 1,
+        "unknownSubmitReconciledWithoutReplay": true,
+        "ownedTabClosed": true
+      }
+    },
+    {
+      "name": "navigation during final semantic check blocks allowed replacement before mutation",
+      "actual": {
+        "semanticChecks": 2,
+        "mutatorCalls": 0,
+        "serverSaveCount": 0,
+        "ownedTabClosed": true
+      }
+    },
+    {
+      "name": "navigation during final semantic check blocks outside replacement before mutation",
+      "actual": {
+        "semanticChecks": 2,
+        "mutatorCalls": 0,
+        "serverSaveCount": 0,
+        "ownedTabClosed": true
+      }
+    }
+  ],
+  "sourceHashes": {
+    "src/method/browser-provider.cjs": "6056048eade72928b2aac8faf282ab9b5c831657f9f869f718969b83cee4020c",
+    "src/method/coordinator.cjs": "11c350aa39d3932d439a218335fd4defac3070fd71eb40654ddbec925049e91f",
+    "src/method/capabilities.cjs": "e5570c75c61bc684d895ac384e6a46bb2463afd945646255fb03f7310a9298d3",
+    "src/method/shared.cjs": "ae373a1d112a958cac4e1835c53c8c6126ced4a01a856b91609efdcd5bbaa11b",
+    "src/method/index.cjs": "fa29d905bf70edc9215bf9878aee969ad59cb905d04e12109939a14c7f238ee8",
+    "tests/method-browser.test.cjs": "bc529fe0507f1bb31d254cae09cd8cf81a83d7b198ef4236c6dd997f16d5dff9"
+  },
+  "output": {
+    "path": "evidence/computer-use-method/browser/freshness-check-output.txt",
+    "sha256": "135788a6bd65035200f4af1eec72a194d7d09ab513096fac433e23c1ceb91101"
+  },
+  "limits": [
+    "The provider supplies no atomic transaction with page JavaScript or navigation; it rechecks actual page/capture identity after awaited validation and immediately before consuming evidence.",
+    "The regression uses wrappers around actual public Playwright Page/Locator methods only to trigger controlled real navigation and count mutator invocations.",
+    "This is owned loopback headless-browser acceptance, not native GUI or independent model-host workflow acceptance.",
+    "The two unaffected prior browser cases were not rerun; original and exact-binding receipts keep their own historical hashes."
+  ]
+}

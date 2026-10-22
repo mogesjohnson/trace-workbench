@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Retained outer orchestrator provenance, not a new execution or full recovery-matrix acceptance.",
+  "driver": "driver.cjs.txt",
+  "driverSha256": "c88eb7c52fa716552dd4bd3a03782cdcb0edcdd3378cd0397def41cfbc94ea76",
+  "driverSource": ".runtime/run-recovery-after-journal-fix.cjs",
+  "preparationTermination": {
+    "path": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing/preparation-termination.json",
+    "status": "not_run",
+    "caseLaunched": false,
+    "terminal": {
+      "handle": 84416,
+      "exitCode": 1
+    }
+  },
+  "subsequentFirstActualExecution": {
+    "path": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing-first-live/a32-recovery-supervisor-death-typing/receipt.json",
+    "caseId": "A32-RECOVERY-SUPERVISOR-DEATH-TYPING",
+    "status": "pass",
+    "completedAt": "2026-10-21T22:27:31.369Z"
+  },
+  "knownScope": "Earlier outer preparation terminated before the final typing case launched. Its plan is retained; the subsequent separately retained first-live case reports pass. Individual case receipts govern.",
+  "unknowns": [
+    "Exact original outer subprocess error output was not retained.",
+    "The precise cause of the outer preparation termination is not established.",
+    "The retained driver alone does not prove each orchestration or cleanup step executed."
+  ],
+  "evidenceSha256": {
+    "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing/preparation-termination.json": "d1c6bae4e7a387ce2c36edbe363775115993777acfc1dbf4c0b079d5d6dc1479",
+    "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing-first-live/a32-recovery-supervisor-death-typing/receipt.json": "344eb1c856cb8e26755cb982a7157ae11db21485c3d63fc1a9027abdf2eed734"
+  }
+}

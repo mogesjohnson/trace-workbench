@@ -1,0 +1,31 @@
+{
+  "caseId": "METHOD-BROWSER-EXACT-BINDING",
+  "observedAt": "2026-10-21T02:54:25Z",
+  "status": "pass",
+  "reason": "Registry selection now consumes optional exact windowIds advertisements. The browser advertises its supplied page identity, so the coordinator form case exercises the affected binding branch.",
+  "scope": "One affected real headless browser coordinator case; the other two previous browser cases were intentionally not rerun.",
+  "priorEvidence": "evidence/computer-use-method/browser/receipt.json",
+  "command": "node --test --test-name-pattern 'actual headless Edge fills' tests/method-browser.test.cjs",
+  "privatePrerequisites": {
+    "TRACE_PLAYWRIGHT_MODULE": "<absolute installed Playwright module directory outside checkout>",
+    "TRACE_BROWSER_EXECUTABLE": "<absolute installed Chromium-compatible browser executable>"
+  },
+  "runtime": { "node": "26.2.0", "playwright": "1.62.1", "browser": "Microsoft Edge 155.0.4283.62", "headless": true, "desktopInput": false },
+  "results": { "selectedTests": 1, "passed": 1, "failed": 0, "exitCode": 0 },
+  "actual": { "verifiedResult": "Saved: Résumé 日本語", "serverSaveCount": 1, "unknownSubmitReconciledWithoutReplay": true, "ownedTabClosed": true },
+  "sourceHashes": {
+    "src/method/shared.cjs": "ae373a1d112a958cac4e1835c53c8c6126ced4a01a856b91609efdcd5bbaa11b",
+    "src/method/capabilities.cjs": "e5570c75c61bc684d895ac384e6a46bb2463afd945646255fb03f7310a9298d3",
+    "src/method/coordinator.cjs": "11c350aa39d3932d439a218335fd4defac3070fd71eb40654ddbec925049e91f",
+    "src/method/browser-provider.cjs": "d8d7ad623dbeccfe357661e9e30f258de4169a2a6947292acc9f4656161a0b97",
+    "src/method/application-provider.cjs": "eaa36c54cd1351627b0471e93364bc6e6415fd078ef56746d6af711a60e85cbd",
+    "src/method/index.cjs": "9177408aee1bb15a793062ad47f3ac7addf7c28487223f7d91ea9a56aeddb0fa",
+    "tests/method-browser.test.cjs": "88b08072de118850991320d33f68ba8824a7f4fe4e7eb919ba92b1d82a4c613a"
+  },
+  "output": { "path": "evidence/computer-use-method/browser/binding-check-output.txt", "sha256": "ad8ae917632c58856073aa1728da6569b3ee47e57d2230aa521c6583942c4290" },
+  "limits": [
+    "An owned loopback headless-browser test does not establish visible native input or model-host acceptance.",
+    "The original three-case receipt is retained at its original source hashes. This is an affected-case regression, not a new claim that all cases ran against the new registry source.",
+    "Application-provider was loaded by the public index but no application process was launched in this browser check."
+  ]
+}

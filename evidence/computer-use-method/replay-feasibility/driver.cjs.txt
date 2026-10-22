@@ -1,0 +1,130 @@
+'use strict';
+// Application APIs through the existing REPLAY harness. No native input or shell UI.
+const fs = require('node:fs/promises'), path = require('node:path'), assert = require('node:assert/strict');
+const { createRequire } = require('node:module'), { randomUUID, createHash } = require('node:crypto');
+const { execFile } = require('node:child_process'), { promisify } = require('node:util');
+const run = promisify(execFile), trace = path.resolve(__dirname, '..');
+const replay = path.resolve(trace, '../replay-studio');
+const fromReplay = createRequire(path.join(replay, 'package.json'));
+const harness = fromReplay('./scripts/media-inspection-smoke.cjs');
+const { _electron: electron } = fromReplay('playwright');
+const common = require('../scripts/replacement-acceptance-common.cjs');
+const { unpackedBinary } = fromReplay('./electron/engine.cjs');
+const probe = unpackedBinary(fromReplay('@ffprobe-installer/ffprobe').path);
+const exe = path.join(replay, 'release/contact-sheet-fix/win-unpacked/REPLAY Studio.exe');
+const sha = b => createHash('sha256').update(b).digest('hex');
+const requestId = () => `trace-feasibility-${randomUUID()}`;
+const inside = (parent, child) => { const r = path.relative(parent, child); return !!r && !r.startsWith('..') && !path.isAbsolute(r); };
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+(async () => {
+  const display = common.validateDisplay(await common.command(['display']));
+  assert.equal((await common.command(['status'])).recoveryRequired, false);
+  assert.equal((await common.command(['input-access'])).observable, true);
+  assert.deepEqual((await common.command(['keystate', 'all'])).down, []);
+  await common.verify();
+  const directory = path.join(trace, '.runtime/replay-two-instance', randomUUID());
+  const evidence = path.join(trace, 'evidence/computer-use-method/replay-feasibility');
+  await fs.mkdir(directory, { recursive: true }); await fs.mkdir(evidence);
+  const receipt = { schemaVersion: 1, caseId: 'TRACE-REPLAY-TWO-INSTANCE-FEASIBILITY', attempt: 1,
+    status: 'running', startedAt: new Date().toISOString(), scope: 'Two isolated native REPLAY instances; second captures the exact first editor via public MCP. No TRACE input or full APP-01 editing/export acceptance.',
+    display, cleanup: {}, paidRequests: 0, nativeInputActions: 0 };
+  const save = () => fs.writeFile(path.join(evidence, 'receipt.json'), JSON.stringify(receipt, null, 2) + '\n');
+  await fs.writeFile(path.join(evidence, 'plan.json'), JSON.stringify({ ...receipt, declaredBeforeUi: true,
+    initial: 'Two fresh smoke roots, synthetic test video, existing pinned package; real libraries untouched.',
+    actions: ['Generate synthetic video; launch two smoke instances with both isolation flags.', 'Verify exact independent libraries, app HWND/PID and separate MCP grants.',
+      'Play the first synthetic project using its API; select its exact HWND from second capture.sources.', 'Record four seconds through public MCP; stop by exact recordingId.',
+      'Probe actual recording and decode two frames; verify nonblack/different pixels and inspect a retained private frame.', 'Close transports; revoke owned grants; close retained app processes.'],
+    expected: { durationSeconds: '1.5 to 12', minimumWidth: 400, minimumHeight: 300, distinctInstances: true, decodedFramesDiffer: true, exactTarget: true },
+    budget: 'One attempt plus one corrective attempt after a recorded change. No silent retry.' }, null, 2) + '\n', { flag: 'wx' });
+  const apps = [], clients = [];
+  try {
+    receipt.package = { executableSha256: sha(await fs.readFile(exe)), asarSha256: sha(await fs.readFile(path.join(path.dirname(exe), 'resources/app.asar'))) };
+    assert.equal(receipt.package.executableSha256, '22f35d67d22e00f156b57089e27031b1b033d888fdfd6223183c346f4fc167ec');
+    assert.equal(receipt.package.asarSha256, 'd74797f6a2b4cd9d9dbce1ecaff7dc655b0869b3455ac4da604e85403c36b7cc');
+    receipt.testedSource = {
+      traceCommit: (await run('git', ['rev-parse', 'HEAD'], { cwd: trace, windowsHide: true })).stdout.trim(),
+      replayCommit: (await run('git', ['rev-parse', 'HEAD'], { cwd: replay, windowsHide: true })).stdout.trim(),
+      driverSha256: sha(await fs.readFile(__filename)),
+      provisioningHarnessSha256: sha(await fs.readFile(path.join(replay, 'scripts/media-inspection-smoke.cjs'))) };
+    await fs.copyFile(__filename, path.join(evidence, 'driver.cjs.txt')); await save();
+    const fixture = path.join(directory, 'synthetic.mp4');
+    await run(harness.ffmpeg, ['-v', 'error', '-nostdin', '-f', 'lavfi', '-i', 'testsrc2=size=1280x720:rate=30', '-t', '8', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', fixture], { windowsHide: true, timeout: 30000 });
+    receipt.fixtureSha256 = sha(await fs.readFile(fixture));
+    process.env.REPLAY_SMOKE_EXE = exe; delete process.env.ELECTRON_RUN_AS_NODE;
+    receipt.instances = [];
+    for (const label of ['editor', 'recorder']) {
+      const output = path.join(directory, label); await fs.mkdir(output);
+      const app = await electron.launch({ executablePath: exe,
+        args: [`--smoke-test=${fixture}`, `--smoke-output=${output}`], timeout: 60000 });
+      const owned = { app }; apps.push(owned);
+      owned.page = await app.firstWindow();
+      await owned.page.waitForFunction(() => typeof window.replay?.getAgentAccess === 'function', null, { timeout: 30000 });
+      owned.info = await owned.page.evaluate(() => window.replay.getAppInfo());
+      assert.ok(inside(output, owned.info.libraryPath));
+      const identity = await owned.app.evaluate(({ BrowserWindow }) => {
+        const visible = BrowserWindow.getAllWindows().filter(w => !w.isDestroyed() && w.isVisible());
+        if (visible.length !== 1) throw new Error('owned_editor_ambiguous');
+        const window = visible[0], bytes = window.getNativeWindowHandle();
+        let id = 0n; for (let i = 0; i < bytes.length; i++) id += BigInt(bytes[i]) << BigInt(i * 8);
+        return { pid: process.pid, windowId: id.toString(), title: window.getTitle() };
+      });
+      const nativeIdentity = await common.bridge('identity', { id: identity.windowId, pid: identity.pid });
+      assert.equal(nativeIdentity.hwnd, identity.windowId); assert.equal(nativeIdentity.pid, identity.pid);
+      identity.processCreationTime = nativeIdentity.processCreationTime; identity.sessionId = nativeIdentity.sessionId;
+      owned.identity = identity;
+      const connection = await harness.createGrant(owned.page, `TRACE ${label} feasibility`); owned.grantId = connection.grant.id;
+      const entry = connection.setup.mcp.mcpServers.replay;
+      const client = await harness.connectMcp(entry); clients.push(client); owned.client = client;
+      const capabilities = await harness.command(client, 'app.capabilities');
+      assert.equal(capabilities.projectSchemaVersion, 3);
+      receipt.instances.push({ label, ...identity, isolatedLibrary: true, projectSchemaVersion: capabilities.projectSchemaVersion });
+      await save();
+    }
+    assert.notEqual(apps[0].identity.pid, apps[1].identity.pid);
+    assert.notEqual(apps[0].identity.windowId, apps[1].identity.windowId);
+    assert.notEqual(apps[0].info.libraryPath, apps[1].info.libraryPath);
+    const listed = await harness.poll(() => harness.command(apps[0].client, 'projects.list'), value => value.projects?.length === 1,
+      'Owned synthetic project import did not finish', 30000);
+    const project = listed.projects[0]; assert.ok(project?.id);
+    await harness.command(apps[0].client, 'preview.open', { projectId: project.id, position: 0 }, project.revision, requestId());
+    await harness.command(apps[0].client, 'preview.play', { projectId: project.id }, project.revision, requestId());
+    const sources = await harness.command(apps[1].client, 'capture.sources');
+    const exact = (sources.sources || sources).filter(source => source.id.startsWith('window:') && source.id.split(':')[1] === apps[0].identity.windowId);
+    assert.equal(exact.length, 1, 'Exactly the first owned native editor must be capturable.');
+    receipt.target = { sourceId: exact[0].id, windowId: apps[0].identity.windowId, pid: apps[0].identity.pid };
+    const recording = await harness.command(apps[1].client, 'capture.start', { sourceId: exact[0].id, name: 'TRACE two-instance feasibility' }, undefined, requestId());
+    receipt.recording = { recordingId: recording.recordingId, state: recording.state }; await save();
+    assert.equal(recording.state, 'recording'); await delay(4000);
+    const take = await harness.command(apps[1].client, 'capture.stop', { recordingId: recording.recordingId }, undefined, requestId());
+    assert.ok(inside(apps[1].info.libraryPath, take.sourcePath));
+    const metadata = JSON.parse((await run(probe, ['-v', 'error', '-show_streams', '-show_format', '-of', 'json', take.sourcePath], { windowsHide: true, timeout: 15000 })).stdout);
+    const video = metadata.streams.find(s => s.codec_type === 'video'), duration = Number(metadata.format.duration);
+    assert.ok(video.width >= 400 && video.height >= 300 && duration >= 1.5 && duration <= 12);
+    const decode = async position => (await run(harness.ffmpeg, ['-v', 'error', '-nostdin', '-ss', String(position), '-i', take.sourcePath, '-frames:v', '1', '-vf', 'scale=320:180', '-f', 'rawvideo', '-pix_fmt', 'rgb24', 'pipe:1'], { windowsHide: true, timeout: 15000, encoding: 'buffer', maxBuffer: 1024 * 1024 })).stdout;
+    const first = await decode(0.5), second = await decode(Math.min(2.5, duration - 0.25));
+    assert.equal(first.length, 320 * 180 * 3); assert.equal(second.length, first.length);
+    const mean = first.reduce((sum, value) => sum + value, 0) / first.length;
+    const difference = first.reduce((sum, value, i) => sum + Math.abs(value - second[i]), 0) / first.length;
+    assert.ok(mean > 5 && difference > 0.05, 'The recording must contain changing nonblack editor pixels.');
+    await run(harness.ffmpeg, ['-v', 'error', '-nostdin', '-ss', '1', '-i', take.sourcePath, '-frames:v', '1', path.join(directory, 'recorded-editor.png')], { windowsHide: true, timeout: 15000 });
+    receipt.output = { duration, width: video.width, height: video.height, codec: video.codec_name, bytes: (await fs.stat(take.sourcePath)).size,
+      sha256: sha(await fs.readFile(take.sourcePath)), decodedMean: mean, decodedFrameDifference: difference,
+      privateFrame: path.relative(trace, path.join(directory, 'recorded-editor.png')).replaceAll(path.sep, '/'), visualReview: 'pending' };
+    receipt.status = 'pending_visual_review';
+  } catch (error) { receipt.status = 'fail'; receipt.error = { code: /^[a-z_]+$/.test(error.code || '') ? error.code : 'feasibility_check_failed', phase: receipt.target ? 'capture' : apps.length === 2 ? 'target_binding' : 'launch' }; }
+  finally {
+    receipt.cleanup.mcp = []; for (const client of clients.reverse()) { try { await client.close(); receipt.cleanup.mcp.push(true); } catch { receipt.cleanup.mcp.push(false); } }
+    receipt.cleanup.apps = [];
+    for (const owned of apps.reverse()) {
+      const record = { pid: owned.identity?.pid, grantRevoked: !owned.grantId };
+      try { if (owned.grantId) { await owned.page.evaluate(id => window.replay.revokeAgentGrant(id), owned.grantId); record.grantRevoked = true; } } catch { record.grantRevoked = false; }
+      try { await harness.stopApp(owned.app, owned.page); record.processExited = owned.app.process().exitCode !== null; } catch { record.processExited = false; }
+      receipt.cleanup.apps.push(record);
+    }
+    receipt.cleanup.confirmed = receipt.cleanup.mcp.every(Boolean) && receipt.cleanup.apps.every(a => a.grantRevoked && a.processExited);
+    if (!receipt.cleanup.confirmed) receipt.status = 'blocked';
+    receipt.completedAt = new Date().toISOString(); await save();
+    console.log(JSON.stringify({ status: receipt.status, error: receipt.error, output: receipt.output, cleanup: receipt.cleanup }));
+  }
+})().catch(error => { console.error(error.code || 'feasibility_preparation_failed'); process.exitCode = 1; });

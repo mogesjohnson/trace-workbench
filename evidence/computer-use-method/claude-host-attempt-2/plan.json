@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CLAUDE-TRACE-SKILL-NATIVE",
+  "host": "Claude Code",
+  "attempt": 2,
+  "declaredBeforeHostOrUi": true,
+  "prior": "evidence/computer-use-method/claude-host-attempt-1",
+  "changedPrecondition": "Correct installed skill discovery using project source and home additional root; retain exact pre-tool scope; private per-file semantic settings comparison now attributes formatting and blocks every semantic change; owner confirmed ordinary foreground and idle input.",
+  "scope": "HOST-01 partial: actual installed TRACE skill invocation, scoped production MCP/images, one owned-fixture effect and stale-observation recovery.",
+  "notProven": [
+    "REA skill discovery or analysis",
+    "Semantic image comprehension",
+    "Direct unguarded host connection",
+    "Real application/REPLAY workflow",
+    "Physical stop or interruption matrix"
+  ],
+  "target": "One fresh owned WinForms fixture, exact PID/title/process creation time/HWND; unrelated discovery metadata is filtered before reaching the model.",
+  "initial": {
+    "text": "",
+    "count": 0,
+    "input": "Independent all-up/no-quarantine check; one pinned observed display."
+  },
+  "actions": [
+    "Check existing subscription authentication and installed TRACE bundle integrity without writing user settings.",
+    "Invoke installed trace-computer-use with the real Skill tool; read its routing/recovery references with scoped Read.",
+    "Use the labeled six-tool guard forwarding production bin/trace.cjs computer mcp; diagnose/discover/open/observe the exact fixture.",
+    "Click its observed edit and verify focus; type one run-unique synthetic literal once.",
+    "Deliberately invoke the counter with the observation consumed by typing; require the real stale_observation rejection and unchanged independent fixture state.",
+    "Observe afresh, invoke the counter exactly once, inspect final state and close the native session."
+  ],
+  "expected": {
+    "text": "Run-unique literal declared privately before launch",
+    "count": 1,
+    "staleRejection": true,
+    "freshRecovery": true,
+    "sessionClosedByHost": true
+  },
+  "guard": "Acceptance-only target/action restriction; six public schemas and production outcomes/images preserved. No simulated native executor or test tool.",
+  "privacy": "Raw stream, model prose/thinking, images, fixture state, credentials and private launch configuration are never copied into evidence. Only whitelist summaries persist.",
+  "hostConfiguration": "Claude >=2.1.295; project-only setting source in a fresh workspace, installed skills discovered from the home additional directory, exact Skill/manifest Read pre-execution hook with fail-closed launch/timeout behavior, six explicit MCP permissions, temporary strict MCP profile, no Chrome, no session persistence, no shell/edit/write/web tools; existing Claude subscription only.",
+  "cleanup": "Stop retained owned host process if bounded run is interrupted; guard drains production session/MCP on EOF. Independently require owned process exit, released input and no quarantine before fixture/temp cleanup. Uncertainty is retained.",
+  "budget": "One attempt plus one explicit corrective retry with prior unfinished receipt and changed precondition; no automatic model/native replay.",
+  "documentation": [
+    "https://code.claude.com/docs/en/cli-reference",
+    "https://code.claude.com/docs/en/skills",
+    "https://code.claude.com/docs/en/hooks"
+  ]
+}

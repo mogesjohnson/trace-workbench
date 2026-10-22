@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "planContract": 1,
+  "caseId": "R32-CANCEL-MOUSE-COMPLETE",
+  "replaces": [
+    "A32-RECOVERY-CANCEL-MOUSE"
+  ],
+  "historicalStatus": "Original fail and corrective blocked terminal record retained unchanged.",
+  "acceptancePlan": "docs/REPLACEMENT_ACCEPTANCE_PLAN.md",
+  "ownerDecision": "evidence/replacement-acceptance/owner-decision.json",
+  "executionRequiresExplicitOwnerDecision": true,
+  "attempt": 2,
+  "declaredBeforeUiLaunch": true,
+  "prior": "evidence/replacement-acceptance/r32-cancel-mouse-complete/attempt-1",
+  "changedPrecondition": "All acceptance sources are now frozen after the console-host metadata correction; no concurrent edits during this corrective run.",
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "target": "One fresh exact synthetic computer fixture through the production MCP/controller/native supervisor controlled-provider path.",
+  "initial": {
+    "count": 0,
+    "text": "",
+    "keysDown": [],
+    "recoveryRequired": false
+  },
+  "actions": [
+    "One pinned-engine focus click on the uniquely observed text input; require public bound focus and independent traceTextInput focus",
+    "One MCP drag between adjacent empty lower-right points; private controlled left-button hold at measured start",
+    "Independently prove held input/job dispatch, then cancel this one request via standard SDK AbortSignal",
+    "Require unknown delivery, native cancelled, exact owned input exit and independently all-up input, clear recovery and native-owner exit",
+    "After cleanup, one newly declared pinned-engine counter invocation under a distinct artifact root; count 0 to 1"
+  ],
+  "expected": {
+    "nativeCode": "cancelled",
+    "primaryOutcome": "unknown",
+    "countBeforeFollowup": 0,
+    "countAfterFollowup": 1,
+    "text": "",
+    "provider": "controlled; setup/followup pinned-engine"
+  },
+  "cleanup": "Settle/cancel the one request; close native/MCP; prove process exit and input release while fixture accessible; close owned fixture; persist terminal outcome.",
+  "budget": "One attempt plus at most one exact same replacement attempt-1 fail/blocked corrective retry with explicit change. No third attempt or replay.",
+  "limits": [
+    "Owner decision reference is required metadata, never inferred approval.",
+    "No historical outcome is modified.",
+    "No public MCP schema/provider behavior changes.",
+    "No host/release/physical-stop acceptance."
+  ]
+}

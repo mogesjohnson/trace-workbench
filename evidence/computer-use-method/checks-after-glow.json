@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-22T03:41:28.647Z",
+  "commands": {
+    "npm test": {
+      "exitCode": 0,
+      "tests": 359,
+      "passed": 353,
+      "failed": 0,
+      "skipped": 6
+    },
+    "npm run check": {
+      "exitCode": 0,
+      "javascriptFiles": 76
+    }
+  },
+  "skipScope": "Five optional real browser runtime checks and one Windows file-symlink privilege check.",
+  "glowFileOnlyRegression": "glow-status-publication.json",
+  "logs": {
+    "tests-after-glow.log": {
+      "sha256": "7432c833da53ee92515ec636aa9513730707ced4f9957b28688f716d3483b8fc"
+    },
+    "check-after-glow.log": {
+      "sha256": "15281c90d9b1fe91c724a6ea0570af3ab25de221d28a3de43a96022d4b4c1a1f"
+    }
+  }
+}

@@ -74,8 +74,27 @@ test('one action consumes observation and returns a new observation; stale IDs n
   const result = await controller.act(request);
   assert.equal(result.outcome, 'completed');
   assert.notEqual(result.observation.observationId, observation.observationId);
-  await assert.rejects(controller.act(request), { code: 'stale_observation' });
+  await assert.rejects(controller.act(request), { code: 'stale_observation', details: { outcome: 'not_dispatched' } });
   assert.equal(dispatched.length, 1);
+});
+
+test('public observation exposes actual focus and native modal state with provenance', async t => {
+  const { controller, backend } = await fixture(t);
+  const observe = backend.observe;
+  backend.observe = async request => ({ ...await observe(request), focused: { available: true, hasFocus: true, elementId: 'input', controlType: 'Edit', provenance: 'winapp-get-focused' }, targetState: { enabled: false, ownerWindowId: '100', provenance: 'public-win32-dwm' } });
+  const session = await open(controller);
+  const frame = await controller.observe(session);
+  assert.deepEqual(frame.focused, { available: true, hasFocus: true, elementId: 'input', controlType: 'Edit', provenance: 'winapp-get-focused' });
+  assert.equal(frame.targetState.enabled, false);
+  assert.equal(frame.targetState.ownerWindowId, '100');
+});
+
+test('a reused PID with changed creation time cannot open the discovered target', async t => {
+  const { controller, backend } = await fixture(t);
+  backend.listWindows = async () => [{ ...window, processCreationTime: '123450000000000000', sessionId: 1 }];
+  await controller.listWindows();
+  backend.listWindows = async () => [{ ...window, processCreationTime: '123450000000000001', sessionId: 1 }];
+  await assert.rejects(controller.openSession({ windowId: window.id }), { code: 'window_changed' });
 });
 
 test('invalid coordinates, unknown elements, extra fields and Windows key never dispatch', async t => {
@@ -97,7 +116,7 @@ test('expired observation cannot dispatch', async t => {
   const session = await open(controller);
   const observation = await controller.observe(session);
   now = 101;
-  await assert.rejects(controller.act({ ...session, observationId: observation.observationId, action: { type: 'activate' } }), { code: 'stale_observation' });
+  await assert.rejects(controller.act({ ...session, observationId: observation.observationId, action: { type: 'activate' } }), { code: 'stale_observation', details: { outcome: 'not_dispatched' } });
   assert.equal(dispatched.length, 0);
 });
 
@@ -127,6 +146,18 @@ test('post-input capture failure stays unknown; journal excludes typed text and 
   const journal = await fs.readFile(path.join(directory, 'sessions', session.sessionId, 'events.jsonl'), 'utf8');
   assert.ok(!journal.includes(secret));
   assert.ok(!journal.includes(png.toString('base64')));
+});
+test('backend stale code after possible mutation is unknown; capture nondispatch details cannot undo completed input', async t => {
+  const { controller, backend, dispatched } = await fixture(t);
+  const session = await open(controller), first = await controller.observe(session);
+  backend.act = async () => { dispatched.push('possible-input'); throw Object.assign(new Error('late backend failure'), { code: 'stale_observation' }); };
+  const failed = await controller.act({ ...session, observationId: first.observationId, action: { type: 'activate' } });
+  assert.equal(failed.outcome, 'unknown'); assert.equal(failed.error.code, 'stale_observation'); assert.equal(dispatched.length, 1);
+  const second = await controller.observe(session);
+  backend.act = async () => { dispatched.push('completed-input'); return { performed: true }; };
+  backend.observe = async () => { throw Object.assign(new Error('capture guard failed'), { code: 'stale_observation', details: { outcome: 'not_dispatched' } }); };
+  const captureFailed = await controller.act({ ...session, observationId: second.observationId, action: { type: 'activate' } });
+  assert.equal(captureFailed.outcome, 'unknown'); assert.equal(captureFailed.error.outcome, 'unknown'); assert.equal(dispatched.length, 2);
 });
 
 test('failed gesture recovery exposes a quarantine result without private native details', async t => {

@@ -1,0 +1,93 @@
+{
+  "caseId": "A32-RECOVERY-TIMEOUT-TYPING",
+  "input": "typing",
+  "failure": "timeout",
+  "status": "pass",
+  "startedAt": "2026-10-21T22:13:51.434Z",
+  "cleanup": {
+    "connectionClosed": true,
+    "supervisorExited": true,
+    "inputChildExited": true,
+    "inputState": {
+      "available": true,
+      "at": "2026-10-21T22:14:22.344Z",
+      "phase": "native closed; owned fixture not yet closed",
+      "down": []
+    },
+    "foregroundPreparation": {
+      "preparation": "fixture-foreground-anchor",
+      "prepared": true,
+      "activationAttempted": true,
+      "cleanupConfirmed": true,
+      "code": null
+    },
+    "fixtureExited": true,
+    "recovery": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    }
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "initialKeys": [],
+  "target": {
+    "windowId": "44174678",
+    "pid": 29068,
+    "processCreationTime": "134370944318394401"
+  },
+  "controlled": {
+    "pid": 46248,
+    "processCreationTime": "134370944478257578",
+    "inJob": true,
+    "supervisorPid": 45612
+  },
+  "held": {
+    "67": true
+  },
+  "interruptedAt": "2026-10-21T22:14:07.999Z",
+  "childExitIndependently": true,
+  "nativeOutcome": {
+    "code": "native_timeout",
+    "outcome": "unknown",
+    "recovery": {
+      "attempted": true,
+      "released": true,
+      "processExitConfirmed": true,
+      "method": "declared-sendinput",
+      "reason": "native_timeout",
+      "childPid": 46248,
+      "childCreated": "134370944478257578",
+      "declaredKeysDown": [],
+      "stopCleanupMs": null
+    }
+  },
+  "keysAfter": [],
+  "effect": {
+    "text": "abc",
+    "count": 0,
+    "unchangedAfterCleanup": true
+  },
+  "followup": {
+    "outcome": "completed",
+    "before": 0,
+    "after": 1,
+    "exactIncrement": 1,
+    "provider": "pinned-engine"
+  },
+  "completedAt": "2026-10-21T22:14:24.750Z"
+}

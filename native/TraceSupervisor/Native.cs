@@ -31,6 +31,9 @@ internal static class Native
     [StructLayout(LayoutKind.Sequential)] public struct JobExtendedLimits { public JobBasicLimits Basic; public IoCounters Io; public nuint ProcessMemoryLimit, JobMemoryLimit, PeakProcessMemoryUsed, PeakJobMemoryUsed; }
     [StructLayout(LayoutKind.Sequential)] public struct StartupInfo { public int Size; public nint Reserved, Desktop, Title; public int X, Y, Width, Height, XChars, YChars, Fill, Flags; public short Show, Reserved2; public nint Reserved3, StdInput, StdOutput, StdError; }
     [StructLayout(LayoutKind.Sequential)] public struct ProcessInformation { public nint Process, Thread; public uint ProcessId, ThreadId; }
+    [StructLayout(LayoutKind.Sequential)] public struct SecurityAttributes { public int Length; public nint Descriptor; [MarshalAs(UnmanagedType.Bool)] public bool Inherit; }
+    [StructLayout(LayoutKind.Sequential)] public struct JobAccounting { public long TotalUser, TotalKernel, ThisUser, ThisKernel; public uint PageFaults, TotalProcesses, ActiveProcesses, TerminatedProcesses; }
+    [StructLayout(LayoutKind.Sequential)] public struct DataBlob { public int Length; public nint Data; }
 
     public delegate nint LowLevelProc(int code, nint wParam, nint lParam);
     public delegate bool MonitorProc(nint monitor, nint dc, ref Rect rect, nint data);
@@ -63,6 +66,26 @@ internal static class Native
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] public static extern bool CreateProcess(string? application, StringBuilder commandLine, nint processAttributes, nint threadAttributes, bool inheritHandles, uint flags, nint environment, string? directory, ref StartupInfo startup, out ProcessInformation information);
     [DllImport("kernel32.dll", SetLastError = true)] public static extern bool TerminateProcess(nint process, uint code);
     [DllImport("kernel32.dll", SetLastError = true)] public static extern bool CloseHandle(nint handle);
+    [DllImport("kernel32.dll", SetLastError = true)] public static extern bool CreatePipe(out nint read, out nint write, ref SecurityAttributes attributes, uint size);
+    [DllImport("kernel32.dll", SetLastError = true)] public static extern uint ResumeThread(nint thread);
+    [DllImport("kernel32.dll", SetLastError = true)] public static extern uint WaitForSingleObject(nint handle, uint milliseconds);
+    [DllImport("kernel32.dll", SetLastError = true)] public static extern bool GetExitCodeProcess(nint process, out uint code);
+    [DllImport("kernel32.dll", SetLastError = true)] public static extern bool TerminateJobObject(nint job, uint code);
+    [DllImport("kernel32.dll", SetLastError = true)] public static extern bool QueryInformationJobObject(nint job, int infoClass, out JobAccounting info, int size, out uint returned);
+    [DllImport("advapi32.dll", SetLastError = true)] public static extern bool OpenProcessToken(nint process, uint desiredAccess, out nint token);
+    [DllImport("advapi32.dll", SetLastError = true)] public static extern bool GetTokenInformation(nint token, int informationClass, nint information, int length, out int needed);
+    [DllImport("advapi32.dll")] public static extern nint GetSidSubAuthorityCount(nint sid);
+    [DllImport("advapi32.dll")] public static extern nint GetSidSubAuthority(nint sid, uint index);
+    [DllImport("kernel32.dll", SetLastError = true)] public static extern nint OpenProcess(uint access, bool inherit, uint pid);
+    [DllImport("user32.dll", SetLastError = true)] public static extern nint OpenInputDesktop(uint flags, bool inherit, uint access);
+    [DllImport("user32.dll")] public static extern nint GetThreadDesktop(uint threadId);
+    [DllImport("user32.dll", SetLastError = true)] public static extern bool CloseDesktop(nint desktop);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)] public static extern bool GetUserObjectInformation(nint handle, int index, StringBuilder information, uint length, out uint needed);
+    [DllImport("user32.dll")] public static extern nint GetForegroundWindow();
+    [DllImport("user32.dll", SetLastError = true)] public static extern uint GetWindowThreadProcessId(nint window, out uint pid);
+    [DllImport("crypt32.dll", CharSet = CharSet.Unicode, SetLastError = true)] public static extern bool CryptProtectData(ref DataBlob input, string? description, nint entropy, nint reserved, nint prompt, uint flags, out DataBlob output);
+    [DllImport("crypt32.dll", SetLastError = true)] public static extern bool CryptUnprotectData(ref DataBlob input, nint description, nint entropy, nint reserved, nint prompt, uint flags, out DataBlob output);
+    [DllImport("kernel32.dll")] public static extern nint LocalFree(nint memory);
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] public static extern nint CreateNamedPipe(string name, uint openMode, uint pipeMode, uint maxInstances, uint outBuffer, uint inBuffer, uint timeout, nint attributes);
     [DllImport("kernel32.dll")] public static extern ulong GetTickCount64();
 

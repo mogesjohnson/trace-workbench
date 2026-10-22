@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A32-QUARANTINE-ACK-TYPING",
+  "input": "typing",
+  "attempt": 2,
+  "declaredBeforeUiLaunch": true,
+  "prior": "evidence/0.1.0-alpha.3.2/quarantine-ack-typing",
+  "changedPrecondition": "Foreground access is observable again with independent all-up input and clear recovery after the owner opened an ordinary app.",
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "target": "Fresh owned synthetic WinForms fixture, exact discovered HWND/PID/creation time",
+  "initial": {
+    "text": "",
+    "count": 0,
+    "keysDown": [],
+    "recoveryRequired": false
+  },
+  "phases": [
+    "Focus the observed edit through production MCP/controller/native supervision",
+    "Dispatch one labeled source-owned held-input provider through a private test backend; independently observe input held",
+    "Cancel with the standard MCP AbortSignal; native kills/drains its job and REALLY balances declared input",
+    "Native private checkpoint pauses after actual release; external helper independently verifies child exit and all keys up, and persists proof",
+    "Only then a private file acknowledgement requests the deliberate failed-cleanup-ack injection; native retains durable quarantine",
+    "Verify same-session mutation blocked, non-clearing recovery checks, and a restarted MCP process with another artifact root blocked",
+    "Apply recovery after exact native owner exit, independently verify clear state, then perform exactly one pinned-engine follow-up"
+  ],
+  "cleanup": "Close native/MCP ownership, inspect input while the owned fixture remains, close the fixture, and persist a terminal receipt even if cleanup fails.",
+  "substitution": "Private launch-file testRecovery mode is accepted only with allowControlled; no test tool/action/env parameter is public.",
+  "budget": "One attempt plus one corrective retry tied to the same case and changed precondition. Preserve every receipt.",
+  "limits": [
+    "Failed acknowledgement is deliberately injected AFTER independently proved physical release; it is not a genuine failed SendInput release.",
+    "Held provider is controlled; setup and exact follow-up use the pinned engine.",
+    "No physical Escape or live model-host acceptance is established."
+  ]
+}

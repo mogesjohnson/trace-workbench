@@ -1,0 +1,32 @@
+{
+  "caseId": "CODEX-TRACE-SKILL-NATIVE",
+  "attempt": 1,
+  "host": "Codex desktop active conversation",
+  "scope": "Actual connected MCP and actual model image inspection of an owned fixture; installed TRACE and REA skill discovery recorded separately.",
+  "status": "blocked",
+  "startedAt": "2026-10-21T22:34:34.765Z",
+  "cleanup": {
+    "fixtureRetained": false
+  },
+  "events": [],
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "error": {
+    "code": "invalid_skill_source"
+  },
+  "completedAt": "2026-10-21T22:34:35.215Z"
+}

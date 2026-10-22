@@ -1,5 +1,9 @@
 # Claude implementation prompt
 
+For the uploaded 22 October continuation, use [Claude next steps](CLAUDE_NEXT_STEPS.md). Codex development is paused for that handoff; the prompt below remains historical.
+
+Historical handoff for the earlier alpha.3 implementation phase. The owner has since resumed the close-the-gap goal. Use [the current checkpoint](GAP_CLOSURE_STATUS.md) for present source and evidence; preserve the earlier failures and approval gates rather than restarting completed work from this prompt.
+
 The owner can send the following prompt to resume Claude's implementation. Saving or reviewing this file does not lift the current hold.
 
 ---

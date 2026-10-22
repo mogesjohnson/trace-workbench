@@ -196,7 +196,7 @@ async function verifyBridgeFiles(bridgePath = DEFAULT_BRIDGE) {
 }
 
 class WinappBackend {
-  constructor({ binaryPath = DEFAULT_BINARY, bridgePath = DEFAULT_BRIDGE, indicatorPath = DEFAULT_INDICATOR, run = runProcess, platform = process.platform, arch = process.arch, verify = verifyFiles, verifyBridge = verifyBridgeFiles, verifyIndicator = verifyIndicatorFiles } = {}) {
+  constructor({ binaryPath = DEFAULT_BINARY, bridgePath = DEFAULT_BRIDGE, indicatorPath = DEFAULT_INDICATOR, run = runProcess, platform = process.platform, arch = process.arch, verify = verifyFiles, verifyBridge = verifyBridgeFiles, verifyIndicator = verifyIndicatorFiles, supervisor } = {}) {
     this.binaryPath = binaryPath;
     this.bridgePath = bridgePath;
     this.indicatorPath = indicatorPath;
@@ -206,9 +206,19 @@ class WinappBackend {
     this.verify = verify;
     this.verifyBridge = verifyBridge;
     this.verifyIndicator = verifyIndicator;
+    this.supervisor = supervisor === undefined && run === runProcess && platform === 'win32'
+      ? new (require('./supervisor.cjs').NativeSupervisor)() : supervisor || null;
     this.inputRecoveryRequired = null;
   }
   async command(verb, args, signal) {
+    const mutating = !['list-windows', 'status', 'inspect', 'get-focused', 'screenshot'].includes(verb);
+    if (this.supervisor) {
+      if (this.supervisor.ready) {
+        const result = await this.supervisor.run('winapp', ['ui', verb, '--json', ...args], { signal, mutating });
+        return parseJson(result.stdout, result.stderr, result.exitCode);
+      }
+      if (mutating) fail('session_stopped', 'A ready native session is required before input.', { outcome: 'not_dispatched' });
+    }
     const mouseGesture = verb === 'drag' || verb === 'click';
     let result;
     try { result = await this.run(this.binaryPath, ['ui', verb, '--json', ...args], {
@@ -230,10 +240,28 @@ class WinappBackend {
   }
   async bridge(verb, window, signal) {
     const args = verb === 'info' ? [verb] : [verb, id(window.id), String(window.pid)];
-    const result = await this.run(this.bridgePath, args, { signal, timeoutMs: 10000 });
+    const mutating = verb === 'activate';
+    if (this.supervisor && mutating && !this.supervisor.ready) fail('session_stopped', 'A ready native session is required before activation.', { outcome: 'not_dispatched' });
+    const result = this.supervisor?.ready
+      ? await this.supervisor.run('bridge', args, { signal, timeoutMs: 10000, mutating })
+      : await this.run(this.bridgePath, args, { signal, timeoutMs: 10000 });
     const parsed = parseJson(result.stdout, result.stderr, result.exitCode);
     if (verb !== 'info' && (parsed.hwnd !== window.id || parsed.pid !== window.pid)) fail('window_identity_changed', 'Window bridge returned a different HWND/PID.');
     return parsed;
+  }
+  async identities(windows, signal) {
+    const args = ['identities', ...windows.map(window => `${id(window.id)}:${window.pid}`)];
+    const result = this.supervisor?.ready
+      ? await this.supervisor.run('bridge', args, { signal, timeoutMs: 10000, mutating: false })
+      : await this.run(this.bridgePath, args, { signal, timeoutMs: 10000 });
+    const parsed = parseJson(result.stdout, result.stderr, result.exitCode);
+    if (!Array.isArray(parsed.windows) || parsed.windows.length !== windows.length) fail('invalid_native_response', 'Identity batch did not return every requested window.');
+    const expected = new Set(windows.map(window => `${window.id}:${window.pid}`));
+    for (const item of parsed.windows) {
+      const key = `${item.hwnd}:${item.pid}`;
+      if (!expected.delete(key)) fail('window_identity_changed', 'Identity batch returned a different or duplicate HWND/PID.');
+    }
+    return new Map(parsed.windows.map(item => [item.hwnd, item]));
   }
   async doctor({ signal } = {}) {
     if (this.platform !== pin.platform || this.arch !== pin.architecture) return { ready: false, engine: 'winapp', version: pin.version, reason: 'Windows x64 is required by this pinned build.' };
@@ -242,13 +270,20 @@ class WinappBackend {
       await this.verify(this.binaryPath);
       await this.verifyBridge(this.bridgePath);
       const activityIndicator = await this.verifyIndicator(this.indicatorPath);
+      let supervision;
+      if (this.supervisor) {
+        await this.supervisor.verify(this.supervisor.binaryPath);
+        const inspected = await this.run(this.supervisor.binaryPath, ['status'], { signal, maxOutputBytes: 32768 });
+        supervision = parseJson(inspected.stdout, inspected.stderr, inspected.exitCode);
+        if (supervision.recoveryRequired === true) fail('input_recovery_required', 'Durable native recovery is required. Inspect computer recover --check before --apply.');
+      }
       const runtimes = await this.run('dotnet', ['--list-runtimes'], { signal, maxOutputBytes: 128 * 1024 });
       if (runtimes.exitCode !== 0 || !/^Microsoft\.WindowsDesktop\.App 9\.\d+\.\d+\s+\[/m.test(runtimes.stdout)) fail('indicator_runtime', 'The .NET 9 Windows Desktop runtime is required by the visible activity indicator.');
       const bridge = await this.bridge('info', null, signal);
       if (bridge.version !== 1) fail('bridge_version', 'Unexpected window bridge version.');
       const result = await this.run(this.binaryPath, ['--version'], { signal });
       if (result.exitCode !== 0 || !new RegExp(`(^|\\s)${pin.version.replaceAll('.', '\\.')}($|\\s)`).test(result.stdout)) fail('engine_version', 'Unexpected Windows engine version.');
-      return { ready: true, engine: 'winapp', version: pin.version, platform: this.platform, architecture: this.arch, transport: 'public-cli', integrity: 'verified', bridge: { version: 1, runtime: '.NET 9', method: 'public-win32-dwm' }, activityIndicator, limitations: ['Windows x64', 'minimized observations restore the selected window', 'unlocked interactive desktop for input', 'horizontal scroll unsupported', 'no secure desktop or elevation bypass'] };
+      return { ready: true, engine: 'winapp', version: pin.version, platform: this.platform, architecture: this.arch, transport: 'public-cli', integrity: 'verified', bridge: { version: 1, runtime: '.NET 9', method: 'public-win32-dwm' }, activityIndicator, ...(supervision ? { supervision } : {}), limitations: ['Windows x64', 'minimized observations restore the selected window', 'unlocked interactive desktop for input', 'horizontal scroll unsupported', 'no secure desktop or elevation bypass'] };
     } catch (error) {
       if (signal?.aborted) throw error;
       return { ready: false, engine: 'winapp', version: pin.version, code: error.code || 'engine_unavailable', reason: error.message };
@@ -257,16 +292,44 @@ class WinappBackend {
   async listWindows({ signal } = {}) {
     const windows = await this.command('list-windows', [], signal);
     if (!Array.isArray(windows)) fail('invalid_native_response', 'Expected native window array.');
-    return windows.map(window => {
+    const discovered = windows.map(window => {
       if (!Number.isSafeInteger(window.processId) || window.processId <= 0 || typeof window.processName !== 'string' || !Number.isFinite(window.width) || !Number.isFinite(window.height)) fail('invalid_native_response', 'Invalid native window identity.');
       return { id: id(window.hwnd), pid: window.processId, processName: window.processName, title: window.title || '', bounds: { x: null, y: null, width: window.width, height: window.height } };
     });
+    const enriched = [];
+    // One read-only process per bounded batch replaces one .NET process per window. Selected
+    // targets are still individually revalidated immediately before capture and primary input.
+    for (let offset = 0; offset < discovered.length; offset += 100) {
+      const batch = discovered.slice(offset, offset + 100);
+      const identities = await this.identities(batch, signal);
+      for (const window of batch) {
+        const native = identities.get(window.id);
+        const code = native.identityError?.code;
+        if (['window_closed', 'window_identity_changed'].includes(code)) continue;
+        if (code) {
+          if (!['window_bridge_failed', 'identity_unavailable', 'window_access_denied'].includes(code)) fail('invalid_native_response', 'Identity batch reported an unexpected target error.');
+          enriched.push({ ...window, identity: { available: false, code } });
+          continue;
+        }
+        enriched.push({ ...window,
+          ...(typeof native.processCreationTime === 'string' ? { processCreationTime: native.processCreationTime } : {}),
+          ...(Number.isInteger(native.sessionId) ? { sessionId: native.sessionId } : {}),
+          ...(native.ownerWindowId !== undefined ? { ownerWindowId: native.ownerWindowId } : {}),
+        });
+      }
+    }
+    return enriched;
   }
+  currentWindow(window, { signal } = {}) { return this.identity(window, signal); }
   async identity(window, signal) {
     if (!object(window) || !Number.isSafeInteger(window.pid) || window.pid <= 0 || typeof window.processName !== 'string') fail('invalid_window', 'A pinned HWND, PID and process name are required.');
     const current = await this.command('status', ['-w', id(window.id)], signal);
     if (id(current.hwnd) !== window.id || current.processId !== window.pid || current.processName !== window.processName) fail('window_identity_changed', 'Window no longer belongs to the selected process.');
     if (current.coordinateSpace !== 'physical-screen-pixels') fail('coordinate_space', 'Engine coordinate space is not physical-screen-pixels.');
+    if (window.processCreationTime !== undefined) {
+      const native = await this.bridge('identity', window, signal);
+      if (native.processCreationTime !== window.processCreationTime || native.sessionId !== window.sessionId) fail('window_identity_changed', 'The selected process identity changed.');
+    }
     return { ...window, title: current.windowTitle || '' };
   }
   async inspect(window, signal, depth = 8) {
@@ -279,6 +342,8 @@ class WinappBackend {
       if (flat.length >= 10000) fail('native_output_limit', 'UIA element count exceeds limit.');
       if (element.selector) {
         const item = { id: selector(element.selector), name: element.name || '', controlType: element.type || 'Unknown', enabled: element.isEnabled === true, offscreen: element.isOffscreen === true };
+        if (typeof element.automationId === 'string' && element.automationId) item.automationId = element.automationId;
+        if (typeof element.className === 'string' && element.className) item.className = element.className;
         if ([element.x, element.y, element.width, element.height].every(Number.isFinite) && element.width > 0 && element.height > 0) item.bounds = bounds(element);
         flat.push(item);
       }
@@ -287,10 +352,24 @@ class WinappBackend {
     for (const element of entry.elements) visit(element);
     return { bounds: bounds(root), rootSelector: selector(root.selector), elements: flat, coordinateSpace: entry.coordinateSpace, depth, truncated: JSON.stringify(entry.elements).includes('"hasMoreChildren":true') };
   }
-  async focused(window, signal) {
+  async focused(window, signal, elements) {
     const result = await this.command('get-focused', ['-w', window.id], signal);
     if (typeof result.hasFocus !== 'boolean') fail('invalid_native_response', 'Invalid focused-element envelope.');
-    return result.hasFocus ? { available: true, hasFocus: true, elementId: result.element?.selector || null, name: result.element?.name || '', controlType: result.element?.type || 'Unknown' } : { available: true, hasFocus: false };
+    if (!result.hasFocus) return { available: true, hasFocus: false, provenance: 'winapp-get-focused' };
+    const native = result.element ?? {};
+    const focused = { available: true, hasFocus: true, elementId: native.selector || null, name: native.name || '', controlType: native.type || 'Unknown', provenance: 'winapp-get-focused' };
+    if (!elements) return focused;
+    const nativeBounds = [native.x, native.y, native.width, native.height].every(Number.isFinite) && native.width > 0 && native.height > 0 ? bounds(native) : null;
+    const candidates = elements.filter(item => {
+      const exactSelector = item.id === native.selector;
+      const automationIdentity = native.automationId && item.automationId === native.automationId && nativeBounds && sameBounds(item.bounds, nativeBounds)
+        && (!native.className || item.className === native.className);
+      return (exactSelector || automationIdentity) && item.name === focused.name && item.controlType === focused.controlType;
+    });
+    // get-focused generates a transient selector while inspect can use AutomationId. Bind only a
+    // unique same-control match from this capture; a shared label alone never identifies focus.
+    return { ...focused, elementId: candidates.length === 1 ? candidates[0].id : null,
+      binding: candidates.length === 1 ? 'observed-control' : 'unresolved', nativeSelector: native.selector || null };
   }
   // A restored window animates from its minimized state; capture only after two equal geometry reads.
   async settledBounds(window, signal, { attempts = 15, intervalMs = 100 } = {}) {
@@ -328,9 +407,12 @@ class WinappBackend {
     const afterGeometry = await this.bridge('bounds', window, signal);
     if (!sameBounds(state.bounds, after.bounds) || !sameBounds(bounds(geometry.frameBounds), bounds(afterGeometry.frameBounds)) || !sameBounds(bounds(geometry.windowBounds), bounds(afterGeometry.windowBounds))) fail('window_moved', 'Window moved during observation; request a fresh observation.');
     let focused;
-    try { focused = await this.focused(window, signal); }
+    try { focused = await this.focused(window, signal, state.elements); }
     catch (error) { if (signal?.aborted) throw error; focused = { available: false, code: error.code || 'focus_query_failed' }; }
-    return { ...state, window: { ...current, bounds: captured }, bounds: captured, uiaBounds: state.bounds, nativeWindowBounds: bounds(geometry.windowBounds), frameBounds: bounds(geometry.frameBounds), focused, restoredFromMinimized: restored, captureMethod: 'window-capture-dwm-bounds', actionCoordinateSpace: 'window-local-pixels', screenshot: { path: screenshotPath, mimeType: 'image/png', ...size } };
+    if (window.processCreationTime !== undefined && afterGeometry.processCreationTime !== window.processCreationTime) fail('window_identity_changed', 'The selected process was replaced.');
+    return { ...state, window: { ...current, bounds: captured }, bounds: captured, uiaBounds: state.bounds, nativeWindowBounds: bounds(geometry.windowBounds), frameBounds: bounds(geometry.frameBounds), focused,
+      targetState: { enabled: afterGeometry.enabled, minimized: afterGeometry.minimized, foreground: afterGeometry.foreground, ownerWindowId: afterGeometry.ownerWindowId ?? null, provenance: 'public-win32-dwm' },
+      restoredFromMinimized: restored, captureMethod: 'window-capture-dwm-bounds', actionCoordinateSpace: 'window-local-pixels', screenshot: { path: screenshotPath, mimeType: 'image/png', ...size } };
   }
   // Any rejection before the requested primary mutation begins is provably not dispatched. Once it
   // may have begun, the outcome stays unknown even if an error code was raised before input.
@@ -338,8 +420,9 @@ class WinappBackend {
     const progress = { primary: false, preparation: [] };
     try { return await this.dispatch(request, progress); }
     catch (error) {
-      const failure = error instanceof BackendError ? error : new BackendError(error?.code || 'backend_error', String(error?.message || 'Native action failed.'));
-      failure.details = { ...failure.details, outcome: progress.primary ? 'unknown' : 'not_dispatched', preparation: progress.preparation };
+      const failure = error instanceof BackendError ? error : new BackendError(error?.code || 'backend_error', String(error?.message || 'Native action failed.'), error?.details ?? {});
+      const provenNativeRejection = failure.details?.nativeSupervision === true && failure.details?.outcome === 'not_dispatched';
+      failure.details = { ...failure.details, outcome: progress.primary && !provenNativeRejection ? 'unknown' : 'not_dispatched', preparation: progress.preparation };
       throw failure;
     }
   }
@@ -418,14 +501,18 @@ class WinappBackend {
       if (ready.enabled === false) fail('window_blocked', 'The selected window became disabled before its value operation.', { outcome: 'not_dispatched' });
     }
     if (action.type === 'type_text' || action.type === 'press_key') {
-      const focused = await this.focused(window, signal);
+      const focused = await this.focused(window, signal, fresh.elements);
       if (!focused.hasFocus) fail('focus_not_acquired', 'Keyboard focus could not be verified inside the exact selected window.');
       if (observation.focused?.hasFocus && observation.focused.elementId !== focused.elementId) fail('focus_changed', 'Focused control changed since observation. Observe again.');
+      if (!focused.elementId) fail('focus_not_acquired', 'Keyboard focus could not be bound to an observed control inside the exact selected window.');
     }
     progress.primary = true;
     const result = await this.command(verb, ['-w', window.id, ...options, '--', ...positional], signal);
     if (result.hwnd !== undefined && String(result.hwnd) !== window.id) fail('window_identity_changed', 'Native action receipt targets another window.', { outcome: 'unknown' });
     return { performed: true, type: action.type, engine: 'winapp', version: pin.version, ...(transport ? { transport } : {}), preparation: progress.preparation, native: result };
+  }
+  async close() {
+    if (this.supervisor?.child && this.supervisor.owner) await this.supervisor.release(this.supervisor.owner);
   }
 }
 

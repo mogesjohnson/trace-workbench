@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "caseId": "METHOD-CLIPBOARD-UNICODE-PASTE",
+  "attempt": 1,
+  "declaredBeforeSnapshotAndUi": true,
+  "target": "One fresh owned WinForms fixture; exact discovered HWND/PID/process creation time and observed edit element.",
+  "initial": {
+    "fixtureText": "",
+    "fixtureCount": 0,
+    "input": "No physical input held; no native quarantine.",
+    "clipboard": "Existing supported text-only formats; rich or unsupported formats block before mutation or UI launch."
+  },
+  "payload": "TRACE clipboard acceptance — café Ελληνικά 日本語 🙂",
+  "actions": [
+    "Declare this plan before clipboard snapshot or UI launch.",
+    "Snapshot supported clipboard format hashes privately in memory; write synthetic Unicode text once and verify native readback.",
+    "Durably defer automatic clipboard restoration before any fixture/native input; require an explicit quiescence acknowledgement to restore.",
+    "Launch one owned fixture and use the production stdio MCP six-tool interface to discover it and focus its exact observed edit.",
+    "Confirm public and independent fixture focus; recheck clipboard token/sequence/hash; press CTRL+V exactly once.",
+    "Independently compare fixture text with the exact synthetic payload, without retaining raw fixture text.",
+    "Attempt sequence/owner-guarded restoration; close its helper; snapshot through a fresh helper and compare original supported-byte hashes only in memory."
+  ],
+  "expected": {
+    "pasteDispatches": 1,
+    "exactSyntheticText": true,
+    "independentSupportedBytesRestored": true,
+    "cleanup": "confirmed"
+  },
+  "privacy": "No original clipboard text, bytes, format hashes, sequences, tokens, or unexpected fixture text in receipts/logs/checkpoints. Temporary captures/fixture state stay outside the repo and are removed after owned teardown.",
+  "cleanup": "Drain/close the native session and MCP, independently verify released input/no quarantine, and stop the retained owned fixture ChildProcess before acknowledging quiescence and restoring. Close the clipboard helper afterward. Unknown input or a changed clipboard preserves protected recovery; no automatic abandon/reset/replay.",
+  "budget": "One attempt and one explicitly documented corrective retry in a new directory; earlier outcomes are preserved.",
+  "limits": [
+    "Single pinned observed display; this is a synthetic owned-fixture MCP paste, not an application-specific connector or a model-host workflow.",
+    "Readback and native paste are separate operations; a human can change the clipboard between them. Any mismatch or ownership uncertainty stops this case and is never replayed.",
+    "Rich formats, interrupted prepared writes, clipboard history and original owner identity are outside the supported-byte restoration guarantee."
+  ]
+}

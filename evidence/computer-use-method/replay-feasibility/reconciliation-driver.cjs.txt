@@ -1,0 +1,79 @@
+'use strict';
+// Read-only reconciliation of the original take and exact process generations; no new recording.
+const fs = require('node:fs/promises'), path = require('node:path'), assert = require('node:assert/strict');
+const { createRequire } = require('node:module'), { createHash } = require('node:crypto');
+const { execFile, spawnSync } = require('node:child_process'), { promisify } = require('node:util');
+const run = promisify(execFile), root = path.resolve(__dirname, '..');
+const replay = path.resolve(root, '../replay-studio'), fromReplay = createRequire(path.join(replay, 'package.json'));
+const { unpackedBinary } = fromReplay('./electron/engine.cjs');
+const probe = unpackedBinary(fromReplay('@ffprobe-installer/ffprobe').path), ffmpeg = unpackedBinary(fromReplay('ffmpeg-static'));
+const digest = b => createHash('sha256').update(b).digest('hex');
+const privateRoot = path.join(root, '.runtime/replay-two-instance/7a31f019-93ee-4686-a69c-fc827dad1f5b');
+const evidence = path.join(root, 'evidence/computer-use-method/replay-feasibility');
+let phase = 'durable_capture_receipts', measurements;
+(async () => {
+  const originalBytes = await fs.readFile(path.join(evidence, 'receipt.json')), original = JSON.parse(originalBytes);
+  const requestRoot = path.join(privateRoot, 'recorder/.replay-smoke/Automation/requests');
+  const requests = await Promise.all((await fs.readdir(requestRoot)).map(async name => JSON.parse(await fs.readFile(path.join(requestRoot, name), 'utf8'))));
+  const started = requests.find(r => r.command === 'capture.start'), stopped = requests.find(r => r.command === 'capture.stop');
+  assert.equal(started.state, 'completed'); assert.equal(stopped.state, 'completed');
+  assert.equal(started.result.sourceId, original.target.sourceId);
+  assert.equal(started.result.recordingId, original.recording.recordingId);
+  assert.equal(stopped.payload.input.recordingId, original.recording.recordingId);
+  const take = stopped.result, expectedRoot = path.join(privateRoot, 'recorder/.replay-smoke/Library');
+  const relative = path.relative(expectedRoot, take.sourcePath);
+  assert.ok(relative && !relative.startsWith('..') && !path.isAbsolute(relative));
+  const bytes = await fs.readFile(take.sourcePath);
+  phase = 'recorded_media_metadata';
+  const metadata = JSON.parse((await run(probe, ['-v', 'error', '-show_streams', '-show_format', '-of', 'json', take.sourcePath], { windowsHide: true, timeout: 15000 })).stdout);
+  const stream = metadata.streams.find(s => s.codec_type === 'video');
+  let duration = Number(metadata.format.duration), durationSource = 'container';
+  if (!Number.isFinite(duration) || duration <= 0) {
+    const packets = (await run(probe, ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'packet=pts_time,duration_time', '-of', 'csv=p=0', take.sourcePath], { windowsHide: true, timeout: 15000 })).stdout;
+    duration = 0;
+    for (const line of packets.trim().split(/\r?\n/)) {
+      const [pts, span] = line.split(',').map(Number);
+      if (Number.isFinite(pts)) duration = Math.max(duration, pts + (Number.isFinite(span) ? span : 1 / 30));
+    }
+    durationSource = 'independent-ffprobe-packet-timestamps';
+  }
+  measurements = { duration, streamDuration: Number(stream.duration), width: stream.width, height: stream.height, startTime: Number(metadata.format.start_time) };
+  assert.ok(stream.width >= 400 && stream.height >= 300 && duration >= 1.5 && duration <= 12);
+  const decode = position => {
+    const result = spawnSync(ffmpeg, ['-v', 'error', '-nostdin', '-ss', String(position), '-i', take.sourcePath, '-frames:v', '1', '-vf', 'scale=320:180', '-f', 'rawvideo', '-pix_fmt', 'rgb24', 'pipe:1'], { windowsHide: true, timeout: 15000, maxBuffer: 1024 * 1024 });
+    if (result.status !== 0) throw Object.assign(new Error('decode_failed'), { code: result.error?.code || 'decode_failed' });
+    assert.equal(result.stdout.length, 320 * 180 * 3); return result.stdout;
+  };
+  const a = decode(0.5), b = decode(Math.min(2.5, duration - 0.25));
+  const mean = a.reduce((sum, v) => sum + v, 0) / a.length;
+  const difference = a.reduce((sum, v, i) => sum + Math.abs(v - b[i]), 0) / a.length;
+  phase = 'decoded_frame_variation'; measurements = { mean, difference, duration, width: stream.width, height: stream.height };
+  assert.ok(mean > 5 && difference > 0.05);
+  const image = path.join(privateRoot, 'recorded-editor.png');
+  await run(ffmpeg, ['-v', 'error', '-nostdin', '-y', '-ss', '1', '-i', take.sourcePath, '-frames:v', '1', image], { windowsHide: true, timeout: 15000 });
+  phase = 'exact_process_exit';
+  const { stdout } = await run('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
+    'Get-CimInstance Win32_Process -Filter "ProcessId=34164 OR ProcessId=50020" | ForEach-Object { [pscustomobject]@{pid=$_.ProcessId;created=$_.CreationDate.ToUniversalTime().ToFileTimeUtc().ToString()} } | ConvertTo-Json -Compress'], { windowsHide: true, timeout: 10000 });
+  const parsed = stdout.trim() ? JSON.parse(stdout) : [], current = Array.isArray(parsed) ? parsed : [parsed];
+  const exits = original.instances.map(instance => ({ pid: instance.pid, processCreationTime: instance.processCreationTime,
+    exactGenerationExited: !current.some(p => p.pid === instance.pid && p.created === instance.processCreationTime) }));
+  assert.ok(exits.every(e => e.exactGenerationExited));
+  const grants = [];
+  phase = 'revoked_grants';
+  for (const label of ['editor', 'recorder']) {
+    const access = JSON.parse(await fs.readFile(path.join(privateRoot, label, '.replay-smoke/Automation/access.json')));
+    assert.equal(access.grants.length, 1); assert.ok(access.grants.every(g => typeof g.revokedAt === 'string' && Number.isFinite(Date.parse(g.revokedAt))));
+    grants.push({ label, grantCount: 1, allRevoked: true });
+  }
+  const receipt = { schemaVersion: 1, caseId: original.caseId, attempt: 1, status: 'pending_visual_review', verifiedAt: new Date().toISOString(),
+    originalReceipt: { path: 'receipt.json', sha256: digest(originalBytes), preservedStatus: original.status },
+    scope: 'Post-terminal read-only reconciliation of original durable MCP capture receipts, recorded bytes and native process generations; no replay or new case.',
+    capture: { startCompleted: true, stopCompleted: true, exactRecordingId: true, exactSourceId: true, target: original.target },
+    artifact: { duration, durationSource, containerDurationPresent: Number.isFinite(Number(metadata.format.duration)), width: stream.width, height: stream.height, codec: stream.codec_name, bytes: bytes.length, sha256: digest(bytes),
+      decodedMean: mean, decodedFrameDifference: difference, privateFrame: path.relative(root, image).replaceAll(path.sep, '/') },
+    cleanup: { exactProcessGenerations: exits, grants, mcpClosedInOriginalReceipt: original.cleanup.mcp.every(Boolean), confirmed: true },
+    diagnosis: 'The retained live WebM omits container duration. The original verifier required finite format.duration; independent packet timestamps now measure the unchanged original take. Its exitCode-only cleanup check also failed to recognize signal termination; exact-generation OS probes establish final exit.',
+    limits: ['The original error log did not retain its exact assertion.', 'Later exit probes prove final cleanup, not a tighter exit latency.', 'No TRACE native input or full APP-01 workflow is established.'] };
+  await fs.writeFile(path.join(evidence, 'reconciliation.json'), JSON.stringify(receipt, null, 2) + '\n', { flag: 'wx' });
+  console.log(JSON.stringify({ status: receipt.status, artifact: receipt.artifact, cleanup: receipt.cleanup }));
+})().catch(error => { console.error(JSON.stringify({ code: error.code || 'verification_failed', phase, measurements })); process.exitCode = 1; });

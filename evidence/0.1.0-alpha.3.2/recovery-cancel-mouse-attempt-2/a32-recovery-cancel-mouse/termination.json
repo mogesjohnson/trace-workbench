@@ -1,0 +1,24 @@
+{
+  "caseId": "A32-RECOVERY-CANCEL-MOUSE",
+  "status": "blocked",
+  "observedAt": "2026-10-21T02:51:07.593Z",
+  "basis": "Execution session 98723 exited with code1; final native keystate failed with input_state_unavailable. Original running checkpoint preserved.",
+  "nativeOutcome": {
+    "at": "2026-10-21T02:47:53.859Z",
+    "type": "controlled-finished",
+    "code": "cancelled",
+    "outcome": "unknown",
+    "recovery": {
+      "attempted": true,
+      "released": true,
+      "processExitConfirmed": true,
+      "method": "declared-sendinput",
+      "reason": "cancelled",
+      "childPid": 39240,
+      "childCreated": "134370244734640385",
+      "declaredKeysDown": []
+    }
+  },
+  "scope": "Native journal proves its release acknowledgment; full independent follow-up and terminal cleanup receipt were not completed.",
+  "remaining": "Foreground input accessibility and complete acceptance remain unverified; no passing case is claimed."
+}

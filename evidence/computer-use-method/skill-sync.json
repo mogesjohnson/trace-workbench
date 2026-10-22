@@ -1,0 +1,270 @@
+{
+  "mode": "apply",
+  "observedAt": "2026-10-20T19:03:58.284Z",
+  "skill": "trace-computer-use",
+  "sourceSha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2",
+  "sourceBundleSha256": "7f17394f271d65e7f6814ef0c4bb5a3003fe53a3d57e7b5c1f75610254d719e6",
+  "entries": [
+    {
+      "path": "~/.agents/skills/trace-computer-use",
+      "action": "unchanged",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "action": "unchanged",
+          "priorSha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2",
+          "sha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2"
+        },
+        {
+          "path": "manifest.json",
+          "action": "unchanged",
+          "priorSha256": "7f17394f271d65e7f6814ef0c4bb5a3003fe53a3d57e7b5c1f75610254d719e6",
+          "sha256": "7f17394f271d65e7f6814ef0c4bb5a3003fe53a3d57e7b5c1f75610254d719e6"
+        },
+        {
+          "path": "references/acceptance.md",
+          "action": "unchanged",
+          "priorSha256": "51503abad102dbe9753030fefa582c124b09a32bb3b88099903247e0bb7d92e8",
+          "sha256": "51503abad102dbe9753030fefa582c124b09a32bb3b88099903247e0bb7d92e8"
+        },
+        {
+          "path": "references/operation-and-recovery.md",
+          "action": "unchanged",
+          "priorSha256": "83ae0d1e28a490c159da98b4c720f1bd2d9c0afa84570d2074f8e9d81c6050e6",
+          "sha256": "83ae0d1e28a490c159da98b4c720f1bd2d9c0afa84570d2074f8e9d81c6050e6"
+        },
+        {
+          "path": "references/readiness-routing.md",
+          "action": "unchanged",
+          "priorSha256": "2c1cc72ede6d5462a3dc2fa37a82a2f7b15a089740303861b7ef521ccf349979",
+          "sha256": "2c1cc72ede6d5462a3dc2fa37a82a2f7b15a089740303861b7ef521ccf349979"
+        }
+      ]
+    },
+    {
+      "path": "~/.claude/skills/trace-computer-use",
+      "action": "unchanged",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "action": "unchanged",
+          "priorSha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2",
+          "sha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2"
+        },
+        {
+          "path": "manifest.json",
+          "action": "unchanged",
+          "priorSha256": "7f17394f271d65e7f6814ef0c4bb5a3003fe53a3d57e7b5c1f75610254d719e6",
+          "sha256": "7f17394f271d65e7f6814ef0c4bb5a3003fe53a3d57e7b5c1f75610254d719e6"
+        },
+        {
+          "path": "references/acceptance.md",
+          "action": "unchanged",
+          "priorSha256": "51503abad102dbe9753030fefa582c124b09a32bb3b88099903247e0bb7d92e8",
+          "sha256": "51503abad102dbe9753030fefa582c124b09a32bb3b88099903247e0bb7d92e8"
+        },
+        {
+          "path": "references/operation-and-recovery.md",
+          "action": "unchanged",
+          "priorSha256": "83ae0d1e28a490c159da98b4c720f1bd2d9c0afa84570d2074f8e9d81c6050e6",
+          "sha256": "83ae0d1e28a490c159da98b4c720f1bd2d9c0afa84570d2074f8e9d81c6050e6"
+        },
+        {
+          "path": "references/readiness-routing.md",
+          "action": "unchanged",
+          "priorSha256": "2c1cc72ede6d5462a3dc2fa37a82a2f7b15a089740303861b7ef521ccf349979",
+          "sha256": "2c1cc72ede6d5462a3dc2fa37a82a2f7b15a089740303861b7ef521ccf349979"
+        }
+      ]
+    },
+    {
+      "path": "~/.grok/skills/trace-computer-use",
+      "action": "unchanged",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "action": "unchanged",
+          "priorSha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2",
+          "sha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2"
+        },
+        {
+          "path": "manifest.json",
+          "action": "unchanged",
+          "priorSha256": "7f17394f271d65e7f6814ef0c4bb5a3003fe53a3d57e7b5c1f75610254d719e6",
+          "sha256": "7f17394f271d65e7f6814ef0c4bb5a3003fe53a3d57e7b5c1f75610254d719e6"
+        },
+        {
+          "path": "references/acceptance.md",
+          "action": "unchanged",
+          "priorSha256": "51503abad102dbe9753030fefa582c124b09a32bb3b88099903247e0bb7d92e8",
+          "sha256": "51503abad102dbe9753030fefa582c124b09a32bb3b88099903247e0bb7d92e8"
+        },
+        {
+          "path": "references/operation-and-recovery.md",
+          "action": "unchanged",
+          "priorSha256": "83ae0d1e28a490c159da98b4c720f1bd2d9c0afa84570d2074f8e9d81c6050e6",
+          "sha256": "83ae0d1e28a490c159da98b4c720f1bd2d9c0afa84570d2074f8e9d81c6050e6"
+        },
+        {
+          "path": "references/readiness-routing.md",
+          "action": "unchanged",
+          "priorSha256": "2c1cc72ede6d5462a3dc2fa37a82a2f7b15a089740303861b7ef521ccf349979",
+          "sha256": "2c1cc72ede6d5462a3dc2fa37a82a2f7b15a089740303861b7ef521ccf349979"
+        }
+      ]
+    }
+  ],
+  "applied": true,
+  "copies": [
+    {
+      "path": "~/.agents/skills/trace-computer-use",
+      "backupCreated": true,
+      "backup": "~/.trace/skill-backups/a123c238-ed30-4d5a-8e1b-27e81bf620e9/receipt.json",
+      "exactBackupVerified": true,
+      "installedSha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2",
+      "bundleSha256": "7f17394f271d65e7f6814ef0c4bb5a3003fe53a3d57e7b5c1f75610254d719e6",
+      "priorSha256": "e7d12ba7fd504aafdb80a9f3578dd87f7fc70ab4487d68612fd0e3557639e1c1",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2",
+          "action": "replace"
+        },
+        {
+          "path": "manifest.json",
+          "sha256": "7f17394f271d65e7f6814ef0c4bb5a3003fe53a3d57e7b5c1f75610254d719e6",
+          "action": "add"
+        },
+        {
+          "path": "references/acceptance.md",
+          "sha256": "51503abad102dbe9753030fefa582c124b09a32bb3b88099903247e0bb7d92e8",
+          "action": "add"
+        },
+        {
+          "path": "references/operation-and-recovery.md",
+          "sha256": "83ae0d1e28a490c159da98b4c720f1bd2d9c0afa84570d2074f8e9d81c6050e6",
+          "action": "add"
+        },
+        {
+          "path": "references/readiness-routing.md",
+          "sha256": "2c1cc72ede6d5462a3dc2fa37a82a2f7b15a089740303861b7ef521ccf349979",
+          "action": "add"
+        }
+      ]
+    },
+    {
+      "path": "~/.claude/skills/trace-computer-use",
+      "backupCreated": true,
+      "backup": "~/.trace/skill-backups/45c6b37d-8d76-42ae-837e-4a0e6ef3c9f6/receipt.json",
+      "exactBackupVerified": true,
+      "installedSha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2",
+      "bundleSha256": "7f17394f271d65e7f6814ef0c4bb5a3003fe53a3d57e7b5c1f75610254d719e6",
+      "priorSha256": "e7d12ba7fd504aafdb80a9f3578dd87f7fc70ab4487d68612fd0e3557639e1c1",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2",
+          "action": "replace"
+        },
+        {
+          "path": "manifest.json",
+          "sha256": "7f17394f271d65e7f6814ef0c4bb5a3003fe53a3d57e7b5c1f75610254d719e6",
+          "action": "add"
+        },
+        {
+          "path": "references/acceptance.md",
+          "sha256": "51503abad102dbe9753030fefa582c124b09a32bb3b88099903247e0bb7d92e8",
+          "action": "add"
+        },
+        {
+          "path": "references/operation-and-recovery.md",
+          "sha256": "83ae0d1e28a490c159da98b4c720f1bd2d9c0afa84570d2074f8e9d81c6050e6",
+          "action": "add"
+        },
+        {
+          "path": "references/readiness-routing.md",
+          "sha256": "2c1cc72ede6d5462a3dc2fa37a82a2f7b15a089740303861b7ef521ccf349979",
+          "action": "add"
+        }
+      ]
+    },
+    {
+      "path": "~/.grok/skills/trace-computer-use",
+      "backupCreated": true,
+      "backup": "~/.trace/skill-backups/37eaf3f7-b54d-47d4-b18d-4413338552d0/receipt.json",
+      "exactBackupVerified": true,
+      "installedSha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2",
+      "bundleSha256": "7f17394f271d65e7f6814ef0c4bb5a3003fe53a3d57e7b5c1f75610254d719e6",
+      "priorSha256": "e7d12ba7fd504aafdb80a9f3578dd87f7fc70ab4487d68612fd0e3557639e1c1",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2",
+          "action": "replace"
+        },
+        {
+          "path": "manifest.json",
+          "sha256": "7f17394f271d65e7f6814ef0c4bb5a3003fe53a3d57e7b5c1f75610254d719e6",
+          "action": "add"
+        },
+        {
+          "path": "references/acceptance.md",
+          "sha256": "51503abad102dbe9753030fefa582c124b09a32bb3b88099903247e0bb7d92e8",
+          "action": "add"
+        },
+        {
+          "path": "references/operation-and-recovery.md",
+          "sha256": "83ae0d1e28a490c159da98b4c720f1bd2d9c0afa84570d2074f8e9d81c6050e6",
+          "action": "add"
+        },
+        {
+          "path": "references/readiness-routing.md",
+          "sha256": "2c1cc72ede6d5462a3dc2fa37a82a2f7b15a089740303861b7ef521ccf349979",
+          "action": "add"
+        }
+      ]
+    }
+  ],
+  "allMatch": true,
+  "discovery": {
+    "serverEntries": [
+      {
+        "client": "codex",
+        "action": "unchanged"
+      },
+      {
+        "client": "claude_code",
+        "action": "unchanged"
+      },
+      {
+        "client": "grok_build",
+        "action": "unchanged"
+      },
+      {
+        "client": "gemini_cli",
+        "action": "unchanged"
+      }
+    ],
+    "skillEntries": [
+      {
+        "path": "~/.agents/skills/trace-computer-use",
+        "action": "unchanged"
+      },
+      {
+        "path": "~/.claude/skills/trace-computer-use",
+        "action": "unchanged"
+      },
+      {
+        "path": "~/.grok/skills/trace-computer-use",
+        "action": "unchanged"
+      }
+    ],
+    "skillSha256": "29a7d491087c7e27c271275ec5c455e9cbfc65790c1b5b3fb092b85be25399c2",
+    "bundleSha256": "7f17394f271d65e7f6814ef0c4bb5a3003fe53a3d57e7b5c1f75610254d719e6"
+  },
+  "backupMigration": {
+    "outsideSkillDiscovery": true,
+    "exactBytesVerified": true,
+    "rollbackDryRun": "all three copies validated without mutation"
+  }
+}

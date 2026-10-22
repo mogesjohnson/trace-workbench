@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "caseId": "TRACE-REPLAY-TWO-INSTANCE-FEASIBILITY",
+  "attempt": 1,
+  "status": "pending_visual_review",
+  "verifiedAt": "2026-10-22T13:48:58.833Z",
+  "originalReceipt": {
+    "path": "receipt.json",
+    "sha256": "dddd7d953f0372fb3e5a72ff25479ac6115e34809c1f41b140c59d3a84a96f41",
+    "preservedStatus": "blocked"
+  },
+  "scope": "Post-terminal read-only reconciliation of original durable MCP capture receipts, recorded bytes and native process generations; no replay or new case.",
+  "capture": {
+    "startCompleted": true,
+    "stopCompleted": true,
+    "exactRecordingId": true,
+    "exactSourceId": true,
+    "target": {
+      "sourceId": "window:10619944:0",
+      "windowId": "10619944",
+      "pid": 50020
+    }
+  },
+  "artifact": {
+    "duration": 3.795,
+    "durationSource": "independent-ffprobe-packet-timestamps",
+    "containerDurationPresent": false,
+    "width": 2224,
+    "height": 1444,
+    "codec": "vp9",
+    "bytes": 4429750,
+    "sha256": "84a687fcdaf40961598c448d66b931c241ae61644da6d86b85ed67645fd99d81",
+    "decodedMean": 51.11946180555555,
+    "decodedFrameDifference": 1.6498900462962962,
+    "privateFrame": ".runtime/replay-two-instance/7a31f019-93ee-4686-a69c-fc827dad1f5b/recorded-editor.png"
+  },
+  "cleanup": {
+    "exactProcessGenerations": [
+      {
+        "pid": 50020,
+        "processCreationTime": "134371501703040589",
+        "exactGenerationExited": true
+      },
+      {
+        "pid": 34164,
+        "processCreationTime": "134371501729540356",
+        "exactGenerationExited": true
+      }
+    ],
+    "grants": [
+      {
+        "label": "editor",
+        "grantCount": 1,
+        "allRevoked": true
+      },
+      {
+        "label": "recorder",
+        "grantCount": 1,
+        "allRevoked": true
+      }
+    ],
+    "mcpClosedInOriginalReceipt": true,
+    "confirmed": true
+  },
+  "diagnosis": "The retained live WebM omits container duration. The original verifier required finite format.duration; independent packet timestamps now measure the unchanged original take. Its exitCode-only cleanup check also failed to recognize signal termination; exact-generation OS probes establish final exit.",
+  "limits": [
+    "The original error log did not retain its exact assertion.",
+    "Later exit probes prove final cleanup, not a tighter exit latency.",
+    "No TRACE native input or full APP-01 workflow is established."
+  ]
+}

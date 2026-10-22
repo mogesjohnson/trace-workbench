@@ -34,10 +34,11 @@ const actionSchema = z.union([
 const readOnly = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false };
 const sessionMutation = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false };
 
-function errorResult(error) {
+function errorResult(error, { action = false, explicitOutcomeAllowed = false } = {}) {
   const message = error instanceof Error ? error.message : "Computer operation failed";
   const code = typeof error?.code === "string" ? error.code : "COMPUTER_ERROR";
   const state = { error: { code, message } };
+  if (action) state.outcome = explicitOutcomeAllowed && error?.details?.outcome === "not_dispatched" ? "not_dispatched" : "unknown";
   return { isError: true, content: [{ type: "text", text: JSON.stringify(state) }], structuredContent: state };
 }
 
@@ -96,15 +97,19 @@ function createComputerServer({ controller, onError = () => {} } = {}) {
 
   function register(name, description, inputSchema, method, annotations) {
     server.registerTool(name, { description, inputSchema, annotations }, async (args, context) => {
+      let controllerReturned = false;
       try {
         const signal = context.mcpReq.signal;
         if (signal.aborted) throw Object.assign(new Error("Computer request cancelled"), { code: "CANCELLED" });
         const result = method === "doctor" || method === "listWindows"
           ? await controller[method]({ signal })
           : await controller[method](args, { signal });
+        controllerReturned = true;
         return toolResult(result);
       } catch (error) {
-        return errorResult(error);
+        // Projection can fail after successful input. Only a controller rejection
+        // carrying explicit dispatch proof may label an act as not dispatched.
+        return errorResult(error, { action: method === "act", explicitOutcomeAllowed: !controllerReturned });
       }
     });
   }

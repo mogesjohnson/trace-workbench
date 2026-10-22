@@ -1,0 +1,31 @@
+{
+  "caseId": "A32-PROBE-FOCUSED-TYPING",
+  "declaredBeforeUiLaunch": true,
+  "authorization": "Owner resumed close-the-gap implementation on 20 October 2026; earlier exhausted cases stay failed.",
+  "target": "Fresh run-scoped owned synthetic WinForms fixture, exact discovered PID and title",
+  "initial": {
+    "text": "",
+    "keysDown": [],
+    "display": {
+      "monitors": 1,
+      "width": 2880,
+      "height": 1800,
+      "dpi": 144
+    }
+  },
+  "actions": [
+    "Activate and click the observed text input through the production controller/native owner",
+    "Verify public focus selector equals the observed text input and independent fixture focus is traceTextInput",
+    "Run source-owned controlled type-hold abc in the production supervisor job",
+    "Independently observe held C, cancel the operation, independently verify child exit and all keys released"
+  ],
+  "expected": {
+    "text": "abc",
+    "count": 0,
+    "recovery": "process exit confirmed and declared input released",
+    "quarantine": false
+  },
+  "cleanup": "Close native/controller session then owned fixture; independently verify process exit and global key state",
+  "limits": "Direct controller and native controlled provider. This is not MCP cancellation, a model-host workflow, physical Escape, or the complete A32 recovery matrix.",
+  "budget": "One attempt plus one corrective retry after a documented changed precondition; use a new report directory and preserve prior results."
+}

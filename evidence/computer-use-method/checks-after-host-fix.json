@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-22T03:53:02.464Z",
+  "commands": {
+    "npm test": {
+      "exitCode": 0,
+      "log": "tests-after-host-fix.log",
+      "sha256": "c89d3e635b3afff7c3931cfb1093c50658e2ea41c303eca18c087a84e1220c83",
+      "tests": 362,
+      "pass": 356,
+      "fail": 0,
+      "skipped": 6
+    },
+    "npm run check": {
+      "exitCode": 0,
+      "log": "check-after-host-fix.log",
+      "sha256": "a5d33019cb267ec70f20f885e4a043f286324e803b4000ab3a7a356a570954c8"
+    }
+  },
+  "source": {
+    "scripts/accept-claude-host.cjs": "b000d679b57b7f66f4dab5f490102f9a8451bb8151656faf4a650ff2e6da5d36",
+    "tests/accept-claude-host.test.cjs": "f0b507472a597b2f1f20a538c5e90c642bca28f332260da6e0031ae491f4dee0"
+  }
+}

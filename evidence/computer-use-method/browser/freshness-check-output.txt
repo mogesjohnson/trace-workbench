@@ -1,0 +1,14 @@
+✔ METHOD-BROWSER actual headless Edge fills, submits, reads and verifies once after lost reply (1586.8739ms)
+ℹ {"scope":"real-owned-loopback-page","browser":"155.0.4283.62","playwright":"1.62.1","headless":true,"desktopInput":false,"saveCount":1,"verifiedResult":"Saved: Résumé 日本語","ownedTabClosed":true}
+✔ METHOD-BROWSER navigation during final semantic check blocks allowed replacement before mutation (1215.7304ms)
+ℹ {"scope":"real-navigation-during-final-validation","destination":"allowed","headless":true,"desktopInput":false,"semanticChecks":2,"mutatorCalls":0,"serverSaveCount":0,"browser":"155.0.4283.62","ownedTabClosed":true}
+✔ METHOD-BROWSER navigation during final semantic check blocks outside replacement before mutation (1057.8228ms)
+ℹ {"scope":"real-navigation-during-final-validation","destination":"outside","headless":true,"desktopInput":false,"semanticChecks":2,"mutatorCalls":0,"serverSaveCount":0,"browser":"155.0.4283.62","ownedTabClosed":true}
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3961.0661

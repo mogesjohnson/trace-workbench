@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "planContract": 1,
+  "caseId": "R31-GLOW-NATIVE",
+  "replaces": [
+    "A31-GLOW",
+    "GLOW-LIVE"
+  ],
+  "ownerDecision": "evidence/replacement-acceptance/owner-decision.json",
+  "attempt": 2,
+  "prior": {
+    "path": "evidence/replacement-acceptance/r31-glow-native/attempt-1",
+    "status": "blocked",
+    "changedPrecondition": "User brought exact owned readiness fixture forward; native input access observable and all keys up, quarantine clear, reference executor inventory ready."
+  },
+  "status": "blocked",
+  "startedAt": "2026-10-22T03:31:14.930Z",
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "phases": {
+    "start": {
+      "before": {
+        "foregroundWindowId": "9768766",
+        "foregroundPid": 34468,
+        "focusedWindowId": "9768766",
+        "fixtureForeground": true
+      },
+      "after": {
+        "foregroundWindowId": "9768766",
+        "foregroundPid": 34468,
+        "focusedWindowId": "9768766",
+        "fixtureForeground": true
+      },
+      "ownership": {
+        "node": {
+          "pid": 920,
+          "parent": 45560,
+          "name": "node.exe",
+          "sessionId": 1,
+          "created": "2026-10-22T03:31:16.1203060Z"
+        },
+        "supervisor": {
+          "pid": 42892,
+          "parent": 920,
+          "name": "TraceSupervisor.exe",
+          "sessionId": 1,
+          "created": "2026-10-22T03:31:18.0355070Z"
+        },
+        "marker": {
+          "pid": 44352,
+          "parent": 42892,
+          "name": "TraceActivityIndicator.exe",
+          "sessionId": 1,
+          "created": "2026-10-22T03:31:18.2082090Z"
+        }
+      }
+    },
+    "visible": {
+      "bands": {
+        "width": 2880,
+        "height": 1800,
+        "sampleRow": 450,
+        "sampleColumn": 1440,
+        "tintedLeft": 11,
+        "tintedTop": 11,
+        "backgroundLeft": 7,
+        "backgroundTop": 7
+      }
+    }
+  },
+  "frames": [
+    {
+      "label": "glow-active",
+      "path": "frames/glow-active-1.png",
+      "sha256": "cba972b341c8eac906ca0b31a99a50ef446db2398b009cd33ffe9844fe6c509b",
+      "bands": {
+        "width": 2880,
+        "height": 1800,
+        "sampleRow": 450,
+        "sampleColumn": 1440,
+        "tintedLeft": 11,
+        "tintedTop": 11,
+        "backgroundLeft": 7,
+        "backgroundTop": 7
+      },
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "pass"
+        }
+      ]
+    }
+  ],
+  "cleanup": {
+    "connectionClosed": true,
+    "ownedHelpersExited": true,
+    "keysDown": [],
+    "fixture": {
+      "exited": true,
+      "forced": false
+    },
+    "recovery": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    }
+  },
+  "testedSource": {
+    "baseCommit": "2870cb9f307a3be5315266e1c7a0eecf725c4f53",
+    "workingTreeModified": true,
+    "files": {
+      "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+      "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+      "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+      "native/TraceSupervisor/Program.cs": "c8dc9e6fd440542b624fe93850bdafb4469f72ff81ff33942e96fd3ce5697202",
+      "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+      "native/TraceSupervisor/Session.cs": "d3f7ad4a1d147c593f75912ae5f26d19d7f4de1fb397ef084c64994050e78ca1",
+      "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+      "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+      "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+      "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+      "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+      "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5",
+      "src/computer/lease.cjs": "3600fa756bda99e15aa695731bc0e5a8f6a0893e1f7e333db4d6742ae561389b",
+      "src/computer/activity-indicator.cjs": "42de964cb8fca0f5c30a6c30f1a40173df5f072224339fef6f006ed4ffe2093b",
+      "native/TraceWindowBridge/Program.cs": "eb113326de356280bc4219b21c2b99a1553a066dd170bf9898070ea484bfab46",
+      "native/TraceActivityIndicator/Program.cs": "262b2c70d7f1f271c45d2e66bb1faf6a8d299df87274b12a57540df425645459",
+      "tests/fixtures/supervised-mcp.cjs": "eeade5db7a43d000bc4c7e6a21dac0c32c3c6b5096d1fdaae98812e0faad2399",
+      "tests/fixtures/glow-app/Program.cs": "11abfdfe317c006ede7565c0e1ed43bf818926794bbe2243e251024d36a46097",
+      "scripts/replacement-acceptance-common.cjs": "b62ca0d06d5c2b657d2373698776c44ff4ec7ae5993b2e183fa7bd3aab274b8b",
+      "scripts/accept-replacement-glow.cjs": "d41e78299e37954602197d281cd913942b68703840e3b94cb1b59b8f711184fc",
+      "scripts/accept-supervisor-quarantine.cjs": "7f5f401c584c669885acbdeaf9bb94fe90498d457610ab83b5604351ab2432fd",
+      "scripts/accept-supervisor-recovery.cjs": "5ee71bd15d0f744e0c7a6d21fc472871bc79de82ea4e16f821fceb577319bdf3",
+      "scripts/smoke-computer-live.cjs": "6327ec795cd0a9fba6e34fd0834653c0e200578dcb8873e3eb75fbaf35330f56",
+      "scripts/accept-glow.cjs": "2c3b9e06a4060a1fd2841ea8721f827295ec0520761350dcbbbf88769f512b82",
+      "scripts/smoke-computer-glow.cjs": "a7d6828250e6fb0322305a63b75e975686263a765635f334cf2d89ac510eaaf7",
+      "package.json": "59e9d00fbe2ac420227f5ffae91cff8fb1f073a5dabc93eaad17e412d968faa1",
+      "package-lock.json": "e6a7b9932ff2169daa29da61bec38f1439bf95d3a19ea728041d523f69630dda"
+    }
+  },
+  "inputAccess": {
+    "observable": true,
+    "code": null,
+    "win32Error": null,
+    "foregroundPresent": true,
+    "foregroundPid": 47972,
+    "currentPid": 33204,
+    "currentSessionId": 1,
+    "requestedDesktopAccess": 9,
+    "requestedProcessAccess": 4096,
+    "requestedTokenAccess": 8,
+    "currentIntegrityRid": 8192,
+    "foregroundIntegrityRid": 8192,
+    "scope": "read-only access diagnostics; no key/button state inferred when inaccessible"
+  },
+  "initialKeysDown": [],
+  "fixtureSha256": "691478da5212084ef94e428f4e1957007a70357607b800da05e3f89897396b35",
+  "initial": {
+    "count": 0,
+    "mouseClickCount": 0,
+    "activationCount": 0,
+    "mouseDownCount": 0,
+    "mouseUpCount": 0
+  },
+  "target": {
+    "id": "9768766",
+    "pid": 34468,
+    "processCreationTime": "134371134754788308",
+    "sessionId": 1
+  },
+  "error": {
+    "code": "reference_missing",
+    "message": "No complete reference click/tool receipt arrived within60s."
+  },
+  "sourcesUnchangedDuringRun": true,
+  "completedAt": "2026-10-22T03:32:20.568Z"
+}

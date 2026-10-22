@@ -1,0 +1,15 @@
+{
+  "caseId": "METHOD-CLIPBOARD-NATIVE-ROUNDTRIP",
+  "declaredBeforeSnapshot": true,
+  "target": "Current clipboard, supported text-only formats",
+  "actions": [
+    "Reject unsupported formats before mutation",
+    "Privately snapshot original supported bytes",
+    "Write one synthetic Unicode string and verify readback",
+    "Restore with sequence/owner guard",
+    "Compare original bytes through a fresh helper in memory"
+  ],
+  "input": "No fixture, UI action, key or paste is launched",
+  "privacy": "Never persist original bytes, hashes, format counts, sequences or tokens",
+  "cleanup": "Guarded restore and helper close; uncertain recovery remains protected"
+}

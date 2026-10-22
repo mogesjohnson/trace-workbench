@@ -1,0 +1,97 @@
+{
+  "caseId": "A32-RECOVERY-DISCONNECT-TYPING",
+  "input": "typing",
+  "failure": "disconnect",
+  "status": "pass",
+  "startedAt": "2026-10-21T22:19:34.837Z",
+  "cleanup": {
+    "connectionClosed": true,
+    "supervisorExited": true,
+    "inputChildExited": true,
+    "inputState": {
+      "available": true,
+      "at": "2026-10-21T22:19:56.613Z",
+      "phase": "native closed; owned fixture not yet closed",
+      "down": []
+    },
+    "foregroundPreparation": {
+      "preparation": "fixture-foreground-anchor",
+      "prepared": true,
+      "activationAttempted": true,
+      "cleanupConfirmed": true,
+      "code": null
+    },
+    "fixtureExited": true,
+    "recovery": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    }
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "initialKeys": [],
+  "target": {
+    "windowId": "9373700",
+    "pid": 15060,
+    "processCreationTime": "134370947751747966"
+  },
+  "controlled": {
+    "pid": 31824,
+    "processCreationTime": "134370947865249412",
+    "inJob": true,
+    "supervisorPid": 12260
+  },
+  "held": {
+    "67": true
+  },
+  "interruptedAt": "2026-10-21T22:19:46.678Z",
+  "childExitIndependently": true,
+  "nativeOutcome": {
+    "code": "cancelled",
+    "outcome": "unknown",
+    "recovery": {
+      "attempted": true,
+      "released": true,
+      "processExitConfirmed": true,
+      "method": "declared-sendinput",
+      "reason": "cancelled",
+      "childPid": 31824,
+      "childCreated": "134370947865249412",
+      "declaredKeysDown": [],
+      "stopCleanupMs": null
+    }
+  },
+  "keysAfter": [],
+  "effect": {
+    "text": "abc",
+    "count": 0,
+    "unchangedAfterCleanup": true
+  },
+  "followup": {
+    "outcome": "completed",
+    "before": 0,
+    "after": 1,
+    "exactIncrement": 1,
+    "provider": "pinned-engine"
+  },
+  "requestResult": {
+    "outcome": "unknown",
+    "code": "CONNECTION_CLOSED"
+  },
+  "completedAt": "2026-10-21T22:19:58.888Z"
+}
