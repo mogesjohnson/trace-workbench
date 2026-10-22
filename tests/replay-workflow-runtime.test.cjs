@@ -5,7 +5,7 @@ const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
 const { randomUUID } = require('node:crypto');
-const { parseJournal, verifyJournal, cropRgb, rms, reviewCovers, validCommand, runLoop, advance } = require('../scripts/replay-workflow-runtime.cjs');
+const { parseJournal, verifyJournal, cropRgb, rms, reviewCovers, sourceReviewCovers, validCommand, runLoop, advance, persistRecovery, readRequestReceipt } = require('../scripts/replay-workflow-runtime.cjs');
 const session = '03d902dc-7da2-41c9-809f-1531674ba13b', observation = '6a85b164-1fe4-4569-967f-f184c129622e';
 const target = { pid: 48020, windowId: '10358094' };
 const at = seconds => new Date(Date.UTC(2026, 9, 22, 14, 0, seconds)).toISOString();
@@ -75,6 +75,23 @@ test('root review must cover every produced frame hash with a concrete observati
   assert.equal(reviewCovers({ pass: true, reviewedFrames }, {}), false);
 });
 
+test('source content review binds the whole six-second video, actual source interval, all frames and a result after the observed action', () => {
+  const review = { sourceSha256: 'a'.repeat(64), sourceStart: 61, sourceEnd: 67, segment: { sha256: 'b'.repeat(64), duration: 6 },
+    frames: [0.25, 1.5, 3, 4.5, 5.75].map((seconds, index) => ({ sha256: String(index + 1).repeat(64), segmentSeconds: seconds, requestedSourceSeconds: 61 + seconds })) };
+  const input = { pass: true, reviewedEntireSegment: true, sourceSha256: review.sourceSha256, sourceStart: 61, sourceEnd: 67,
+    segmentSha256: review.segment.sha256, reviewedFrames: review.frames.map(frame => ({ sha256: frame.sha256, observed: 'Synthetic fixture is visible in the actual captured source frame.' })),
+    observedAction: { from: 1.7, to: 2.5, description: 'Increment control visibly changes Count:1 to Count:2.' },
+    observedResult: { frameSha256: review.frames[2].sha256, text: 'TRACE REPLAY demo', count: 2 } };
+  assert.equal(sourceReviewCovers(input, review), true);
+  for (const patch of [{ reviewedEntireSegment: false }, { sourceSha256: 'c'.repeat(64) }, { segmentSha256: 'd'.repeat(64) },
+    { sourceStart: 1, sourceEnd: 7 }, { reviewedFrames: input.reviewedFrames.slice(1) }, { observedAction: { from: 7, to: 8, description: 'Action occurred after the segment.' } },
+    { observedAction: { from: 1, to: 2, description: 'ok' } }, { observedResult: { ...input.observedResult, frameSha256: review.frames[0].sha256 } },
+    { observedResult: { ...input.observedResult, text: 'different text' } }, { observedResult: { ...input.observedResult, count: 0 } }]) {
+    assert.equal(sourceReviewCovers({ ...input, ...patch }, review), false);
+  }
+  assert.equal(sourceReviewCovers({ pass: true }, review), false); // Final fixture state or a bare approval never suffices.
+});
+
 test('commands must be the next sequence number with a declared stage and object input', () => {
   assert.equal(validCommand({ schemaVersion: 1, id: 1, stage: 'provision' }, 0), true);
   assert.equal(validCommand({ schemaVersion: 1, id: 3, stage: 'abort' }, 2), true);
@@ -122,9 +139,9 @@ test('durable loop answers each command once in order, rejects invalid commands 
   assert.deepEqual(f.calls.find(call => call[1] === 'fixture-ready')[2], { traceSessionId: session, observationId: observation });
   const failed = await f.send('fixture-record-start');
   assert.deepEqual(failed.error, { stage: 'fixture-record-start', code: 'replay_capture_not_started', replayCode: 'CAPTURE_CONFLICT' });
-  assert.equal(failed.terminal, 'fail');
+  assert.equal(failed.terminal, 'blocked');
   const receipt = await f.done();
-  assert.equal(receipt.status, 'fail'); assert.equal(receipt.terminalReason, 'stage_failed'); assert.equal(receipt.lastCommandId, 4);
+  assert.equal(receipt.status, 'blocked'); assert.equal(receipt.terminalReason, 'stage_failed'); assert.equal(receipt.lastCommandId, 4);
   assert.deepEqual(f.calls.slice(-2).map(call => call[0]), ['reconcile', 'cleanup']); // Read-only state before any process is closed.
   assert.doesNotMatch(JSON.stringify(receipt), /private/);
 });
@@ -147,6 +164,55 @@ test('a completed cleanup stage reports success only for a reviewed, confirmed w
   assert.equal(response.ok, true); assert.equal(response.terminal, 'awaiting_runtime_evidence_audit');
   const receipt = await f.done(); assert.equal(receipt.terminalReason, 'completed');
   assert.equal(f.calls.some(call => call[0] === 'reconcile'), false);
+});
+
+test('terminal cleanup cannot promote pending, unknown or explicitly unresolved requests', async () => {
+  for (const request of [{ state: 'pending' }, { state: 'unknown' }, { state: 'completed', reconciliation: { outcome: 'unresolved' } }]) {
+    const f = await loop({ finalStatus: 'awaiting_runtime_evidence_audit', requests: [request] });
+    assert.equal((await f.send('cleanup')).terminal, 'blocked');
+    assert.equal((await f.done()).status, 'blocked');
+  }
+  const knownFailure = await loop({ failStage: 'fixture-record-start', requests: [{ state: 'failed' }] });
+  assert.equal((await knownFailure.send('fixture-record-start')).terminal, 'fail');
+  await knownFailure.done();
+});
+
+test('a fresh reader can verify immutable private recovery snapshots after a simulated driver crash', async () => {
+  const privateRoot = path.join(os.tmpdir(), `trace-replay-recovery-${randomUUID()}`);
+  try {
+    const first = { schemaVersion: 1, instances: [{ label: 'editor', launchedPid: 44, identity: { pid: 44, processCreationTime: '123', windowId: '55', sessionId: 1 } }], requests: [] };
+    const ref1 = await persistRecovery(privateRoot, first);
+    const pending = { ...first, requests: [{ app: 'editor', command: 'project.edit', requestId: 'trace-replay-original', state: 'pending',
+      payload: { input: { projectId: 'owned-project', operations: [{ type: 'trim', sourceStart: 1, sourceEnd: 7 }] }, expectedRevision: 3 } }] };
+    const ref2 = await persistRecovery(privateRoot, pending);
+    // No workflow object is used below: recovery depends solely on synced files and their references.
+    for (const [reference, expected] of [[ref1, first], [ref2, pending]]) {
+      const bytes = await fs.readFile(path.resolve(__dirname, '..', reference.path));
+      assert.equal(require('node:crypto').createHash('sha256').update(bytes).digest('hex'), reference.sha256);
+      assert.equal(bytes.length, reference.bytes);
+      assert.deepEqual(JSON.parse(bytes), expected);
+    }
+    assert.deepEqual(JSON.parse(await fs.readFile(path.join(privateRoot, 'recovery', 'latest.json'), 'utf8')), ref2);
+    assert.equal(Object.keys(ref2).sort().join(','), 'bytes,path,sha256');
+    assert.notEqual(ref1.path, ref2.path);
+  } finally { await fs.rm(privateRoot, { recursive: true, force: true }); }
+});
+
+test('the production request reader uses REPLAY hashed request journals and never dispatches a command', async () => {
+  const root = path.join(os.tmpdir(), `trace-replay-request-${randomUUID()}`), library = path.join(root, 'Library');
+  const requestId = `trace-replay-${randomUUID()}`;
+  const file = path.join(root, 'Automation', 'requests', `${require('node:crypto').createHash('sha256').update(requestId).digest('hex')}.json`);
+  try {
+    assert.equal(await readRequestReceipt(library, requestId), null);
+    await fs.mkdir(path.dirname(file), { recursive: true });
+    const receipt = { schemaVersion: 1, requestId, state: 'pending' };
+    await fs.writeFile(file, JSON.stringify(receipt));
+    assert.deepEqual(await readRequestReceipt(library, requestId), receipt);
+    assert.equal(await readRequestReceipt(path.join(root, 'other-instance', 'Library'), requestId), null);
+    await assert.rejects(readRequestReceipt(library, '../foreign'), { code: 'replay_request_id_invalid' });
+    await fs.writeFile(file, '{partial');
+    assert.equal(await readRequestReceipt(library, requestId), null);
+  } finally { await fs.rm(root, { recursive: true, force: true }); }
 });
 
 test('the CLI loads both modules as a real process, plans purely and fails closed without creating a run directory', () => {

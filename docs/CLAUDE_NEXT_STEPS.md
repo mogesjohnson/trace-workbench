@@ -1,5 +1,7 @@
 # Claude continuation and Codex review handoff
 
+**Resumed review, 22 October 2026:** Codex now owns continuation at the owner's request, on `codex/gap-closure-live` from Claude PR 15 head `5e5a363`. The pause and instructions below record the earlier handoff. Use [current status](GAP_CLOSURE_STATUS.md) and [the dashboard](GAP_CLOSURE_PROGRESS.html) for current work and budgets. Claude's implementation was reviewed; the remaining actual host test will be launched by Codex after Claude Desktop/Code fully exit. No new coding session is required from the owner.
+
 Updated 22 October 2026. **Codex implementation and live testing are paused at the owner's request.** The owner requested this GitHub upload so Claude can continue; Codex will review Claude's resulting changes when asked. This is an unfinished, reviewable checkpoint, not a release or a full parity claim.
 
 ## 1. Start on the uploaded work
