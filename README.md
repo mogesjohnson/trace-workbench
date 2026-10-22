@@ -6,7 +6,7 @@ Shared tools that give agents abilities beyond written instructions.
 
 **Version:** `0.1.0-alpha.3.3` · **Status:** Windows preview, milestone acceptance incomplete
 
-**22 October handoff:** Codex development is paused so Claude can continue. Start with [Claude next steps](docs/CLAUDE_NEXT_STEPS.md), the [progress plan](docs/GAP_CLOSURE_PLAN.md) and [visual dashboard](docs/GAP_CLOSURE_PROGRESS.html). Current source and scoped evidence are detailed in [gap closure status](docs/GAP_CLOSURE_STATUS.md).
+**22 October checkpoint:** Codex resumed, reviewed Claude's work and corrected acceptance/recovery gaps. Follow the [progress plan](docs/GAP_CLOSURE_PLAN.md), [visual dashboard](docs/GAP_CLOSURE_PROGRESS.html) and [current evidence](docs/GAP_CLOSURE_STATUS.md). Live acceptance remains incomplete.
 
 TRACE provides local tools for **Codex, Claude Code, Grok Build, and Gemini CLI**. The first two skills are **Reverse Engineer Anything** and **Computer Use**. The Windows executor exposes six MCP tools for discovering windows, observing screenshots and controls, acting, and releasing desktop ownership. A screen-edge glow shows when TRACE owns the desktop.
 
@@ -31,7 +31,7 @@ Review each plan before applying it. Setup pins the Windows engine locally; conf
 
 ## Verified
 
-- **457 tests run, 451 passed, six skipped, zero failed** at the upload checkpoint. Source checks pass. Five skips need the optional browser runtime and one needs Windows symlink privilege.
+- **501 tests run, 495 passed, six skipped, zero failed** at the resumed review checkpoint. Source checks pass for 93 JavaScript files. Five skips need the optional browser runtime and one needs Windows symlink privilege.
 - Method coordination, routing, checkpoints and artifact identity are implemented; actual headless browser and eight child-process application cases have scoped passing evidence.
 - Native supervision, durable quarantine, physical-stop handling and strict UTF-8 transport are implemented. Recovery coverage links 15 failure/input pairs at their recorded source scopes; full acceptance remains incomplete.
 - Actual Codex typing now preserved `TRACE Codex verified café 日本語` exactly. Its complete host workflow remains blocked at stale-error outcome verification; that protocol correction is tested but needs a reconnected host and separately authorized new live budget.
@@ -46,10 +46,10 @@ Review each plan before applying it. Setup pins the Windows engine locally; conf
 ## Remaining
 
 - **Live gates:** complete glow lifecycle, typing quarantine, clipboard paste/restoration, Claude workflow/settings and current-source physical-stop proof. Window targeting and cancellation replacements have passed at their recorded scopes.
-- **Codex:** both approved supplemental attempts are consumed. Preserve failures; another live run requires a new owner budget decision.
-- **REPLAY:** two-instance recording feasibility passed. The full editing/audio workflow and two final exports remain unfinished; its preparation module still needs a production adapter.
+- **Glow and Codex:** both approved supplemental attempts are consumed for each. The [second bounded amendment](docs/LIVE_ACCEPTANCE_AMENDMENT_2.md) is a proposal; another run requires an actual owner decision.
+- **REPLAY:** two-instance recording feasibility passed. The production adapter, durable recovery and a source-segment content review gate are implemented and checked offline. Actual controls, editing/audio and both final exports remain unproved.
 - **Distribution:** clean archive installation/rollback and final release acceptance remain.
-- **Hosted CI:** the last older run could not start due to account billing; inspect the new PR's actual checks.
+- **Hosted CI:** the inspected [PR 15 check](evidence/computer-use-method/ci-pr15-current.json) could not start due to account billing/spending. Required hosted CI remains blocked.
 - **Unverified:** Grok/Gemini live behavior.
 - **Deferred:** display transitions.
 
