@@ -15,3 +15,5 @@
 *.png binary
 *.jpg binary
 *.zip binary
+# Acceptance references hash exact artifact bytes, including original line endings.
+evidence/** -text
