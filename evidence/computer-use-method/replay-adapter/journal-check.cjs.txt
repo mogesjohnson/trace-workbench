@@ -1,0 +1,29 @@
+'use strict';
+// Scratch, not committed: real TRACE journals, read-only; retained PNG copies go to a temp private root.
+const fs = require('node:fs/promises'), path = require('node:path'), { execFileSync } = require('node:child_process');
+const repo = process.argv[2], work = process.argv[3];
+const runtime = require(path.join(repo, 'scripts/replay-workflow-runtime.cjs')), flow = require(path.join(repo, 'scripts/accept-replay-workflow.cjs'));
+const sessions = path.join(process.env.LOCALAPPDATA, 'TRACE', 'computer', 'sessions');
+(async () => {
+  const privateRoot = path.join(work, 'journal-private'); await fs.mkdir(privateRoot, { recursive: true });
+  const notes = [];
+  const deps = runtime.createDeps({ privateRoot, common: {}, note: async (key, value) => notes.push(key), checkpoint: async () => {} });
+  let checked = 0;
+  for (const id of await fs.readdir(sessions)) {
+    const events = runtime.parseJournal(await fs.readFile(path.join(sessions, id, 'events.jsonl'), 'utf8'));
+    const open = events.find(e => e.type === 'session_open'), completed = events.filter(e => e.type === 'action_completed');
+    if (!open || completed.length < 2 || events.some(e => e.type === 'action_unknown')) continue;
+    const target = { pid: open.pid, windowId: String(open.windowId) };
+    const ok = await deps.verifyTraceEvidence('editor-controls', { traceSessionId: id }, target, { since: open.at, openedAfter: open.at });
+    let wrong; try { await deps.verifyTraceEvidence('completed-file-playback', { traceSessionId: id }, { ...target, pid: target.pid + 1 }, { since: open.at, openedAfter: open.at }); } catch (error) { wrong = error.code; }
+    let early; try { await deps.verifyTraceEvidence('completed-file-playback', { traceSessionId: id }, target, { since: open.at, openedAfter: new Date(Date.parse(open.at) + 1).toISOString() }); } catch (error) { early = error.code; }
+    const png = path.join(privateRoot, 'trace', 'editor-controls.png');
+    const rgb = execFileSync(require('node:module').createRequire(path.join(path.resolve(repo, '../replay-studio'), 'package.json'))('./scripts/media-inspection-smoke.cjs').ffmpeg,
+      ['-v', 'error', '-nostdin', '-i', png, '-frames:v', '1', '-vf', 'scale=640:400:flags=area', '-f', 'rawvideo', '-pix_fmt', 'rgb24', 'pipe:1'], { maxBuffer: 8 << 20, windowsHide: true });
+    const crop = runtime.cropRgb(rgb, 640, 400, flow.RECIPE.privacy);
+    console.log(JSON.stringify({ session: id.slice(0, 8), completedActions: completed.length, verified: ok, wrongPid: wrong, sessionBeforeTarget: early,
+      privacyRegionEnergy: Math.round(flow.gradientEnergy(crop.rgb, crop.width, crop.height) * 100) / 100, notes }));
+    if (++checked === 1) break;
+  }
+  if (!checked) console.log('no eligible real session');
+})().catch(error => { console.error('FAILED', error.code, String(error.message).slice(0, 300)); process.exitCode = 1; });

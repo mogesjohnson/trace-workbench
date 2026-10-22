@@ -2,12 +2,11 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
-const { PIN, STAGES, RECIPE, plan, exactWindowSource, editOperations, packetDuration,
+const { PIN, STAGES, RECIPE, EVIDENCE_INPUTS, plan, exactWindowSource, editOperations, recipeMatches, packetDuration,
   gradientEnergy, meanDifference, validateMeasurements, createWorkflow } = require('../scripts/accept-replay-workflow.cjs');
 const root = path.resolve('synthetic-private-replay');
 const id = index => `ac01e6f2-1234-4567-8901-${String(index).padStart(12, '0')}`;
 const nativeIdentity = (pid, windowId) => ({ pid, windowId: String(windowId), processCreationTime: `1340000000000${pid}`, sessionId: 1 });
-const fixtureIdentity = { ...nativeIdentity(900, 901), synthetic: true, privacyTextureVerified: true };
 function measurements(kind) {
   return { sha256: 'a'.repeat(64), bytes: 1024, width: 960, height: 600, videoStreams: 1,
     decodedFrames: 3, nonblackMean: 30, audioStreams: kind === 'fixture' ? 1 : 0,
@@ -17,9 +16,11 @@ function measurements(kind) {
     audioAfterRms: 0.001, decodedFrameDifference: 4 };
 }
 function injectedRuntime(options = {}) {
-  const events = [], calls = [], apps = [], projects = new Map(), jobs = new Map();
-  let pid = 10, previewReads = 0, projectIndex = 0, previewProject;
+  const events = [], calls = [], apps = [], projects = new Map(), jobs = new Map(), checkpoints = [];
+  let pid = 10, projectIndex = 0, preview = { projectId: null, position: 0, playing: false }, fixtureChild;
   const deps = {
+    checkpoint: async () => { if (options.checkpointFails) throw Object.assign(new Error(), { code: 'checkpoint_failed' });
+      checkpoints.push(structuredClone(workflow.state().requests)); },
     verifyPins: async () => { events.push('verify-pins'); await options.beforePins?.(); return options.pins ?? { ...PIN }; },
     prepareOfflineAssets: async () => ({ bootstrapVideo: path.join(root, 'bootstrap.mp4'), wavDuration: 1, paidRequests: 0 }),
     launchApp: async input => {
@@ -38,7 +39,7 @@ function injectedRuntime(options = {}) {
     connectMcp: async entry => ({ label: entry.label }),
     command: async (client, name, input, revision, requestId) => {
       calls.push({ label: client.label, name, input: structuredClone(input), revision, requestId });
-      if (options.failCommand === name) throw Object.assign(new Error(), { code: 'injected_transport_unknown' });
+      if (options.failCommand === name) throw Object.assign(new Error(), { code: 'injected_transport_unknown', replayOutcome: options.failOutcome });
       if (name === 'app.capabilities') return { projectSchemaVersion: 3 };
       if (name === 'capture.sources') return { sources: [{ id: 'screen:1:0' }, { id: 'window:901:0' }, { id: 'window:111:0' }] };
       if (name === 'capture.start') return { state: 'recording', recordingId: id(50), sourceId: input.sourceId };
@@ -50,52 +51,71 @@ function injectedRuntime(options = {}) {
       if (name === 'project.get') return structuredClone(projects.get(input.id));
       if (name === 'narration.import') return { asset: { assetId: id(80), duration: 1 } };
       if (name === 'project.edit') { const current = projects.get(input.projectId); assert.equal(revision, current.revision); current.revision++; return structuredClone(current); }
-      if (name === 'preview.open') { previewProject = input.projectId; return { ready: true, projectId: input.projectId, position: input.position }; }
-      if (name === 'preview.get') return { projectId: previewProject, position: previewReads++ ? 1 : 0, ready: true };
+      if (name === 'preview.open') { preview = { projectId: input.projectId, position: input.position, playing: false }; return { ready: true, ...preview }; }
+      if (name === 'preview.get') return { ready: true, ...preview };
       if (name === 'export.start') {
         const job = { id: id(100 + jobs.size), revision, state: 'completed', output: { path: input.output } };
         jobs.set(job.id, job); return { id: job.id };
       }
+      if (name === 'jobs.list') return { jobs: [...jobs.values()].map(job => ({ id: job.id, state: job.state })) };
+      if (name === 'capture.status') return { state: 'idle' };
       throw new Error(`Unexpected typed command ${name}`);
     },
     waitJob: async (_client, jobId) => jobs.get(jobId),
     windowIdentity: async target => options.changedIdentity ? { ...target, processCreationTime: '999999' } : target,
-    validateOwnedFixture: async () => fixtureIdentity,
-    verifyTraceEvidence: async (kind, input, target) => { events.push(`trace-evidence:${kind}:${target.pid}`); return input?.actualTraceReceipt === true; },
+    launchFixture: async () => { fixtureChild = { pid: 900 }; events.push('launch:fixture'); return { child: fixtureChild }; },
+    fixtureIdentity: async () => nativeIdentity(900, 901),
+    validateOwnedFixture: async (input, expected, window) => { events.push(`fixture-ready:${window.openedAfter ? 'bound' : 'unbound'}`);
+      return { ...expected, synthetic: true, privacyTextureVerified: options.textureMissing ? false : input?.observationId === 'observed' }; },
+    verifyTraceEvidence: async (kind, input, target, window) => {
+      events.push(`trace-evidence:${kind}:${target.pid}:${window.since ? 'since' : 'none'}`);
+      if (input?.actualTraceReceipt !== true) return false;
+      // The injected TRACE effect stands in for root's actual editor actions.
+      if (kind === 'editor-controls') preview = { ...preview, position: preview.position + 1, playing: !!options.editorStillPlaying };
+      if (kind === 'completed-file-playback') preview = { ...preview, position: preview.position + 1 };
+      return true;
+    },
     copyOfflineWav: async (_prepared, importRoot) => path.join(importRoot, 'offline.wav'),
-    verifySavedRecipe: async () => true,
+    sourceDigest: async file => `digest:${path.basename(file)}`,
+    verifySavedRecipe: async (_project, _recipe, assetId) => assetId === id(80),
     requireMissing: async output => { if (options.outputExists) throw Object.assign(new Error(), { code: 'output_exists' }); events.push(`missing:${path.basename(output)}`); },
     copyCompletedExport: async (_source, importRoot) => path.join(importRoot, 'fixture-demo.mp4'),
-    independentMediaVerification: async kind => measurements(kind),
+    independentMediaVerification: async (kind, _exported, _recipe, capture) => { events.push(`measure:${kind}:${capture.sourceSha256}`); return measurements(kind); },
     verifyRootReview: async input => input?.actualRootReview === true,
     closeTransport: async client => { events.push(`close-transport:${client.label}`); if (options.closeFails) throw new Error(); },
     revokeGrant: async app => { events.push(`revoke:${app.label}`); },
     grantRevoked: async () => !options.revokeFails,
     stopApp: async app => { events.push(`stop:${app.label}`); if (options.signalExit) app.process().signalCode = 'SIGTERM'; else app.process().exitCode = 0; },
+    closeFixture: async () => { events.push('close-fixture'); return !options.fixtureExitFails; },
     waitIdentityExit: async value => { events.push(`exact-exit:${value.pid}:${value.processCreationTime}`); return !options.exactExitFails; },
   };
-  return { deps, calls, apps, events, workflow: createWorkflow(deps, { privateRoot: root }) };
+  const workflow = createWorkflow(deps, { privateRoot: root });
+  return { deps, calls, apps, events, checkpoints, workflow };
 }
+const evidence = { actualTraceReceipt: true, actualRootReview: true, observationId: 'observed' };
 async function through(f, last) {
   for (const stage of STAGES) {
-    await f.workflow.advance(stage, { actualTraceReceipt: true, actualRootReview: true });
+    await f.workflow.advance(stage, evidence);
     if (stage === last) break;
   }
 }
 
-test('planning is pure, preserves full APP-01 scope and explicitly identifies unfinished runtime wiring', () => {
+test('planning is pure, preserves full APP-01 scope, declares evidence inputs and claims no live run', () => {
   const declared = plan();
-  assert.equal(declared.claimsAttempt, false); assert.equal(declared.status, 'preparation_only');
+  assert.equal(declared.claimsAttempt, false); assert.equal(declared.status, 'adapter_ready_not_run');
   assert.deepEqual(declared.outputs, ['fixture-demo.mp4', 'editor-walkthrough.mp4']);
-  assert.equal(declared.stages.length, 15); assert.ok(declared.remaining.some(value => value.includes('adapter')));
+  assert.equal(declared.stages.length, 15); assert.ok(declared.remaining.some(value => value.includes('owner go-ahead')));
+  assert.deepEqual(Object.keys(declared.evidenceInputs).sort(), Object.keys(declared.pauses).sort());
+  assert.deepEqual(Object.keys(EVIDENCE_INPUTS).every(stage => STAGES.includes(stage)), true);
   declared.recipe.callout.text = 'changed'; assert.notEqual(RECIPE.callout.text, 'changed');
   assert.throws(() => { RECIPE.privacy.x = 0; }, TypeError);
 });
 
 test('exact capture source requires one precise owned HWND and never silently selects a display or similarly named window', () => {
-  assert.equal(exactWindowSource({ sources: [{ id: 'screen:901:0' }, { id: 'window:901:0' }, { id: 'window:1901:0' }] }, fixtureIdentity), 'window:901:0');
+  const fixture = { ...nativeIdentity(900, 901) };
+  assert.equal(exactWindowSource({ sources: [{ id: 'screen:901:0' }, { id: 'window:901:0' }, { id: 'window:1901:0' }] }, fixture), 'window:901:0');
   for (const sources of [[], [{ id: 'window:1901:0' }], [{ id: 'window:901:0' }, { id: 'window:901:1' }]]) {
-    assert.throws(() => exactWindowSource({ sources }, fixtureIdentity), { code: 'replay_capture_target_ambiguous' });
+    assert.throws(() => exactWindowSource({ sources }, fixture), { code: 'replay_capture_target_ambiguous' });
   }
 });
 
@@ -105,6 +125,19 @@ test('typed recipe uses source trim then composition annotation/narration placem
   assert.deepEqual(operations[0], { type: 'trim', sourceStart: 1, sourceEnd: 7 });
   assert.equal(operations[2].overlay.start, 1); assert.equal(operations[4].clip.start, 1.5);
   assert.equal(operations[4].clip.assetId, id(80)); assert.equal(operations[5].sourceMuted, true);
+});
+
+test('saved recipe check requires the exact stored trim, source-time overlays, one placed clip and muted source', () => {
+  const saved = { trimStart: 1, trimEnd: 7, padding: 0, radius: 0,
+    overlays: [{ ...RECIPE.privacy, start: 2, end: 4 }, { ...RECIPE.callout, start: 2, end: 4 }],
+    narration: { clips: [{ id: id(81), assetId: id(80), start: 1.5, gain: 1, muted: false }], sourceGain: 1, sourceMuted: true } };
+  assert.equal(recipeMatches(saved, id(80)), true);
+  assert.equal(recipeMatches(saved, id(79)), false);
+  for (const change of [value => { value.trimEnd = 8; }, value => { value.overlays[0].start = 1; }, value => { value.overlays[1].text = 'other'; },
+    value => { value.overlays.push({ id: 'extra' }); }, value => { value.narration.clips[0].start = 2; }, value => { value.narration.sourceMuted = false; },
+    value => { value.padding = 56; }]) {
+    const copy = structuredClone(saved); change(copy); assert.equal(recipeMatches(copy, id(80)), false);
+  }
 });
 
 test('injected complete stage sequence preserves capture ordering, revisions, two fixed exports and native evidence pauses', async () => {
@@ -118,15 +151,31 @@ test('injected complete stage sequence preserves capture ordering, revisions, tw
     assert.ok(Number.isInteger(call.revision)); assert.ok(call.requestId);
   }
   assert.equal(new Set(f.calls.filter(call => call.requestId).map(call => call.requestId)).size, f.calls.filter(call => call.requestId).length);
-  assert.equal(f.events.filter(value => value.startsWith('trace-evidence:')).length, 3);
+  assert.deepEqual(f.events.filter(value => value.startsWith('trace-evidence:')).map(value => value.split(':').slice(1).join(':')),
+    ['fixture-demonstration:900:since', 'editor-controls:11:since', 'completed-file-playback:11:since']);
+  assert.ok(f.events.includes('fixture-ready:bound')); assert.ok(f.events.includes('measure:fixture:digest:source-1.webm'));
+  assert.ok(f.events.indexOf('launch:fixture') > f.events.indexOf('launch:recorder'));
   assert.equal(f.workflow.state().cleanup.confirmed, true);
+  assert.deepEqual(f.workflow.state().cleanup.instances.map(value => value.label), ['recorder', 'editor', 'fixture']);
   assert.equal(f.workflow.state().status, 'awaiting_runtime_evidence_audit'); // Synthetic success cannot claim live APP-01.
 });
 
-test('readiness failure still retains and closes the exact returned app handle before any grant or command', async () => {
+test('every mutation request identity is checkpointed as pending before dispatch; a failed checkpoint dispatches nothing', async () => {
+  const f = injectedRuntime(); await through(f, 'fixture-record-start');
+  const start = f.calls.find(call => call.name === 'capture.start');
+  assert.ok(f.checkpoints.some(snapshot => snapshot.some(value => value.requestId === start.requestId && value.state === 'pending')));
+  assert.equal(f.workflow.state().requests.find(value => value.requestId === start.requestId).state, 'completed');
+  await f.workflow.cleanup();
+  const blocked = injectedRuntime({ checkpointFails: true }); await through(blocked, 'fixture-ready');
+  await assert.rejects(blocked.workflow.advance('fixture-record-start'), { code: 'checkpoint_failed' });
+  assert.equal(blocked.calls.some(call => call.name === 'capture.start'), false);
+  assert.equal(blocked.workflow.state().requests.at(-1).state, 'not_dispatched'); await blocked.workflow.cleanup();
+});
+
+test('readiness failure still retains and closes the exact returned app handle before any grant, command or fixture', async () => {
   const f = injectedRuntime({ readinessFails: true });
   await assert.rejects(f.workflow.advance('provision'), { code: 'readiness_failed' });
-  assert.equal(f.apps.length, 1); assert.equal(f.calls.length, 0);
+  assert.equal(f.apps.length, 1); assert.equal(f.calls.length, 0); assert.equal(f.events.includes('launch:fixture'), false);
   const closed = await f.workflow.cleanup(); assert.equal(closed.confirmed, true);
   assert.ok(f.events.includes('stop:editor')); assert.ok(f.events.some(value => value.startsWith('exact-exit:11:')));
 });
@@ -142,7 +191,9 @@ test('package/source mismatch stops before launch and out-of-order or concurrent
   release(); await pending; await f.workflow.cleanup();
 });
 
-test('changed native generation blocks capture before mutation; missing root TRACE evidence prevents progressing to edits', async () => {
+test('fixture without measured privacy texture, changed native generation or missing TRACE evidence blocks before mutation', async () => {
+  const flat = injectedRuntime({ textureMissing: true }); await through(flat, 'provision');
+  await assert.rejects(flat.workflow.advance('fixture-ready', evidence), { code: 'replay_fixture_not_ready' }); await flat.workflow.cleanup();
   const f = injectedRuntime({ changedIdentity: true }); await through(f, 'fixture-ready');
   await assert.rejects(f.workflow.advance('fixture-record-start'), { code: 'replay_capture_identity_changed' });
   assert.equal(f.calls.some(call => call.name === 'capture.start'), false); await f.workflow.cleanup();
@@ -151,13 +202,26 @@ test('changed native generation blocks capture before mutation; missing root TRA
   assert.equal(missing.calls.some(call => call.name === 'project.edit'), false); await missing.workflow.cleanup();
 });
 
-test('unknown mutation retains its pending request ID and never permits automatic retry or later stage', async () => {
+test('editor controls require the independent preview to end paused past the opened position', async () => {
+  const f = injectedRuntime({ editorStillPlaying: true }); await through(f, 'edit-fixture');
+  await assert.rejects(f.workflow.advance('trace-editor-controls', evidence), { code: 'replay_editor_controls_unverified' });
+  assert.equal(f.calls.some(call => call.name === 'export.start'), false); await f.workflow.cleanup();
+});
+
+test('unknown mutation retains its request ID as unknown, typed rejection as failed, and neither permits retry or reconciliation writes', async () => {
   const f = injectedRuntime({ failCommand: 'capture.start' }); await through(f, 'fixture-ready');
   await assert.rejects(f.workflow.advance('fixture-record-start'), { code: 'injected_transport_unknown' });
   const pending = f.workflow.state().requests.find(value => value.command === 'capture.start');
-  assert.equal(pending.state, 'pending'); assert.ok(pending.requestId);
+  assert.equal(pending.state, 'unknown'); assert.ok(pending.requestId);
   await assert.rejects(f.workflow.advance('fixture-record-start'), { code: 'replay_stage_out_of_order' });
+  const before = f.calls.length, reconciled = await f.workflow.reconcile();
+  assert.deepEqual(f.calls.slice(before).map(call => [call.name, call.requestId]), [['jobs.list', undefined], ['capture.status', undefined],
+    ['jobs.list', undefined], ['capture.status', undefined]]);
+  assert.deepEqual(reconciled.map(value => value.label), ['editor', 'recorder']);
   assert.equal(f.calls.filter(call => call.name === 'capture.start').length, 1); await f.workflow.cleanup();
+  const rejected = injectedRuntime({ failCommand: 'capture.start', failOutcome: 'failed' }); await through(rejected, 'fixture-ready');
+  await assert.rejects(rejected.workflow.advance('fixture-record-start'));
+  assert.equal(rejected.workflow.state().requests.at(-1).state, 'failed'); await rejected.workflow.cleanup();
 });
 
 test('existing export destination is preserved without dispatching export', async () => {
@@ -166,13 +230,14 @@ test('existing export destination is preserved without dispatching export', asyn
   assert.equal(f.calls.some(call => call.name === 'export.start'), false); await f.workflow.cleanup();
 });
 
-test('cleanup is idempotent, recognizes signal termination, and requires exact OS birth exit plus durable grant revocation', async () => {
-  for (const options of [{ signalExit: true }, { revokeFails: true }, { exactExitFails: true }, { closeFails: true }]) {
+test('cleanup is idempotent, recognizes signal termination, and requires exact OS birth exit, durable grant revocation and fixture exit', async () => {
+  for (const options of [{ signalExit: true }, { revokeFails: true }, { exactExitFails: true }, { closeFails: true }, { fixtureExitFails: true }]) {
     const f = injectedRuntime(options); await through(f, 'provision');
     const a = f.workflow.cleanup(), b = f.workflow.cleanup(); assert.equal(a, b);
     const result = await a; assert.equal(result.confirmed, !!options.signalExit);
     assert.equal(f.events.filter(value => value.startsWith('stop:')).length, 2);
     assert.equal(f.events.filter(value => value.startsWith('revoke:')).length, 2);
+    assert.equal(f.events.filter(value => value === 'close-fixture').length, 1);
   }
 });
 

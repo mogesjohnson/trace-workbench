@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 
-// Preparation module only. Import and CLI planning perform no app/native/media work.
+// Orchestration module. Import and CLI planning perform no app/native/media work; the
+// production runtime (scripts/replay-workflow-runtime.cjs) loads only for --live/--advance.
 // The adapter is deliberately injected: no arbitrary RPC, renderer JS or live replay.
 const path = require('node:path');
 const { randomUUID } = require('node:crypto');
@@ -19,13 +20,23 @@ const RECIPE = freeze({ sourceStart: 1, sourceEnd: 7, duration: 6, effectStart: 
   narrationStart: 1.5, narrationDuration: 1, samples: [0.5, 2, 4],
   callout: { id: 'trace-callout', type: 'text', text: 'TRACE verified synthetic fixture', x: 0.1, y: 0.05, width: 0.6, height: 0.13, start: 1, end: 3 },
   privacy: { id: 'trace-privacy', type: 'blur', x: 0.34, y: 0.25, width: 0.32, height: 0.4, start: 1, end: 3 } });
+// Declared before execution: what root does through actual connected TRACE and what independent state must show.
+const DEMONSTRATION = freeze({ text: 'TRACE REPLAY demo', increments: 2, fixtureActions: 3, editorActions: 2, playbackActions: 1,
+  editorPosition: 2, editorMinimumAdvance: 0.2, playbackMinimumAdvance: 0.2, textureMinimum: 5 });
+const EVIDENCE_INPUTS = freeze({
+  'fixture-ready': '{ traceSessionId, observationId }: a TRACE session opened on the run-owned fixture after launch and a fresh observation of it.',
+  'fixture-record-stop': '{ traceSessionId }: at least 3 completed TRACE actions on the fixture after recording starts.',
+  'trace-editor-controls': '{ traceSessionId }: at least 2 completed TRACE actions on the first editor after its preview opens at position 2.',
+  'trace-completed-playback': '{ traceSessionId }: at least 1 completed TRACE action on the first editor after the completed export opens.',
+  'root-review': '{ pass: true, reviewedFrames: [{ sha256, observed }] }: one entry per produced review frame.' });
 function plan() {
-  return { schemaVersion: 1, caseId: 'A4-REPLAY', requirement: 'APP-01', status: 'preparation_only',
-    claimsAttempt: false, package: { ...PIN }, recipe: structuredClone(RECIPE), stages: [...STAGES],
+  return { schemaVersion: 1, caseId: 'A4-REPLAY', requirement: 'APP-01', status: 'adapter_ready_not_run',
+    claimsAttempt: false, package: { ...PIN }, recipe: structuredClone(RECIPE), demonstration: structuredClone(DEMONSTRATION),
+    stages: [...STAGES], evidenceInputs: structuredClone(EVIDENCE_INPUTS),
     scope: 'Two isolated packaged REPLAY instances, owned fixture capture, trim/callout/blur/offline WAV placement, separate actual TRACE editor controls, two exports and independent media/cleanup proof.',
-    pauses: { 'fixture-ready': 'Root prepares and pins the synthetic fixture HWND/PID/birth/session and stable texture in the declared privacy region; no real data.',
-      'fixture-record-stop': 'Root performs the declared fixture demonstration through actual connected TRACE, with at least 8 seconds of recording.',
-      'trace-editor-controls': 'While second instance records the exact first editor, root uses actual connected TRACE controls and inspects fresh PNG/accessibility state. Supply correlated native receipts and independent saved state.',
+    pauses: { 'fixture-ready': 'The adapter launches the prepared synthetic fixture during provision. Root opens a TRACE session on that exact window and observes it; the adapter measures texture in the declared privacy region from that observation.',
+      'fixture-record-stop': `Root types "${DEMONSTRATION.text}" into the fixture text input and presses Increment counter ${DEMONSTRATION.increments} times through actual connected TRACE, with at least 8 seconds of recording.`,
+      'trace-editor-controls': 'While the second instance records the exact first editor, root uses actual connected TRACE to start and then pause its preview. The preview must end paused past position 2.2 with the saved recipe unchanged.',
       'trace-completed-playback': 'Root uses actual TRACE controls to play the imported completed fixture-demo.mp4 in the first editor; independent preview clock must advance.',
       'root-review': 'Root inspects actual decoded before/during/after frames, both videos and measured audio. Signal measurements do not prove semantic listening.' },
     outputs: ['fixture-demo.mp4', 'editor-walkthrough.mp4'],
@@ -34,9 +45,9 @@ function plan() {
       'Provision only through existing smoke flags/preload grant APIs; inspect native identities read-only.',
       'Retain app handle before readiness, require exitCode OR signalCode plus exact OS birth exit, revoke grants and close transports.',
       'No automatic retry after mutation uncertainty; preserve request IDs and terminal evidence.'],
-    remaining: ['Production runtime adapter and durable manual command-loop wiring are not implemented in this bounded module.',
-      'Root must bind actual TRACE receipts and independently decoded media; injected tests establish orchestration only.',
-      'No live execution or complete APP-01 claim is provided by this preparation.'] };
+    remaining: ['Live execution needs an explicit owner go-ahead and a fresh directory; preparing the adapter ran nothing live.',
+      'TRACE evidence is bound to the local TRACE journal, fixture state and REPLAY state; it cannot prove semantic intent.',
+      'No complete APP-01 claim until a live run, root visual review, confirmed cleanup and Codex review.'] };
 }
 function inside(root, filename) {
   if (typeof root !== 'string' || typeof filename !== 'string') return false;
@@ -69,6 +80,20 @@ function editOperations(assetId, clipId) {
     { type: 'overlay.put', overlay: { ...RECIPE.privacy } }, { type: 'overlay.put', overlay: { ...RECIPE.callout } },
     { type: 'narration.put', clip: { id: clipId, assetId, start: RECIPE.narrationStart, gain: 1, muted: false } },
     { type: 'audio.mix', sourceGain: 1, sourceMuted: true }];
+}
+// The saved project must hold exactly the declared recipe. Overlays are stored in source time.
+function recipeMatches(value, assetId) {
+  const near = (a, b) => typeof a === 'number' && Math.abs(a - b) < 1e-6;
+  const overlay = expected => {
+    const found = (value?.overlays ?? []).filter(item => item?.id === expected.id);
+    return found.length === 1 && Object.entries(expected).every(([key, wanted]) => ['start', 'end'].includes(key)
+      ? near(found[0][key], wanted + RECIPE.sourceStart) : typeof wanted === 'number' ? near(found[0][key], wanted) : found[0][key] === wanted);
+  };
+  const clips = value?.narration?.clips;
+  return near(value?.trimStart, RECIPE.sourceStart) && near(value?.trimEnd, RECIPE.sourceEnd) && value.padding === 0 && value.radius === 0
+    && value.overlays?.length === 2 && overlay(RECIPE.privacy) && overlay(RECIPE.callout)
+    && Array.isArray(clips) && clips.length === 1 && clips[0].assetId === assetId && near(clips[0].start, RECIPE.narrationStart)
+    && clips[0].gain === 1 && clips[0].muted === false && value.narration.sourceMuted === true && near(value.narration.sourceGain, 1);
 }
 function packetDuration(formatDuration, rows) {
   const container = Number(formatDuration);
@@ -117,27 +142,38 @@ function validateMeasurements(value, kind) {
 function createWorkflow(deps, locations) {
   need(typeof locations?.privateRoot === 'string', 'replay_private_root_required');
   const owned = [], requests = [], completed = [], values = {};
-  let next = 0, failed = false, active = false, cleanupPromise;
+  let next = 0, failed = false, active = false, cleanupPromise, fixture;
+  const now = () => deps.now?.() ?? new Date().toISOString();
   const command = async (app, name, input = {}, revision, mutation = false) => {
-    const requestId = mutation ? `trace-replay-${randomUUID()}` : undefined;
-    if (requestId) requests.push({ command: name, requestId, state: 'pending' });
-    // Allocate the request identity before dispatch. A throw never permits replay.
-    const result = await deps.command(app.client, name, input, revision, requestId);
-    if (requestId) requests.at(-1).state = 'completed'; return result;
+    const entry = mutation ? { app: app.label, command: name, requestId: `trace-replay-${randomUUID()}`, state: 'pending' } : undefined;
+    if (entry) {
+      requests.push(entry);
+      // Persist the request identity before dispatch. A failed checkpoint means nothing was sent.
+      try { await deps.checkpoint?.(); } catch (error) { entry.state = 'not_dispatched'; throw error; }
+    }
+    try {
+      const result = await deps.command(app.client, name, input, revision, entry?.requestId);
+      if (entry) entry.state = 'completed'; return result;
+    } catch (error) {
+      // A typed REPLAY rejection is durable; anything else is unknown. Neither permits replay.
+      if (entry) entry.state = error.replayOutcome === 'failed' ? 'failed' : 'unknown';
+      throw error;
+    } finally { if (entry) await deps.checkpoint?.()?.catch?.(() => {}); }
   };
   const refresh = async (app, current) => project(await command(app, 'project.get', { id: current.id }));
   const stopCapture = async (app, key) => {
     const stopped = project(await command(app, 'capture.stop', { recordingId: values[key].recordingId }, undefined, true));
     need(inside(app.info.libraryPath, stopped.sourcePath), 'replay_capture_outside_library');
     need(stopped.duration >= 8 || key === 'walkthroughCapture' && stopped.duration >= 2, 'replay_capture_too_short');
-    values[key].stopped = true; return stopped;
+    values[key].stopped = true; values[key].sourcePath = stopped.sourcePath;
+    values[key].sourceSha256 = await deps.sourceDigest(stopped.sourcePath); return stopped;
   };
   const startCapture = async (app, target, key, name) => {
     need(sameIdentity(await deps.windowIdentity(target), target), 'replay_capture_identity_changed');
     const sourceId = exactWindowSource(await command(app, 'capture.sources'), target);
     const result = await command(app, 'capture.start', { sourceId, name }, undefined, true);
     need(result.state === 'recording' && typeof result.recordingId === 'string' && result.sourceId === sourceId, 'replay_capture_not_started');
-    values[key] = { recordingId: result.recordingId, sourceId, stopped: false };
+    values[key] = { recordingId: result.recordingId, sourceId, stopped: false, startedAt: now() };
   };
   const exportProject = async (app, current, basename) => {
     current = await refresh(app, current);
@@ -148,6 +184,8 @@ function createWorkflow(deps, locations) {
     need(finished.state === 'completed' && finished.output?.path === output && finished.revision === current.revision, 'replay_export_unverified');
     return { project: current, job: finished, output };
   };
+  const traceEvidence = async (kind, input, target, since) =>
+    need(await deps.verifyTraceEvidence(kind, input, target, { since, openedAfter: values.launchStartedAt }) === true, 'replay_trace_evidence_missing');
   const cleanup = () => cleanupPromise ??= (async () => {
     const outcomes = [];
     for (const app of [...owned].reverse()) {
@@ -162,7 +200,13 @@ function createWorkflow(deps, locations) {
       } catch {}
       outcomes.push(outcome);
     }
-    const confirmed = outcomes.length === owned.length && outcomes.every(outcome => outcome.transportClosed && outcome.grantRevoked && outcome.processExited);
+    if (fixture) {
+      const outcome = { label: 'fixture', transportClosed: true, grantRevoked: true, processExited: false };
+      try { outcome.processExited = await deps.closeFixture(fixture.handle) === true && !!fixture.identity && await deps.waitIdentityExit(fixture.identity) === true; } catch {}
+      outcomes.push(outcome);
+    }
+    const confirmed = outcomes.length === owned.length + (fixture ? 1 : 0)
+      && outcomes.every(outcome => outcome.transportClosed && outcome.grantRevoked && outcome.processExited);
     values.cleanup = { confirmed, instances: outcomes }; return values.cleanup;
   })();
   const stages = {
@@ -171,7 +215,7 @@ function createWorkflow(deps, locations) {
       need(Object.keys(PIN).every(key => pins[key] === PIN[key]), 'replay_source_changed');
       const prepared = await deps.prepareOfflineAssets();
       need(prepared.wavDuration === 1 && prepared.paidRequests === 0 && inside(locations.privateRoot, prepared.bootstrapVideo), 'replay_offline_assets_invalid');
-      values.prepared = prepared;
+      values.prepared = prepared; values.launchStartedAt = now();
       for (const label of ['editor', 'recorder']) {
         const root = path.join(locations.privateRoot, label);
         const handle = await deps.launchApp({ label, args: [`--smoke-test=${prepared.bootstrapVideo}`, `--smoke-output=${root}`] });
@@ -190,15 +234,19 @@ function createWorkflow(deps, locations) {
       }
       need(owned[0].identity.pid !== owned[1].identity.pid && owned[0].identity.windowId !== owned[1].identity.windowId
         && owned[0].info.libraryPath !== owned[1].info.libraryPath, 'replay_instances_not_distinct');
+      fixture = { handle: await deps.launchFixture() }; // Retained before its identity is read.
+      fixture.identity = identity(await deps.fixtureIdentity(fixture.handle));
+      need(/^\d+$/.test(String(fixture.identity.windowId)) && owned.every(app => app.identity.pid !== fixture.identity.pid), 'replay_fixture_not_ready');
     },
     async 'fixture-ready'(input) {
-      values.fixture = identity(await deps.validateOwnedFixture(input));
-      need(/^\d+$/.test(String(values.fixture.windowId)) && values.fixture.synthetic === true && values.fixture.privacyTextureVerified === true,
+      need(fixture?.identity, 'replay_fixture_not_ready');
+      values.fixture = identity(await deps.validateOwnedFixture(input, fixture.identity, { openedAfter: values.launchStartedAt }));
+      need(sameIdentity(values.fixture, fixture.identity) && values.fixture.synthetic === true && values.fixture.privacyTextureVerified === true,
         'replay_fixture_not_ready');
     },
     'fixture-record-start': () => startCapture(owned[0], values.fixture, 'fixtureCapture', 'TRACE owned fixture demonstration'),
     async 'fixture-record-stop'(input) {
-      need(await deps.verifyTraceEvidence('fixture-demonstration', input, values.fixture) === true, 'replay_trace_evidence_missing');
+      await traceEvidence('fixture-demonstration', input, values.fixture, values.fixtureCapture.startedAt);
       values.fixtureProject = await stopCapture(owned[0], 'fixtureCapture');
     },
     'walkthrough-record-start': () => startCapture(owned[1], owned[0].identity, 'walkthroughCapture', 'TRACE editor walkthrough'),
@@ -208,16 +256,21 @@ function createWorkflow(deps, locations) {
       const audio = await deps.copyOfflineWav(values.prepared, app.importRoot); need(inside(app.importRoot, audio), 'replay_audio_outside_grant');
       const imported = await command(app, 'narration.import', { projectId: current.id, path: audio, text: 'Synthetic acceptance tone; no speech.' }, current.revision, true);
       need(Math.abs(imported.asset.duration - 1) < 0.03, 'replay_audio_duration_invalid');
+      values.narrationAssetId = imported.asset.assetId;
       // Import may advance revision; always fetch the authoritative revision again.
       const fresh = await refresh(app, current);
       values.fixtureProject = project(await command(app, 'project.edit', { projectId: fresh.id,
         operations: editOperations(imported.asset.assetId, randomUUID()) }, fresh.revision, true));
-      await command(app, 'preview.open', { projectId: fresh.id, position: 2 }, values.fixtureProject.revision, true);
+      await command(app, 'preview.open', { projectId: fresh.id, position: DEMONSTRATION.editorPosition }, values.fixtureProject.revision, true);
+      values.editorPreviewOpenedAt = now();
     },
     async 'trace-editor-controls'(input) {
-      need(await deps.verifyTraceEvidence('editor-controls', input, owned[0].identity) === true, 'replay_trace_evidence_missing');
+      await traceEvidence('editor-controls', input, owned[0].identity, values.editorPreviewOpenedAt);
+      const preview = await command(owned[0], 'preview.get');
+      need(preview.projectId === values.fixtureProject.id && preview.playing === false
+        && preview.position >= DEMONSTRATION.editorPosition + DEMONSTRATION.editorMinimumAdvance, 'replay_editor_controls_unverified');
       values.fixtureProject = await refresh(owned[0], values.fixtureProject);
-      need(await deps.verifySavedRecipe(values.fixtureProject, RECIPE) === true, 'replay_saved_recipe_mismatch');
+      need(await deps.verifySavedRecipe(values.fixtureProject, RECIPE, values.narrationAssetId) === true, 'replay_saved_recipe_mismatch');
     },
     async 'export-fixture'() { values.fixtureExport = await exportProject(owned[0], values.fixtureProject, 'fixture-demo.mp4'); },
     async 'prepare-completed-playback'() {
@@ -225,12 +278,12 @@ function createWorkflow(deps, locations) {
       need(inside(app.importRoot, imported), 'replay_playback_outside_grant');
       values.playbackProject = project(await command(app, 'project.import', { path: imported, name: 'Completed fixture-demo.mp4 playback' }, undefined, true));
       await command(app, 'preview.open', { projectId: values.playbackProject.id, position: 0 }, values.playbackProject.revision, true);
-      values.playbackBefore = await command(app, 'preview.get');
+      values.playbackBefore = await command(app, 'preview.get'); values.playbackOpenedAt = now();
     },
     async 'trace-completed-playback'(input) {
-      need(await deps.verifyTraceEvidence('completed-file-playback', input, owned[0].identity) === true, 'replay_trace_evidence_missing');
+      await traceEvidence('completed-file-playback', input, owned[0].identity, values.playbackOpenedAt);
       const after = await command(owned[0], 'preview.get');
-      need(after.projectId === values.playbackProject.id && after.position > values.playbackBefore.position + 0.2,
+      need(after.projectId === values.playbackProject.id && after.position > values.playbackBefore.position + DEMONSTRATION.playbackMinimumAdvance,
         'replay_completed_playback_unverified');
     },
     async 'walkthrough-record-stop'() { values.walkthroughProject = await stopCapture(owned[1], 'walkthroughCapture'); },
@@ -238,7 +291,7 @@ function createWorkflow(deps, locations) {
     async 'verify-media'() {
       values.measurements = {};
       for (const kind of ['fixture', 'walkthrough']) {
-        const measured = await deps.independentMediaVerification(kind, values[`${kind}Export`], RECIPE);
+        const measured = await deps.independentMediaVerification(kind, values[`${kind}Export`], RECIPE, values[`${kind}Capture`]);
         validateMeasurements(measured, kind); values.measurements[kind] = measured;
       }
     },
@@ -249,9 +302,19 @@ function createWorkflow(deps, locations) {
     cleanup,
   };
   return { plan, cleanup,
+    // Read-only REPLAY state for each connected instance, captured before cleanup after a failure.
+    async reconcile() {
+      const result = [];
+      for (const app of owned) {
+        if (!app.client) { result.push({ label: app.label, connected: false }); continue; }
+        const read = async name => { try { return await deps.command(app.client, name, {}); } catch (error) { return { error: String(error.code || 'read_failed') }; } };
+        result.push({ label: app.label, connected: true, jobs: await read('jobs.list'), capture: await read('capture.status') });
+      }
+      return result;
+    },
     state: () => ({ status: failed ? 'blocked' : values.cleanup?.confirmed && values.reviewed ? 'awaiting_runtime_evidence_audit' : 'prepared_or_running',
       next: STAGES[next] ?? null, completed: [...completed], requests: structuredClone(requests), cleanup: values.cleanup,
-      limits: plan().remaining }),
+      measurements: values.measurements, limits: plan().remaining }),
     async advance(stage, input) {
       need(!failed && !active && STAGES[next] === stage, 'replay_stage_out_of_order'); active = true;
       try { await stages[stage](input); completed.push(stage); next++; return this.state(); }
@@ -260,9 +323,12 @@ function createWorkflow(deps, locations) {
     },
   };
 }
+// Exported before the CLI runs: the runtime requires this module back while it loads.
+module.exports = { PIN, STAGES, RECIPE, DEMONSTRATION, EVIDENCE_INPUTS, plan, inside, identity, sameIdentity, exactWindowSource, editOperations,
+  recipeMatches, packetDuration, meanDifference, gradientEnergy, validateMeasurements, createWorkflow };
 if (require.main === module) {
-  if (process.argv.length === 2 || process.argv.slice(2).join(' ') === '--plan') process.stdout.write(JSON.stringify(plan(), null, 2) + '\n');
-  else { process.stderr.write('replay_production_stage_adapter_not_implemented\n'); process.exitCode = 1; }
+  const args = process.argv.slice(2);
+  if (!args.length || args.join(' ') === '--plan') process.stdout.write(JSON.stringify(plan(), null, 2) + '\n');
+  else require('./replay-workflow-runtime.cjs').main(args).then(code => { process.exitCode = code; },
+    error => { process.stderr.write(`${/^[a-z_]{1,80}$/.test(error.code || '') ? error.code : 'replay_workflow_failed'}\n`); process.exitCode = 1; });
 }
-module.exports = { PIN, STAGES, RECIPE, plan, inside, identity, sameIdentity, exactWindowSource, editOperations,
-  packetDuration, meanDifference, gradientEnergy, validateMeasurements, createWorkflow };
