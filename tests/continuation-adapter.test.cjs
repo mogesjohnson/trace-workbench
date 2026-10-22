@@ -79,3 +79,39 @@ test('read-only final preflight requires exact foreground, accessible all-up inp
   }
   await assert.rejects(adapter.idlePreflight(data, { ...data.deps, leaseFree: async () => false }));
 });
+
+test('explicit amendment parsing selects lifetime 5 or 6 only for glow and Codex and preserves readiness cases', () => {
+  for (const caseId of ['R31-GLOW-NATIVE', 'CODEX-TRACE-SKILL-NATIVE']) {
+    const first = adapter.parse(['--plan', '--amendment', '2', '--continuation', '1'], caseId);
+    assert.equal(first.lifetimeAttemptOrdinal, 5); assert.equal(first.historicalAttemptsUsed, 4);
+    const second = adapter.parse(['--plan', '--amendment', '2', '--continuation', '2', '--continuation-prior', 'evidence/terminal5.json', '--change', 'Actual correction'], caseId);
+    assert.equal(second.lifetimeAttemptOrdinal, 6);
+    assert.throws(() => adapter.parse(['--amendment', '3', '--continuation', '1'], caseId));
+  }
+  for (const caseId of [CASE, 'CLAUDE-TRACE-SKILL-NATIVE', 'METHOD-CLIPBOARD-UNICODE-PASTE']) {
+    assert.throws(() => adapter.parse(['--amendment', '2', '--continuation', '1'], caseId));
+    assert.equal(adapter.parse(['--continuation', '1'], caseId).historicalAttemptsUsed, 2);
+  }
+});
+
+test('amended request binds actual decision, frozen proposal, four receipts and exact prior without claiming', async t => {
+  const fs = require('node:fs/promises'), os = require('node:os'), path = require('node:path');
+  const book = require('../scripts/live-acceptance-continuation.cjs'), caseId = 'CODEX-TRACE-SKILL-NATIVE';
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'trace-amendment-adapter-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true })); await fs.mkdir(path.join(root, 'evidence'));
+  const decisionRef = 'evidence/isolated-decision.json', history = book.amendmentHistory(caseId);
+  const decision = { schemaVersion: 1, source: 'direct-owner', status: 'approved', decisionId: 'synthetic-only', amendment: 2,
+    proposal: { ...book.AMENDMENT_2.proposal }, cases: [{ caseId, contract: book.REGISTRY[caseId].contract, historicalAttemptsUsed: 4, continuationMaximum: 2, history }] };
+  await fs.writeFile(path.join(root, decisionRef), JSON.stringify(decision));
+  const input = { mode: 'live', directory: 'evidence/unused-run', amendment: 2, continuationAttempt: 1, decisionRef };
+  const first = await adapter.claimRequest(input, caseId, { root });
+  assert.equal(first.lifetimeAttemptOrdinal, 5); assert.deepEqual(first.prior, history[3]); assert.deepEqual(first.history, history);
+  assert.deepEqual(first.proposal, book.AMENDMENT_2.proposal);
+  const priorRef = 'evidence/terminal5.json'; await fs.writeFile(path.join(root, priorRef), '{}');
+  const second = await adapter.claimRequest({ ...input, continuationAttempt: 2, continuationPrior: priorRef, change: 'Actual source correction.' }, caseId, { root });
+  assert.equal(second.lifetimeAttemptOrdinal, 6); assert.equal(second.prior.ref, priorRef);
+  assert.equal(second.changedPrecondition, 'Actual source correction.');
+  await assert.rejects(fs.stat(path.join(root, 'evidence/live-acceptance-continuation/ledger')), { code: 'ENOENT' });
+  decision.status = 'proposed'; await fs.writeFile(path.join(root, decisionRef), JSON.stringify(decision));
+  await assert.rejects(adapter.claimRequest(input, caseId, { root }));
+});

@@ -8,7 +8,7 @@ const ROOT = path.resolve(__dirname, '..');
 const fail = message => Object.assign(new Error(message), { code: 'continuation_preflight_required' });
 const DECISION = 'evidence/live-acceptance-continuation/owner-decision.json';
 function options(input, caseId) {
-  const proposal = book.plan(caseId);
+  const proposal = book.plan(caseId, undefined, input.amendment);
   const mode = input.mode ?? 'plan';
   if (!['plan', 'live'].includes(mode)) throw fail('Mode must be plan or live.');
   if (![1, 2].includes(input.continuationAttempt) || input.attempt !== undefined || input.prior !== undefined || input.ownerDecision !== undefined)
@@ -19,17 +19,18 @@ function options(input, caseId) {
   if (input.continuationAttempt === 1 && (input.continuationPrior || input.change)) throw fail('First continuation cannot have corrective prior/change.');
   if (input.continuationAttempt === 2 && (!input.continuationPrior || typeof input.change !== 'string' || !input.change.trim())) throw fail('Second continuation requires exact terminal prior reference and actual change.');
   if (input.continuationPrior) book.reference({ ref: input.continuationPrior, sha256: '0'.repeat(64) });
-  return { ...input, mode, caseId, contract: proposal.contract, historicalAttemptsUsed: 2, lifetimeAttemptOrdinal: input.continuationAttempt + 2 };
+  return { ...input, mode, caseId, contract: proposal.contract, historicalAttemptsUsed: proposal.historicalAttemptsUsed,
+    lifetimeAttemptOrdinal: input.continuationAttempt + proposal.historicalAttemptsUsed };
 }
 function parse(args, caseId, extras = {}) {
   const value = { mode: 'plan' }, fields = { '--continuation': 'continuationAttempt', '--decision-ref': 'decisionRef',
-    '--continuation-prior': 'continuationPrior', '--change': 'change', '--idle-readiness': 'idleReadinessRef', ...extras };
+    '--continuation-prior': 'continuationPrior', '--change': 'change', '--idle-readiness': 'idleReadinessRef', '--amendment': 'amendment', ...extras };
   for (let index = 0; index < args.length; index++) {
     const item = args[index];
     if (item === '--plan' || item === '--live') value.mode = item.slice(2);
     else if (fields[item]) {
       if (!args[index + 1] || args[index + 1].startsWith('--')) throw fail(`Missing value for ${item}.`);
-      value[fields[item]] = item === '--continuation' ? Number(args[++index]) : args[++index];
+      value[fields[item]] = ['--continuation', '--amendment'].includes(item) ? Number(args[++index]) : args[++index];
     } else if (!item.startsWith('--') && !value.directory) value.directory = item;
     else throw fail('Unknown continuation flag; do not mix historical retry flags.');
   }
@@ -44,9 +45,12 @@ async function evidence(ref, root = ROOT) {
 }
 async function claimRequest(input, caseId, { root = ROOT } = {}) {
   const selected = options(input, caseId), decision = await evidence(selected.decisionRef, root);
-  book.validateDecision(decision.value, caseId, selected.contract);
+  book.validateDecision(decision.value, caseId, selected.contract, selected.amendment);
+  const amended = selected.amendment === 2;
   return { caseId, contract: selected.contract, decision: decision.descriptor, originals: book.plan(caseId).originals,
-    historicalAttemptsUsed: 2, continuationAttempt: selected.continuationAttempt, lifetimeAttemptOrdinal: selected.lifetimeAttemptOrdinal,
+    historicalAttemptsUsed: selected.historicalAttemptsUsed, continuationAttempt: selected.continuationAttempt, lifetimeAttemptOrdinal: selected.lifetimeAttemptOrdinal,
+    ...(amended ? { amendment: 2, proposal: { ...book.AMENDMENT_2.proposal }, history: book.amendmentHistory(caseId),
+      ...(selected.continuationAttempt === 1 ? { prior: book.amendmentHistory(caseId)[3] } : {}) } : {}),
     ...(selected.continuationAttempt === 2 ? { prior: (await evidence(selected.continuationPrior, root)).descriptor, changedPrecondition: selected.change } : {}) };
 }
 async function preparedFixture(root = ROOT, io = fs) {

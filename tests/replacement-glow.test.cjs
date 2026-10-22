@@ -7,6 +7,16 @@ const os = require('node:os');
 const driver = require('../scripts/accept-replacement-glow.cjs');
 const common = require('../scripts/replacement-acceptance-common.cjs');
 
+test('glow amendment CLI declares lifetime 5 or 6 and pins proposal/history without changing the oracle', () => {
+  const first = driver.parseArgs(['--plan', '--amendment', '2', '--continuation', '1']);
+  const declared = driver.plan(first);
+  assert.equal(declared.amendment, 2); assert.equal(declared.attempt, 5); assert.equal(declared.historicalAttemptsUsed, 4);
+  assert.equal(declared.history.length, 4); assert.equal(declared.bounds.referenceClicks, 1); assert.equal(declared.bounds.traceClicks, 1);
+  const second = driver.parseArgs(['--plan', '--amendment', '2', '--continuation', '2', '--continuation-prior', 'evidence/terminal5.json', '--change', 'Actual correction']);
+  assert.equal(driver.plan(second).attempt, 6);
+  assert.equal(driver.plan({ continuationAttempt: 1 }).attempt, 3);
+});
+
 test('default capture boundary accepts actual .NET byte-array serialization and exact integer RGB only', () => {
   // System.Text.Json serializes new[] { Color.R, Color.G, Color.B } (System.Byte[]) as canonical base64.
   const expected = { filename: 'glow-active-1.png', sha256: 'a'.repeat(64), width: 2880, height: 1800 };

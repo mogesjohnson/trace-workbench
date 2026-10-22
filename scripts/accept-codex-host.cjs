@@ -17,20 +17,24 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 function plan(options = {}) {
   const attempt = options.continuationAttempt ?? 1;
   need([1, 2].includes(attempt) && options.attempt === undefined, 'invalid_continuation');
-  return { ...book.plan(CASE), continuationAttempt: attempt, lifetimeAttemptOrdinal: attempt + 2,
-    ownerDecision: continuation.DECISION, host: 'Actual connected Codex conversation', payload: PAYLOAD,
+  const selected = book.plan(CASE, undefined, options.amendment);
+  return { ...selected, continuationAttempt: attempt, lifetimeAttemptOrdinal: attempt + selected.historicalAttemptsUsed,
+    ownerDecision: options.decisionRef ?? (options.amendment === 2 ? null : continuation.DECISION), host: 'Actual connected Codex conversation', payload: PAYLOAD,
     initial: { text: '', count: 0 }, actions: STEPS, expected: { text: PAYLOAD, count: 1 },
     cleanup: 'Close actual MCP session; independently verify supervisor and marker exit, attached host Node generation remains alive, all-up input and clear recovery while fixture is alive; close retained fixture.',
     evidence: 'Each ordered checkpoint uses an evidence-relative JSON envelope: source actual-connected-codex, step, tools [{name, arguments, result}], images [{ref, sha256}], modelInspection. discovery includes skillReads; opened includes chain. Before focus/type, --refresh records one actual observe without advancing the semantic step; its envelope has step refresh and nextStep focused or typed. An inline actual observe before the action is also supported. No command dispatches tools or extends server freshness.',
     notProven: ['Other hosts', 'REA analysis', 'REPLAY', 'Release readiness'] };
 }
 function parseArgs(args) {
-  const value = { mode: 'plan', continuationAttempt: 1, decisionRef: continuation.DECISION };
-  const fields = { '--directory': 'directory', '--runtime': 'runtime', '--evidence': 'evidence', '--continuation': 'continuationAttempt', '--continuation-prior': 'continuationPrior', '--change': 'change' };
+  const value = { mode: 'plan', continuationAttempt: 1 };
+  const fields = { '--directory': 'directory', '--runtime': 'runtime', '--evidence': 'evidence', '--continuation': 'continuationAttempt', '--continuation-prior': 'continuationPrior', '--change': 'change', '--amendment': 'amendment', '--decision-ref': 'decisionRef' };
   for (let i = 0; i < args.length; i++) {
     if (['--plan', '--start', '--checkpoint', '--refresh', '--finalize', '--abort', '--reconcile'].includes(args[i])) value.mode = args[i].slice(2);
-    else { need(fields[args[i]] && args[i + 1] && !args[i + 1].startsWith('--'), 'invalid_arguments'); const field = fields[args[i]]; value[field] = field === 'continuationAttempt' ? Number(args[++i]) : args[++i]; }
+    else { need(fields[args[i]] && args[i + 1] && !args[i + 1].startsWith('--'), 'invalid_arguments'); const field = fields[args[i]]; value[field] = ['continuationAttempt', 'amendment'].includes(field) ? Number(args[++i]) : args[++i]; }
   }
+  if (value.amendment !== undefined) need(args.includes('--continuation'), 'explicit_continuation_required');
+  if (value.amendment === undefined && value.decisionRef === undefined) value.decisionRef = continuation.DECISION;
+  if (value.amendment === 2 && value.mode === 'start') need(!!value.decisionRef, 'amendment_decision_required');
   plan(value); return value;
 }
 async function ordinaryFile(filename) {
@@ -194,6 +198,7 @@ async function processProbe(identity) {
   return JSON.parse(result.stdout.trim());
 }
 async function start(options, injected = {}) {
+  if (options.amendment === 2) need(!!options.decisionRef, 'amendment_decision_required');
   const root = injected.root ?? ROOT, declared = plan(options);
   const deps = { prepare: () => defaultPrepare(root), probe: processProbe, claim: request => book.createBookkeeper({ root }).claim(request), claimRequest: input => continuation.claimRequest(input, CASE, { root }), launch: input => require('./accept-clipboard.cjs').launchOwnedFixture(input), command: args => require('./accept-supervisor-quarantine.cjs').command(args), ...injected };
   const prepared = await deps.prepare();
@@ -207,7 +212,7 @@ async function start(options, injected = {}) {
   let interrupted = false; const interrupt = () => { interrupted = true; };
   process.once('SIGINT', interrupt); process.once('SIGTERM', interrupt);
   try {
-    Object.assign(receipt, await deps.claim(await deps.claimRequest({ ...options, mode: 'live', decisionRef: continuation.DECISION })), { attempt: declared.lifetimeAttemptOrdinal }); await persist();
+    Object.assign(receipt, await deps.claim(await deps.claimRequest({ ...options, mode: 'live', decisionRef: options.decisionRef ?? continuation.DECISION })), { attempt: declared.lifetimeAttemptOrdinal }); await persist();
     fixture = await deps.launch({ executable: prepared.fixture.executable, directory: runtime });
     const initial = await fixture.state(); need(initial.text === '' && initial.count === 0, 'initial_mismatch');
     receipt.target = { pid: fixture.pid, title: fixture.title }; await persist();

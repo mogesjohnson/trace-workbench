@@ -28,7 +28,8 @@ function plan(input = {}) {
     throw common.failure('invalid_plan', 'A bounded separate reference-executor name/reference is required; TRACE cannot supply both clicks.');
   return { schemaVersion: 1, planContract: 1, caseId: CASE, replaces: ['A31-GLOW', 'GLOW-LIVE'], historicalStatus: 'exhausted fail; regression kept separate',
     attempt: options.attempt, ownerDecision: options.ownerDecision ?? null, referenceExecutor: options.referenceExecutor ?? null,
-    ...(supplemental ? { attempt: options.lifetimeAttemptOrdinal, historicalAttemptsUsed: 2, continuationAttempt: options.continuationAttempt,
+    ...(supplemental ? { attempt: options.lifetimeAttemptOrdinal, historicalAttemptsUsed: options.historicalAttemptsUsed, continuationAttempt: options.continuationAttempt,
+      ...(options.amendment === 2 ? { amendment: 2, proposalDocument: { ...book.AMENDMENT_2.proposal }, history: book.amendmentHistory(CASE) } : {}),
       lifetimeAttemptOrdinal: options.lifetimeAttemptOrdinal, contract: options.contract, decisionRef: options.decisionRef ?? null,
       referenceProof: 'One actual Sky accessibility mouse click; independently recorded physical point inside fresh button and measured glow. TRACE remains exact fresh center.' } : {}),
     executionRequiresExplicitOwnerDecision: true, declaredBeforeUiLaunch: true,
