@@ -36,7 +36,7 @@ function plan(input = {}) {
     target: 'Fresh exact owned full-screen non-topmost synthetic glow fixture',
     initial: { count: 0, mouseClickCount: 0, activationCount: 0, mouseDownCount: 0, mouseUpCount: 0, keysDown: [] },
     actions: ['Open actual MCP session; verify Node→detached native supervisor→marker and unchanged focus',
-      'Verify actual safe desktop pixels show glow', 'One EXTERNAL reference-executor left edge click gives count1',
+      'Verify actual safe desktop pixels show glow; after actual Sky observation, take a new safe reference frame before validating the click checkpoint', 'One EXTERNAL reference-executor left edge click gives count1',
       'One fresh observed TRACE MCP coordinate edge click gives count2',
       'Ordinary session close: owner/marker exit within5s, absent glow, clear recovery and free lease',
       'Second session: visible glow and unchanged focus; private owned Node self-termination; exact Node/native/marker exit within5s, absent glow and lease handoff'],
@@ -315,18 +315,25 @@ async function run(input = {}, injected = {}) {
     if (supplemental) {
       const targetProof = { windowId: target.id, pid: target.pid, processCreationTime: target.processCreationTime, windowsSessionId: target.sessionId }, physicalDisplay = regionDisplay(display);
       const observationPath = path.join(privateDirectory, 'sky-observation.json');
+      await persist(); // Publish the exact target before the external observer needs its identity.
       deps.notifyReady({ phase: 'SKY_OBSERVATION_READY', target, observationPath, waitMs: 60000,
         instruction: 'Observe the exact Sky accessibility edge button once without clicking; atomically retain actual observation metadata.' });
       const observation = await deps.waitSkyObservation(observationPath);
+      // The initial visibility frame predates the external observation handshake.
+      // Take genuinely new pixels here; never give an old capture a newer timestamp.
+      const referenceBands = await capture('glow-reference-fresh', chain);
+      assert.equal(glowVisible(referenceBands), true);
       const state = await fixture.state(), sample = { target: targetProof, display: physicalDisplay, sampledAt: new Date().toISOString() };
       assertCounts(state, 0); point = referencePoint(state);
-      const measured = deps.measureGlowRegion(captures.get('before-glow-reference').bytes, captures.get('glow-active').bytes, state.button, display);
+      const referenceCapture = captures.get('glow-reference-fresh');
+      const measured = deps.measureGlowRegion(captures.get('before-glow-reference').bytes, referenceCapture.bytes, state.button, display);
       const checkpoint = { executor: 'Sky', checkpointId, startedAt: new Date().toISOString(), target: targetProof, display: physicalDisplay, button: state.button,
         observation, initialFixture: regionFixture(state, sample),
         initialInput: { ...sample, sampledAt: new Date().toISOString(), source: 'independent-keystate-all', observable: true, keysDown: (await deps.command(['keystate', 'all'])).down },
-        glow: { ...sample, sampledAt: captures.get('glow-active').sampledAt, source: 'safe-pixel-measurement', coordinateSpace: 'physical-screen', verified: true,
-          bounds: measured.bounds, leftTintedSamples: active.tintedLeft, topTintedSamples: active.tintedTop,
-          interiorBackgroundVerified: captures.get('glow-active').interiorBackgroundVerified && captures.get('before-glow-reference').interiorBackgroundVerified } };
+        glow: { ...sample, sampledAt: referenceCapture.sampledAt, source: 'safe-pixel-measurement', coordinateSpace: 'physical-screen', verified: true,
+          frameLabel: 'glow-reference-fresh', frameSha256: common.digest(referenceCapture.bytes),
+          bounds: measured.bounds, leftTintedSamples: referenceBands.tintedLeft, topTintedSamples: referenceBands.tintedTop,
+          interiorBackgroundVerified: referenceCapture.interiorBackgroundVerified && captures.get('before-glow-reference').interiorBackgroundVerified } };
       // All samples must precede the actual click checkpoint. Never extend sample age by restarting its clock.
       checkpoint.startedAt = new Date().toISOString();
       // Retain the exact private candidate before validation. Its existence never means that it passed.

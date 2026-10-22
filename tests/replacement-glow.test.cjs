@@ -98,7 +98,7 @@ function simulation(root, settings = {}) {
     fixture: async () => ({ pid: target.pid, sha256: 'synthetic', state: async () => ({ ...state }), focus: async () => ({ ...focus }),
       capture: async (filename, markerPid) => {
         events.push(`capture-${filename}`); if (settings.captureError) throw new Error('Owned fixture command failed: foreign_overlay_above_fixture.');
-        const bytes = Buffer.from('injected synthetic pixel oracle; no actual desktop'), expected = { filename, sha256: common.digest(bytes), width: 1920, height: 1080 };
+        const bytes = Buffer.from(`injected synthetic pixel oracle ${filename}; no actual desktop`), expected = { filename, sha256: common.digest(bytes), width: 1920, height: 1080 };
         const metadata = { file: filename, sha256: expected.sha256, width: 1920, height: 1080, method: 'public-win32-bitblt-captureblt', layeredWindows: true, sanitizedInteriorRgb: 'GBwo' };
         return { bytes, ...driver.captureMetadata(metadata, expected), interiorBackgroundVerified: settings.interiorBackgroundVerified ?? true, bands: { width: 1920, height: 1080,
           tintedLeft: markerPid ? 11 : 0, tintedTop: markerPid ? 11 : 0, backgroundLeft: markerPid ? 13 : 24, backgroundTop: markerPid ? 13 : 24 } };
@@ -158,9 +158,20 @@ test('supplemental glow claims lifetime3 before fixture and consumes actual-refe
   mock.deps.notifyReady = value => {
     if (value.phase === 'REFERENCE_READY') checkpoint = value.checkpoint;
   };
-  mock.deps.waitSkyObservation = async () => ({ target: targetProof, display: physicalDisplay, sampledAt: new Date().toISOString(),
-    executor: 'Sky', unique: true, elementId: 'traceGlowEdgeButton', elementIndex: 1 });
-  mock.deps.measureGlowRegion = () => ({ bounds: { x: 0, y: mock.state.button.y, width: 10, height: mock.state.button.height }, containsTintedPoint: point => point.x === 5 });
+  mock.deps.waitSkyObservation = async () => {
+    // Real run identity must already be persisted when the external observer starts.
+    const running = JSON.parse(await fs.readFile(path.join(root, 'supplemental/receipt.json'), 'utf8'));
+    assert.deepEqual(running.target, mock.target);
+    mock.events.push('actual-sky-observation');
+    return { target: targetProof, display: physicalDisplay, sampledAt: new Date().toISOString(),
+      executor: 'Sky', unique: true, elementId: 'traceGlowEdgeButton', elementIndex: 1 };
+  };
+  mock.deps.measureGlowRegion = (before, active) => {
+    assert.match(before.toString(), /before-glow-reference-1/);
+    assert.match(active.toString(), /glow-reference-fresh-1/);
+    assert.ok(mock.events.indexOf('actual-sky-observation') < mock.events.indexOf('capture-glow-reference-fresh-1.png'));
+    return { bounds: { x: 0, y: mock.state.button.y, width: 10, height: mock.state.button.height }, containsTintedPoint: point => point.x === 5 };
+  };
   mock.deps.waitRegionReference = async (fixture, actualCheckpoint, proofPath, sampleInput) => {
     assert.equal(actualCheckpoint, checkpoint);
     counts(mock.state, 1); const at = new Date().toISOString();
@@ -193,6 +204,8 @@ test('supplemental glow claims lifetime3 before fixture and consumes actual-refe
     assert.equal(result.referenceCheckpointCandidate.checkpoint.glow.interiorBackgroundVerified, false); continue;
   }
   assert.equal(result.status, 'pass', JSON.stringify(result.error));
+  assert.equal(checkpoint.glow.frameLabel, 'glow-reference-fresh');
+  assert.equal(checkpoint.glow.frameSha256, result.frames.find(frame => frame.label === 'glow-reference-fresh').sha256);
   assert.deepEqual(result.phases.reference.point, { x: 5, y: 540 }); assert.deepEqual(result.phases.traceClick.point, { x: 7, y: 540 });
   assert.equal(mock.events.filter(item => item === 'one-trace-click').length, 1);
   }
