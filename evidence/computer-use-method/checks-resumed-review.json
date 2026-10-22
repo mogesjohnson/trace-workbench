@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-22T21:35:47.115Z",
+  "sourceCommit": "c66a0b59fd7103b6333a74c19a2f0a03b44761c1",
+  "workingTreeModified": true,
+  "files": {
+    "scripts/accept-claude-host.cjs": "1db595582bfc0562b0290065745b4c6de4d1cf57aaeeae0ef3605a14e4c9f423",
+    "scripts/accept-replacement-glow.cjs": "e399c6938fc2d58137b1be990e7b0ae4b976e703e36bc473fd21cb7aa4413321",
+    "scripts/accept-replay-workflow.cjs": "fc6df53260d7a11f28bfe6e24ec52852a11006f96446f53be05337f188fee8fe",
+    "scripts/replay-workflow-runtime.cjs": "f8bf794b0fd2db1e488edebf5eb526e4feb18d069f7ab4e1d738c1aa0477171a",
+    "scripts/prepare-acceptance-anchor.cjs": "1c04bb9ec3b971293eb80ad3c854ccf89380eb46d043e84a19f82537ac75b239",
+    "tests/accept-claude-host.test.cjs": "6a5f29bbb041bc367e8871c2a0347e3cc2284835c071279b63a0395c9a6949d9",
+    "tests/accept-replay-workflow.test.cjs": "61ebfbe92a8d3bd3860ff6c078dc68ef6d36633708981bdb0a8f8e29f9b85577",
+    "tests/replay-workflow-runtime.test.cjs": "c01d659c00581a9695e8992980baad8fc04fa8fbca03fd367feffb633e27feb2",
+    "tests/prepare-acceptance-anchor.test.cjs": "cb6e6169656f42a1fda6f40b6f66dfa69fc557fb9b14e8c4b708fdf035457e6c",
+    "tests/replacement-glow.test.cjs": "6147a1ecb89e9c9a9d0fae50f565afe01ade1a469e7ad8c27ce5ce80739b6ac8"
+  },
+  "commands": [
+    {
+      "command": "npm test",
+      "exitCode": 0,
+      "total": 501,
+      "passed": 495,
+      "failed": 0,
+      "skipped": 6,
+      "log": "evidence/computer-use-method/resumed-final-tests.log",
+      "sha256": "585fca208231d5b3f5bb08563c32e878dd380bd88c43647bb07fd94f1c4ca51a"
+    },
+    {
+      "command": "npm run check",
+      "exitCode": 0,
+      "javascriptFiles": 93,
+      "scope": "Syntax, JSON, local documentation links, dependency pins"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "limits": [
+    "Pure/injected and existing scoped tests; not a completed live host, glow, typing, clipboard or REPLAY case.",
+    "Five browser-runtime skips and one Windows symlink privilege skip retained.",
+    "Required hosted CI did not start due to billing/spending."
+  ],
+  "sourceSegmentReview": "The prospective REPLAY adapter now requires a hash-bound actual selected source segment review before editing; its live demonstration remains not_run."
+}

@@ -44,6 +44,35 @@
       "continuationAttempt": 1,
       "lifetimeAttemptOrdinal": 3,
       "claimedAt": "2026-10-22T14:29:24.288Z"
+    },
+    {
+      "decisionId": "owner-supplemental-five-20261022",
+      "caseId": "R31-GLOW-NATIVE",
+      "contract": "glow-sky-physical-point-v1",
+      "ownerDecision": {
+        "ref": "evidence/live-acceptance-continuation/owner-decision.json",
+        "sha256": "02c8b46faaef411a217d4965de83a0bac7e2592d792be1ad6a2e262f0aa7619a"
+      },
+      "historicalAttemptsUsed": 2,
+      "originals": [
+        {
+          "ref": "evidence/replacement-acceptance/r31-glow-native/attempt-1/receipt.json",
+          "sha256": "c11e25b9c7b2f70371b4c1967411a9a2ac84a6615cde3b1c51ef0e83cc58c710"
+        },
+        {
+          "ref": "evidence/replacement-acceptance/r31-glow-native/attempt-2/receipt.json",
+          "sha256": "162638516bcbc0a4cfc9b9471b9141910754aae704e46ff941722e1ce6a37c85"
+        }
+      ],
+      "claimId": "7c16d8c0-61dc-41e2-9af7-b6906e35cee4",
+      "continuationAttempt": 2,
+      "lifetimeAttemptOrdinal": 4,
+      "claimedAt": "2026-10-22T21:16:13.933Z",
+      "prior": {
+        "ref": "evidence/live-acceptance-continuation/glow-supplemental-1/receipt.json",
+        "sha256": "1e448b086180161f7cf79684b0ee173b42b9da7579444a77a527dcf8d30299e3"
+      },
+      "changedPreconditionSha256": "160e46a1a3b7ad924bd9ab7e484c563cb7d47f0282c008b79a8497cc7222761b"
     }
   ]
 }

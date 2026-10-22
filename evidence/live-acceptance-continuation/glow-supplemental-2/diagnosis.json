@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "caseId": "R31-GLOW-NATIVE",
+  "scope": "Post-run diagnosis; preserves the failed terminal receipt and adds no live attempt or acceptance promotion.",
+  "receipt": "evidence/live-acceptance-continuation/glow-supplemental-2/receipt.json",
+  "status": "fail",
+  "errorCode": "glow_reference_region_invalid",
+  "lifetimeAttemptOrdinal": 4,
+  "continuationAttempt": 2,
+  "actualReferenceTool": "evidence/live-acceptance-continuation/glow-supplemental-2/reference-tool.json",
+  "observed": {
+    "glowSampleAt": "2026-10-22T21:16:19.485Z",
+    "skyObservationAt": "2026-10-22T21:16:28.957Z",
+    "checkpointValidationAt": "2026-10-22T21:17:05.154Z",
+    "actualSkyClickStartedAt": "2026-10-22T21:17:22.171Z",
+    "actualSkyClickCompletedAt": "2026-10-22T21:17:22.445Z",
+    "glowAgeAtClickStartMs": 62686,
+    "maximumUnderlyingSampleAgeMs": 60000,
+    "actualSkyClicks": 1,
+    "traceClicks": 0,
+    "completedAcceptanceReferencePhase": false,
+    "ordinaryCloseAcceptancePhase": "not_run",
+    "parentLossAcceptancePhase": "not_run"
+  },
+  "cleanup": {
+    "connectionClosed": true,
+    "ownedHelpersExited": true,
+    "keysDown": [],
+    "fixtureExited": true,
+    "fixtureForced": false,
+    "recoveryRequired": false,
+    "runtimeOutputManifestsVerified": true,
+    "sourcesUnchangedDuringRun": true
+  },
+  "prospectiveCorrection": "Publish exact target before the Sky handshake; capture actual new safe reference pixels after the actual Sky observation and immediately build the checkpoint. Preserve the original 60-second sample-age oracle. Pure/injected checks establish ordering and fresh frame hash binding only.",
+  "budget": "Both approved supplements consumed. No further glow input without an actual new finite owner amendment and tested canonical ledger extension."
+}

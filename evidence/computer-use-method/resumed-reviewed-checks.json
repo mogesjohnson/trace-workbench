@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-22T21:31:36.119Z",
+  "sourceBase": "5e5a363411bdd4d7b4842edb3ae6500b0d87147e",
+  "workingTreeModified": true,
+  "scope": "Pure/injected reviewed harness checks; not live acceptance of these cases.",
+  "command": "node --test tests/prepare-acceptance-anchor.test.cjs tests/accept-claude-host.test.cjs tests/replacement-glow.test.cjs tests/glow-reference-region.test.cjs",
+  "tests": {
+    "total": 83,
+    "passed": 83,
+    "failed": 0,
+    "skipped": 0
+  },
+  "files": {
+    "scripts/accept-claude-host.cjs": "1db595582bfc0562b0290065745b4c6de4d1cf57aaeeae0ef3605a14e4c9f423",
+    "tests/accept-claude-host.test.cjs": "6a5f29bbb041bc367e8871c2a0347e3cc2284835c071279b63a0395c9a6949d9",
+    "scripts/prepare-acceptance-anchor.cjs": "1c04bb9ec3b971293eb80ad3c854ccf89380eb46d043e84a19f82537ac75b239",
+    "tests/prepare-acceptance-anchor.test.cjs": "cb6e6169656f42a1fda6f40b6f66dfa69fc557fb9b14e8c4b708fdf035457e6c",
+    "scripts/accept-replacement-glow.cjs": "e399c6938fc2d58137b1be990e7b0ae4b976e703e36bc473fd21cb7aa4413321",
+    "tests/replacement-glow.test.cjs": "6147a1ecb89e9c9a9d0fae50f565afe01ade1a469e7ad8c27ce5ce80739b6ac8",
+    "scripts/glow-reference-region.cjs": "d0d781157c846cdf23c2b0b189532a2d55afe8f8a7bbae8fa0a818c66c40d3e2"
+  },
+  "logSha256": "c448a96bb5ab1e9daf014861e4337417380701ff9f8eaf27ab69a66e5ec80097",
+  "live": {
+    "glow": "lifetime4 failed sample freshness; exact cleanup confirmed; budget exhausted",
+    "typing": "anchor open; no supplemental claim",
+    "claude": "preclaim blocked by eleven background Claude Desktop processes",
+    "clipboard": "identifier-only inspection: four unsupported registered formats; no contents read or changed"
+  }
+}
