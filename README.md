@@ -6,6 +6,8 @@ Shared tools that give agents abilities beyond written instructions.
 
 **Version:** `0.1.0-alpha.3.3` · **Status:** Windows preview, milestone acceptance incomplete
 
+**22 October handoff:** Codex development is paused so Claude can continue. Start with [Claude next steps](docs/CLAUDE_NEXT_STEPS.md), the [progress plan](docs/GAP_CLOSURE_PLAN.md) and [visual dashboard](docs/GAP_CLOSURE_PROGRESS.html). Current source and scoped evidence are detailed in [gap closure status](docs/GAP_CLOSURE_STATUS.md).
+
 TRACE provides local tools for **Codex, Claude Code, Grok Build, and Gemini CLI**. The first two skills are **Reverse Engineer Anything** and **Computer Use**. The Windows executor exposes six MCP tools for discovering windows, observing screenshots and controls, acting, and releasing desktop ownership. A screen-edge glow shows when TRACE owns the desktop.
 
 Read the [specification and remaining acceptance](SPEC.md). [Skill status](SKILLS.md) and [future skills under review](docs/CAPABILITIES.md) distinguish selected work from research.
@@ -29,7 +31,10 @@ Review each plan before applying it. Setup pins the Windows engine locally; conf
 
 ## Verified
 
-- **172 tests run, 171 passed; 1 Windows file-symlink privilege test skipped.**
+- **457 tests run, 451 passed, six skipped, zero failed** at the upload checkpoint. Source checks pass. Five skips need the optional browser runtime and one needs Windows symlink privilege.
+- Method coordination, routing, checkpoints and artifact identity are implemented; actual headless browser and eight child-process application cases have scoped passing evidence.
+- Native supervision, durable quarantine, physical-stop handling and strict UTF-8 transport are implemented. Recovery coverage links 15 failure/input pairs at their recorded source scopes; full acceptance remains incomplete.
+- Actual Codex typing now preserved `TRACE Codex verified café 日本語` exactly. Its complete host workflow remains blocked at stale-error outcome verification; that protocol correction is tested but needs a reconnected host and separately authorized new live budget.
 - Observation reads the accessibility tree 8 levels deep by default and up to 32 on request; the action reuses that depth. Live: a control 14 levels deep was invoked exactly once.
 - Rejected actions report `not_dispatched` when input provably never started, and `unknown` when it may have. Live: moved, blocked, unsupported-scroll and changed-focus cases left the fixture unchanged.
 - A focused modal workflow passed: the blocked parent rejected input, and the exact dialog was confirmed and closed through TRACE.
@@ -40,10 +45,11 @@ Review each plan before applying it. Setup pins the Windows engine locally; conf
 
 ## Remaining
 
-- **Failed cases:** A31-GLOW and A3-WINDOW each failed twice, so their retry budgets are exhausted; replacement cases need owner approval.
-- **Blocked:** alpha.3.2 native supervision (recovery, durable quarantine, physical Escape stop) is blocked by its failed feasibility probe.
-- **Not started:** Codex/Claude host tasks, the REPLAY workflow, clean-machine setup and release gates.
-- **Hosted CI:** cannot run because of account billing.
+- **Live gates:** complete glow lifecycle, typing quarantine, clipboard paste/restoration, Claude workflow/settings and current-source physical-stop proof. Window targeting and cancellation replacements have passed at their recorded scopes.
+- **Codex:** both approved supplemental attempts are consumed. Preserve failures; another live run requires a new owner budget decision.
+- **REPLAY:** two-instance recording feasibility passed. The full editing/audio workflow and two final exports remain unfinished; its preparation module still needs a production adapter.
+- **Distribution:** clean archive installation/rollback and final release acceptance remain.
+- **Hosted CI:** the last older run could not start due to account billing; inspect the new PR's actual checks.
 - **Unverified:** Grok/Gemini live behavior.
 - **Deferred:** display transitions.
 
