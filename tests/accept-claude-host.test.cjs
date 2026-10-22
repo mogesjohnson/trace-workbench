@@ -10,6 +10,7 @@ const { PassThrough, Readable, Writable } = require('node:stream');
 const { plan, parseArgs, createGuard, streamState, observeEvent, summarize, hostArguments,
   hostEnvironment, invokeHost, completed, run, supportedHostVersion, scopedReadPath,
   hostToolAllowed, hostSettings, runHostHook, loadInstalledBundle, fingerprintSettings, compareSettings, preflightStartup, MAX_GUARD_ADMISSIONS,
+  changedKeyPaths, listClaudeProcesses, createWriterMonitor, writePrivateSettingsDiff,
   prepareAndClaimContinuation, preparedFixture, verifyTestedSource, loadReaInstructions,
   createOwnershipTracker, verifyOwnershipExit } = require('../scripts/accept-claude-host.cjs');
 const { loadSkillBundle } = require('../src/computer/configuration.cjs');
@@ -406,6 +407,68 @@ test('private settings snapshots distinguish JSON formatting, semantic changes, 
   assert.equal(compareSettings(before, await fingerprintSettings(path.resolve('synthetic-home'), io)).changes[1].after, 'missing');
   values['.claude/settings.json'] = Buffer.from([0x7B, 0x22, 0x61, 0x22, 0x3A, 0x22, 0xC3, 0x22, 0x7D]);
   assert.equal(compareSettings(before, await fingerprintSettings(path.resolve('synthetic-home'), io)).changes[1].after, 'unparseable');
+});
+
+test('private changed-key paths keep depth-2 names without values and skip formatting-only sources', async () => {
+  let values = { '.claude.json': '{"projects":{"PATH_A":{"n":1},"PATH_B":{"n":1}},"numStartups":1,"keep":"SECRET_VALUE"}', '.claude/settings.json': '{"a":1}' };
+  const io = { readFile: async file => {
+    const relative = path.relative(path.resolve('synthetic-home'), file).replaceAll('\\', '/');
+    if (!Object.hasOwn(values, relative)) throw Object.assign(new Error(), { code: 'ENOENT' });
+    return Buffer.from(values[relative]);
+  } };
+  const before = await fingerprintSettings(path.resolve('synthetic-home'), io);
+  values = { '.claude.json': '{"projects":{"PATH_A":{"n":2},"PATH_B":{"n":1}},"numStartups":2,"keep":"SECRET_VALUE","added":{"x":"NEW_VALUE"}}', '.claude/settings.json': '{ "a": 1 }' };
+  const paths = changedKeyPaths(before, await fingerprintSettings(path.resolve('synthetic-home'), io));
+  assert.deepEqual(paths, [{ source: 'clientState', path: ['added'] }, { source: 'clientState', path: ['numStartups'] }, { source: 'clientState', path: ['projects', 'PATH_A'] }]);
+  for (const value of ['SECRET_VALUE', 'NEW_VALUE', 'PATH_B']) assert.equal(JSON.stringify(paths).includes(value), false);
+  values['.claude/settings.json'] = 'malformed';
+  assert.deepEqual(changedKeyPaths(before, await fingerprintSettings(path.resolve('synthetic-home'), io)).at(-1), { source: 'userSettings', path: [], whole: true });
+});
+
+test('Claude process enumeration parses one, many or none and rejects malformed identities', async () => {
+  const exec = stdout => async (file, args) => { assert.equal(file, 'powershell.exe'); assert.ok(args.includes('-NonInteractive')); return { stdout }; };
+  assert.deepEqual(await listClaudeProcesses(exec('')), []);
+  assert.deepEqual(await listClaudeProcesses(exec('{"pid":7,"created":"2026-10-22T10:00:00.0000000Z"}')), [{ pid: 7, created: '2026-10-22T10:00:00.0000000Z' }]);
+  assert.equal((await listClaudeProcesses(exec('[{"pid":7,"created":"a"},{"pid":8,"created":"b"}]'))).length, 2);
+  await assert.rejects(listClaudeProcesses(exec('[{"pid":0,"created":"a"}]')), { code: 'claude_process_enumeration_invalid' });
+  await assert.rejects(listClaudeProcesses(exec('{"pid":7}')), { code: 'claude_process_enumeration_invalid' });
+});
+
+test('writer monitor excludes only the pinned host generation and fails closed on others, errors or no samples', async () => {
+  const monitorWith = sequence => { let index = 0; return createWriterMonitor({ list: async () => { const next = sequence[Math.min(index++, sequence.length - 1)]; if (next instanceof Error) throw next; return next; } }); };
+  assert.equal(createWriterMonitor({ list: async () => [] }).result().exclusive, false); // No sample is no proof.
+  let monitor = monitorWith([[{ pid: 9, created: 'h' }], []]);
+  monitor.own(9); await monitor.sample(); await monitor.sample();
+  assert.deepEqual({ ...monitor.result(), scope: undefined }, { exclusive: true, unownedProcesses: 0, samples: 2, sampleFailures: 0, scope: undefined });
+  monitor = monitorWith([[{ pid: 9, created: 'h' }], [{ pid: 9, created: 'reused' }]]);
+  monitor.own(9); await monitor.sample(); await monitor.sample();
+  assert.equal(monitor.result().exclusive, false); assert.equal(monitor.result().unownedProcesses, 1);
+  monitor = monitorWith([[{ pid: 9, created: 'h' }, { pid: 4, created: 'other' }]]);
+  monitor.own(9); await monitor.sample();
+  assert.equal(monitor.result().exclusive, false);
+  monitor = monitorWith([[], new Error('query failed')]);
+  monitor.own(9); await monitor.sample(); await monitor.sample();
+  assert.equal(monitor.result().exclusive, false); assert.equal(monitor.result().sampleFailures, 1);
+  monitor = monitorWith([[]]);
+  monitor.own(undefined); await monitor.sample();
+  assert.equal(monitor.result().exclusive, false); // Missing host identity is a failure, not an exclusion.
+  monitor = monitorWith([[]]); monitor.own(9); monitor.own(10); await monitor.sample();
+  assert.equal(monitor.result().exclusive, false);
+  monitor = createWriterMonitor({ list: async () => [], intervalMs: 5 });
+  monitor.own(9); monitor.start(); await new Promise(resolve => setTimeout(resolve, 30)); await monitor.stop();
+  const samples = monitor.result().samples; assert.ok(samples > 0);
+  await new Promise(resolve => setTimeout(resolve, 20)); assert.equal(monitor.result().samples, samples); // Stopped means stopped.
+});
+
+test('private settings diff lands only under ignored .runtime with exclusive create, and returns hash and count', async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'trace-private-diff-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const intervals = { overall: [{ source: 'clientState', path: ['PRIVATE_KEY'] }], host: [] };
+  const result = await writePrivateSettingsDiff(path.join(root, 'evidence', 'attempt-3'), intervals, root);
+  const bytes = await fs.readFile(path.join(root, '.runtime', 'claude-host', 'attempt-3', 'private-settings-diff.json'));
+  assert.deepEqual(result, { sha256: createHash('sha256').update(bytes).digest('hex'), count: 1 });
+  assert.equal(JSON.stringify(result).includes('PRIVATE_KEY'), false);
+  await assert.rejects(writePrivateSettingsDiff(path.join(root, 'evidence', 'attempt-3'), intervals, root), { code: 'EEXIST' });
 });
 
 test('startup preflight inspects ordinary plugin metadata, skips unrelated links and blocks unexpected managed hooks/plugins', async t => {
