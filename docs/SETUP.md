@@ -2,6 +2,8 @@
 
 This setup connects local Codex, Claude Code, Grok Build, and Gemini CLI installations to the pinned REA analysis server and installs the `reverse-engineer-anything` skill. This is TRACE's first selected capability. For its separate Windows executor, see [Computer Use setup](COMPUTER_USE.md). A configured connection and a live agent workflow are separate acceptance checks.
 
+For clean source archive installation, scratch configuration and rollback verification, see [the archive verifier](ARCHIVE_INSTALL.md). Existing-host preparation and fresh Windows CI are recorded separately.
+
 ## Install and inspect
 
 Use Node.js 26 and npm from a Windows terminal. In the cloned repository, install the locked dependencies and inspect the proposed changes:
