@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-22T21:52:32.538Z",
+  "parentRequirement": "RC-INSTALL",
+  "status": "partial",
+  "scope": "Actual clean source archive extraction/setup on existing Windows host. No fresh OS/runner, live desktop case, final archive or release acceptance is claimed.",
+  "sourceCommit": "42ab54d7636bbfc06cd66e400f7661c4859d8c6d",
+  "archive": {
+    "sha256": "b50e973e9a3169453c34bde6baf9950c5d82f07bd4fd355b97a1833f87958d0b",
+    "bytes": 10596477,
+    "reproducible": true,
+    "format": "git archive --format=zip --prefix=trace-workbench/ <sourceCommit>"
+  },
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "node": "v26.2.0",
+    "dotnetSdk": "9.0.319",
+    "freshRunner": false
+  },
+  "initiallyAbsent": [
+    "node_modules",
+    ".runtime",
+    ".git",
+    ".env"
+  ],
+  "npmCi": {
+    "exitCode": 0,
+    "packagesAdded": 175
+  },
+  "setup": {
+    "installed": true,
+    "engineVersion": "0.7.1",
+    "engineArchiveSha256": "d925d1e32cdc320b6d271f653fd2cd3c05b5d7558deb20d1b548bead77900fcf",
+    "providerReady": true,
+    "integrity": "verified",
+    "globalChanges": false,
+    "clipboardContentsRead": false,
+    "clipboardContentsChanged": false
+  },
+  "reapply": {
+    "engineChanged": false,
+    "exactRuntimeOutputsUnchanged": true,
+    "runtimeFiles": 23
+  },
+  "configuration": {
+    "schemaVersion": 1,
+    "scope": "Actual extracted archive installer and scratch configuration on existing Windows host; no personal settings modified.",
+    "plannedEntries": 7,
+    "installedEntries": 7,
+    "clients": 4,
+    "skillDestinations": 3,
+    "managedFilesPerBundle": 5,
+    "exactOriginalBackups": true,
+    "unrelatedSettingsPreserved": true,
+    "idempotent": true,
+    "exactConfigRollback": true,
+    "ownedSkillFilesRemoved": true,
+    "unrelatedSkillFilePreserved": true,
+    "conflictingServerPreserved": true,
+    "conflictProducedNoWrites": true,
+    "personalSettingsModified": false,
+    "desktopActions": 0
+  },
+  "computerMcp": {
+    "result": "pass",
+    "providerReady": true,
+    "toolCount": 6,
+    "desktopActions": 0,
+    "modelRequests": 0
+  },
+  "analysisMcp": {
+    "passed": true,
+    "toolCount": 207,
+    "server": {
+      "name": "rea",
+      "version": "6.7.0"
+    },
+    "cleanup": {
+      "ownedWrapperExited": true,
+      "ownedReaChildCount": 1,
+      "ownedDirectChildCount": 2,
+      "ownedChildrenExited": true,
+      "childExitCheck": "owned-pids-through-windows-cim"
+    }
+  },
+  "archiveEvidenceBytes": [
+    {
+      "path": "evidence/computer-use-method/resumed-final-tests.log",
+      "sha256": "585fca208231d5b3f5bb08563c32e878dd380bd88c43647bb07fd94f1c4ca51a"
+    },
+    {
+      "path": "evidence/live-acceptance-continuation/glow-supplemental-2/receipt.json",
+      "sha256": "28c395d6db30eae1565af8e1937505c5d4a8e0ed4a5b3f804e22120fe72fb296"
+    },
+    {
+      "path": "evidence/live-acceptance-continuation/glow-supplemental-2/reference-tool.json",
+      "sha256": "694d00acc3a69a2450f4d93531858f73897bd247633f4711032ffa9f77b5e0f8"
+    },
+    {
+      "path": "evidence/live-acceptance-continuation/glow-supplemental-2/frames/before-glow-reference-1.png",
+      "sha256": "ee71bb13d0ebd28d4014afb84fc53a52226c87f5415888baaf17fdb8d863ec17"
+    },
+    {
+      "path": "evidence/live-acceptance-continuation/glow-supplemental-2/frames/glow-active-1.png",
+      "sha256": "cba972b341c8eac906ca0b31a99a50ef446db2398b009cd33ffe9844fe6c509b"
+    }
+  ],
+  "runtimeFiles": {
+    "window-bridge/TraceWindowBridge.exe": "87a4e623f8c06d941697a07b93fbe9d8603bb04d917f3a6a8e36b09533005102",
+    "window-bridge/TraceWindowBridge.dll": "a8b59fd494d8bdfc5e6f722f492da13c59a456954c16cd839f7e8c2e5ceafdb1",
+    "window-bridge/TraceWindowBridge.runtimeconfig.json": "e3a9d5d0a25ca066e8b70401b5869b5cfc92d16f5fe89b83077cdfd4b7427711",
+    "window-bridge/TraceWindowBridge.deps.json": "6f31a47aa2c51378901d4d91d9e3874203a1cd07081bfb1fe7e583e59ceee122",
+    "window-bridge/manifest.json": "9a411e1dce049a45c9ea1a025f7e372da30079e0520eaed3bb4cf3d9247b9f48",
+    "activity-indicator/TraceActivityIndicator.exe": "2d785322d8714cb773a37ed12553e60da31b4d7724bb29441e621c1280ff333c",
+    "activity-indicator/TraceActivityIndicator.dll": "41011514f541a975bacae4cb4fa4530cbbdc9219dc9c786d64f190d9f12e00da",
+    "activity-indicator/TraceActivityIndicator.runtimeconfig.json": "05917b409d59af31bc8d3021bc06302a0c21c7d05b449603d6cc9f0301a2b66c",
+    "activity-indicator/TraceActivityIndicator.deps.json": "d68bf6e29a3d165d67538b82f3be1dde2f95ddeb01547a1df8005b1cd7938d67",
+    "activity-indicator/manifest.json": "af381619ded04cecde30aaba49b37023ea8466456611425460fbe4a4ccf144ba",
+    "supervisor/TraceSupervisor.exe": "6500fbbeaf2307d6018c50d74ec79a6da07565e3b84d874448d4e937f4fcc645",
+    "supervisor/TraceSupervisor.dll": "4618669bb43be124f144dea5270a94c501dd77b3f71b3d50c7c12cd202a04078",
+    "supervisor/TraceSupervisor.runtimeconfig.json": "e3a9d5d0a25ca066e8b70401b5869b5cfc92d16f5fe89b83077cdfd4b7427711",
+    "supervisor/TraceSupervisor.deps.json": "76ddcc9c579e2eda252af9050184d9d9776721a81c9dc2a7231289754bb3b277",
+    "supervisor/manifest.json": "454fefff9ba2dfbc19edb6129130ba23db34d76b900729f3fe5ded224b9c4c54",
+    "clipboard/TraceClipboard.exe": "4d952d4410e296a6c7f631b6c3cfc9b6aa5fa43dcbb2c5eb284826d0f2c9c71e",
+    "clipboard/TraceClipboard.dll": "0e51abae435be46f14e1eaede20accff9a2f1e73fdf267640cafbd2e6b81846d",
+    "clipboard/TraceClipboard.runtimeconfig.json": "e3a9d5d0a25ca066e8b70401b5869b5cfc92d16f5fe89b83077cdfd4b7427711",
+    "clipboard/TraceClipboard.deps.json": "d3157afa636d8d79e9ae368828538444ac321ee51d626456799ad2592d5bf727",
+    "clipboard/manifest.json": "2aff488559a6230354102104f1280dea97ea09f9deeded86669ef1da492fa94a",
+    "engine/winapp.exe": "bf29f665ab4a030f20cd34a9121276301871ee89fd9c13118c7221563858d692",
+    "engine/libHarfBuzzSharp.dll": "7ddabbcb6f631b08bf7ffd88df53cf4f3aca58ce41e4d44896d80ea4099dd384",
+    "engine/libSkiaSharp.dll": "016d87c41463f6fabd55baa41bda5b699491e0c4ec64b816bc3f1621b4049c1b"
+  },
+  "remaining": [
+    "Run the reusable public verifier on the final source/setup archive.",
+    "Fresh hosted Windows runner check is required; GitHub billing/spending currently prevents runner startup.",
+    "Live host/native/REPLAY gates and final reviewed merges/versioned distribution remain separate."
+  ]
+}
