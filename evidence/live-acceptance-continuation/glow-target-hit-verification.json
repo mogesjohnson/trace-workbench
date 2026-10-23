@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-10-23T23:29:14.873Z",
+  "scope": "Offline validation of pinned retained evidence under the owner-selected criterion; no new live evidence or attempt.",
+  "inputs": {
+    "decision": {
+      "ref": "evidence/live-acceptance-continuation/owner-glow-target-hit-decision.json",
+      "sha256": "6c40fa480a51d798d0af218ec7859c7aab46cfdd28c17b0c296cac7fa0801b30"
+    },
+    "receipt": {
+      "ref": "evidence/live-acceptance-continuation/glow-finish-2/receipt.json",
+      "sha256": "5a87c5a2eac19d45256ea8cc62245566dd2e7ab489fe3ac526cff7689672c3c5"
+    },
+    "diagnosis": {
+      "ref": "evidence/live-acceptance-continuation/glow-finish-2/diagnosis.json",
+      "sha256": "aad70d8a81925cd1ac0931bdca64bbb7ab45b7265601090b8ee82fda089be3e9"
+    }
+  },
+  "targetHit": {
+    "status": "pass",
+    "requested": {
+      "x": 7,
+      "y": 900
+    },
+    "actual": {
+      "x": 6,
+      "y": 900
+    },
+    "button": {
+      "x": 1,
+      "y": 856,
+      "width": 12,
+      "height": 88
+    },
+    "rectangleConvention": "physical-screen-half-open",
+    "counters": {
+      "count": 2,
+      "activationCount": 2,
+      "mouseDownCount": 2,
+      "mouseUpCount": 2,
+      "mouseClickCount": 2
+    }
+  },
+  "timeBoundary": {
+    "source": "retained-reference-completion",
+    "at": "2026-10-23T18:56:40.425Z",
+    "scope": "The retained event follows reference completion. The precise TRACE dispatch-start checkpoint was not retained in this receipt."
+  },
+  "originalStatus": "fail",
+  "originalReceiptUnchanged": true,
+  "lifecycle": {
+    "status": "not_run",
+    "missing": [
+      "ordinaryClose",
+      "parentLoss"
+    ]
+  },
+  "fullGlowCase": "incomplete",
+  "newLiveAttemptAuthorized": false
+}
