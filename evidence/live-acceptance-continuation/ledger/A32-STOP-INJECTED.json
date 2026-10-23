@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A32-STOP-INJECTED",
+  "history": [
+    {
+      "ref": "evidence/0.1.0-alpha.3.2/stop-injected-escape/receipt.json",
+      "sha256": "827fbb9d64084d988e73423caa75db9b0222615eba4e02f846672cbb551ec760"
+    }
+  ],
+  "claims": [
+    {
+      "caseId": "A32-STOP-INJECTED",
+      "amendment": 3,
+      "contract": "finish-approved-v1",
+      "historicalAttemptsUsed": 1,
+      "decisionId": "owner-finish-amendments-2026-10-23",
+      "ownerDecision": {
+        "ref": "evidence/live-acceptance-continuation/owner-finish-decision.json",
+        "sha256": "b4f11d92fe995b3be54e35f02bc2cd9cce56d778a5b0502b3c454c375cfb1327"
+      },
+      "proposal": {
+        "ref": "docs/GAP_CLOSURE_FINISH_PLAN.md",
+        "sha256": "d98fddf5359c31021ebf7d28108cf949a219d939c3e5d8046a0a05277388835b"
+      },
+      "history": [
+        {
+          "ref": "evidence/0.1.0-alpha.3.2/stop-injected-escape/receipt.json",
+          "sha256": "827fbb9d64084d988e73423caa75db9b0222615eba4e02f846672cbb551ec760"
+        }
+      ],
+      "continuationAttempt": 1,
+      "lifetimeAttemptOrdinal": 2,
+      "claimId": "f59d3802-3dd7-400e-81dd-5643764833d4",
+      "claimedAt": "2026-10-23T19:12:30.273Z",
+      "attempt": 2
+    }
+  ],
+  "finishAmendment": {
+    "ownerDecision": {
+      "ref": "evidence/live-acceptance-continuation/owner-finish-decision.json",
+      "sha256": "b4f11d92fe995b3be54e35f02bc2cd9cce56d778a5b0502b3c454c375cfb1327"
+    },
+    "proposal": {
+      "ref": "docs/GAP_CLOSURE_FINISH_PLAN.md",
+      "sha256": "d98fddf5359c31021ebf7d28108cf949a219d939c3e5d8046a0a05277388835b"
+    },
+    "history": [
+      {
+        "ref": "evidence/0.1.0-alpha.3.2/stop-injected-escape/receipt.json",
+        "sha256": "827fbb9d64084d988e73423caa75db9b0222615eba4e02f846672cbb551ec760"
+      }
+    ]
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A32-STOP-INJECTED",
+  "caseName": "injected",
+  "attempt": 2,
+  "declaredBeforeUiLaunch": true,
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "target": "Fresh exact owned synthetic WinForms fixture; public focus identity independently checked",
+  "physicalRequired": false,
+  "preparationWaitSeconds": 60,
+  "physicalObservationWaitSeconds": 60,
+  "inputOperationDeadlineMs": 15000,
+  "input": "Pinned engine press_key ESCAPE",
+  "phases": [
+    "Focus owned edit",
+    "Send one ordinary MCP ESCAPE through the pinned engine",
+    "Verify completed result, no physical stop, balanced input and exactly one usable counter follow-up"
+  ],
+  "lateTap": "If native timeout releases input before the actual key arrives, stop this case as blocked; never re-hold or replay automatically.",
+  "expected": {
+    "physical": false,
+    "exactFollowupIncrement": 1,
+    "cleanupKeysDown": [],
+    "cleanupRecoveryRequired": false
+  },
+  "limits": [
+    "MOUSE/KEYBOARD pass only from a real non-injected low-level hook event. Synthetic events cannot pass them.",
+    "Held provider is controlled; focus setup, injected Escape case and counter follow-up use the pinned engine.",
+    "Literal held C may autorepeat in the synthetic edit; exact text is retained and must stop changing after cleanup."
+  ],
+  "budget": "One attempt plus one corrective retry with matching previous case and explicit changed precondition; preserve every outcome."
+}

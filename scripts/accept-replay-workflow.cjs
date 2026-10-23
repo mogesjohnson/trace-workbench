@@ -221,7 +221,8 @@ function createWorkflow(deps, locations) {
         await deps.stopApp(app.handle, app.page, app.child);
         const child = app.child;
         outcome.processExited = (child.exitCode !== null && child.exitCode !== undefined || child.signalCode !== null && child.signalCode !== undefined)
-          && !!app.identity && await deps.waitIdentityExit(app.identity) === true;
+          && !!app.identity && await deps.waitIdentityExit(app.identity) === true
+          && (!app.launcherIdentity || app.launcherIdentity.pid === app.identity.pid || await deps.waitIdentityExit(app.launcherIdentity) === true);
       } catch {}
       outcomes.push(outcome);
     }
@@ -248,12 +249,17 @@ function createWorkflow(deps, locations) {
         const app = { label, handle, child, root, launchedPid: child.pid }; owned.push(app); // Retain before ANY readiness or identity query.
         await checkpoint();
         app.identity = identity(await deps.processIdentity(child.pid));
+        app.launcherIdentity = app.identity;
+        await checkpoint();
+        // Playwright on Windows retains cmd.exe, not the Electron main process.
+        // Bind the main generation independently before comparing its native HWND.
+        app.identity = identity(await deps.applicationIdentity(handle, app.launcherIdentity));
         await checkpoint();
         const ready = await deps.readyApp(handle); app.page = ready.page; app.info = ready.info;
         await checkpoint();
         need(inside(root, app.info.libraryPath), 'replay_library_not_isolated');
         const window = identity(await deps.editorWindowIdentity(handle));
-        // Retain the rejected candidate before equality can fail. It never replaces the launched cleanup identity.
+        // Retain the rejected candidate before equality can fail; it never replaces the verified main identity.
         app.windowIdentityCandidate = { pid: window.pid, processCreationTime: window.processCreationTime,
           sessionId: window.sessionId, windowId: window.windowId };
         const mismatchedFields = ['pid', 'processCreationTime', 'sessionId'].filter(key => window[key] !== app.identity[key]);
@@ -401,7 +407,7 @@ function createWorkflow(deps, locations) {
     },
     // Private, noncredential recovery data; never expose handles, grants, setup or transports.
     recovery: () => ({ schemaVersion: 1, privateRoot: locations.privateRoot, capturedAt: now(),
-      instances: owned.map(app => ({ label: app.label, root: app.root, launchedPid: app.launchedPid, identity: app.identity,
+      instances: owned.map(app => ({ label: app.label, root: app.root, launchedPid: app.launchedPid, launcherIdentity: app.launcherIdentity, identity: app.identity,
         ...(app.windowIdentityCandidate ? { windowIdentityCandidate: structuredClone(app.windowIdentityCandidate) } : {}),
         libraryPath: app.info?.libraryPath, importRoot: app.importRoot, exportRoot: app.exportRoot })),
       fixture: fixture ? { launchedPid: fixture.handle.child?.pid, runId: fixture.handle.runId, statePath: fixture.handle.statePath,

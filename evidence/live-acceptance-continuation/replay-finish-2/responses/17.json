@@ -1,0 +1,300 @@
+{
+  "id": 17,
+  "ok": true,
+  "terminal": "awaiting_runtime_evidence_audit",
+  "state": {
+    "status": "awaiting_runtime_evidence_audit",
+    "next": null,
+    "completed": [
+      "provision",
+      "fixture-ready",
+      "fixture-record-start",
+      "fixture-record-stop",
+      "prepare-source-review",
+      "confirm-source-review",
+      "walkthrough-record-start",
+      "edit-fixture",
+      "trace-editor-controls",
+      "export-fixture",
+      "prepare-completed-playback",
+      "trace-completed-playback",
+      "walkthrough-record-stop",
+      "export-walkthrough",
+      "verify-media",
+      "root-review",
+      "cleanup"
+    ],
+    "requests": [
+      {
+        "app": "editor",
+        "command": "capture.start",
+        "requestId": "trace-replay-fbf6f463-f027-46c8-97e2-581475c74013",
+        "state": "completed"
+      },
+      {
+        "app": "editor",
+        "command": "capture.stop",
+        "requestId": "trace-replay-02d626e9-1c3c-4195-9afe-44cc55951c86",
+        "state": "completed"
+      },
+      {
+        "app": "recorder",
+        "command": "capture.start",
+        "requestId": "trace-replay-8da7cd38-a912-4256-b65e-9628aa2b4102",
+        "state": "completed"
+      },
+      {
+        "app": "editor",
+        "command": "narration.import",
+        "requestId": "trace-replay-999a7e11-6267-41b1-8ff6-3bec1c2a5cfd",
+        "state": "completed"
+      },
+      {
+        "app": "editor",
+        "command": "project.edit",
+        "requestId": "trace-replay-bd07cbdb-b10d-418f-917e-c74ef33947b6",
+        "state": "completed"
+      },
+      {
+        "app": "editor",
+        "command": "preview.open",
+        "requestId": "trace-replay-382b7fbf-5001-4572-aec9-af29c9bb3ead",
+        "state": "completed"
+      },
+      {
+        "app": "editor",
+        "command": "export.start",
+        "requestId": "trace-replay-08be710a-cd01-43a8-90e1-3d9a96e748e5",
+        "state": "completed"
+      },
+      {
+        "app": "editor",
+        "command": "project.import",
+        "requestId": "trace-replay-81ac4ad5-8d5c-4406-8b9d-fbc380086865",
+        "state": "completed"
+      },
+      {
+        "app": "editor",
+        "command": "preview.open",
+        "requestId": "trace-replay-b75bc066-83de-4218-9929-5e2252afee7e",
+        "state": "completed"
+      },
+      {
+        "app": "recorder",
+        "command": "capture.stop",
+        "requestId": "trace-replay-da48c28c-1aaf-4344-ac47-5a2d6aeacd1a",
+        "state": "completed"
+      },
+      {
+        "app": "recorder",
+        "command": "export.start",
+        "requestId": "trace-replay-429005b3-c0e5-4706-87cc-cc17a7b411c1",
+        "state": "completed"
+      }
+    ],
+    "cleanup": {
+      "confirmed": true,
+      "instances": [
+        {
+          "label": "recorder",
+          "transportClosed": true,
+          "grantRevoked": true,
+          "processExited": true
+        },
+        {
+          "label": "editor",
+          "transportClosed": true,
+          "grantRevoked": true,
+          "processExited": true
+        },
+        {
+          "label": "fixture",
+          "transportClosed": true,
+          "grantRevoked": true,
+          "processExited": true
+        }
+      ]
+    },
+    "sourceReview": {
+      "sourceSha256": "910a85367f417f4bf3dbc112a1394f6d92a5222abcfd4fdb2e14d9ff9e86474b",
+      "sourceStart": 28,
+      "sourceEnd": 34,
+      "sourceDuration": 38.457,
+      "durationSource": "independent_packet_timestamps",
+      "segment": {
+        "name": "fixture-source-segment.mp4",
+        "sha256": "0ece81adb1d4941e29eeefa291d800e9df09829423be5e5cb30c523ceb8fc74e",
+        "duration": 6
+      },
+      "frames": [
+        {
+          "name": "fixture-source-review-0.png",
+          "sha256": "fab69f95d7db59d357c019122c90b7357a4362be072c5eb8bb84868752a94d8b",
+          "segmentSeconds": 0.25,
+          "requestedSourceSeconds": 28.25
+        },
+        {
+          "name": "fixture-source-review-1.png",
+          "sha256": "fab69f95d7db59d357c019122c90b7357a4362be072c5eb8bb84868752a94d8b",
+          "segmentSeconds": 1.5,
+          "requestedSourceSeconds": 29.5
+        },
+        {
+          "name": "fixture-source-review-2.png",
+          "sha256": "305270aa945a57947e987cc78a20c478400994af8e55ba1de9cec643ed7dabf8",
+          "segmentSeconds": 3,
+          "requestedSourceSeconds": 31
+        },
+        {
+          "name": "fixture-source-review-3.png",
+          "sha256": "910e638f5f877865cda575cf1ab9456c7470e5bf6c09b190f948de6b31b6ec99",
+          "segmentSeconds": 4.5,
+          "requestedSourceSeconds": 32.5
+        },
+        {
+          "name": "fixture-source-review-4.png",
+          "sha256": "910e638f5f877865cda575cf1ab9456c7470e5bf6c09b190f948de6b31b6ec99",
+          "segmentSeconds": 5.75,
+          "requestedSourceSeconds": 33.75
+        }
+      ],
+      "verification": "root-review-required-no-wall-clock-mapping",
+      "limits": [
+        "Frame times are requested source-media sample times, not measured capture-to-wall-clock correspondence.",
+        "Root must review the entire retained segment; sampled frames alone cannot prove the useful action."
+      ]
+    },
+    "sourceContentVerified": true,
+    "identityChecks": [
+      {
+        "label": "editor",
+        "matches": true,
+        "mismatchedFields": []
+      },
+      {
+        "label": "recorder",
+        "matches": true,
+        "mismatchedFields": []
+      }
+    ],
+    "selectedRecipe": {
+      "duration": 6,
+      "sourceSelection": "root-reviewed-six-second-captured-segment-before-edits",
+      "effectStart": 1,
+      "effectEnd": 3,
+      "narrationStart": 1.5,
+      "narrationDuration": 1,
+      "samples": [
+        0.5,
+        2,
+        4
+      ],
+      "callout": {
+        "id": "trace-callout",
+        "type": "text",
+        "text": "TRACE verified synthetic fixture",
+        "x": 0.1,
+        "y": 0.05,
+        "width": 0.6,
+        "height": 0.13,
+        "start": 1,
+        "end": 3
+      },
+      "privacy": {
+        "id": "trace-privacy",
+        "type": "blur",
+        "x": 0.34,
+        "y": 0.25,
+        "width": 0.32,
+        "height": 0.4,
+        "start": 1,
+        "end": 3
+      },
+      "sourceStart": 28,
+      "sourceEnd": 34
+    },
+    "measurements": {
+      "fixture": {
+        "sha256": "f16b79a74950e666b97f865ce4e4949e7e3912f58ea6082379ab5d630f6bbc85",
+        "bytes": 87302,
+        "width": 564,
+        "height": 716,
+        "videoStreams": 1,
+        "audioStreams": 1,
+        "duration": 6,
+        "durationSource": "container",
+        "sourceHashUnchanged": true,
+        "effectSampleTimes": [
+          0.5,
+          2,
+          4
+        ],
+        "decodedFrames": 3,
+        "nonblackMean": 227.49475390625,
+        "beforeEffectDifference": 0.4951953125,
+        "afterEffectDifference": 0.5007552083333333,
+        "calloutDifference": 173.6790030715812,
+        "privacySourceEnergy": 227.04078029763147,
+        "privacyOutputEnergy": 0.33125137915382913,
+        "audioBeforeRms": 0,
+        "audioDuringRms": 0.12494589559434992,
+        "audioAfterRms": 0,
+        "frames": [
+          {
+            "name": "fixture-output-0.png",
+            "sha256": "da91766b1a0ce508cedb5f1738e2008f7f7a86a856aea70b9307cec5513dfe4e"
+          },
+          {
+            "name": "fixture-output-1.png",
+            "sha256": "2341390583a0b022bfef240e46013cc028412b0301e67f95992aa8fc7683359e"
+          },
+          {
+            "name": "fixture-output-2.png",
+            "sha256": "0ca1cd16ac97a6822cf0f05dc858843bf44da49f141f656a02949ba8658e8a27"
+          },
+          {
+            "name": "fixture-source-during.png",
+            "sha256": "fab69f95d7db59d357c019122c90b7357a4362be072c5eb8bb84868752a94d8b"
+          }
+        ]
+      },
+      "walkthrough": {
+        "sha256": "7effb44098713d433661b160ab72a3fc09aa7c53077213065b6e551a64942fc4",
+        "bytes": 8627610,
+        "width": 2336,
+        "height": 1556,
+        "videoStreams": 1,
+        "audioStreams": 0,
+        "duration": 189.9,
+        "durationSource": "container",
+        "decodedFrames": 3,
+        "nonblackMean": 50.941700520833336,
+        "sampleTimes": [
+          0.5,
+          94.95,
+          189.4
+        ],
+        "decodedFrameDifference": 9.1681171875,
+        "frames": [
+          {
+            "name": "walkthrough-0.png",
+            "sha256": "913c0fd3008e8ca0ac7922a646ec3fc101703cf82d3df64eca3c10d468948695"
+          },
+          {
+            "name": "walkthrough-1.png",
+            "sha256": "ef4963d7e5c9dcdf843a71e71c95380eda91a6f1c6c9a9722098421406c3e787"
+          },
+          {
+            "name": "walkthrough-2.png",
+            "sha256": "7e4dcb876ea6d5ad5ea9a7aadf13d52b143f8d9a25722f3cc2f1ffeb2a13168c"
+          }
+        ]
+      }
+    },
+    "limits": [
+      "Live execution needs an explicit owner go-ahead and a fresh directory; preparing the adapter ran nothing live.",
+      "TRACE evidence is bound to the local TRACE journal, fixture state and REPLAY state; it cannot prove semantic intent.",
+      "No complete APP-01 claim until a live run, root visual review, confirmed cleanup and Codex review."
+    ]
+  }
+}

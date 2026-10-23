@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "status": "partial",
+  "workflowStatus": "awaiting_runtime_evidence_audit",
+  "scope": "Actual approved lifetime 4 completed all 17 runtime stages and independent media measurements. Full APP-01 promotion remains open because native pause causality was not established.",
+  "receipt": {
+    "ref": "evidence/live-acceptance-continuation/replay-finish-2/receipt.json",
+    "sha256": "c4ac3b0fc834b1e7bf551078781d47a51177cf07c49e40e8d42a066844da3bbb"
+  },
+  "verifiedAt": "2026-10-23T19:34:33.618Z",
+  "paidRequests": 0,
+  "stagesCompleted": [
+    "provision",
+    "fixture-ready",
+    "fixture-record-start",
+    "fixture-record-stop",
+    "prepare-source-review",
+    "confirm-source-review",
+    "walkthrough-record-start",
+    "edit-fixture",
+    "trace-editor-controls",
+    "export-fixture",
+    "prepare-completed-playback",
+    "trace-completed-playback",
+    "walkthrough-record-stop",
+    "export-walkthrough",
+    "verify-media",
+    "root-review",
+    "cleanup"
+  ],
+  "ownershipChecks": [
+    {
+      "label": "editor",
+      "matches": true,
+      "mismatchedFields": []
+    },
+    {
+      "label": "recorder",
+      "matches": true,
+      "mismatchedFields": []
+    }
+  ],
+  "cleanup": {
+    "confirmed": true,
+    "instances": [
+      {
+        "label": "recorder",
+        "transportClosed": true,
+        "grantRevoked": true,
+        "processExited": true
+      },
+      {
+        "label": "editor",
+        "transportClosed": true,
+        "grantRevoked": true,
+        "processExited": true
+      },
+      {
+        "label": "fixture",
+        "transportClosed": true,
+        "grantRevoked": true,
+        "processExited": true
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "name": "fixture-demo.mp4",
+      "sha256": "f16b79a74950e666b97f865ce4e4949e7e3912f58ea6082379ab5d630f6bbc85",
+      "bytes": 87302,
+      "duration": 6
+    },
+    {
+      "name": "editor-walkthrough.mp4",
+      "sha256": "7effb44098713d433661b160ab72a3fc09aa7c53077213065b6e551a64942fc4",
+      "bytes": 8627610,
+      "duration": 189.9
+    }
+  ],
+  "sourceReview": {
+    "sourceStart": 28,
+    "sourceEnd": 34,
+    "reviewMethod": "Complete source interval decoded to five retained distinct full frames; all inspected, plus every bound source frame. Both output contact sheets and every declared output review frame inspected."
+  },
+  "observed": {
+    "fixture": "TRACE REPLAY demo retained; Count:1 visibly becomes Count:2. Callout and blur visible only during 1 to 3 seconds. Offline tone measured only during the declared narration interval.",
+    "walkthrough": "Owned REPLAY editor visibly shows saved trim/effect tracks, native playback and imported completed MP4."
+  },
+  "limits": [
+    "Two actual TRACE editor toggle clicks completed, but playback reached its end before the second click. The independent paused position passed the runtime predicate; a user-caused pause has not been proved. Do not claim that missing step or silently repeat the case.",
+    "One keyboard Space request was safely not_dispatched because focus was not acquired; no input uncertainty resulted.",
+    "Output visual review uses the complete six-second source content plus output contact sheets and all declared review frames; the walkthrough has sampled visual review, not every output frame.",
+    "Both earlier provision failures and all immutable original receipts remain unchanged."
+  ]
+}

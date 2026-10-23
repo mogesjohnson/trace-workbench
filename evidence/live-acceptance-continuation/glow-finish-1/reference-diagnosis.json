@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "caseId": "R31-GLOW-NATIVE",
+  "attempt": 7,
+  "status": "fail",
+  "actualReferenceCall": {
+    "tool": "sky.click",
+    "elementIndex": 1,
+    "error": "coordinate input geometry is unavailable",
+    "proofWritten": false,
+    "completedClickClaimed": false
+  },
+  "independentReadAfterError": { "count": 0, "activationCount": 0, "mouseDownCount": 0, "mouseUpCount": 0, "mouseClickCount": 0, "keysDown": [] },
+  "terminalReceipt": "receipt.json",
+  "cleanup": { "ownedHelpersExited": true, "fixtureExited": true, "forced": false, "keysDown": [], "recoveryRequired": false },
+  "correctivePreparation": "An actual screenshot-plus-accessibility observation on the retained owned preparation window returned capture geometry and a screenshot ID. The prior accessibility-only observation had no screenshot geometry. The corrective case must capture both on its own fresh target and pass that actual screenshot ID to the one element-index click.",
+  "limit": "The geometry preflight was read-only. It does not establish a successful reference click, authorize another case or alter lifetime 7. One approved corrective lifetime 8 remains."
+}

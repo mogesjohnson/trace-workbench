@@ -179,7 +179,9 @@ test('amendment 2 plans are pure and limited to glow and Codex while existing co
   }
   for (const caseId of ['CLAUDE-TRACE-SKILL-NATIVE', 'A32-QUARANTINE-ACK-TYPING', 'METHOD-CLIPBOARD-UNICODE-PASTE'])
     assert.throws(() => book.plan(caseId, undefined, 2));
-  assert.throws(() => book.plan(CASE, undefined, 3));
+  assert.deepEqual(book.plan(CASE, undefined, 3).lifetimeAttemptOrdinals, [7, 8]);
+  assert.throws(() => book.plan('CODEX-TRACE-SKILL-NATIVE', undefined, 3));
+  assert.throws(() => book.plan(CASE, undefined, 4));
 });
 test('amendment appends lifetime 5 and 6 under one canonical lock without modifying original selection or claims', async t => {
   for (const caseId of [CASE, 'CODEX-TRACE-SKILL-NATIVE']) {

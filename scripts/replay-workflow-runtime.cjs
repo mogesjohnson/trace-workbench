@@ -281,6 +281,25 @@ function createDeps({ privateRoot, replayRoot = REPLAY_ROOT, journalRoot = defau
       need(value?.pid === pid, 'replay_identity_unverified');
       return { pid, processCreationTime: String(value.processCreationTime), sessionId: value.session };
     },
+    async applicationIdentity(handle, launcher) {
+      // Fixed main-process query through the launch-owned debugger connection.
+      const main = await handle.evaluate(() => ({ pid: process.pid, parentPid: process.ppid, executable: process.execPath }));
+      need(Number.isInteger(main.pid) && main.pid > 0 && path.resolve(main.executable).toLowerCase() === path.resolve(executable).toLowerCase(), 'replay_application_not_owned');
+      const osMain = await common.command(['identity', String(main.pid)]);
+      const osLauncher = await common.command(['identity', String(launcher.pid)]);
+      need(osLauncher.pid === launcher.pid && String(osLauncher.processCreationTime) === launcher.processCreationTime
+        && osLauncher.session === launcher.sessionId, 'replay_launcher_identity_changed');
+      need(osMain.pid === main.pid && osMain.session === launcher.sessionId && /^\d+$/.test(String(osMain.processCreationTime)), 'replay_application_not_owned');
+      if (main.pid !== launcher.pid) {
+        const { stdout } = await tool('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
+          `Get-CimInstance Win32_Process -Filter 'ProcessId=${main.pid}' | Select-Object ProcessId,ParentProcessId,ExecutablePath | ConvertTo-Json -Compress`]);
+        const parent = JSON.parse(stdout);
+        need(main.parentPid === launcher.pid && parent.ProcessId === main.pid && parent.ParentProcessId === launcher.pid
+          && typeof parent.ExecutablePath === 'string' && path.resolve(parent.ExecutablePath).toLowerCase() === path.resolve(executable).toLowerCase()
+          && BigInt(osMain.processCreationTime) >= BigInt(launcher.processCreationTime), 'replay_application_not_owned');
+      }
+      return { pid: main.pid, processCreationTime: String(osMain.processCreationTime), sessionId: osMain.session };
+    },
     async readyApp(handle) {
       const page = await handle.firstWindow();
       await page.waitForFunction(() => typeof window.replay?.getAgentAccess === 'function', null, { timeout: 30000 });
@@ -457,7 +476,7 @@ function createDeps({ privateRoot, replayRoot = REPLAY_ROOT, journalRoot = defau
 async function testedSource(replayRoot) {
   const git = async (cwd, args) => (await execFileAsync('git', args, { cwd, windowsHide: true })).stdout.trim();
   const files = {};
-  for (const name of ['scripts/accept-replay-workflow.cjs', 'scripts/replay-workflow-runtime.cjs', 'scripts/replacement-acceptance-common.cjs',
+  for (const name of ['scripts/accept-replay-workflow.cjs', 'scripts/replay-workflow-runtime.cjs', 'scripts/replacement-acceptance-common.cjs', 'scripts/accept-finish-gate.cjs', 'scripts/finish-acceptance-amendment.cjs',
     'scripts/continuation-adapter.cjs', 'src/computer/controller.cjs', 'package-lock.json']) files[name] = digest(await fs.readFile(path.join(ROOT, name)));
   return { traceCommit: await git(ROOT, ['rev-parse', 'HEAD']), traceWorkingTreeClean: !(await git(ROOT, ['status', '--porcelain'])),
     replayCommit: await git(replayRoot, ['rev-parse', 'HEAD']), files,
@@ -465,7 +484,7 @@ async function testedSource(replayRoot) {
 }
 async function serve(options, { replayRoot = REPLAY_ROOT, journalRoot = defaultJournalRoot() } = {}) {
   const common = require('./replacement-acceptance-common.cjs');
-  const prior = await common.checkPrior(options), directory = path.resolve(options.directory);
+  const prior = options.finishClaim ? null : await common.checkPrior(options), directory = path.resolve(options.directory);
   // Read-only preflight before the run directory, any UI or any claim exists: a missing helper,
   // fixture build or package leaves no receipt that could be mistaken for a used attempt.
   const display = common.validateDisplay(await common.command(['display']));
@@ -484,13 +503,14 @@ async function serve(options, { replayRoot = REPLAY_ROOT, journalRoot = defaultJ
   const pins = await deps.verifyPins();
   need(Object.keys(flow.PIN).every(key => pins[key] === flow.PIN[key]), 'replay_source_changed');
   const source = await testedSource(replayRoot);
+  const finishClaim = options.finishClaim ? await require('./finish-acceptance-amendment.cjs').claim(options.finishClaim) : undefined;
   await fs.mkdir(path.dirname(directory), { recursive: true }); await fs.mkdir(directory); // A used directory is never reused.
   await fs.mkdir(privateRoot, { recursive: true });
   await fs.writeFile(path.join(directory, 'plan.json'), JSON.stringify({ ...flow.plan(), status: 'declared', declaredBeforeUi: true,
-    attempt: options.attempt, ownerDecision: options.ownerDecision, ...(prior ? { prior } : {}) }, null, 2) + '\n', { flag: 'wx' });
+    attempt: finishClaim?.lifetimeAttemptOrdinal ?? options.attempt, ownerDecision: options.ownerDecision, ...(prior ? { prior } : {}), ...(finishClaim ? { finishClaim } : {}) }, null, 2) + '\n', { flag: 'wx' });
   const receipt = { schemaVersion: 1, caseId: 'A4-REPLAY', requirement: 'APP-01', planContract: 1, attempt: options.attempt,
     ownerDecision: options.ownerDecision, ...(prior ? { prior } : {}), status: 'running', startedAt: new Date().toISOString(),
-    paidRequests: 0, lastCommandId: 0, display, testedSource: source };
+    paidRequests: 0, lastCommandId: 0, display, testedSource: source, ...finishClaim };
   record = async update => { Object.assign(receipt, update); await writeAtomic(path.join(directory, 'receipt.json'), receipt); return receipt; };
   await record({});
   workflow = flow.createWorkflow(deps, { privateRoot });

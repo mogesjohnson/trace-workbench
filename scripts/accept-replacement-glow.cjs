@@ -30,6 +30,7 @@ function plan(input = {}) {
     attempt: options.attempt, ownerDecision: options.ownerDecision ?? null, referenceExecutor: options.referenceExecutor ?? null,
     ...(supplemental ? { attempt: options.lifetimeAttemptOrdinal, historicalAttemptsUsed: options.historicalAttemptsUsed, continuationAttempt: options.continuationAttempt,
       ...(options.amendment === 2 ? { amendment: 2, proposalDocument: { ...book.AMENDMENT_2.proposal }, history: book.amendmentHistory(CASE) } : {}),
+      ...(options.amendment === 3 ? { amendment: 3, proposalDocument: { ...require('./finish-acceptance-amendment.cjs').PROPOSAL }, referenceTiming: { contract: 'owner-approved-settlement-v2', maximumAfterToolResolutionMs: 1000, preserveActualToolResolution: true } } : {}),
       lifetimeAttemptOrdinal: options.lifetimeAttemptOrdinal, contract: options.contract, decisionRef: options.decisionRef ?? null,
       referenceProof: 'One actual Sky accessibility mouse click; independently recorded physical point inside fresh button and measured glow. TRACE remains exact fresh center.' } : {}),
     executionRequiresExplicitOwnerDecision: true, declaredBeforeUiLaunch: true,
@@ -84,14 +85,14 @@ function measureGlowRegion(baseline, active, button, nativeDisplay) {
 }
 async function readExternal(file) { try { return JSON.parse(await fs.readFile(file, 'utf8')); } catch (error) { if (error.code === 'ENOENT' || error instanceof SyntaxError) return null; throw error; } }
 async function waitSkyObservation(file) { return common.waitFor(() => readExternal(file), Boolean, 'fresh actual Sky accessibility observation', 60000); }
-async function waitRegionReference(fixture, checkpoint, proofPath, sampleInput) {
+async function waitRegionReference(fixture, checkpoint, proofPath, sampleInput, settlementMaximumMs = 0) {
   const value = await common.waitFor(async () => {
     const state = await fixture.state(); if (state.count > 1 || state.mouseClickCount > 1) throw common.failure('reference_extra_click', 'Only one Sky reference click is declared.');
     return { state, proof: await readExternal(proofPath) };
   }, value => value.state.count === 1 && value.state.mouseUpCount === 1 && Boolean(value.proof), 'complete actual Sky click evidence', 60000);
   const sampledAt = new Date().toISOString(), sample = { target: checkpoint.target, display: checkpoint.display, sampledAt };
   const finalInput = { ...sample, sampledAt: new Date().toISOString(), source: 'independent-keystate-all', observable: true, keysDown: await sampleInput() };
-  const result = region.assertReferenceRegion({ checkpoint, proof: value.proof, finalFixture: regionFixture(value.state, sample), finalInput, checkedAt: new Date().toISOString() });
+  const result = region.assertReferenceRegion({ checkpoint, proof: value.proof, finalFixture: regionFixture(value.state, sample), finalInput, checkedAt: new Date().toISOString(), settlementMaximumMs });
   return { ...result, toolReceiptRef: value.proof.toolReceiptRef, completedAt: value.proof.completedAt };
 }
 function assertFocus(before, after) {
@@ -203,9 +204,9 @@ async function leaseFree() {
 function defaults() {
   return { ...common, verify: async () => { await common.verify(); await fixtureTools.verify(); },
     fixture: launchFixture, leaseFree, waitReference, waitSkyObservation, waitRegionReference, measureGlowRegion,
-    claimRequest: continuation.claimRequest, claim: request => book.createBookkeeper().claim(request),
+    claimRequest: continuation.claimRequest, claim: request => request.amendment === 3 ? require('./finish-acceptance-amendment.cjs').claim(request) : book.createBookkeeper().claim(request),
     sourceHashes: async () => { const value = await common.sourceHashes(DRIVER, 'glow-app');
-      for (const name of ['scripts/continuation-adapter.cjs', 'scripts/live-acceptance-continuation.cjs', 'scripts/glow-reference-region.cjs']) value.files[name] = common.digest(await fs.readFile(path.join(common.ROOT, name)));
+      for (const name of ['scripts/continuation-adapter.cjs', 'scripts/live-acceptance-continuation.cjs', 'scripts/glow-reference-region.cjs', 'scripts/finish-acceptance-amendment.cjs']) value.files[name] = common.digest(await fs.readFile(path.join(common.ROOT, name)));
       value.runtimeOutputs = await continuation.runtimeSnapshot();
       value.runtimeOutputs['glow-fixture/manifest'] = common.digest(await fs.readFile(path.join(path.dirname(path.dirname(fixtureTools.BINARY)), 'manifest.json')));
       for (const extension of ['exe', 'dll', 'runtimeconfig.json', 'deps.json']) value.runtimeOutputs[`glow-fixture/TraceGlowFixture.${extension}`] = common.digest(await fs.readFile(path.join(path.dirname(fixtureTools.BINARY), `TraceGlowFixture.${extension}`)));
@@ -352,7 +353,7 @@ async function run(input = {}, injected = {}) {
       }
       await persist();
       deps.notifyReady({ ...ready, point, checkpoint, instruction: 'Send exactly one actual Sky accessibility mouse click on the observed element; retain its actual receipt metadata. No Invoke or replay.' });
-      receipt.phases.reference = await deps.waitRegionReference(fixture, checkpoint, proofPath, async () => (await deps.command(['keystate', 'all'])).down);
+      receipt.phases.reference = await deps.waitRegionReference(fixture, checkpoint, proofPath, async () => (await deps.command(['keystate', 'all'])).down, options.amendment === 3 ? 1000 : 0);
       assert.equal(measured.containsTintedPoint(receipt.phases.reference.point), true, 'Actual reference point must hit a measured changed glow pixel.');
     } else {
       deps.notifyReady(ready); receipt.phases.reference = await deps.waitReference(fixture, pending, proofPath);

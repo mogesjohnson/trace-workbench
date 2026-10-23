@@ -30,9 +30,10 @@ function injectedRuntime(options = {}) {
       return app;
     },
     processIdentity: async appPid => { if (options.identityFails) throw Object.assign(new Error(), { code: 'identity_failed' }); return nativeIdentity(appPid, appPid + 100); },
+    applicationIdentity: async app => nativeIdentity(app.process().pid + (options.shellLauncher ? 1000 : 0), app.process().pid + 100),
     readyApp: async app => { if (options.readinessFails && app.label === 'editor') throw Object.assign(new Error(), { code: 'readiness_failed' });
       return { page: { label: app.label }, info: { libraryPath: path.join(root, app.label, '.replay-smoke/Library') } }; },
-    editorWindowIdentity: async app => ({ ...nativeIdentity(app.process().pid, app.process().pid + 100), ...options.editorIdentityPatch }),
+    editorWindowIdentity: async app => ({ ...nativeIdentity(app.process().pid + (options.shellLauncher ? 1000 : 0), app.process().pid + 100), ...options.editorIdentityPatch }),
     createGrant: async page => { events.push(`grant:${page.label}`); return { grant: { id: id(page.label === 'editor' ? 1 : 2),
       importRoots: [path.join(root, page.label, 'agent-imports')], exportRoots: [path.join(root, page.label, 'agent-exports')] },
       setup: { mcp: { mcpServers: { replay: { label: page.label } } } } }; },
@@ -220,11 +221,21 @@ test('readiness failure still retains and closes the exact returned app handle b
   assert.ok(f.events.includes('stop:editor')); assert.ok(f.events.some(value => value.startsWith('exact-exit:11:')));
 });
 
+test('Windows shell launcher and verified Electron main retain separate generations through cleanup', async () => {
+  const f = injectedRuntime({ shellLauncher: true });
+  await through(f, 'provision');
+  const app = f.workflow.recovery().instances[0];
+  assert.equal(app.launchedPid, 11); assert.equal(app.launcherIdentity.pid, 11);
+  assert.equal(app.identity.pid, 1011); assert.equal(app.identity.windowId, '111');
+  assert.equal((await f.workflow.cleanup()).confirmed, true);
+  for (const pid of [11, 1011]) assert.ok(f.events.includes(`exact-exit:${pid}:${nativeIdentity(pid).processCreationTime}`));
+});
+
 test('acquisition checkpoints retain rejected window identity without grants or retargeted cleanup', async () => {
   const failed = injectedRuntime({ identityFails: true });
   await assert.rejects(failed.workflow.advance('provision'), { code: 'identity_failed' });
   assert.deepEqual(failed.recoveryCheckpoints[0].instances, [{ label: 'editor', root: path.join(root, 'editor'), launchedPid: 11,
-    identity: undefined, libraryPath: undefined, importRoot: undefined, exportRoot: undefined }]);
+    launcherIdentity: undefined, identity: undefined, libraryPath: undefined, importRoot: undefined, exportRoot: undefined }]);
   const f = injectedRuntime(); await through(f, 'provision');
   const acquired = f.recoveryCheckpoints;
   assert.ok(acquired.some(snapshot => snapshot.instances.length === 2 && !snapshot.instances[1].identity));

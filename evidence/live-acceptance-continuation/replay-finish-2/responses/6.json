@@ -1,0 +1,133 @@
+{
+  "id": 6,
+  "ok": true,
+  "state": {
+    "status": "prepared_or_running",
+    "next": "walkthrough-record-start",
+    "completed": [
+      "provision",
+      "fixture-ready",
+      "fixture-record-start",
+      "fixture-record-stop",
+      "prepare-source-review",
+      "confirm-source-review"
+    ],
+    "requests": [
+      {
+        "app": "editor",
+        "command": "capture.start",
+        "requestId": "trace-replay-fbf6f463-f027-46c8-97e2-581475c74013",
+        "state": "completed"
+      },
+      {
+        "app": "editor",
+        "command": "capture.stop",
+        "requestId": "trace-replay-02d626e9-1c3c-4195-9afe-44cc55951c86",
+        "state": "completed"
+      }
+    ],
+    "sourceReview": {
+      "sourceSha256": "910a85367f417f4bf3dbc112a1394f6d92a5222abcfd4fdb2e14d9ff9e86474b",
+      "sourceStart": 28,
+      "sourceEnd": 34,
+      "sourceDuration": 38.457,
+      "durationSource": "independent_packet_timestamps",
+      "segment": {
+        "name": "fixture-source-segment.mp4",
+        "sha256": "0ece81adb1d4941e29eeefa291d800e9df09829423be5e5cb30c523ceb8fc74e",
+        "duration": 6
+      },
+      "frames": [
+        {
+          "name": "fixture-source-review-0.png",
+          "sha256": "fab69f95d7db59d357c019122c90b7357a4362be072c5eb8bb84868752a94d8b",
+          "segmentSeconds": 0.25,
+          "requestedSourceSeconds": 28.25
+        },
+        {
+          "name": "fixture-source-review-1.png",
+          "sha256": "fab69f95d7db59d357c019122c90b7357a4362be072c5eb8bb84868752a94d8b",
+          "segmentSeconds": 1.5,
+          "requestedSourceSeconds": 29.5
+        },
+        {
+          "name": "fixture-source-review-2.png",
+          "sha256": "305270aa945a57947e987cc78a20c478400994af8e55ba1de9cec643ed7dabf8",
+          "segmentSeconds": 3,
+          "requestedSourceSeconds": 31
+        },
+        {
+          "name": "fixture-source-review-3.png",
+          "sha256": "910e638f5f877865cda575cf1ab9456c7470e5bf6c09b190f948de6b31b6ec99",
+          "segmentSeconds": 4.5,
+          "requestedSourceSeconds": 32.5
+        },
+        {
+          "name": "fixture-source-review-4.png",
+          "sha256": "910e638f5f877865cda575cf1ab9456c7470e5bf6c09b190f948de6b31b6ec99",
+          "segmentSeconds": 5.75,
+          "requestedSourceSeconds": 33.75
+        }
+      ],
+      "verification": "root-review-required-no-wall-clock-mapping",
+      "limits": [
+        "Frame times are requested source-media sample times, not measured capture-to-wall-clock correspondence.",
+        "Root must review the entire retained segment; sampled frames alone cannot prove the useful action."
+      ]
+    },
+    "sourceContentVerified": true,
+    "identityChecks": [
+      {
+        "label": "editor",
+        "matches": true,
+        "mismatchedFields": []
+      },
+      {
+        "label": "recorder",
+        "matches": true,
+        "mismatchedFields": []
+      }
+    ],
+    "selectedRecipe": {
+      "duration": 6,
+      "sourceSelection": "root-reviewed-six-second-captured-segment-before-edits",
+      "effectStart": 1,
+      "effectEnd": 3,
+      "narrationStart": 1.5,
+      "narrationDuration": 1,
+      "samples": [
+        0.5,
+        2,
+        4
+      ],
+      "callout": {
+        "id": "trace-callout",
+        "type": "text",
+        "text": "TRACE verified synthetic fixture",
+        "x": 0.1,
+        "y": 0.05,
+        "width": 0.6,
+        "height": 0.13,
+        "start": 1,
+        "end": 3
+      },
+      "privacy": {
+        "id": "trace-privacy",
+        "type": "blur",
+        "x": 0.34,
+        "y": 0.25,
+        "width": 0.32,
+        "height": 0.4,
+        "start": 1,
+        "end": 3
+      },
+      "sourceStart": 28,
+      "sourceEnd": 34
+    },
+    "limits": [
+      "Live execution needs an explicit owner go-ahead and a fresh directory; preparing the adapter ran nothing live.",
+      "TRACE evidence is bound to the local TRACE journal, fixture state and REPLAY state; it cannot prove semantic intent.",
+      "No complete APP-01 claim until a live run, root visual review, confirmed cleanup and Codex review."
+    ]
+  }
+}
