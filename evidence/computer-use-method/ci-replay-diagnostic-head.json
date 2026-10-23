@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "observedDateUtc": "2026-10-23",
+  "source": "Read-only GitHub Actions jobs and check-run annotations API",
+  "repository": "mogesjohnson/trace-workbench",
+  "headSha": "8a0239bbec9a610a678d9a7c5a600a1064b5eaa9",
+  "runId": 39992877886,
+  "jobId": 120548823667,
+  "runUrl": "https://github.com/mogesjohnson/trace-workbench/actions/runs/39992877886",
+  "status": "completed",
+  "conclusion": "failure",
+  "steps": 0,
+  "annotation": "The job was not started because recent account payments have failed or your spending limit needs to be increased. Please check the 'Billing & plans' section in your settings",
+  "manualRetryRequested": false,
+  "scope": "Required Windows job could not start; no build/test result established. No account or payment setting changed."
+}

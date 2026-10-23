@@ -1,16 +1,16 @@
 # TRACE gap-closure plan and progress
 
-Updated 2026-10-23. **Goal active. 16/22 checkpoints verified (73% of this checklist).**
+Updated 2026-10-23. **Goal blocked. 16/22 checkpoints verified (73% of this checklist).**
 
 [Open the visual dashboard](GAP_CLOSURE_PROGRESS.html) · [Detailed status](GAP_CLOSURE_STATUS.md) · [Acceptance specification](../SPEC.md)
 
 Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row. This percentage is not a completion claim for the full goal.
 
-**Current work:** Claude, Codex, clipboard and other compatible passes stand. REPLAY now retains rejected window identities before equality; one focused offline acquisition check passed, with no live run or budget change. Six checkpoints remain; amendment decisions and GitHub billing are pending. No desktop test is running; fresh readiness will be requested before any new one.
+**Current work:** Goal blocked after repeated pending amendment decisions and confirmed GitHub billing restrictions. All independent preparation is saved. Codex, Claude, clipboard and other compatible passes stand at 16/22; six checkpoints remain. Owner decisions and CI access must change before remaining execution. No desktop test is running; fresh readiness will be requested before any new one.
 
 | Verified at stated scope | In progress | To do | Blocked |
 | --- | --- | --- | --- |
-| 16 | 2 | 1 | 3 |
+| 16 | 0 | 1 | 5 |
 
 ## Plan
 
@@ -30,14 +30,14 @@ Each row is one declared checkpoint. Counts measure completed checkpoints, not t
 | 12. REPLAY two-window recording setup | Demonstrate | Verified at stated scope | Actual 3.795-second recording, correct owned editor, decoded frame review, exact app exits and revoked grants. Full demo still pending. | [Open](../evidence/computer-use-method/replay-feasibility/verification.json) |
 | 13. Glow clicks and complete lifecycle | Prove | Blocked | Reference click reached the physical edge once, all five counters 1. Full lifetime-6 case failed the strict event window; no TRACE click or full lifecycle pass. Cleanup passed; amended budget exhausted. | [Open](../evidence/live-acceptance-continuation/glow-amendment-2-attempt-2/diagnosis.json) |
 | 14. Typing quarantine acknowledgement | Prove | Verified at stated scope | Supplemental attempt 1 passed: exact abc, independent release, persistent quarantine/restart blocking, verified recovery and exactly one pinned-engine follow-up. Both fixtures closed. | [Open](../evidence/live-acceptance-continuation/typing-supplemental-1/verification.json) |
-| 15. Current-source physical-stop relevance | Prove | In progress | Historical physical Escape passes ran an earlier Session.cs that is absent from every Git object (checked 22 Oct). Needs an owner-present current-source physical stop run. | [Open](../evidence/computer-use-method/production-owner-map.json) |
+| 15. Current-source physical-stop relevance | Prove | Blocked | Historical physical Escape passes ran an earlier Session.cs that is absent from every Git object (checked 22 Oct). Needs an owner-present current-source physical stop run. | [Open](../evidence/computer-use-method/production-owner-map.json) |
 | 16. Complete real Codex workflow | Demonstrate | Verified at stated scope | Approved lifetime 5 passed through the actual reconnected Codex MCP: installed skill discovery, exact Unicode once, consumed-observation not_dispatched with count 0, one fresh counter action to 1, stable text, exact helper/fixture exits and persistent host preserved. No corrective retry needed. | [Open](../evidence/live-acceptance-continuation/codex-amendment-2-attempt-1/receipt.json) |
 | 17. Complete real Claude workflow | Demonstrate | Verified at stated scope | Corrective lifetime 4 passed on Claude 2.1.309 with explicitly isolated state: both Skills, five received PNGs, exact text/count 1, stale not_dispatched, fresh recovery, all real-settings intervals preserved, installed bundles/source unchanged and exact cleanup. Temporary sign-in removed. Guarded isolated-host scope; no semantic-image or REA-analysis claim. | [Open](../evidence/live-acceptance-continuation/claude-supplemental-2/receipt.json) |
 | 18. Unicode clipboard paste and restoration | Demonstrate | Verified at stated scope | Approved corrective supplement passed: public/independent fresh focus, one completed Unicode paste, exact target text and unchanged count, guarded restoration plus fresh supported-byte comparison, exact native/fixture exits and private-artifact cleanup. Ordinary anchor explicitly closed. | [Open](../evidence/live-acceptance-continuation/clipboard-supplemental-2/receipt.json) |
 | 19. Full REPLAY editing and two exports | Demonstrate | Blocked | Both full-run attempts remain blocked during provision. Adapter now checkpoints the rejected window candidate and public mismatch field names before equality; one affected injected case passed without a live run. Earlier mismatch cause remains unknown. Strict identity/cleanup preserved; further run awaits direct cap extension. | [Open](REPLAY_LIVE_RUN.md) |
-| 20. Clean archive installation and rollback | Deliver | In progress | Existing-host exact archive setup and configuration rollback passed. Portable verifier and CI wiring uploaded in draft PR 17; fresh Windows runner and final archive remain. | [Open](ARCHIVE_INSTALL.md) |
+| 20. Clean archive installation and rollback | Deliver | Blocked | Existing-host exact archive setup and configuration rollback passed. Portable verifier and CI wiring uploaded in draft PR 17; final archive/fresh Windows runner remain blocked by hosted CI access and final acceptance. | [Open](ARCHIVE_INSTALL.md) |
 | 21. Final documentation and reviewable commits | Deliver | To do | Reconcile requirement-to-evidence checklist and packaging; README last; planned verification and documentation commits. | [Open](../VERSION_CONTROL.md) |
-| 22. Draft PR and required hosted CI | Deliver | Blocked | Draft PRs through 20 uploaded. Shutdown-head run 39910599102 failed with zero steps; its exact annotation confirms account payments/spending restrictions. No retry until that condition changes. | [Open](../evidence/computer-use-method/ci-shutdown-head.json) |
+| 22. Draft PR and required hosted CI | Deliver | Blocked | Draft PRs through 22 uploaded. Run 39992877886 at the REPLAY diagnostic checkpoint failed with zero steps; exact annotation confirms account payments/spending restrictions. No manual retry until that condition changes. | [Open](../evidence/computer-use-method/ci-replay-diagnostic-head.json) |
 
 ## Next
 

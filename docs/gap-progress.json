@@ -1,8 +1,8 @@
 {
   "updated": "2026-10-23",
   "title": "TRACE — close the Computer Use gap",
-  "goalStatus": "active",
-  "current": "Claude, Codex, clipboard and other compatible passes stand. REPLAY now retains rejected window identities before equality; one focused offline acquisition check passed, with no live run or budget change. Six checkpoints remain; amendment decisions and GitHub billing are pending. No desktop test is running; fresh readiness will be requested before any new one.",
+  "goalStatus": "blocked",
+  "current": "Goal blocked after repeated pending amendment decisions and confirmed GitHub billing restrictions. All independent preparation is saved. Codex, Claude, clipboard and other compatible passes stand at 16/22; six checkpoints remain. Owner decisions and CI access must change before remaining execution. No desktop test is running; fresh readiness will be requested before any new one.",
   "measurement": "Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row.",
   "checkpoints": [
     {
@@ -121,7 +121,7 @@
       "id": "15",
       "phase": "Prove",
       "title": "Current-source physical-stop relevance",
-      "status": "active",
+      "status": "blocked",
       "detail": "Historical physical Escape passes ran an earlier Session.cs that is absent from every Git object (checked 22 Oct). Needs an owner-present current-source physical stop run.",
       "evidence": "../evidence/computer-use-method/production-owner-map.json"
     },
@@ -161,8 +161,8 @@
       "id": "20",
       "phase": "Deliver",
       "title": "Clean archive installation and rollback",
-      "status": "active",
-      "detail": "Existing-host exact archive setup and configuration rollback passed. Portable verifier and CI wiring uploaded in draft PR 17; fresh Windows runner and final archive remain.",
+      "status": "blocked",
+      "detail": "Existing-host exact archive setup and configuration rollback passed. Portable verifier and CI wiring uploaded in draft PR 17; final archive/fresh Windows runner remain blocked by hosted CI access and final acceptance.",
       "evidence": "ARCHIVE_INSTALL.md"
     },
     {
@@ -178,8 +178,8 @@
       "phase": "Deliver",
       "title": "Draft PR and required hosted CI",
       "status": "blocked",
-      "detail": "Draft PRs through 20 uploaded. Shutdown-head run 39910599102 failed with zero steps; its exact annotation confirms account payments/spending restrictions. No retry until that condition changes.",
-      "evidence": "../evidence/computer-use-method/ci-shutdown-head.json"
+      "detail": "Draft PRs through 22 uploaded. Run 39992877886 at the REPLAY diagnostic checkpoint failed with zero steps; exact annotation confirms account payments/spending restrictions. No manual retry until that condition changes.",
+      "evidence": "../evidence/computer-use-method/ci-replay-diagnostic-head.json"
     }
   ]
 }

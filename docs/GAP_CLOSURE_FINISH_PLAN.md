@@ -1,6 +1,6 @@
 # Finish the Computer Use gap
 
-Prepared 23 October 2026 after the shutdown checkpoint. The goal is active again. This plan preserves the full scope and all earlier results. It creates no approval, claim, extra retry or passing result.
+Prepared 23 October 2026 after the shutdown checkpoint. The goal is now **blocked** pending the three amendment decisions below and restored hosted CI access; independent preparation is complete. This plan preserves the full scope and all earlier results. It creates no approval, claim, extra retry or passing result.
 
 The checkpoint is now **16 of 22 verified (73% of the declared checklist)** after the approved Claude corrective passed. This is not an estimate of remaining time, cost or feature parity. [The dashboard](GAP_CLOSURE_PROGRESS.html) and [SPEC.md](../SPEC.md) retain the authoritative scope. The amendment proposals below remain unapproved.
 
