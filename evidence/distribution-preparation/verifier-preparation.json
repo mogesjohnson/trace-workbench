@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "caseId": "SOURCE-ARCHIVE-VERIFIER-PREPARATION",
+  "status": "pass",
+  "scope": "Reviewed verifier preparation and prior pure/injected checks only. The public verifier has not been run end to end; existing-host archive preparation has a separate partial receipt.",
+  "recordedAt": "2026-10-23T05:16:58.709Z",
+  "sourceCommit": "3937098189dee2e01c4ee1cd03b8f9bdc43e2d0c",
+  "files": {
+    "scripts/verify-archive-install.cjs": "5c5b91cbd4e7af0650537d34115d445a45b198d90eb1ec94e94a1470d7deb21d",
+    "tests/verify-archive-install.test.cjs": "1043acf7d1797a7bf3de600287a388585ad5ed541dbd4439eaa4517525f57a29",
+    ".github/workflows/verify.yml": "0365395ee777417e2b618431f0560dfbeeb935eba24d7ca78df181eb56f44e7c",
+    "package.json": "e1d70360323c23bd769018345221d304ddcf6969989b9c31535fed1f53637f78"
+  },
+  "previouslyObservedChecks": {
+    "archiveFocusedTests": 8,
+    "fullSuite": {
+      "tests": 520,
+      "passed": 514,
+      "skipped": 6,
+      "failed": 0,
+      "durationMs": 4179.4953,
+      "scope": "Historical local suite before the subsequent Claude forwarding fix; no rerun is claimed.",
+      "privateLogSha256": "7ca6a20583ce8f4fbed3daf39af7ec413ac915ed28cd8552f0d25a9e4df5dbcb"
+    },
+    "sourceChecks": {
+      "files": 95,
+      "passed": true
+    }
+  },
+  "notProven": [
+    "Fresh Windows runner",
+    "Public verifier end-to-end execution",
+    "Final release archive",
+    "Hosted CI",
+    "Remaining live acceptance"
+  ]
+}
