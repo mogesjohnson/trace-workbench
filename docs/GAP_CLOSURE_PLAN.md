@@ -1,12 +1,12 @@
 # TRACE gap-closure plan and progress
 
-Updated 2026-10-23. **Goal paused. 15/22 checkpoints verified (68% of this checklist).**
+Updated 2026-10-23. **Goal active. 15/22 checkpoints verified (68% of this checklist).**
 
 [Open the visual dashboard](GAP_CLOSURE_PROGRESS.html) · [Detailed status](GAP_CLOSURE_STATUS.md) · [Acceptance specification](../SPEC.md)
 
 Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row. This percentage is not a completion claim for the full goal.
 
-**Current work:** Owner requested a shutdown stopping point. Complete Codex workflow and Unicode clipboard paste/restoration passed; all owned fixtures, anchors and native helpers exited. Compatible earlier passes stand. Remaining work: glow, physical stop, Claude preservation, full REPLAY, final distribution and CI. Resume from saved evidence; no passing-case reruns.
+**Current work:** Resumed from the shutdown checkpoint. Codex and clipboard passes stand; no live tests repeated. GAP_CLOSURE_FINISH_PLAN.md consolidates the remaining amendments and prerequisites. Latest shutdown-head CI confirms billing/spending blocked all steps. Glow/REPLAY budgets and current-source Escape need direct decisions; Claude isolation is a candidate preservation fix, not yet verified.
 
 | Verified at stated scope | In progress | To do | Blocked |
 | --- | --- | --- | --- |
@@ -37,7 +37,7 @@ Each row is one declared checkpoint. Counts measure completed checkpoints, not t
 | 19. Full REPLAY editing and two exports | Demonstrate | Blocked | Both full-run attempts stopped during provision before grants, recording, fixture creation or TRACE input. Visibility wait and retained-handle cleanup corrected; second run confirms cleanup but rejects process/window identity equality. Exact mismatch cause unproved; no further run authorized. | [Open](REPLAY_LIVE_RUN.md) |
 | 20. Clean archive installation and rollback | Deliver | In progress | Existing-host exact archive setup and configuration rollback passed. Portable verifier and CI wiring uploaded in draft PR 17; fresh Windows runner and final archive remain. | [Open](ARCHIVE_INSTALL.md) |
 | 21. Final documentation and reviewable commits | Deliver | To do | Reconcile requirement-to-evidence checklist and packaging; README last; planned verification and documentation commits. | [Open](../VERSION_CONTROL.md) |
-| 22. Draft PR and required hosted CI | Deliver | Blocked | Draft PRs 14–18 uploaded. PR 18 CI failed before steps due to account payments/spending restrictions. No new CI retry until that external condition changes. | [Open](GAP_CLOSURE_STATUS.md) |
+| 22. Draft PR and required hosted CI | Deliver | Blocked | Draft PRs through 20 uploaded. Shutdown-head run 39910599102 failed with zero steps; its exact annotation confirms account payments/spending restrictions. No retry until that condition changes. | [Open](../evidence/computer-use-method/ci-shutdown-head.json) |
 
 ## Next
 

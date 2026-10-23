@@ -1,8 +1,8 @@
 {
   "updated": "2026-10-23",
   "title": "TRACE — close the Computer Use gap",
-  "goalStatus": "paused",
-  "current": "Owner requested a shutdown stopping point. Complete Codex workflow and Unicode clipboard paste/restoration passed; all owned fixtures, anchors and native helpers exited. Compatible earlier passes stand. Remaining work: glow, physical stop, Claude preservation, full REPLAY, final distribution and CI. Resume from saved evidence; no passing-case reruns.",
+  "goalStatus": "active",
+  "current": "Resumed from the shutdown checkpoint. Codex and clipboard passes stand; no live tests repeated. GAP_CLOSURE_FINISH_PLAN.md consolidates the remaining amendments and prerequisites. Latest shutdown-head CI confirms billing/spending blocked all steps. Glow/REPLAY budgets and current-source Escape need direct decisions; Claude isolation is a candidate preservation fix, not yet verified.",
   "measurement": "Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row.",
   "checkpoints": [
     {
@@ -178,8 +178,8 @@
       "phase": "Deliver",
       "title": "Draft PR and required hosted CI",
       "status": "blocked",
-      "detail": "Draft PRs 14–18 uploaded. PR 18 CI failed before steps due to account payments/spending restrictions. No new CI retry until that external condition changes.",
-      "evidence": "GAP_CLOSURE_STATUS.md"
+      "detail": "Draft PRs through 20 uploaded. Shutdown-head run 39910599102 failed with zero steps; its exact annotation confirms account payments/spending restrictions. No retry until that condition changes.",
+      "evidence": "../evidence/computer-use-method/ci-shutdown-head.json"
     }
   ]
 }
