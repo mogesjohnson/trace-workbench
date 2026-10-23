@@ -34,6 +34,8 @@ Implemented in [the driver](../scripts/accept-claude-host.cjs) with pure and inj
 
 ## Attribution table
 
+On 23 October 2026 the installed binary advanced to **2.1.309**, SHA-256 `5441781f2b6bbd07354b4a74560ee88c68c9bf05d6db3c7e24c452c91673dc53`. The existing static extractor found all eight unique saver/check/set/skip anchors. Its 40 global and 29 project key sets match 2.1.308. The exact new entry is appended, preserving both earlier versions; no binary was executed by extraction. This adds attribution coverage only. Any real-settings change still blocks; no cache exemption or restoration is introduced. Separate isolated subscription sign-in and actual startup checks are recorded in [the finish plan](GAP_CLOSURE_FINISH_PLAN.md); full authenticated host acceptance remains unproved.
+
 [The table](../evidence/computer-use-method/claude-settings-attribution/table.json) has one entry per exact `claude.exe` SHA-256. It now covers 2.1.306 (`f6bc9de3…`, the binary of both retained attempts) and 2.1.308 (`c9796ba2…`, installed on 22 October 2026). [The extractor](../scripts/claude-settings-attribution.cjs) derives each entry from the binary. Static inspection of both builds found the same structure:
 
 - The global saver (literal `saveGlobalConfig`) and the per-project saver (literal `saveCurrentProjectConfig`, which writes `projects[<current project>]`) each consult a check before skipping an unlocked fallback write after lock contention.

@@ -271,6 +271,128 @@
         ],
         "version": "2.1.308"
       }
+    },
+    {
+      "claudeExecutableSha256": "5441781f2b6bbd07354b4a74560ee88c68c9bf05d6db3c7e24c452c91673dc53",
+      "size": 298624160,
+      "version": "2.1.309",
+      "gitSha": "1ce7e4ff2da8d4b0f5c15b291e4a9b54716970c2",
+      "routineGlobalKeys": [
+        "numStartups",
+        "skillUsage",
+        "pluginUsage",
+        "memoryUsageCount",
+        "promptQueueUseCount",
+        "btwUseCount",
+        "queuedCommandUpHintCount",
+        "lspRecommendationIgnoredCount",
+        "promptSuggestionUnusedStreak",
+        "tipsHistory",
+        "tipLifetimeShownCounts",
+        "tipsHistoryByCommand",
+        "seenNotifications",
+        "announcementImpressions",
+        "savedModelSuccessorShown",
+        "subagentConfigWarningShown",
+        "subagentConfigChecks",
+        "subagentConfigClassifierCalls",
+        "lastShownEmergencyTip",
+        "subscriptionNoticeCount",
+        "subscriptionUpsellShownCount",
+        "passesUpsellSeenCount",
+        "fullscreenUpsellSeenCount",
+        "fullscreenDownsellSeenCount",
+        "voiceLangHintShownCount",
+        "voiceFooterHintSeenCount",
+        "experimentNoticesSeenCount",
+        "cachedGrowthBookFeatures",
+        "cachedGrowthBookFeaturesAt",
+        "cachedArtifactRoster",
+        "artifactRosterDenied",
+        "promoStartupStatusCache",
+        "unusedLimitResetStatusCache",
+        "apiCreditLinkStatusCache",
+        "cachedDynamicConfigs",
+        "cachedExperimentFeatures",
+        "cachedExperimentData",
+        "firstStartTime",
+        "claudeCodeFirstTokenDate",
+        "startupPrefetchedAt"
+      ],
+      "routineProjectKeys": [
+        "lastCost",
+        "lastAPIDuration",
+        "lastAPIDurationWithoutRetries",
+        "lastToolDuration",
+        "lastDuration",
+        "lastStartTime",
+        "lastLinesAdded",
+        "lastLinesRemoved",
+        "lastTotalInputTokens",
+        "lastTotalOutputTokens",
+        "lastTotalCacheCreationInputTokens",
+        "lastTotalCacheReadInputTokens",
+        "lastTotalWebSearchRequests",
+        "lastFpsAverage",
+        "lastFpsLow1Pct",
+        "lastSessionId",
+        "lastGracefulShutdown",
+        "lastVersionBase",
+        "lastModelUsage",
+        "lastSessionMetrics",
+        "exampleFiles",
+        "exampleFilesGeneratedAt",
+        "seenTeamArtifactPaths",
+        "hasUnseenTeamArtifacts",
+        "hasClaudeMdExternalIncludesWarningShown",
+        "history",
+        "projectOnboardingSeenCount",
+        "hasCompletedProjectOnboarding",
+        "devIntentsDetected"
+      ],
+      "anchors": {
+        "globalSaver": {
+          "offset": 249089282,
+          "length": 296,
+          "sha256": "38974e72f5a675e7e73a807fd66b25e091848586959dc5abf81bc9b6c423e4f7"
+        },
+        "projectSaver": {
+          "offset": 249116955,
+          "length": 599,
+          "sha256": "54f14f651a7cce0c7d2fde1a1d22e642d47f4ea9ab254d9eeaccc05e28c49932"
+        },
+        "routineGlobalKeys": {
+          "offset": 249085022,
+          "length": 993,
+          "sha256": "4e7d963d4aab12d70b43509e8886437af8ca426e22890bca68fb82911c3f227b"
+        },
+        "routineProjectKeys": {
+          "offset": 249086028,
+          "length": 645,
+          "sha256": "21a9a75a677a8c52ad8fcfb4daa7bb3f3fb9c3606aba04f603c4e6056c28e377"
+        },
+        "globalContentionSkip": {
+          "offset": 249089282,
+          "length": 903,
+          "sha256": "4cb8e7bdee33e93436d6ff191b4a3d4310095ab1587652b8a7f8b64185816766"
+        },
+        "projectContentionSkip": {
+          "offset": 249116955,
+          "length": 1204,
+          "sha256": "7607d9a4528e207f06c1c228c47526671c8de5f5b4ce56a480c6b016c6b4ad86"
+        },
+        "globalCheck": {
+          "offset": 249087033,
+          "length": 185,
+          "sha256": "cb335d088c17cd1e99d87e3bfbded11b6d4e03e3d3b6fde9a1e2c97ba1836de0"
+        },
+        "projectCheck": {
+          "offset": 249086805,
+          "length": 39,
+          "sha256": "e962fafd23cdc0fa7d9ede1ff53671b6304f8d2cad0931c9be0e8cc82574b8b9"
+        }
+      },
+      "review": "Static extractor found all eight unique saver/check/set/skip anchors. The 40 global and 29 project key sets equal the prior 2.1.308 sets. This classifies candidate writes only; no change is exempted from preservation."
     }
   ]
 }

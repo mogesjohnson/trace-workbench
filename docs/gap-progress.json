@@ -2,7 +2,7 @@
   "updated": "2026-10-23",
   "title": "TRACE — close the Computer Use gap",
   "goalStatus": "active",
-  "current": "Resumed from the shutdown checkpoint. Codex and clipboard passes stand; no live tests repeated. GAP_CLOSURE_FINISH_PLAN.md consolidates the remaining amendments and prerequisites. Latest shutdown-head CI confirms billing/spending blocked all steps. Glow/REPLAY budgets and current-source Escape need direct decisions; Claude isolation is a candidate preservation fix, not yet verified.",
+  "current": "Codex and clipboard passes stand. Owner completed separate Claude sign-in; explicit isolated-state harness wiring and three focused checks passed. Actual authenticated startup preserved declared real settings/credential bytes. Its one corrective host attempt waits for fresh desktop readiness. Finish-plan amendment decisions and GitHub billing remain pending.",
   "measurement": "Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row.",
   "checkpoints": [
     {
@@ -138,7 +138,7 @@
       "phase": "Demonstrate",
       "title": "Complete real Claude workflow",
       "status": "blocked",
-      "detail": "Actual host discovered both skills and typed exact text. Forwarding dropped dispatch proof; focused fix passed. Client-state writes still block preservation; corrective run waits for a concrete resolution.",
+      "detail": "Previous actual host discovered skills/typed exact text; forwarding fix passed. Separate sign-in completed; explicit isolated-state wiring, three affected checks and real authenticated startup passed with declared real settings/credential bytes preserved. Corrective host attempt awaits fresh desktop readiness; no new claim yet.",
       "evidence": "../evidence/live-acceptance-continuation/claude-supplemental-1/receipt.json"
     },
     {
