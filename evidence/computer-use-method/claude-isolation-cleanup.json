@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "completedAt": "2026-10-23T17:01:13.410Z",
+  "source": "Exact task-created sign-in directory removed after terminal host and native cleanup evidence",
+  "receiptRef": "evidence/live-acceptance-continuation/claude-supplemental-2/receipt.json",
+  "receiptSha256": "44c8789761035599605c502218df53c1adaf4e4be37be3af2f74b54b47fe4ce4",
+  "status": "pass",
+  "isolatedAuthenticatedConfigurationRemoved": true,
+  "privateAuthenticationLogRemoved": true,
+  "originalCredentialFilesWrittenByCleanup": false,
+  "credentialContentsPublished": false,
+  "scope": "Cleanup of this task-created isolated login only. Original host receipt bytes remain unchanged."
+}

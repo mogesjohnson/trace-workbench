@@ -2,7 +2,7 @@
   "updated": "2026-10-23",
   "title": "TRACE — close the Computer Use gap",
   "goalStatus": "active",
-  "current": "Codex and clipboard passes stand. Owner completed separate Claude sign-in; explicit isolated-state harness wiring and three focused checks passed. Actual authenticated startup preserved declared real settings/credential bytes. Its one corrective host attempt waits for fresh desktop readiness. Finish-plan amendment decisions and GitHub billing remain pending.",
+  "current": "Claude corrective lifetime 4 passed: both skills, real images/actions, stale not_dispatched, exact text/count, strict real-settings preservation and exact cleanup. Temporary sign-in and private auth log removed. Codex/clipboard and other compatible passes stand. Remaining: glow, current-source stop, full REPLAY, final distribution/docs and CI; amendment decisions and billing pending.",
   "measurement": "Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row.",
   "checkpoints": [
     {
@@ -137,9 +137,9 @@
       "id": "17",
       "phase": "Demonstrate",
       "title": "Complete real Claude workflow",
-      "status": "blocked",
-      "detail": "Previous actual host discovered skills/typed exact text; forwarding fix passed. Separate sign-in completed; explicit isolated-state wiring, three affected checks and real authenticated startup passed with declared real settings/credential bytes preserved. Corrective host attempt awaits fresh desktop readiness; no new claim yet.",
-      "evidence": "../evidence/live-acceptance-continuation/claude-supplemental-1/receipt.json"
+      "status": "verified",
+      "detail": "Corrective lifetime 4 passed on Claude 2.1.309 with explicitly isolated state: both Skills, five received PNGs, exact text/count 1, stale not_dispatched, fresh recovery, all real-settings intervals preserved, installed bundles/source unchanged and exact cleanup. Temporary sign-in removed. Guarded isolated-host scope; no semantic-image or REA-analysis claim.",
+      "evidence": "../evidence/live-acceptance-continuation/claude-supplemental-2/receipt.json"
     },
     {
       "id": "18",

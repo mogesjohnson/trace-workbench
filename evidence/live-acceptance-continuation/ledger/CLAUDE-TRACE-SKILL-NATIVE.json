@@ -44,6 +44,35 @@
       "continuationAttempt": 1,
       "lifetimeAttemptOrdinal": 3,
       "claimedAt": "2026-10-23T04:59:04.154Z"
+    },
+    {
+      "decisionId": "owner-supplemental-five-20261022",
+      "caseId": "CLAUDE-TRACE-SKILL-NATIVE",
+      "contract": "claude-queued-host-settings-v1",
+      "ownerDecision": {
+        "ref": "evidence/live-acceptance-continuation/owner-decision.json",
+        "sha256": "02c8b46faaef411a217d4965de83a0bac7e2592d792be1ad6a2e262f0aa7619a"
+      },
+      "historicalAttemptsUsed": 2,
+      "originals": [
+        {
+          "ref": "evidence/computer-use-method/claude-host-attempt-1/receipt.json",
+          "sha256": "aa724fd9fcb831b6ba2aaa5f133e142f79bfdabd92bb0e0f607ea3d5c221fbb1"
+        },
+        {
+          "ref": "evidence/computer-use-method/claude-host-attempt-2/receipt.json",
+          "sha256": "c866366f12bf2aab0f2d877ea7c41c16d6726e5926e9d18a3d0edafb555887e5"
+        }
+      ],
+      "claimId": "8b62663a-a989-40cb-9333-624d2ae8a543",
+      "continuationAttempt": 2,
+      "lifetimeAttemptOrdinal": 4,
+      "claimedAt": "2026-10-23T16:58:07.695Z",
+      "prior": {
+        "ref": "evidence/live-acceptance-continuation/claude-supplemental-1/receipt.json",
+        "sha256": "b55ef3f05ce3d70411300431b27c777f757831a6b4d8f94450faa0323ce9cdf6"
+      },
+      "changedPreconditionSha256": "c742c83cf21fc5b21d87b10676cef2a43f755fd0ea4c642c28b87910d26a4cf9"
     }
   ]
 }

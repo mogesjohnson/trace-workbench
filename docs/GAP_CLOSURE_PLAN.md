@@ -1,16 +1,16 @@
 # TRACE gap-closure plan and progress
 
-Updated 2026-10-23. **Goal active. 15/22 checkpoints verified (68% of this checklist).**
+Updated 2026-10-23. **Goal active. 16/22 checkpoints verified (73% of this checklist).**
 
 [Open the visual dashboard](GAP_CLOSURE_PROGRESS.html) · [Detailed status](GAP_CLOSURE_STATUS.md) · [Acceptance specification](../SPEC.md)
 
 Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row. This percentage is not a completion claim for the full goal.
 
-**Current work:** Codex and clipboard passes stand. Owner completed separate Claude sign-in; explicit isolated-state harness wiring and three focused checks passed. Actual authenticated startup preserved declared real settings/credential bytes. Its one corrective host attempt waits for fresh desktop readiness. Finish-plan amendment decisions and GitHub billing remain pending.
+**Current work:** Claude corrective lifetime 4 passed: both skills, real images/actions, stale not_dispatched, exact text/count, strict real-settings preservation and exact cleanup. Temporary sign-in and private auth log removed. Codex/clipboard and other compatible passes stand. Remaining: glow, current-source stop, full REPLAY, final distribution/docs and CI; amendment decisions and billing pending.
 
 | Verified at stated scope | In progress | To do | Blocked |
 | --- | --- | --- | --- |
-| 15 | 2 | 1 | 4 |
+| 16 | 2 | 1 | 3 |
 
 ## Plan
 
@@ -32,7 +32,7 @@ Each row is one declared checkpoint. Counts measure completed checkpoints, not t
 | 14. Typing quarantine acknowledgement | Prove | Verified at stated scope | Supplemental attempt 1 passed: exact abc, independent release, persistent quarantine/restart blocking, verified recovery and exactly one pinned-engine follow-up. Both fixtures closed. | [Open](../evidence/live-acceptance-continuation/typing-supplemental-1/verification.json) |
 | 15. Current-source physical-stop relevance | Prove | In progress | Historical physical Escape passes ran an earlier Session.cs that is absent from every Git object (checked 22 Oct). Needs an owner-present current-source physical stop run. | [Open](../evidence/computer-use-method/production-owner-map.json) |
 | 16. Complete real Codex workflow | Demonstrate | Verified at stated scope | Approved lifetime 5 passed through the actual reconnected Codex MCP: installed skill discovery, exact Unicode once, consumed-observation not_dispatched with count 0, one fresh counter action to 1, stable text, exact helper/fixture exits and persistent host preserved. No corrective retry needed. | [Open](../evidence/live-acceptance-continuation/codex-amendment-2-attempt-1/receipt.json) |
-| 17. Complete real Claude workflow | Demonstrate | Blocked | Previous actual host discovered skills/typed exact text; forwarding fix passed. Separate sign-in completed; explicit isolated-state wiring, three affected checks and real authenticated startup passed with declared real settings/credential bytes preserved. Corrective host attempt awaits fresh desktop readiness; no new claim yet. | [Open](../evidence/live-acceptance-continuation/claude-supplemental-1/receipt.json) |
+| 17. Complete real Claude workflow | Demonstrate | Verified at stated scope | Corrective lifetime 4 passed on Claude 2.1.309 with explicitly isolated state: both Skills, five received PNGs, exact text/count 1, stale not_dispatched, fresh recovery, all real-settings intervals preserved, installed bundles/source unchanged and exact cleanup. Temporary sign-in removed. Guarded isolated-host scope; no semantic-image or REA-analysis claim. | [Open](../evidence/live-acceptance-continuation/claude-supplemental-2/receipt.json) |
 | 18. Unicode clipboard paste and restoration | Demonstrate | Verified at stated scope | Approved corrective supplement passed: public/independent fresh focus, one completed Unicode paste, exact target text and unchanged count, guarded restoration plus fresh supported-byte comparison, exact native/fixture exits and private-artifact cleanup. Ordinary anchor explicitly closed. | [Open](../evidence/live-acceptance-continuation/clipboard-supplemental-2/receipt.json) |
 | 19. Full REPLAY editing and two exports | Demonstrate | Blocked | Both full-run attempts stopped during provision before grants, recording, fixture creation or TRACE input. Visibility wait and retained-handle cleanup corrected; second run confirms cleanup but rejects process/window identity equality. Exact mismatch cause unproved; no further run authorized. | [Open](REPLAY_LIVE_RUN.md) |
 | 20. Clean archive installation and rollback | Deliver | In progress | Existing-host exact archive setup and configuration rollback passed. Portable verifier and CI wiring uploaded in draft PR 17; fresh Windows runner and final archive remain. | [Open](ARCHIVE_INSTALL.md) |
