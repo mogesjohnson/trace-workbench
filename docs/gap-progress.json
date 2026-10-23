@@ -2,7 +2,7 @@
   "updated": "2026-10-23",
   "title": "TRACE — close the Computer Use gap",
   "goalStatus": "active",
-  "current": "18/22 checkpoints verified (82%). Current-source mouse, keyboard and injected Escape are finished. REPLAY delivered both reviewed exports and exact cleanup; its audit retains the missing user-caused pause proof. Glow retains the one-pixel exact-center failure and exhausted cap. Two acceptance dispositions, final exact archive and reconciliation remain. All desktop helpers and test windows are closed.",
+  "current": "Background-only work resumed. 18/22 checkpoints remain verified (82%). Target-hit assertion and pinned offline review are prepared; original glow failure and missing lifecycle stay explicit. REPLAY now rejects automatic end as pause proof. No desktop tests or completed host/stop checks are being repeated.",
   "measurement": "Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row.",
   "checkpoints": [
     {
@@ -82,7 +82,7 @@
       "phase": "Prove",
       "title": "Production owner exclusion and handoff",
       "status": "verified",
-      "detail": "Approved exclusion/handoff subcase passed; broader owner invariants still include a current-source stop gap.",
+      "detail": "Approved production exclusion/handoff subcase passed. Current-source physical-stop proof is separately verified in checkpoint 15.",
       "evidence": "../evidence/replacement-acceptance/r32-production-owner/attempt-2/receipt.json"
     },
     {
@@ -106,8 +106,8 @@
       "phase": "Prove",
       "title": "Glow clicks and complete lifecycle",
       "status": "blocked",
-      "detail": "Lifetime 8 reference click passed with actual tool resolution retained and settlement observed 27 ms later. TRACE completed and all five counters reached 2, but physical X 6 differed from required exact-center X 7. Full case failed before normal-close/parent-loss stages; cleanup passed. Approved glow budget is exhausted; no further run is authorized.",
-      "evidence": "../evidence/live-acceptance-continuation/glow-finish-2/diagnosis.json"
+      "detail": "Pinned offline review passes the owner-selected target-hit subproof and preserves the original lifetime 8 failure. Ordinary-close/parent-loss stages remain missing; older pre-supervisor evidence cannot transfer. No new live budget granted.",
+      "evidence": "../evidence/live-acceptance-continuation/glow-target-hit-verification.json"
     },
     {
       "id": "14",
@@ -178,8 +178,15 @@
       "phase": "Deliver",
       "title": "Draft PR and required hosted CI",
       "status": "verified",
-      "detail": "Public Windows CI run 40008605372 passed head 0a0e0af, including archive checks. Current acceptance-adapter edits need their required final-source CI. No merge or release claim.",
+      "detail": "PR 24 head 04407b7 passed required hosted CI run 40012731237, including archive checks. New background preparation needs its own final-head CI. No merge or release claim.",
       "evidence": "../evidence/computer-use-method/public-ci-parallel-fixes.json"
     }
-  ]
+  ],
+  "next": [
+    "Finish the background preparation and independent Claude source review; see [the background finish plan](BACKGROUND_FINISH_PLAN.md).",
+    "Upload a focused draft PR depending on PR 24; run its required hosted CI and exact-archive checks. No broad local rerun.",
+    "Keep desktop control stopped. A later direct bounded decision is needed only for missing glow lifecycle and REPLAY pause proof; reuse compatible passes.",
+    "Reconcile the full requirement-to-evidence checklist and final artifact scope. No merge or release is authorized by background-only resume."
+  ],
+  "footer": "Background-only work is active. Physical-stop, Codex, Claude and clipboard passes remain verified at their recorded scopes. Exhausted glow and REPLAY limits remain in force; the criterion decision grants no extra attempts. No desktop control is running."
 }
