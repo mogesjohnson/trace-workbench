@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "observedDateUtc": "2026-10-23",
+  "sourceCommit": "b8af9f7eb1d5c501992132c89fbd6cc022ea2fbf",
+  "scope": "One updated injected acquisition-checkpoint case; no actual app, desktop input or live attempt",
+  "command": "node --test --test-name-pattern=\"acquisition checkpoints retain rejected\" tests/accept-replay-workflow.test.cjs",
+  "tests": 1,
+  "passed": 1,
+  "failed": 0,
+  "skipped": 0,
+  "covered": [
+    "Retain a whitelisted window candidate before rejecting PID, process-creation-time or session mismatches",
+    "Publish mismatched field names without raw candidate values",
+    "Reject before grants, commands, second app or fixture launch",
+    "Keep cleanup bound to the launched generation rather than the rejected window candidate",
+    "Exclude unrelated candidate properties from the private retained identity"
+  ],
+  "syntaxCheck": "node --check scripts/accept-replay-workflow.cjs",
+  "runtimeWriterInspection": "Existing checkpoint callback persists workflow.recovery() through persistRecovery(), which writes/syncs immutable JSON before publishing its reference",
+  "notProven": ["Cause of the earlier live identity mismatch", "Actual live provisioning", "Full REPLAY editing/exports or runtime cleanup"],
+  "liveAttemptClaimed": false,
+  "budgetChanged": false
+}

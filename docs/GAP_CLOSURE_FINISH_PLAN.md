@@ -52,6 +52,8 @@ Preserve both blocked full-run attempts and cleanup reconciliation. Extend exist
 
 Before a new claim, save both independently queried candidate identities before comparison: launched PID, process creation time and session; window PID, process creation time, session and HWND. Keep the exact values in the private recovery checkpoint and publish only sanitized identities or mismatched field names. Continue to reject any mismatch before grants, recording or TRACE input. The last failed run discarded its window candidate; its precise cause remains unproved.
 
+This diagnostic preparation is now implemented in source commit `b8af9f7`. [One updated injected case](../evidence/computer-use-method/replay-identity-diagnostics-check.json) verifies candidate retention, field-only public diagnostics, rejection before grants and cleanup of the original generation for each mismatching identity field. No live attempt or budget change occurred; the proposed lifetime 3–4 extension still needs the pending direct owner decision.
+
 If identities match, continue the same attempt through all stages of [REPLAY_LIVE_RUN.md](REPLAY_LIVE_RUN.md). Require the actual fixture recording, reviewed six-second source segment, trim/callout/blur, offline audio placement, actual TRACE editor controls and completed-file playback, `fixture-demo.mp4`, `editor-walkthrough.mp4`, independent decode/visual/audio checks, grant revocation and exact owned exits. Keep the real library untouched and make no paid provider calls. No third attempt under a new folder or case name may bypass this decision.
 
 ## Claude preservation route: completed corrective

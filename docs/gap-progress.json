@@ -2,7 +2,7 @@
   "updated": "2026-10-23",
   "title": "TRACE — close the Computer Use gap",
   "goalStatus": "active",
-  "current": "Claude corrective lifetime 4 passed: both skills, real images/actions, stale not_dispatched, exact text/count, strict real-settings preservation and exact cleanup. Temporary sign-in and private auth log removed. Codex/clipboard and other compatible passes stand. Remaining: glow, current-source stop, full REPLAY, final distribution/docs and CI; amendment decisions and billing pending.",
+  "current": "Claude, Codex, clipboard and other compatible passes stand. REPLAY now retains rejected window identities before equality; one focused offline acquisition check passed, with no live run or budget change. Six checkpoints remain; amendment decisions and GitHub billing are pending. No desktop test is running; fresh readiness will be requested before any new one.",
   "measurement": "Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row.",
   "checkpoints": [
     {
@@ -154,7 +154,7 @@
       "phase": "Demonstrate",
       "title": "Full REPLAY editing and two exports",
       "status": "blocked",
-      "detail": "Both full-run attempts stopped during provision before grants, recording, fixture creation or TRACE input. Visibility wait and retained-handle cleanup corrected; second run confirms cleanup but rejects process/window identity equality. Exact mismatch cause unproved; no further run authorized.",
+      "detail": "Both full-run attempts remain blocked during provision. Adapter now checkpoints the rejected window candidate and public mismatch field names before equality; one affected injected case passed without a live run. Earlier mismatch cause remains unknown. Strict identity/cleanup preserved; further run awaits direct cap extension.",
       "evidence": "REPLAY_LIVE_RUN.md"
     },
     {
