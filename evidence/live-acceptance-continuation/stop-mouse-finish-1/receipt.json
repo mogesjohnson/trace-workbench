@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A32-STOP-MOUSE",
+  "attempt": 2,
+  "status": "blocked",
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "startedAt": "2026-10-23T18:57:08.876Z",
+  "cleanup": {
+    "connectionClosed": true,
+    "childExited": true,
+    "inputState": {
+      "available": true,
+      "phase": "native closed; fixture remains",
+      "down": []
+    },
+    "fixtureExited": true,
+    "recovery": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    }
+  },
+  "amendment": 3,
+  "contract": "finish-approved-v1",
+  "historicalAttemptsUsed": 1,
+  "decisionId": "owner-finish-amendments-2026-10-23",
+  "ownerDecision": {
+    "ref": "evidence/live-acceptance-continuation/owner-finish-decision.json",
+    "sha256": "b4f11d92fe995b3be54e35f02bc2cd9cce56d778a5b0502b3c454c375cfb1327"
+  },
+  "proposal": {
+    "ref": "docs/GAP_CLOSURE_FINISH_PLAN.md",
+    "sha256": "d98fddf5359c31021ebf7d28108cf949a219d939c3e5d8046a0a05277388835b"
+  },
+  "history": [
+    {
+      "ref": "evidence/0.1.0-alpha.3.2/stop-physical-mouse/receipt.json",
+      "sha256": "122b95c934c3e69d72a6268bd77a414c698d9f1bb15f7d921cde8bff05d8d878"
+    }
+  ],
+  "continuationAttempt": 1,
+  "lifetimeAttemptOrdinal": 2,
+  "claimId": "7b50acf1-a1ad-4071-b012-282d90d9a197",
+  "claimedAt": "2026-10-23T18:57:08.891Z",
+  "testedSource": {
+    "baseCommit": "3a437f5c972e7f1a050b8d07e2a83751ea5f997a",
+    "workingTreeModified": true,
+    "files": {
+      "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+      "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+      "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+      "native/TraceSupervisor/Program.cs": "c8dc9e6fd440542b624fe93850bdafb4469f72ff81ff33942e96fd3ce5697202",
+      "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+      "native/TraceSupervisor/Session.cs": "d3f7ad4a1d147c593f75912ae5f26d19d7f4de1fb397ef084c64994050e78ca1",
+      "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+      "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+      "scripts/accept-supervisor-stop.cjs": "ca1ff9928b7c6a8fe7039d8d9feb2c518cf83e50a8700ae3dafc1cf65c88003c",
+      "scripts/accept-finish-gate.cjs": "ccfffd4d8715f23ebfdd6381e94f3ddd7157b0fc317895de819ba24c18bcf9e4",
+      "scripts/finish-acceptance-amendment.cjs": "2223a7b7fa61c7c7b8d3fb05d6564f10b8bc521b116ac118d50b95998dc718d6",
+      "scripts/accept-supervisor-quarantine.cjs": "c9a2a0ff863a67f77fe03e197f94936c3f5db5a38e99018af9c5bba71a85dcb8",
+      "tests/fixtures/supervised-mcp.cjs": "eeade5db7a43d000bc4c7e6a21dac0c32c3c6b5096d1fdaae98812e0faad2399",
+      "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+      "src/computer/controller.cjs": "4ece8dcb0d938266db8b773dac0f724e32feb723ebda78be8f6399404cd21166",
+      "src/computer/server.cjs": "1c2f72ff8ad2dd9aa73e0aa5bd4f4a0c0b1f1e716b2270b0abe05b94049dee74",
+      "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5"
+    }
+  },
+  "fixtureSha256": "e861021c8d4caeb46ceaec3bd4c08f5d241c828dcaeef90007621457ca4110fb",
+  "initialKeysDown": [],
+  "target": {
+    "pid": 2532,
+    "processCreationTime": "134372554292805845",
+    "windowId": "9503704"
+  },
+  "prepared": {
+    "at": "2026-10-23T18:57:22.806Z",
+    "source": "owned fixture/session/focus ready; no held operation started",
+    "preparationWaitSeconds": 60
+  },
+  "controlled": {
+    "at": "2026-10-23T18:57:42.410Z",
+    "type": "controlled-dispatch",
+    "requestId": "66",
+    "pid": 24880,
+    "processCreationTime": "134372554623848570",
+    "inJob": true,
+    "dispatchCount": 65,
+    "supervisorPid": 62200
+  },
+  "held": {
+    "1": true
+  },
+  "ready": {
+    "phase": "READY",
+    "caseId": "A32-STOP-MOUSE",
+    "at": "2026-10-23T18:57:42.594Z",
+    "actualPhysicalTapRequired": true,
+    "instruction": "Press physical Escape now once.",
+    "heldOperationDeadlineMs": 15000,
+    "observationWaitSeconds": 60,
+    "inputChildPid": 24880,
+    "readyFilePublished": true
+  },
+  "error": {
+    "code": "physical_tap_late",
+    "message": "The production deadline released held input before the actual physical tap; no replay.",
+    "win32Error": null
+  },
+  "completedAt": "2026-10-23T18:57:58.794Z"
+}

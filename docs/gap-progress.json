@@ -2,7 +2,7 @@
   "updated": "2026-10-23",
   "title": "TRACE — close the Computer Use gap",
   "goalStatus": "active",
-  "current": "Owner approved all three bounded finish amendments. Their exact decision, histories and budgets are pinned. Affected harness preparation passed; no native executor change. Next: fresh owner readiness, glow and physical stop, then full REPLAY. Compatible passes remain reused. Current checklist: 17/22 verified (77%); final archive and reconciliation remain open.",
+  "current": "Approved glow lifetimes 7 and 8 are preserved failures: the corrective reference click passed; TRACE reached all five counters 2 at physical X 6 instead of the required exact-center X 7. That case is stopped with its budget exhausted. Current-source mouse lifetime 2 timed out before a physical tap; cleanup passed. Its one corrective and first keyboard/injected cases remain. A two-tone ready cue is prepared, awaiting fresh owner readiness. Hosted CI passed at 3a437f5; final archive and reconciliation remain open. Checklist stays 17/22 (77%).",
   "measurement": "Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row.",
   "checkpoints": [
     {
@@ -105,9 +105,9 @@
       "id": "13",
       "phase": "Prove",
       "title": "Glow clicks and complete lifecycle",
-      "status": "active",
-      "detail": "Reference click reached the physical edge once, all five counters 1. Full lifetime-6 case failed the strict event window; no TRACE click or full lifecycle pass. Cleanup passed; amended budget exhausted. Owner approved the finite finish amendment; actual new live evidence is pending.",
-      "evidence": "../evidence/live-acceptance-continuation/glow-amendment-2-attempt-2/diagnosis.json"
+      "status": "blocked",
+      "detail": "Lifetime 8 reference click passed with actual tool resolution retained and settlement observed 27 ms later. TRACE completed and all five counters reached 2, but physical X 6 differed from required exact-center X 7. Full case failed before normal-close/parent-loss stages; cleanup passed. Approved glow budget is exhausted; no further run is authorized.",
+      "evidence": "../evidence/live-acceptance-continuation/glow-finish-2/diagnosis.json"
     },
     {
       "id": "14",
@@ -122,8 +122,8 @@
       "phase": "Prove",
       "title": "Current-source physical-stop relevance",
       "status": "active",
-      "detail": "Historical physical Escape passes ran an earlier Session.cs that is absent from every Git object (checked 22 Oct). Needs an owner-present current-source physical stop run. Owner approved the finite finish amendment; actual new live evidence is pending.",
-      "evidence": "../evidence/computer-use-method/production-owner-map.json"
+      "detail": "Current-source mouse lifetime 2 blocked: production timeout released input before a physical Escape was detected. Exact cleanup passed. Mouse corrective 3, keyboard 3/4 and injected 2/3 remain approved. Two-tone cue is prepared; fresh owner audio/readiness answer is pending.",
+      "evidence": "../evidence/live-acceptance-continuation/finish-live-checkpoint.json"
     },
     {
       "id": "16",
@@ -178,7 +178,7 @@
       "phase": "Deliver",
       "title": "Draft PR and required hosted CI",
       "status": "verified",
-      "detail": "Draft PR 23 implementation head 701a35c passed required Windows CI run 39999545940 on PR merge 08d6984: 516 passed, five skipped, zero failed; both MCP paths and archive install passed. Public runner executes. Final source needs its own required CI; no merge or release claim.",
+      "detail": "Draft PR 23 implementation head 701a35c passed required Windows CI run 39999545940 on PR merge 08d6984: 516 passed, five skipped, zero failed; both MCP paths and archive install passed. Public runner executes. Final source needs its own required CI; no merge or release claim. Follow-up CI run 40006785511 passed implementation head 3a437f5, including archive verification. Later audible-cue source has syntax verification only at this checkpoint.",
       "evidence": "../evidence/computer-use-method/public-ci-parallel-fixes.json"
     }
   ]

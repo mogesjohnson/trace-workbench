@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "observedDate": "2026-10-23",
+  "scope": "Actual approved finish outcomes; no full goal completion",
+  "results": [
+    {
+      "caseId": "R31-GLOW-NATIVE",
+      "attempt": 7,
+      "status": "fail",
+      "receipt": {
+        "ref": "evidence/live-acceptance-continuation/glow-finish-1/receipt.json",
+        "sha256": "e137cea0af4ea7161ad5c1325e210b7084a46539896b08979a82a3d4eb5eae04"
+      },
+      "cause": "Sky click refused missing geometry; independent counters stayed zero."
+    },
+    {
+      "caseId": "R31-GLOW-NATIVE",
+      "attempt": 8,
+      "status": "fail",
+      "receipt": {
+        "ref": "evidence/live-acceptance-continuation/glow-finish-2/receipt.json",
+        "sha256": "5a87c5a2eac19d45256ea8cc62245566dd2e7ab489fe3ac526cff7689672c3c5"
+      },
+      "cause": "Reference click passed; TRACE actual physical X differed by one pixel from required exact center."
+    },
+    {
+      "caseId": "A32-STOP-MOUSE",
+      "attempt": 2,
+      "status": "blocked",
+      "receipt": {
+        "ref": "evidence/live-acceptance-continuation/stop-mouse-finish-1/receipt.json",
+        "sha256": "89e28c2a474c8415a2897ad649325ad2f4896b2ca1bffbcfe34521d2f12b7dd9"
+      },
+      "cause": "Production deadline released held input before an actual physical Escape was detected."
+    }
+  ],
+  "cleanup": "Every completed case independently confirmed owned native/fixture exits, all-up input and clear recovery.",
+  "remaining": "Glow budget exhausted. Mouse has approved corrective lifetime 3. Keyboard and injected Escape first extensions and REPLAY remain unclaimed.",
+  "promptPreparation": "Optional local two-tone cue now runs only after independent held-input proof, preserving the 15-second operation deadline. Fresh owner audio/readiness answer is pending; no new hold or tone was started."
+}

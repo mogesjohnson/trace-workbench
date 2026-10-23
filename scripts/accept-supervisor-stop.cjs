@@ -30,6 +30,7 @@ function plan(options = {}) {
     display: options.pinnedDisplay ?? 'Actual single-monitor device/bounds/DPI pinned at live preflight.',
     target: 'Fresh exact owned synthetic WinForms fixture; public focus identity independently checked',
     physicalRequired: selected !== 'injected', preparationWaitSeconds: 60, physicalObservationWaitSeconds: 60,
+    ...(options.audiblePrompt ? { physicalPrompt: 'Two short local tones, only after independent held-input proof; owner presses physical Escape after the second tone.' } : {}),
     inputOperationDeadlineMs: 15000, input: selected === 'keyboard' ? 'Source-owned type-hold abc; final C held, no Ctrl/Alt/Shift+Escape OS shortcut' : selected === 'mouse' ? 'Source-owned left-button hold at a measured empty fixture point' : 'Pinned engine press_key ESCAPE',
     phases: selected === 'injected' ? ['Focus owned edit', 'Send one ordinary MCP ESCAPE through the pinned engine', 'Verify completed result, no physical stop, balanced input and exactly one usable counter follow-up']
       : ['Prepare owned fixture/session/focus; publish private PREPARED start/ready paths before any held input',
@@ -158,6 +159,13 @@ async function run(options = {}) {
         instruction: 'Press physical Escape now once.', heldOperationDeadlineMs: 15000, observationWaitSeconds: 60, inputChildPid: controlled.pid };
       await writeJson(readyPath, ready); receipt.ready = { ...ready, readyFilePublished: true }; await persist();
       process.stdout.write(JSON.stringify(ready) + '\n');
+      if (options.audiblePrompt) {
+        receipt.ready.audibleCueStartedAt = new Date().toISOString();
+        await execFileAsync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
+          '[Console]::Beep(1200,120); [System.Threading.Thread]::Sleep(150); [Console]::Beep(1600,120)'],
+          { windowsHide: true, timeout: 3000, maxBuffer: 4096 });
+        receipt.ready.audibleCueCompletedAt = new Date().toISOString(); await persist();
+      }
       const physical = await waitFor(connection.journal, value => {
         if (value.events.some(event => event.type === 'native-stopped' && event.code === 'physical_escape')) return true;
         if (value.events.some(event => event.type === 'controlled-finished' && event.code === 'native_timeout'))

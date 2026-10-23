@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A32-STOP-MOUSE",
+  "history": [
+    {
+      "ref": "evidence/0.1.0-alpha.3.2/stop-physical-mouse/receipt.json",
+      "sha256": "122b95c934c3e69d72a6268bd77a414c698d9f1bb15f7d921cde8bff05d8d878"
+    }
+  ],
+  "claims": [
+    {
+      "caseId": "A32-STOP-MOUSE",
+      "amendment": 3,
+      "contract": "finish-approved-v1",
+      "historicalAttemptsUsed": 1,
+      "decisionId": "owner-finish-amendments-2026-10-23",
+      "ownerDecision": {
+        "ref": "evidence/live-acceptance-continuation/owner-finish-decision.json",
+        "sha256": "b4f11d92fe995b3be54e35f02bc2cd9cce56d778a5b0502b3c454c375cfb1327"
+      },
+      "proposal": {
+        "ref": "docs/GAP_CLOSURE_FINISH_PLAN.md",
+        "sha256": "d98fddf5359c31021ebf7d28108cf949a219d939c3e5d8046a0a05277388835b"
+      },
+      "history": [
+        {
+          "ref": "evidence/0.1.0-alpha.3.2/stop-physical-mouse/receipt.json",
+          "sha256": "122b95c934c3e69d72a6268bd77a414c698d9f1bb15f7d921cde8bff05d8d878"
+        }
+      ],
+      "continuationAttempt": 1,
+      "lifetimeAttemptOrdinal": 2,
+      "claimId": "7b50acf1-a1ad-4071-b012-282d90d9a197",
+      "claimedAt": "2026-10-23T18:57:08.891Z",
+      "attempt": 2
+    }
+  ],
+  "finishAmendment": {
+    "ownerDecision": {
+      "ref": "evidence/live-acceptance-continuation/owner-finish-decision.json",
+      "sha256": "b4f11d92fe995b3be54e35f02bc2cd9cce56d778a5b0502b3c454c375cfb1327"
+    },
+    "proposal": {
+      "ref": "docs/GAP_CLOSURE_FINISH_PLAN.md",
+      "sha256": "d98fddf5359c31021ebf7d28108cf949a219d939c3e5d8046a0a05277388835b"
+    },
+    "history": [
+      {
+        "ref": "evidence/0.1.0-alpha.3.2/stop-physical-mouse/receipt.json",
+        "sha256": "122b95c934c3e69d72a6268bd77a414c698d9f1bb15f7d921cde8bff05d8d878"
+      }
+    ]
+  }
+}

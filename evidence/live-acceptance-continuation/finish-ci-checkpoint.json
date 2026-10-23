@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "scope": "Actual hosted Windows CI at the recorded source, before optional audible-cue changes",
+  "conclusion": "success",
+  "headSha": "3a437f5c972e7f1a050b8d07e2a83751ea5f997a",
+  "jobs": [
+    {
+      "completedAt": "2026-10-23T18:54:19Z",
+      "conclusion": "success",
+      "databaseId": 120596620425,
+      "name": "windows",
+      "startedAt": "2026-10-23T18:51:53Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-23T18:51:55Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-23T18:51:54Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-23T18:52:03Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-10-23T18:51:55Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-23T18:52:12Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "number": 3,
+          "startedAt": "2026-10-23T18:52:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-23T18:52:13Z",
+          "conclusion": "success",
+          "name": "Canonicalize Windows temporary paths",
+          "number": 4,
+          "startedAt": "2026-10-23T18:52:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-23T18:52:25Z",
+          "conclusion": "success",
+          "name": "Run npm ci",
+          "number": 5,
+          "startedAt": "2026-10-23T18:52:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-23T18:52:32Z",
+          "conclusion": "success",
+          "name": "Run npm run check",
+          "number": 6,
+          "startedAt": "2026-10-23T18:52:25Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-23T18:52:41Z",
+          "conclusion": "success",
+          "name": "Run npm test",
+          "number": 7,
+          "startedAt": "2026-10-23T18:52:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-23T18:52:53Z",
+          "conclusion": "success",
+          "name": "Run npm run test:mcp",
+          "number": 8,
+          "startedAt": "2026-10-23T18:52:41Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-23T18:52:55Z",
+          "conclusion": "success",
+          "name": "Run npm run test:computer:mcp",
+          "number": 9,
+          "startedAt": "2026-10-23T18:52:53Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-23T18:52:58Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1",
+          "number": 10,
+          "startedAt": "2026-10-23T18:52:55Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-23T18:54:13Z",
+          "conclusion": "success",
+          "name": "Run npm run verify:archive",
+          "number": 11,
+          "startedAt": "2026-10-23T18:52:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-23T18:54:13Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1",
+          "number": 20,
+          "startedAt": "2026-10-23T18:54:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-23T18:54:16Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "number": 21,
+          "startedAt": "2026-10-23T18:54:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-23T18:54:18Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 22,
+          "startedAt": "2026-10-23T18:54:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-23T18:54:18Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 23,
+          "startedAt": "2026-10-23T18:54:18Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/mogesjohnson/trace-workbench/actions/runs/40006785511/job/120596620425"
+    }
+  ],
+  "status": "completed",
+  "url": "https://github.com/mogesjohnson/trace-workbench/actions/runs/40006785511",
+  "limits": [
+    "No missing live acceptance is promoted by CI.",
+    "The final source and final distribution archive still require their own gate."
+  ]
+}
