@@ -1,6 +1,8 @@
 # REPLAY live acceptance run
 
-`A4-REPLAY` remains **not run**. The source adapter is reviewed and checked offline; that does not pass APP-01. Use [the source plan](../scripts/accept-replay-workflow.cjs) and the current owner instruction to complete the synthetic REPLAY goal. Its existing initial budget is one attempt plus one corrective retry; the five-case supplemental decision is unrelated. Keep current package pins and the actual prepared fixture. Never reuse a used run directory or resubmit an unknown mutation.
+`A4-REPLAY` is **blocked during provision**. Both authorized attempts are consumed: [attempt 1](../evidence/computer-use-method/replay-workflow/attempt-1/receipt.json) found no unique visible editor at its first lookup; [attempt 2](../evidence/computer-use-method/replay-workflow/attempt-2/receipt.json) passed visibility but rejected process/window identity equality. No grant, recording, fixture or TRACE input was started. The second run confirmed exact editor cleanup. The first run's later independent exit reconciliation remains separate from its original incomplete cleanup result.
+
+The visibility lookup now waits for the actual visible window, and cleanup retains the original child-process handle across Playwright teardown. Identity rejection remains enforced; the second run did not retain the rejected window identity, so its precise mismatching field and cause are unproved. A further full run requires an explicit owner extension under SPEC.md's retry cap. The command below is historical usage, not authorization for another attempt. Keep current package pins, original receipts and the actual prepared fixture.
 
 ```powershell
 node scripts/accept-replay-workflow.cjs --plan
