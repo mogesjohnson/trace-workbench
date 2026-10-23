@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-23T23:30:11.084Z",
+  "scope": "Background-only acceptance preparation and source review. No desktop capture, input, window activation, live attempt or historical promotion.",
+  "ownerInstruction": {
+    "verbatim": "resume bacjgrounnd",
+    "interpretedScope": "Resume background work only"
+  },
+  "baseCommit": "04407b7fa141126caa66de747a7614c62d8ebda9",
+  "files": {
+    "scripts/accept-replacement-glow.cjs": "7d1aa665fc541a0cda7aad54881936ee1746c227eb439178546fe2b473668037",
+    "scripts/accept-replay-workflow.cjs": "62410298ca037c63e39ef05417f0d17156dec691b1058689b3e01f44647434ca",
+    "scripts/review-glow-target-hit.cjs": "5e6faf42d025c14b88deaccc2a2cf66ff04993dd06656c4bbf47a852aade431d",
+    "scripts/render-gap-progress.cjs": "c4de9ba9836c4cc69ac4471285abdbd5c10fa2b8c3506b8f0cb50ab842e2bb06",
+    "tests/replacement-glow.test.cjs": "ac5a8faf8f1e06cee8c61fafbcf729d012cae66b1c97e0f7c829535e87c6ecb5",
+    "tests/accept-replay-workflow.test.cjs": "44f315e2430861721796785d3b5a1e28a65ff20306a31898eff2f709c9fb8979"
+  },
+  "checks": [
+    {
+      "command": "node --test --test-name-pattern='target-hit criterion|focus changes, UIA-only' tests/replacement-glow.test.cjs",
+      "status": "pass",
+      "selected": 3,
+      "scope": "Injected pure assertion and unchanged historical oracle"
+    },
+    {
+      "command": "node --test --test-name-pattern='editor controls require|automatic end-of-media|existing export destination' tests/accept-replay-workflow.test.cjs",
+      "status": "pass",
+      "selected": 3,
+      "scope": "Injected affected REPLAY stage checks"
+    },
+    {
+      "command": "node scripts/review-glow-target-hit.cjs",
+      "status": "pass",
+      "scope": "Pinned retained evidence target-hit subproof; original fail and lifecycle missing"
+    },
+    {
+      "command": "node scripts/check.cjs",
+      "status": "pass",
+      "javascriptFiles": 100,
+      "scope": "Syntax, JSON, local documentation links and dependency pins"
+    }
+  ],
+  "claudeReview": {
+    "status": "completed",
+    "reportedVerdict": "No blocking findings",
+    "model": "claude-sonnet-5-5",
+    "effort": "medium",
+    "turns": 1,
+    "modelUsageUsd": 0.042504,
+    "maximumUsd": 0.35,
+    "processTimeoutMs": 120000,
+    "exitCode": 0,
+    "tools": [],
+    "mcpServers": [],
+    "hooksDisabled": true,
+    "persistenceDisabled": true,
+    "scope": "Supplied source review only; Claude ran no tests or desktop actions. Root observed the six focused tests independently.",
+    "rootDisposition": "Checked findings against source. Added explicit verifier limitation: reference completion is a lower bound, not recovered TRACE dispatch start."
+  },
+  "preservation": {
+    "originalGlowReceiptSha256": "5a87c5a2eac19d45256ea8cc62245566dd2e7ab489fe3ac526cff7689672c3c5",
+    "failedReceiptUnchanged": true,
+    "frozenApprovalsUnchanged": true,
+    "newLiveClaims": 0
+  },
+  "remaining": [
+    "Glow ordinary-close and parent-loss evidence",
+    "Causal REPLAY pause proof",
+    "Final artifact and full requirement reconciliation"
+  ],
+  "checklist": {
+    "verified": 18,
+    "total": 22,
+    "percent": 82
+  },
+  "limits": [
+    "No live acceptance case was rerun",
+    "No full local test suite",
+    "No new exhausted-case authorization",
+    "No merge or release"
+  ]
+}

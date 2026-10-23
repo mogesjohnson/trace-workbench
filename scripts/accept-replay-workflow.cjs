@@ -328,7 +328,9 @@ function createWorkflow(deps, locations) {
       await traceEvidence('editor-controls', input, owned[0].identity, values.editorPreviewOpenedAt);
       const preview = await command(owned[0], 'preview.get');
       need(preview.projectId === values.fixtureProject.id && preview.playing === false
-        && preview.position >= DEMONSTRATION.editorPosition + DEMONSTRATION.editorMinimumAdvance, 'replay_editor_controls_unverified');
+        && Number.isFinite(preview.position)
+        && preview.position >= DEMONSTRATION.editorPosition + DEMONSTRATION.editorMinimumAdvance
+        && preview.position < values.selectedRecipe.duration, 'replay_editor_controls_unverified');
       values.fixtureProject = await refresh(owned[0], values.fixtureProject);
       need(await deps.verifySavedRecipe(values.fixtureProject, values.selectedRecipe, values.narrationAssetId) === true, 'replay_saved_recipe_mismatch');
     },
