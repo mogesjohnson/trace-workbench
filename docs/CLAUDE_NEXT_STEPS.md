@@ -1,8 +1,8 @@
 # Claude continuation and Codex review handoff
 
-**Resumed review, 22 October 2026:** Codex now owns continuation at the owner's request, on `codex/gap-closure-live` from Claude PR 15 head `5e5a363`. The pause and instructions below record the earlier handoff. Use [current status](GAP_CLOSURE_STATUS.md) and [the dashboard](GAP_CLOSURE_PROGRESS.html) for current work and budgets. Claude's implementation was reviewed; the remaining actual host test will be launched by Codex after Claude Desktop/Code fully exit. No new coding session is required from the owner.
+**Current continuation, 23 October 2026 UTC:** Codex owns the remaining work. Draft PR 17 adds archive verification on PR 16; `codex/live-acceptance-results` carries the latest live evidence and Claude forwarding fix. Typing quarantine passed. Claude supplemental attempt 1 discovered both skills and typed correctly but remains blocked on recovery completion and client-state writes. Glow amended budget is exhausted. Clipboard recovery is protected after a guarded restoration refusal. Use [current status](GAP_CLOSURE_STATUS.md) and [the dashboard](GAP_CLOSURE_PROGRESS.html). No new Claude coding session is required. Any optional Claude review should be read-only; concurrent code edits and Claude processes during announced host tests would invalidate the evidence.
 
-Updated 22 October 2026. **Codex implementation and live testing are paused at the owner's request.** The owner requested this GitHub upload so Claude can continue; Codex will review Claude's resulting changes when asked. This is an unfinished, reviewable checkpoint, not a release or a full parity claim.
+The instructions below preserve the historical 22 October pause/upload handoff. That pause was revoked by the owner's later continuation request. This is unfinished work, not a release or full parity claim.
 
 ## 1. Start on the uploaded work
 

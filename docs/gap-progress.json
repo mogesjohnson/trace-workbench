@@ -1,8 +1,8 @@
 {
-  "updated": "2026-10-22",
+  "updated": "2026-10-23",
   "title": "TRACE — close the Computer Use gap",
   "goalStatus": "active",
-  "current": "Codex resumed and reviewed Claude PR 15. Claude settings and REPLAY recovery corrections pass local checks (501 tests: 495 passed, 6 skipped). Glow final supplement failed the 60-second underlying sample freshness check after one actual Sky click; cleanup verified, both supplements consumed. Fresh-capture correction is checked offline; the proposed extra glow/Codex budget waits for the owner. Unconsumed typing/Claude/clipboard cases need their exact preconditions; full REPLAY live demo remains. GitHub CI is billing/spending blocked.",
+  "current": "Typing quarantine acknowledgement passed with exact text, durable recovery and one follow-up; its ordinary anchor is closed. Passed checks are reused. Glow amended budget is exhausted after a reference click timing-proof failure; no TRACE click/lifecycle pass. Claude discovered both skills and typed correctly; forwarding fix is checked, client-state preservation remains unresolved. Clipboard failed before paste; native cleanup reconciled, changed contents preserved and protected recovery pending. Archive verifier is uploaded as draft PR 17. Full goal remains active.",
   "measurement": "Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row.",
   "checkpoints": [
     {
@@ -106,16 +106,16 @@
       "phase": "Prove",
       "title": "Glow clicks and complete lifecycle",
       "status": "blocked",
-      "detail": "Both approved supplements consumed. Final run failed underlying glow sample age (62.686s) after one actual Sky click; no TRACE click. Cleanup verified. New safe-frame correction tested; extra budget proposal pending.",
-      "evidence": "../evidence/live-acceptance-continuation/glow-supplemental-2/diagnosis.json"
+      "detail": "Reference click reached the physical edge once, all five counters 1. Full lifetime-6 case failed the strict event window; no TRACE click or full lifecycle pass. Cleanup passed; amended budget exhausted.",
+      "evidence": "../evidence/live-acceptance-continuation/glow-amendment-2-attempt-2/diagnosis.json"
     },
     {
       "id": "14",
       "phase": "Prove",
       "title": "Typing quarantine acknowledgement",
-      "status": "active",
-      "detail": "Supplement approved; exact owned foreground anchor and fresh direct owner idle readiness required before claim.",
-      "evidence": "LIVE_ACCEPTANCE_CONTINUATION.md"
+      "status": "verified",
+      "detail": "Supplemental attempt 1 passed: exact abc, independent release, persistent quarantine/restart blocking, verified recovery and exactly one pinned-engine follow-up. Both fixtures closed.",
+      "evidence": "../evidence/live-acceptance-continuation/typing-supplemental-1/verification.json"
     },
     {
       "id": "15",
@@ -129,25 +129,25 @@
       "id": "16",
       "phase": "Demonstrate",
       "title": "Complete real Codex workflow",
-      "status": "blocked",
-      "detail": "Exact Unicode now passed live. Stale error lacked outcome metadata; product correction is tested. Both supplements consumed: a reconnected host and a new owner budget decision are needed for another live run.",
-      "evidence": "../evidence/live-acceptance-continuation/codex/attempt-2/diagnosis.json"
+      "status": "active",
+      "detail": "Exact Unicode already passed live. Stale-outcome correction is checked; amendment 2 is approved. Complete workflow still needs proof through the actual connected server loaded from corrected source.",
+      "evidence": "../evidence/live-acceptance-continuation/owner-amendment-2.json"
     },
     {
       "id": "17",
       "phase": "Demonstrate",
       "title": "Complete real Claude workflow",
-      "status": "active",
-      "detail": "Reviewed interval/writer gates now block contaminated comparisons and reverted changes; managed settings included. 61 focused checks pass. Live test waits for every background Claude Desktop/Code process to exit.",
-      "evidence": "CLAUDE_SETTINGS_ATTRIBUTION_PLAN.md"
+      "status": "blocked",
+      "detail": "Actual host discovered both skills and typed exact text. Forwarding dropped dispatch proof; focused fix passed. Client-state writes still block preservation; corrective run waits for a concrete resolution.",
+      "evidence": "../evidence/live-acceptance-continuation/claude-supplemental-1/receipt.json"
     },
     {
       "id": "18",
       "phase": "Demonstrate",
       "title": "Unicode clipboard paste and restoration",
-      "status": "active",
-      "detail": "Text-only adapter and identifier preflight implemented. Unsupported formats preserved; supported live paste and exact-byte restoration unproved.",
-      "evidence": "../evidence/computer-use-method/clipboard/format-support-preflight.json"
+      "status": "blocked",
+      "detail": "Supported snapshot and synthetic write verified; focus mismatch stopped before paste. Native cleanup reconciled; guarded restoration refused changed clipboard contents. Protected recovery awaits owner archive/retain choice.",
+      "evidence": "../evidence/live-acceptance-continuation/clipboard-supplemental-1/recovery.json"
     },
     {
       "id": "19",
@@ -161,9 +161,9 @@
       "id": "20",
       "phase": "Deliver",
       "title": "Clean archive installation and rollback",
-      "status": "pending",
-      "detail": "Verify the exact final archive on Windows, preserve client settings and prove rollback.",
-      "evidence": "../SPEC.md"
+      "status": "active",
+      "detail": "Existing-host exact archive setup and configuration rollback passed. Portable verifier and CI wiring uploaded in draft PR 17; fresh Windows runner and final archive remain.",
+      "evidence": "ARCHIVE_INSTALL.md"
     },
     {
       "id": "21",
@@ -178,7 +178,7 @@
       "phase": "Deliver",
       "title": "Draft PR and required hosted CI",
       "status": "blocked",
-      "detail": "PR 14 and Claude PR 15 are uploaded drafts; Codex follow-up remains. Actual PR 15 check annotation confirms zero steps started due to account billing/spending limit.",
+      "detail": "Draft PRs 14–17 uploaded; next live-results draft is being prepared. Retained CI annotation reports account billing/spending restrictions before job startup.",
       "evidence": "../evidence/computer-use-method/ci-pr15-current.json"
     }
   ]

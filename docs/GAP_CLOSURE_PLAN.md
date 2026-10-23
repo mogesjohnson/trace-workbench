@@ -1,16 +1,16 @@
 # TRACE gap-closure plan and progress
 
-Updated 2026-10-22. **Goal active. 12/22 checkpoints verified (55% of this checklist).**
+Updated 2026-10-23. **Goal active. 13/22 checkpoints verified (59% of this checklist).**
 
 [Open the visual dashboard](GAP_CLOSURE_PROGRESS.html) · [Detailed status](GAP_CLOSURE_STATUS.md) · [Acceptance specification](../SPEC.md)
 
 Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row. This percentage is not a completion claim for the full goal.
 
-**Current work:** Codex resumed and reviewed Claude PR 15. Claude settings and REPLAY recovery corrections pass local checks (501 tests: 495 passed, 6 skipped). Glow final supplement failed the 60-second underlying sample freshness check after one actual Sky click; cleanup verified, both supplements consumed. Fresh-capture correction is checked offline; the proposed extra glow/Codex budget waits for the owner. Unconsumed typing/Claude/clipboard cases need their exact preconditions; full REPLAY live demo remains. GitHub CI is billing/spending blocked.
+**Current work:** Typing quarantine acknowledgement passed with exact text, durable recovery and one follow-up; its ordinary anchor is closed. Passed checks are reused. Glow amended budget is exhausted after a reference click timing-proof failure; no TRACE click/lifecycle pass. Claude discovered both skills and typed correctly; forwarding fix is checked, client-state preservation remains unresolved. Clipboard failed before paste; native cleanup reconciled, changed contents preserved and protected recovery pending. Archive verifier is uploaded as draft PR 17. Full goal remains active.
 
 | Verified at stated scope | In progress | To do | Blocked |
 | --- | --- | --- | --- |
-| 12 | 5 | 2 | 3 |
+| 13 | 4 | 1 | 4 |
 
 ## Plan
 
@@ -28,16 +28,16 @@ Each row is one declared checkpoint. Counts measure completed checkpoints, not t
 | 10. Production owner exclusion and handoff | Prove | Verified at stated scope | Approved exclusion/handoff subcase passed; broader owner invariants still include a current-source stop gap. | [Open](../evidence/replacement-acceptance/r32-production-owner/attempt-2/receipt.json) |
 | 11. Mouse and chord quarantine acknowledgements | Prove | Verified at stated scope | Separate scoped live passes; neither substitutes for typing quarantine. | [Open](../evidence/0.1.0-alpha.3.2/quarantine-ack-chord/receipt.json) |
 | 12. REPLAY two-window recording setup | Demonstrate | Verified at stated scope | Actual 3.795-second recording, correct owned editor, decoded frame review, exact app exits and revoked grants. Full demo still pending. | [Open](../evidence/computer-use-method/replay-feasibility/verification.json) |
-| 13. Glow clicks and complete lifecycle | Prove | Blocked | Both approved supplements consumed. Final run failed underlying glow sample age (62.686s) after one actual Sky click; no TRACE click. Cleanup verified. New safe-frame correction tested; extra budget proposal pending. | [Open](../evidence/live-acceptance-continuation/glow-supplemental-2/diagnosis.json) |
-| 14. Typing quarantine acknowledgement | Prove | In progress | Supplement approved; exact owned foreground anchor and fresh direct owner idle readiness required before claim. | [Open](LIVE_ACCEPTANCE_CONTINUATION.md) |
+| 13. Glow clicks and complete lifecycle | Prove | Blocked | Reference click reached the physical edge once, all five counters 1. Full lifetime-6 case failed the strict event window; no TRACE click or full lifecycle pass. Cleanup passed; amended budget exhausted. | [Open](../evidence/live-acceptance-continuation/glow-amendment-2-attempt-2/diagnosis.json) |
+| 14. Typing quarantine acknowledgement | Prove | Verified at stated scope | Supplemental attempt 1 passed: exact abc, independent release, persistent quarantine/restart blocking, verified recovery and exactly one pinned-engine follow-up. Both fixtures closed. | [Open](../evidence/live-acceptance-continuation/typing-supplemental-1/verification.json) |
 | 15. Current-source physical-stop relevance | Prove | In progress | Historical physical Escape passes ran an earlier Session.cs that is absent from every Git object (checked 22 Oct). Needs an owner-present current-source physical stop run. | [Open](../evidence/computer-use-method/production-owner-map.json) |
-| 16. Complete real Codex workflow | Demonstrate | Blocked | Exact Unicode now passed live. Stale error lacked outcome metadata; product correction is tested. Both supplements consumed: a reconnected host and a new owner budget decision are needed for another live run. | [Open](../evidence/live-acceptance-continuation/codex/attempt-2/diagnosis.json) |
-| 17. Complete real Claude workflow | Demonstrate | In progress | Reviewed interval/writer gates now block contaminated comparisons and reverted changes; managed settings included. 61 focused checks pass. Live test waits for every background Claude Desktop/Code process to exit. | [Open](CLAUDE_SETTINGS_ATTRIBUTION_PLAN.md) |
-| 18. Unicode clipboard paste and restoration | Demonstrate | In progress | Text-only adapter and identifier preflight implemented. Unsupported formats preserved; supported live paste and exact-byte restoration unproved. | [Open](../evidence/computer-use-method/clipboard/format-support-preflight.json) |
+| 16. Complete real Codex workflow | Demonstrate | In progress | Exact Unicode already passed live. Stale-outcome correction is checked; amendment 2 is approved. Complete workflow still needs proof through the actual connected server loaded from corrected source. | [Open](../evidence/live-acceptance-continuation/owner-amendment-2.json) |
+| 17. Complete real Claude workflow | Demonstrate | Blocked | Actual host discovered both skills and typed exact text. Forwarding dropped dispatch proof; focused fix passed. Client-state writes still block preservation; corrective run waits for a concrete resolution. | [Open](../evidence/live-acceptance-continuation/claude-supplemental-1/receipt.json) |
+| 18. Unicode clipboard paste and restoration | Demonstrate | Blocked | Supported snapshot and synthetic write verified; focus mismatch stopped before paste. Native cleanup reconciled; guarded restoration refused changed clipboard contents. Protected recovery awaits owner archive/retain choice. | [Open](../evidence/live-acceptance-continuation/clipboard-supplemental-1/recovery.json) |
 | 19. Full REPLAY editing and two exports | Demonstrate | In progress | Reviewed runtime preserves unknown outcomes as blocked, immutable private recovery context and request-bound reconciliation. 35 focused checks pass. Actual TRACE controls and both edited/audio exports still need live proof. | [Open](../scripts/replay-workflow-runtime.cjs) |
-| 20. Clean archive installation and rollback | Deliver | To do | Verify the exact final archive on Windows, preserve client settings and prove rollback. | [Open](../SPEC.md) |
+| 20. Clean archive installation and rollback | Deliver | In progress | Existing-host exact archive setup and configuration rollback passed. Portable verifier and CI wiring uploaded in draft PR 17; fresh Windows runner and final archive remain. | [Open](ARCHIVE_INSTALL.md) |
 | 21. Final documentation and reviewable commits | Deliver | To do | Reconcile requirement-to-evidence checklist and packaging; README last; planned verification and documentation commits. | [Open](../VERSION_CONTROL.md) |
-| 22. Draft PR and required hosted CI | Deliver | Blocked | PR 14 and Claude PR 15 are uploaded drafts; Codex follow-up remains. Actual PR 15 check annotation confirms zero steps started due to account billing/spending limit. | [Open](../evidence/computer-use-method/ci-pr15-current.json) |
+| 22. Draft PR and required hosted CI | Deliver | Blocked | Draft PRs 14–17 uploaded; next live-results draft is being prepared. Retained CI annotation reports account billing/spending restrictions before job startup. | [Open](../evidence/computer-use-method/ci-pr15-current.json) |
 
 ## Next
 
