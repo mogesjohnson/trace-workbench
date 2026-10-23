@@ -88,7 +88,8 @@ function injectedRuntime(options = {}) {
     closeTransport: async client => { events.push(`close-transport:${client.label}`); if (options.closeFails) throw new Error(); },
     revokeGrant: async app => { events.push(`revoke:${app.label}`); },
     grantRevoked: async () => !options.revokeFails,
-    stopApp: async app => { events.push(`stop:${app.label}`); if (options.signalExit) app.process().signalCode = 'SIGTERM'; else app.process().exitCode = 0; },
+    stopApp: async app => { events.push(`stop:${app.label}`); if (options.signalExit) app.process().signalCode = 'SIGTERM'; else app.process().exitCode = 0;
+      if (options.closedHandleLosesProcess) app.process = () => undefined; },
     closeFixture: async () => { events.push('close-fixture'); return !options.fixtureExitFails; },
     waitIdentityExit: async value => { events.push(`exact-exit:${value.pid}:${value.processCreationTime}`); return !options.exactExitFails; },
     readRequestReceipt: async (app, requestId) => options.requestReceipt?.(app, requestId, workflow.recovery()),
@@ -352,10 +353,10 @@ test('existing export destination is preserved without dispatching export', asyn
 });
 
 test('cleanup is idempotent, recognizes signal termination, and requires exact OS birth exit, durable grant revocation and fixture exit', async () => {
-  for (const options of [{ signalExit: true }, { revokeFails: true }, { exactExitFails: true }, { closeFails: true }, { fixtureExitFails: true }]) {
+  for (const options of [{ signalExit: true }, { closedHandleLosesProcess: true }, { revokeFails: true }, { exactExitFails: true }, { closeFails: true }, { fixtureExitFails: true }]) {
     const f = injectedRuntime(options); await through(f, 'provision');
     const a = f.workflow.cleanup(), b = f.workflow.cleanup(); assert.equal(a, b);
-    const result = await a; assert.equal(result.confirmed, !!options.signalExit);
+    const result = await a; assert.equal(result.confirmed, !!options.signalExit || !!options.closedHandleLosesProcess);
     assert.equal(f.events.filter(value => value.startsWith('stop:')).length, 2);
     assert.equal(f.events.filter(value => value.startsWith('revoke:')).length, 2);
     assert.equal(f.events.filter(value => value === 'close-fixture').length, 1);
