@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "selection": {
+    "decisionId": "owner-supplemental-five-20261022",
+    "caseId": "METHOD-CLIPBOARD-UNICODE-PASTE",
+    "contract": "clipboard-supported-snapshot-v1",
+    "ownerDecision": {
+      "ref": "evidence/live-acceptance-continuation/owner-decision.json",
+      "sha256": "02c8b46faaef411a217d4965de83a0bac7e2592d792be1ad6a2e262f0aa7619a"
+    },
+    "historicalAttemptsUsed": 2,
+    "originals": [
+      {
+        "ref": "evidence/computer-use-method/clipboard/live-attempt-1/receipt.json",
+        "sha256": "07b8d79f795150e1b9c4a961c984bbc536e017426b04f2f41c446a183f92af17"
+      },
+      {
+        "ref": "evidence/computer-use-method/clipboard/live-attempt-2/receipt.json",
+        "sha256": "bc2ce5eefd62f6a90a8f87f8794ca72a1861518fa8a5e5491e651149ee003ff8"
+      }
+    ]
+  },
+  "claims": [
+    {
+      "decisionId": "owner-supplemental-five-20261022",
+      "caseId": "METHOD-CLIPBOARD-UNICODE-PASTE",
+      "contract": "clipboard-supported-snapshot-v1",
+      "ownerDecision": {
+        "ref": "evidence/live-acceptance-continuation/owner-decision.json",
+        "sha256": "02c8b46faaef411a217d4965de83a0bac7e2592d792be1ad6a2e262f0aa7619a"
+      },
+      "historicalAttemptsUsed": 2,
+      "originals": [
+        {
+          "ref": "evidence/computer-use-method/clipboard/live-attempt-1/receipt.json",
+          "sha256": "07b8d79f795150e1b9c4a961c984bbc536e017426b04f2f41c446a183f92af17"
+        },
+        {
+          "ref": "evidence/computer-use-method/clipboard/live-attempt-2/receipt.json",
+          "sha256": "bc2ce5eefd62f6a90a8f87f8794ca72a1861518fa8a5e5491e651149ee003ff8"
+        }
+      ],
+      "claimId": "f67c02bb-4c20-4d9e-a35e-9a450e4ea552",
+      "continuationAttempt": 1,
+      "lifetimeAttemptOrdinal": 3,
+      "claimedAt": "2026-10-23T05:12:32.778Z"
+    }
+  ]
+}

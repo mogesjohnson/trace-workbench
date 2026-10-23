@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "caseId": "METHOD-CLIPBOARD-UNICODE-PASTE",
+  "status": "blocked",
+  "scope": "Post-attempt recovery reconciliation only; original attempt unchanged.",
+  "recordedAt": "2026-10-23T05:15:18.653Z",
+  "nativeCleanup": {
+    "allOwnedGenerationsExited": true,
+    "keysDown": [],
+    "recoveryRequired": false
+  },
+  "guardedRestoration": {
+    "attempted": true,
+    "result": "clipboard_changed",
+    "originalOverwritten": false,
+    "protectedRecoveryRetained": true
+  },
+  "formatInspection": {
+    "mode": "text-only",
+    "inspection": "format-identifiers-only",
+    "supported": false,
+    "supportedFormatIds": [
+      1,
+      7,
+      13,
+      16
+    ],
+    "formatCount": 7,
+    "unsupportedCount": 3,
+    "categories": [
+      {
+        "category": "registered",
+        "count": 3
+      }
+    ],
+    "recoveryPending": true,
+    "ready": false,
+    "code": "clipboard_recovery_required",
+    "contentsRead": false,
+    "contentsChanged": false,
+    "recoveryWritten": false
+  },
+  "helperCleanup": {
+    "cleanup": "unknown",
+    "code": "clipboard_recovery_required",
+    "mode": "text-only"
+  }
+}

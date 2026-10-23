@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "caseId": "R31-GLOW-NATIVE",
+  "status": "fail",
+  "receipt": {
+    "ref": "evidence/live-acceptance-continuation/glow-amendment-2-attempt-2/receipt.json",
+    "sha256": "d5d49545a1a6ef31f1247c2849456956de5af03ce99b977ae176041457823f03"
+  },
+  "referenceTool": {
+    "ref": "evidence/live-acceptance-continuation/glow-amendment-2-attempt-2/reference-tool.json",
+    "sha256": "1ea35dca29f00a41f260722a0e0799510ebe0fdea8022672cdec64fe4ef0b034"
+  },
+  "actualPhysicalReference": {
+    "point": {
+      "x": 5,
+      "y": 900
+    },
+    "counters": {
+      "count": 1,
+      "activationCount": 1,
+      "mouseDownCount": 1,
+      "mouseUpCount": 1,
+      "mouseClickCount": 1
+    },
+    "events": {
+      "mouseDown": "2026-10-23T05:07:05.7249272+00:00",
+      "mouseUp": "2026-10-23T05:07:05.7467255+00:00",
+      "mouseClick": "2026-10-23T05:07:05.7450668+00:00",
+      "activation": "2026-10-23T05:07:05.7416487+00:00"
+    },
+    "privateFinalStatusSha256": "4f84eba9f266229cdfb8780a7a11a2c85820b03f70f0c34ca7cac40beaaa3434",
+    "sampleScope": "Read after terminal cleanup; event timestamps/counters are retained from the actual click. This is not a saved pre-cleanup finalFixture sample."
+  },
+  "finding": "The actual reference produced exactly one event in each counter at physical point (5,900), inside the edge button and measured glow. Mouse-up is 6.7255 ms after the recorded sky.click promise-resolution timestamp. The strict event-window proof therefore rejects this run; no proof timestamp is changed retrospectively.",
+  "traceClicks": 0,
+  "normalCloseAcceptance": "not_run",
+  "parentLossAcceptance": "not_run",
+  "attemptBudget": {
+    "amendment": 2,
+    "used": 2,
+    "maximum": 2,
+    "additionalRunAuthorized": false
+  },
+  "cleanup": {
+    "fixtureExited": true,
+    "forced": false,
+    "ownedHelpersExited": true,
+    "keysDown": [],
+    "recoveryRequired": false
+  },
+  "recordedAt": "2026-10-23T05:10:30.523Z"
+}

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "source": "direct-owner",
+  "caseId": "A32-QUARANTINE-ACK-TYPING",
+  "ready": true,
+  "confirmedAt": "2026-10-23T05:09:35.4485130+00:00",
+  "anchorOwnership": "run-owned-child",
+  "anchor": {
+    "id": "31917988",
+    "pid": 47776,
+    "processCreationTime": "134372057350830878",
+    "sessionId": 1
+  }
+}

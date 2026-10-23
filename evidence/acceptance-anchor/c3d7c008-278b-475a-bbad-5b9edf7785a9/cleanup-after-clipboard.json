@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "source": "independent-native-cleanup",
+  "caseId": "METHOD-CLIPBOARD-UNICODE-PASTE",
+  "anchor": {
+    "id": "2885008",
+    "pid": 31508,
+    "processCreationTime": "134372058993423840",
+    "sessionId": 1
+  },
+  "verifiedAt": "2026-10-23T05:18:31.452Z",
+  "nativeRequestsSettled": true,
+  "downstreamStarted": true,
+  "receiptRef": "evidence/live-acceptance-continuation/clipboard-supplemental-1/receipt.json",
+  "clipboardRecovery": "Protected recovery remains pending; this closes only the ordinary anchor after native cleanup.",
+  "ownedProcesses": [
+    {
+      "pid": 40964,
+      "created": "2026-10-23T05:12:33.2828520Z",
+      "sessionId": 1
+    },
+    {
+      "pid": 54328,
+      "created": "2026-10-23T05:12:35.3795170Z",
+      "sessionId": 1
+    },
+    {
+      "pid": 25220,
+      "created": "2026-10-23T05:12:35.5532980Z",
+      "sessionId": 1
+    }
+  ]
+}

@@ -1,0 +1,747 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A32-QUARANTINE-ACK-TYPING",
+  "attempt": 3,
+  "status": "pass",
+  "startedAt": "2026-10-23T05:09:37.700Z",
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "cleanup": {
+    "exactOwnedExit": {
+      "node": {
+        "identity": {
+          "pid": 53772,
+          "parent": 36976,
+          "name": "node.exe",
+          "sessionId": 1,
+          "created": "2026-10-23T05:09:39.1062980Z",
+          "processCreationTime": "134372057791062983",
+          "user": "<current-os-user>",
+          "session": 1
+        },
+        "exited": true
+      },
+      "supervisor": {
+        "identity": {
+          "pid": 20532,
+          "parent": 53772,
+          "name": "TraceSupervisor.exe",
+          "sessionId": 1,
+          "created": "2026-10-23T05:09:40.4124620Z",
+          "processCreationTime": "134372057804124621",
+          "user": "<current-os-user>",
+          "session": 1
+        },
+        "exited": true
+      },
+      "marker": {
+        "identity": {
+          "pid": 37360,
+          "parent": 20532,
+          "name": "TraceActivityIndicator.exe",
+          "sessionId": 1,
+          "created": "2026-10-23T05:09:40.5746090Z",
+          "processCreationTime": "134372057805746092",
+          "user": "<current-os-user>",
+          "session": 1
+        },
+        "exited": true
+      },
+      "inputChild": {
+        "identity": {
+          "pid": 54276,
+          "processCreationTime": "134372057920216400",
+          "user": "<current-os-user>",
+          "session": 1
+        },
+        "exited": true
+      }
+    },
+    "connectionClosed": true,
+    "requestSettlement": {
+      "error": {
+        "code": "REQUEST_TIMEOUT"
+      }
+    },
+    "followupExactOwnedExit": {
+      "node": {
+        "identity": {
+          "pid": 4076,
+          "parent": 36976,
+          "name": "node.exe",
+          "sessionId": 1,
+          "created": "2026-10-23T05:09:57.8066880Z",
+          "processCreationTime": "134372057978066887",
+          "user": "<current-os-user>",
+          "session": 1
+        },
+        "exited": true
+      },
+      "supervisor": {
+        "identity": {
+          "pid": 34496,
+          "parent": 4076,
+          "name": "TraceSupervisor.exe",
+          "sessionId": 1,
+          "created": "2026-10-23T05:09:59.1153750Z",
+          "processCreationTime": "134372057991153754",
+          "user": "<current-os-user>",
+          "session": 1
+        },
+        "exited": true
+      },
+      "marker": {
+        "identity": {
+          "pid": 17996,
+          "parent": 34496,
+          "name": "TraceActivityIndicator.exe",
+          "sessionId": 1,
+          "created": "2026-10-23T05:09:59.2766360Z",
+          "processCreationTime": "134372057992766361",
+          "user": "<current-os-user>",
+          "session": 1
+        },
+        "exited": true
+      }
+    },
+    "inputChildExited": true,
+    "inputState": {
+      "at": "2026-10-23T05:10:07.994Z",
+      "phase": "native closed; owned fixture still present",
+      "available": true,
+      "down": []
+    },
+    "fixtureExited": true,
+    "exactFixtureExit": {
+      "identity": {
+        "pid": 16508,
+        "processCreationTime": "134372057788326896",
+        "user": "<current-os-user>",
+        "session": 1
+      },
+      "exited": true
+    },
+    "recovery": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    }
+  },
+  "testedSource": {
+    "baseCommit": "a52bee236e38d4ee7f1f449d0c379452300f39c3",
+    "workingTreeModified": true,
+    "files": {
+      "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+      "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+      "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+      "native/TraceSupervisor/Program.cs": "c8dc9e6fd440542b624fe93850bdafb4469f72ff81ff33942e96fd3ce5697202",
+      "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+      "native/TraceSupervisor/Session.cs": "d3f7ad4a1d147c593f75912ae5f26d19d7f4de1fb397ef084c64994050e78ca1",
+      "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+      "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+      "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+      "src/computer/controller.cjs": "4ece8dcb0d938266db8b773dac0f724e32feb723ebda78be8f6399404cd21166",
+      "src/computer/server.cjs": "1c2f72ff8ad2dd9aa73e0aa5bd4f4a0c0b1f1e716b2270b0abe05b94049dee74",
+      "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5",
+      "src/computer/lease.cjs": "3600fa756bda99e15aa695731bc0e5a8f6a0893e1f7e333db4d6742ae561389b",
+      "src/computer/activity-indicator.cjs": "42de964cb8fca0f5c30a6c30f1a40173df5f072224339fef6f006ed4ffe2093b",
+      "native/TraceWindowBridge/Program.cs": "eb113326de356280bc4219b21c2b99a1553a066dd170bf9898070ea484bfab46",
+      "native/TraceActivityIndicator/Program.cs": "262b2c70d7f1f271c45d2e66bb1faf6a8d299df87274b12a57540df425645459",
+      "tests/fixtures/supervised-mcp.cjs": "eeade5db7a43d000bc4c7e6a21dac0c32c3c6b5096d1fdaae98812e0faad2399",
+      "tests/fixtures/computer-app/Program.cs": "064a750a8cba970510b45d8ea3a1102fcc2102c0882afde0a017a12e9cafbaf4",
+      "scripts/replacement-acceptance-common.cjs": "b62ca0d06d5c2b657d2373698776c44ff4ec7ae5993b2e183fa7bd3aab274b8b",
+      "scripts/accept-supervisor-quarantine.cjs": "c9a2a0ff863a67f77fe03e197f94936c3f5db5a38e99018af9c5bba71a85dcb8",
+      "scripts/accept-supervisor-recovery.cjs": "5ee71bd15d0f744e0c7a6d21fc472871bc79de82ea4e16f821fceb577319bdf3",
+      "scripts/smoke-computer-live.cjs": "6327ec795cd0a9fba6e34fd0834653c0e200578dcb8873e3eb75fbaf35330f56",
+      "package.json": "e1d70360323c23bd769018345221d304ddcf6969989b9c31535fed1f53637f78",
+      "package-lock.json": "e6a7b9932ff2169daa29da61bec38f1439bf95d3a19ea728041d523f69630dda",
+      "scripts/continuation-adapter.cjs": "e7d323273febdb31fb7a52e13b11391ac9aa238677a024da0db553e3ac416cb2",
+      "scripts/live-acceptance-continuation.cjs": "e17f97c51ebe126fd7e6aa53bb52726231d14d02ebebceafb0d85b7844924680",
+      "scripts/accept-replacement-recovery.cjs": "343d723ad88a1ae60b1bb96b0b38ad936d63b5b453d6c4aacfafb2adc33b531c"
+    },
+    "runtimeOutputs": {
+      "supervisor/manifest": "e1e05692467ea0695bbe145b4c2cf1d9ec0786d0d1d33c4d6a39ddfbcb1c74e4",
+      "supervisor/TraceSupervisor.exe": "9e580841116ca6f8f677a39788e85ecac9dc107e9fb3df519463f8382b8c7cc1",
+      "supervisor/TraceSupervisor.dll": "9bce63bc8b9c823718c9616e593fdd6d897801931e38a3d4b5114a5359b68f5f",
+      "supervisor/TraceSupervisor.runtimeconfig.json": "e3a9d5d0a25ca066e8b70401b5869b5cfc92d16f5fe89b83077cdfd4b7427711",
+      "supervisor/TraceSupervisor.deps.json": "76ddcc9c579e2eda252af9050184d9d9776721a81c9dc2a7231289754bb3b277",
+      "activity-indicator/manifest": "ceb74fbc18083f9ddfd3f3e303908bef7a14d3568f8544c60f023c2059dac371",
+      "activity-indicator/TraceActivityIndicator.exe": "ee65a6e3f40dfb4e813d0c2d683deebf1b405a9b0a669375b6b29d8474c1e753",
+      "activity-indicator/TraceActivityIndicator.dll": "417043ab4bd967a61ee584504b4a7fce5f70da880e38569a99818916e985f446",
+      "activity-indicator/TraceActivityIndicator.runtimeconfig.json": "05917b409d59af31bc8d3021bc06302a0c21c7d05b449603d6cc9f0301a2b66c",
+      "activity-indicator/TraceActivityIndicator.deps.json": "d68bf6e29a3d165d67538b82f3be1dde2f95ddeb01547a1df8005b1cd7938d67",
+      "window-bridge/manifest": "115d2fa7dd544c00bb13f74e828bb01acba3131c05b40247f81eac20e4fff169",
+      "window-bridge/TraceWindowBridge.exe": "946996cdfdaae749b924a7985f60769bb5a433cae67e8ca26e296f502b81fdc8",
+      "window-bridge/TraceWindowBridge.dll": "f22cd3b3ac29e7424cb39aa9e67817be7b73d743329fea8dccd54826113f3b33",
+      "window-bridge/TraceWindowBridge.runtimeconfig.json": "e3a9d5d0a25ca066e8b70401b5869b5cfc92d16f5fe89b83077cdfd4b7427711",
+      "window-bridge/TraceWindowBridge.deps.json": "6f31a47aa2c51378901d4d91d9e3874203a1cd07081bfb1fe7e583e59ceee122",
+      "pinned-engine/winapp.exe": "bf29f665ab4a030f20cd34a9121276301871ee89fd9c13118c7221563858d692",
+      "pinned-engine/libHarfBuzzSharp.dll": "7ddabbcb6f631b08bf7ffd88df53cf4f3aca58ce41e4d44896d80ea4099dd384",
+      "pinned-engine/libSkiaSharp.dll": "016d87c41463f6fabd55baa41bda5b699491e0c4ec64b816bc3f1621b4049c1b"
+    }
+  },
+  "decisionId": "owner-supplemental-five-20261022",
+  "contract": "typing-ack-idle-anchor-v1",
+  "ownerDecision": {
+    "ref": "evidence/live-acceptance-continuation/owner-decision.json",
+    "sha256": "02c8b46faaef411a217d4965de83a0bac7e2592d792be1ad6a2e262f0aa7619a"
+  },
+  "historicalAttemptsUsed": 2,
+  "originals": [
+    {
+      "ref": "evidence/0.1.0-alpha.3.2/quarantine-ack-typing/receipt.json",
+      "sha256": "0935c5d335bbd808261e66caf2a2bcb54f881b86232b22a88703390403c0d8ad"
+    },
+    {
+      "ref": "evidence/0.1.0-alpha.3.2/quarantine-ack-typing-attempt-2/receipt.json",
+      "sha256": "1e323a378613c64750fd973471175e4f7083123e4c4b3aa560b0e0743bda1bb6"
+    }
+  ],
+  "claimId": "7d821508-78b9-4fdf-9353-738eb5223863",
+  "continuationAttempt": 1,
+  "lifetimeAttemptOrdinal": 3,
+  "claimedAt": "2026-10-23T05:09:38.642Z",
+  "idleReadiness": {
+    "ref": "evidence/acceptance-anchor/8ea576d7-8b4e-493a-af8e-7383565d8c69/readiness-15e6835a-34e1-4d61-a769-daddc32e2323.json",
+    "sha256": "126279565021fbf9d6409b1e69465869cbf24e69e390161786eefe8f43c639a0"
+  },
+  "preflight": {
+    "verifiedAt": "2026-10-23T05:09:38.638Z",
+    "anchor": {
+      "id": "31917988",
+      "pid": 47776,
+      "processCreationTime": "134372057350830878",
+      "sessionId": 1
+    },
+    "keysDown": [],
+    "recoveryRequired": false,
+    "leaseFree": true
+  },
+  "preparedFixture": {
+    "manifestSha256": "4c346033983f71468fe0e649f7e5cc09b70b128dd3eced7b88fe4d607d9ff1f4",
+    "sources": {
+      "tests/fixtures/computer-app/Program.cs": "064a750a8cba970510b45d8ea3a1102fcc2102c0882afde0a017a12e9cafbaf4",
+      "tests/fixtures/computer-app/TraceComputerFixture.csproj": "6eeb0a93b1ad0b73993fbb70bb248746f147ebd7b6731c50eaf889595439a793",
+      "scripts/smoke-computer-live.cjs": "6327ec795cd0a9fba6e34fd0834653c0e200578dcb8873e3eb75fbaf35330f56"
+    },
+    "files": {
+      "TraceComputerFixture.exe": "e861021c8d4caeb46ceaec3bd4c08f5d241c828dcaeef90007621457ca4110fb",
+      "TraceComputerFixture.dll": "37b950e572492704aae304b58eb677dcf5c444255e14b9ece9799636c2fde126",
+      "TraceComputerFixture.runtimeconfig.json": "05917b409d59af31bc8d3021bc06302a0c21c7d05b449603d6cc9f0301a2b66c",
+      "TraceComputerFixture.deps.json": "f59185f6790f4fd403ca06a8eaa9107075fe46c2b7cbe7164d2db64b07e35f1e"
+    }
+  },
+  "fixtureSha256": "e861021c8d4caeb46ceaec3bd4c08f5d241c828dcaeef90007621457ca4110fb",
+  "initialInput": {
+    "observedAt": "2026-10-23T05:09:38.997Z",
+    "down": []
+  },
+  "ownership": {
+    "node": {
+      "pid": 53772,
+      "parent": 36976,
+      "name": "node.exe",
+      "sessionId": 1,
+      "created": "2026-10-23T05:09:39.1062980Z",
+      "processCreationTime": "134372057791062983",
+      "user": "<current-os-user>",
+      "session": 1
+    },
+    "supervisor": {
+      "pid": 20532,
+      "parent": 53772,
+      "name": "TraceSupervisor.exe",
+      "sessionId": 1,
+      "created": "2026-10-23T05:09:40.4124620Z",
+      "processCreationTime": "134372057804124621",
+      "user": "<current-os-user>",
+      "session": 1
+    },
+    "marker": {
+      "pid": 37360,
+      "parent": 20532,
+      "name": "TraceActivityIndicator.exe",
+      "sessionId": 1,
+      "created": "2026-10-23T05:09:40.5746090Z",
+      "processCreationTime": "134372057805746092",
+      "user": "<current-os-user>",
+      "session": 1
+    },
+    "fixture": {
+      "pid": 16508,
+      "processCreationTime": "134372057788326896",
+      "user": "<current-os-user>",
+      "session": 1
+    }
+  },
+  "target": {
+    "windowId": "1641420",
+    "pid": 16508,
+    "processCreationTime": "134372057788326896",
+    "sessionId": 1
+  },
+  "focus": {
+    "public": {
+      "available": true,
+      "hasFocus": true,
+      "elementId": "traceTextInput",
+      "name": "TRACE text input",
+      "controlType": "Edit",
+      "provenance": "winapp-get-focused",
+      "binding": "observed-control",
+      "nativeSelector": "txt-tracetextinput-55c1"
+    },
+    "element": {
+      "id": "traceTextInput",
+      "name": "TRACE text input",
+      "controlType": "Edit",
+      "enabled": true,
+      "offscreen": false,
+      "automationId": "traceTextInput",
+      "className": "WindowsForms10.Edit.app.0.2042806_r3_ad1",
+      "bounds": {
+        "x": 1184,
+        "y": 696,
+        "width": 500,
+        "height": 34
+      }
+    },
+    "independent": {
+      "focusedControl": "traceTextInput",
+      "text": "",
+      "count": 0
+    },
+    "observationId": "096e079c-0018-40c4-b643-68abf8465470",
+    "boundObservedMatches": 1
+  },
+  "controlled": {
+    "at": "2026-10-23T05:09:52.034Z",
+    "type": "controlled-dispatch",
+    "requestId": "52",
+    "pid": 54276,
+    "processCreationTime": "134372057920216400",
+    "inJob": true,
+    "dispatchCount": 51,
+    "supervisorPid": 20532,
+    "identity": {
+      "pid": 54276,
+      "processCreationTime": "134372057920216400",
+      "user": "<current-os-user>",
+      "session": 1
+    }
+  },
+  "held": {
+    "67": true
+  },
+  "nativeReleaseCheckpoint": {
+    "at": "2026-10-23T05:09:54.117Z",
+    "type": "test-release-ready",
+    "requestId": "52",
+    "childPid": 54276,
+    "processCreationTime": "134372057920216400",
+    "processExitConfirmed": true,
+    "physicalReleaseObserved": true,
+    "declaredKeys": [
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127,
+      128,
+      129,
+      130,
+      131,
+      132,
+      133,
+      134,
+      135,
+      136,
+      137,
+      138,
+      139,
+      140,
+      141,
+      142,
+      143,
+      144,
+      145,
+      146,
+      147,
+      148,
+      149,
+      150,
+      151,
+      152,
+      153,
+      154,
+      155,
+      156,
+      157,
+      158,
+      159,
+      160,
+      161,
+      162,
+      163,
+      164,
+      165,
+      166,
+      167,
+      168,
+      169,
+      170,
+      171,
+      172,
+      173,
+      174,
+      175,
+      176,
+      177,
+      178,
+      179,
+      180,
+      181,
+      182,
+      183,
+      184,
+      185,
+      186,
+      187,
+      188,
+      189,
+      190,
+      191,
+      192,
+      193,
+      194,
+      195,
+      196,
+      197,
+      198,
+      199,
+      200,
+      201,
+      202,
+      203,
+      204,
+      205,
+      206,
+      207,
+      208,
+      209,
+      210,
+      211,
+      212,
+      213,
+      214,
+      215,
+      216,
+      217,
+      218,
+      219,
+      220,
+      221,
+      222,
+      223,
+      224,
+      225,
+      226,
+      227,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      234,
+      235,
+      236,
+      237,
+      238,
+      239,
+      240,
+      241,
+      242,
+      243,
+      244,
+      245,
+      246,
+      247,
+      248,
+      249,
+      250,
+      251,
+      252,
+      253,
+      254
+    ],
+    "remainingDown": []
+  },
+  "independentReleaseProof": {
+    "verifiedAt": "2026-10-23T05:09:54.222Z",
+    "childPid": 54276,
+    "childExited": true,
+    "keysDown": [],
+    "source": "separate native helper and OS process probe outside the tested MCP process",
+    "beforeFailureInjection": true
+  },
+  "injectedFailure": {
+    "at": "2026-10-23T05:09:54.271Z",
+    "type": "controlled-finished",
+    "code": "cancelled",
+    "outcome": "unknown",
+    "recovery": {
+      "attempted": true,
+      "released": false,
+      "processExitConfirmed": true,
+      "physicalReleaseObserved": true,
+      "failureInjected": true,
+      "independentReleaseVerified": true,
+      "reason": "test_release_ack_failed",
+      "code": "input_recovery_failed",
+      "childPid": 54276,
+      "childCreated": "134372057920216400",
+      "declaredKeysDown": []
+    }
+  },
+  "effect": {
+    "text": "abc",
+    "count": 0,
+    "unchangedAfterRealRelease": true
+  },
+  "sameSessionBlocked": {
+    "code": "session_stopped",
+    "count": 0
+  },
+  "checksDoNotClear": {
+    "first": {
+      "recoveryRequired": true,
+      "ready": false,
+      "code": "input_recovery_required",
+      "phase": "quarantined",
+      "supervisorAlive": true,
+      "childAlive": false,
+      "sameSession": true,
+      "declaredKeysDown": []
+    },
+    "second": {
+      "recoveryRequired": true,
+      "ready": false,
+      "code": "input_recovery_required",
+      "phase": "quarantined",
+      "supervisorAlive": true,
+      "childAlive": false,
+      "sameSession": true,
+      "declaredKeysDown": []
+    }
+  },
+  "applyWhileOwnedRejected": {
+    "code": "desktop_busy"
+  },
+  "restartBlocked": {
+    "doctorCode": "input_recovery_required",
+    "openCode": "input_recovery_required",
+    "newMcpProcess": true,
+    "distinctArtifactRoot": true
+  },
+  "apply": {
+    "recovered": true,
+    "recoveryRequired": false,
+    "processExitConfirmed": true,
+    "released": true,
+    "attempted": [],
+    "remainingDown": []
+  },
+  "requestSettlement": {
+    "error": {
+      "code": "REQUEST_TIMEOUT"
+    }
+  },
+  "followup": {
+    "provider": "pinned-engine",
+    "before": 0,
+    "after": 1,
+    "exactIncrement": 1,
+    "outcome": "completed",
+    "text": "abc",
+    "stableText": true,
+    "ownership": {
+      "node": {
+        "pid": 4076,
+        "parent": 36976,
+        "name": "node.exe",
+        "sessionId": 1,
+        "created": "2026-10-23T05:09:57.8066880Z",
+        "processCreationTime": "134372057978066887",
+        "user": "<current-os-user>",
+        "session": 1
+      },
+      "supervisor": {
+        "pid": 34496,
+        "parent": 4076,
+        "name": "TraceSupervisor.exe",
+        "sessionId": 1,
+        "created": "2026-10-23T05:09:59.1153750Z",
+        "processCreationTime": "134372057991153754",
+        "user": "<current-os-user>",
+        "session": 1
+      },
+      "marker": {
+        "pid": 17996,
+        "parent": 34496,
+        "name": "TraceActivityIndicator.exe",
+        "sessionId": 1,
+        "created": "2026-10-23T05:09:59.2766360Z",
+        "processCreationTime": "134372057992766361",
+        "user": "<current-os-user>",
+        "session": 1
+      },
+      "fixture": {
+        "pid": 16508,
+        "processCreationTime": "134372057788326896",
+        "user": "<current-os-user>",
+        "session": 1
+      }
+    }
+  },
+  "primaryOutcome": {
+    "status": "pass",
+    "error": null
+  },
+  "sourcesUnchangedDuringRun": true,
+  "completedAt": "2026-10-23T05:10:08.495Z",
+  "projection": {
+    "privateOriginalSha256": "c21cf82c3a39108a75a523a86c16d6f249cd5477fb3084f1dd68c47ae5ee483d",
+    "originalBytesRetained": true,
+    "redactions": {
+      "currentOsUserSidOccurrences": 17
+    },
+    "scope": "Sanitized public projection of the observed passing receipt. Original bytes remain private and unchanged."
+  }
+}
