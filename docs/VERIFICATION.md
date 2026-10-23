@@ -1,5 +1,7 @@
 # Verification
 
+**Resumed with hosted CI passing, 23 October 2026:** [Run 39999545940](https://github.com/mogesjohnson/trace-workbench/actions/runs/39999545940) completed successfully for implementation head `701a35c`, using PR merge checkout `08d6984`. Source checks, 516 passed / five skipped / zero failed checks, both MCP paths and exact-archive installation/rollback all passed. [Sanitized evidence](../evidence/computer-use-method/public-ci-parallel-fixes.json) retains the exact archive SHA-256 and earlier failures. The repository is public; the billing startup restriction no longer blocks these observed runs. Progress is **17/22 scoped checkpoints (77%)**, with five remaining. Three desktop amendments await direct approval; final archive and final-source CI remain release gates. No desktop test or additional Claude model session started. Earlier blocked/paused paragraphs below are history.
+
 ## Alpha.3.3 observation and result contracts
 
 Observed 20 October 2026 on one 2880×1800 monitor at 144 DPI, pinned per run, through the production stdio MCP server and the owned computer fixture ([case status](../evidence/0.1.0-alpha.3.3/case-status.json)). Unit tests: 172 ran, 171 passed, one privilege skip.

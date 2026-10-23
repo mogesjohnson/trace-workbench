@@ -23,11 +23,11 @@ const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', 
     `| Verified at stated scope | In progress | To do | Blocked |`, `| --- | --- | --- | --- |`, `| ${counts.verified} | ${counts.active} | ${counts.pending} | ${counts.blocked} |`, ``,
     `## Plan`, ``, `| Checkpoint | Stage | Status | What / remaining proof | Evidence |`, `| --- | --- | --- | --- | --- |`,
     ...rows.map(row => `| ${row.id}. ${row.title} | ${row.phase} | ${labels[row.status]} | ${row.detail} | [Open](${row.evidence}) |`), ``,
-    `## Next`, ``, `1. Use the [owned anchor preparation](ACCEPTANCE_ANCHOR.md) for fresh typing/clipboard readiness; fully quit background Claude processes before the host test.`,
-    `2. Run unconsumed approved cases after preflight. Glow and Codex have exhausted their current supplements; the [second bounded amendment](LIVE_ACCEPTANCE_AMENDMENT_2.md) is a proposal awaiting an actual owner decision. Preserve every failure and finite ledger.`,
-    `3. Resolve current-source physical-stop proof and complete both REPLAY exports.`,
-    `4. Verify clean installation/rollback, finish documentation and commits, then open the draft PR and require hosted CI.`, ``,
-    `The original five supplemental budgets were [approved](../evidence/live-acceptance-continuation/owner-decision.json); glow and Codex have now consumed both attempts. Approval is separate from typing/clipboard idle readiness. Completed compatible live work is reused.`, ``,
+    `## Next`, ``, `1. Obtain the three direct bounded decisions in the [finish plan](GAP_CLOSURE_FINISH_PLAN.md): glow timing/budget, current-source Escape and full REPLAY. Earlier results remain unchanged.`,
+    `2. After approval, prepare only the affected work, then request fresh desktop readiness. Physical stop requires two owner Escape taps.`,
+    `3. Complete glow, current-source stop and both REPLAY exports. Reuse the completed Codex, Claude, clipboard and other compatible passing checks.`,
+    `4. Reconcile documentation and final packaging, verify the exact final archive on a fresh Windows runner, and require CI on the final source.`, ``,
+    `Public hosted CI and clean-runner archive verification passed at the recorded checkpoint; final-source and final-archive gates remain explicit. Approval is separate from desktop readiness and does not change earlier evidence.`, ``,
     `This view is generated from [gap-progress.json](gap-progress.json). It is an inspected checkpoint, not a live test monitor. Refresh it after a verified milestone with \`node scripts/render-gap-progress.cjs\`.`, ``].join('\n');
   const cards = rows.map(row => `<article data-status="${row.status}"><div class="meta"><span>${escape(row.phase)} · ${row.id}</span><b class="${row.status}">${escape(labels[row.status])}</b></div><h3>${escape(row.title)}</h3><p>${escape(row.detail)}</p><a href="${escape(row.evidence)}">Inspect evidence ↗</a></article>`).join('\n');
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TRACE progress</title><style>

@@ -1,16 +1,16 @@
 # TRACE gap-closure plan and progress
 
-Updated 2026-10-23. **Goal blocked. 16/22 checkpoints verified (73% of this checklist).**
+Updated 2026-10-23. **Goal active. 17/22 checkpoints verified (77% of this checklist).**
 
 [Open the visual dashboard](GAP_CLOSURE_PROGRESS.html) · [Detailed status](GAP_CLOSURE_STATUS.md) · [Acceptance specification](../SPEC.md)
 
 Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row. This percentage is not a completion claim for the full goal.
 
-**Current work:** Goal blocked after repeated pending amendment decisions and confirmed GitHub billing restrictions. All independent preparation is saved. Codex, Claude, clipboard and other compatible passes stand at 16/22; six checkpoints remain. Owner decisions and CI access must change before remaining execution. No desktop test is running; fresh readiness will be requested before any new one.
+**Current work:** Resumed 23 October. Public Windows CI passed for implementation head 701a35c (PR merge 08d6984): 516 checks passed, five skipped, zero failed, both MCP paths and exact-archive install/rollback passed. Progress is 17/22 scoped checkpoints (77%); five remain. Glow, current-source Escape and REPLAY amendments await direct owner decisions. Final-archive verification and final review remain open. No desktop test is running.
 
 | Verified at stated scope | In progress | To do | Blocked |
 | --- | --- | --- | --- |
-| 16 | 0 | 1 | 5 |
+| 17 | 1 | 1 | 3 |
 
 ## Plan
 
@@ -35,17 +35,17 @@ Each row is one declared checkpoint. Counts measure completed checkpoints, not t
 | 17. Complete real Claude workflow | Demonstrate | Verified at stated scope | Corrective lifetime 4 passed on Claude 2.1.309 with explicitly isolated state: both Skills, five received PNGs, exact text/count 1, stale not_dispatched, fresh recovery, all real-settings intervals preserved, installed bundles/source unchanged and exact cleanup. Temporary sign-in removed. Guarded isolated-host scope; no semantic-image or REA-analysis claim. | [Open](../evidence/live-acceptance-continuation/claude-supplemental-2/receipt.json) |
 | 18. Unicode clipboard paste and restoration | Demonstrate | Verified at stated scope | Approved corrective supplement passed: public/independent fresh focus, one completed Unicode paste, exact target text and unchanged count, guarded restoration plus fresh supported-byte comparison, exact native/fixture exits and private-artifact cleanup. Ordinary anchor explicitly closed. | [Open](../evidence/live-acceptance-continuation/clipboard-supplemental-2/receipt.json) |
 | 19. Full REPLAY editing and two exports | Demonstrate | Blocked | Both full-run attempts remain blocked during provision. Adapter now checkpoints the rejected window candidate and public mismatch field names before equality; one affected injected case passed without a live run. Earlier mismatch cause remains unknown. Strict identity/cleanup preserved; further run awaits direct cap extension. | [Open](REPLAY_LIVE_RUN.md) |
-| 20. Clean archive installation and rollback | Deliver | Blocked | Existing-host exact archive setup and configuration rollback passed. Portable verifier and CI wiring uploaded in draft PR 17; final archive/fresh Windows runner remain blocked by hosted CI access and final acceptance. | [Open](ARCHIVE_INSTALL.md) |
+| 20. Clean archive installation and rollback | Deliver | In progress | Fresh hosted Windows runner passed exact archive 08d6984: locked setup, provider/MCP checks, four client configurations, exact backups, preservation, idempotence, conflicts and rollback. Final release archive and checksum publication remain open; a different archive does not inherit this pass. | [Open](ARCHIVE_INSTALL.md) |
 | 21. Final documentation and reviewable commits | Deliver | To do | Reconcile requirement-to-evidence checklist and packaging; README last; planned verification and documentation commits. | [Open](../VERSION_CONTROL.md) |
-| 22. Draft PR and required hosted CI | Deliver | Blocked | Draft PRs through 22 uploaded. Run 39992877886 at the REPLAY diagnostic checkpoint failed with zero steps; exact annotation confirms account payments/spending restrictions. No manual retry until that condition changes. | [Open](../evidence/computer-use-method/ci-replay-diagnostic-head.json) |
+| 22. Draft PR and required hosted CI | Deliver | Verified at stated scope | Draft PR 23 implementation head 701a35c passed required Windows CI run 39999545940 on PR merge 08d6984: 516 passed, five skipped, zero failed; both MCP paths and archive install passed. Public runner executes. Final source needs its own required CI; no merge or release claim. | [Open](../evidence/computer-use-method/public-ci-parallel-fixes.json) |
 
 ## Next
 
-1. Use the [owned anchor preparation](ACCEPTANCE_ANCHOR.md) for fresh typing/clipboard readiness; fully quit background Claude processes before the host test.
-2. Run unconsumed approved cases after preflight. Glow and Codex have exhausted their current supplements; the [second bounded amendment](LIVE_ACCEPTANCE_AMENDMENT_2.md) is a proposal awaiting an actual owner decision. Preserve every failure and finite ledger.
-3. Resolve current-source physical-stop proof and complete both REPLAY exports.
-4. Verify clean installation/rollback, finish documentation and commits, then open the draft PR and require hosted CI.
+1. Obtain the three direct bounded decisions in the [finish plan](GAP_CLOSURE_FINISH_PLAN.md): glow timing/budget, current-source Escape and full REPLAY. Earlier results remain unchanged.
+2. After approval, prepare only the affected work, then request fresh desktop readiness. Physical stop requires two owner Escape taps.
+3. Complete glow, current-source stop and both REPLAY exports. Reuse the completed Codex, Claude, clipboard and other compatible passing checks.
+4. Reconcile documentation and final packaging, verify the exact final archive on a fresh Windows runner, and require CI on the final source.
 
-The original five supplemental budgets were [approved](../evidence/live-acceptance-continuation/owner-decision.json); glow and Codex have now consumed both attempts. Approval is separate from typing/clipboard idle readiness. Completed compatible live work is reused.
+Public hosted CI and clean-runner archive verification passed at the recorded checkpoint; final-source and final-archive gates remain explicit. Approval is separate from desktop readiness and does not change earlier evidence.
 
 This view is generated from [gap-progress.json](gap-progress.json). It is an inspected checkpoint, not a live test monitor. Refresh it after a verified milestone with `node scripts/render-gap-progress.cjs`.
