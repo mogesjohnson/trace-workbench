@@ -1,6 +1,6 @@
 # Finish the Computer Use gap
 
-Prepared 23 October 2026 after the shutdown checkpoint. The goal is active again. This plan preserves the full scope and all earlier results. It creates no approval, claim, extra retry or passing result.
+Prepared 23 October 2026 after the shutdown checkpoint. The goal is now **blocked** pending the three amendment decisions below and restored hosted CI access; independent preparation is complete. This plan preserves the full scope and all earlier results. It creates no approval, claim, extra retry or passing result.
 
 The checkpoint is now **16 of 22 verified (73% of the declared checklist)** after the approved Claude corrective passed. This is not an estimate of remaining time, cost or feature parity. [The dashboard](GAP_CLOSURE_PROGRESS.html) and [SPEC.md](../SPEC.md) retain the authoritative scope. The amendment proposals below remain unapproved.
 
@@ -51,6 +51,8 @@ Publish readiness before input. Owner responds first, then foregrounds the exact
 Preserve both blocked full-run attempts and cleanup reconciliation. Extend existing `A4-REPLAY` to lifetime **3**, plus at most one corrective lifetime **4** after a recorded concrete diagnosis/change. A provision failure consumes the attempt, even if no TRACE input or grant was made.
 
 Before a new claim, save both independently queried candidate identities before comparison: launched PID, process creation time and session; window PID, process creation time, session and HWND. Keep the exact values in the private recovery checkpoint and publish only sanitized identities or mismatched field names. Continue to reject any mismatch before grants, recording or TRACE input. The last failed run discarded its window candidate; its precise cause remains unproved.
+
+This diagnostic preparation is now implemented in source commit `b8af9f7`. [One updated injected case](../evidence/computer-use-method/replay-identity-diagnostics-check.json) verifies candidate retention, field-only public diagnostics, rejection before grants and cleanup of the original generation for each mismatching identity field. No live attempt or budget change occurred; the proposed lifetime 3–4 extension still needs the pending direct owner decision.
 
 If identities match, continue the same attempt through all stages of [REPLAY_LIVE_RUN.md](REPLAY_LIVE_RUN.md). Require the actual fixture recording, reviewed six-second source segment, trim/callout/blur, offline audio placement, actual TRACE editor controls and completed-file playback, `fixture-demo.mp4`, `editor-walkthrough.mp4`, independent decode/visual/audio checks, grant revocation and exact owned exits. Keep the real library untouched and make no paid provider calls. No third attempt under a new folder or case name may bypass this decision.
 
