@@ -281,6 +281,25 @@ function createDeps({ privateRoot, replayRoot = REPLAY_ROOT, journalRoot = defau
       need(value?.pid === pid, 'replay_identity_unverified');
       return { pid, processCreationTime: String(value.processCreationTime), sessionId: value.session };
     },
+    async applicationIdentity(handle, launcher) {
+      // Fixed main-process query through the launch-owned debugger connection.
+      const main = await handle.evaluate(() => ({ pid: process.pid, parentPid: process.ppid, executable: process.execPath }));
+      need(Number.isInteger(main.pid) && main.pid > 0 && path.resolve(main.executable).toLowerCase() === path.resolve(executable).toLowerCase(), 'replay_application_not_owned');
+      const osMain = await common.command(['identity', String(main.pid)]);
+      const osLauncher = await common.command(['identity', String(launcher.pid)]);
+      need(osLauncher.pid === launcher.pid && String(osLauncher.processCreationTime) === launcher.processCreationTime
+        && osLauncher.session === launcher.sessionId, 'replay_launcher_identity_changed');
+      need(osMain.pid === main.pid && osMain.session === launcher.sessionId && /^\d+$/.test(String(osMain.processCreationTime)), 'replay_application_not_owned');
+      if (main.pid !== launcher.pid) {
+        const { stdout } = await tool('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
+          `Get-CimInstance Win32_Process -Filter 'ProcessId=${main.pid}' | Select-Object ProcessId,ParentProcessId,ExecutablePath | ConvertTo-Json -Compress`]);
+        const parent = JSON.parse(stdout);
+        need(main.parentPid === launcher.pid && parent.ProcessId === main.pid && parent.ParentProcessId === launcher.pid
+          && typeof parent.ExecutablePath === 'string' && path.resolve(parent.ExecutablePath).toLowerCase() === path.resolve(executable).toLowerCase()
+          && BigInt(osMain.processCreationTime) >= BigInt(launcher.processCreationTime), 'replay_application_not_owned');
+      }
+      return { pid: main.pid, processCreationTime: String(osMain.processCreationTime), sessionId: osMain.session };
+    },
     async readyApp(handle) {
       const page = await handle.firstWindow();
       await page.waitForFunction(() => typeof window.replay?.getAgentAccess === 'function', null, { timeout: 30000 });

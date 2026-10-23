@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "scope": "Read-only audit of the three actual current-source stop receipts; no repeated live input.",
+  "verifiedAt": "2026-10-23T19:28:19.564Z",
+  "results": [
+    {
+      "receipt": "evidence/live-acceptance-continuation/stop-mouse-finish-2/receipt.json",
+      "sha256": "5a42eda770063fe01379187e33f09b9435914d7ee61a0e4721ec333d5561a6ac",
+      "caseId": "A32-STOP-MOUSE",
+      "lifetimeAttempt": 3,
+      "status": "pass",
+      "physicalStop": true,
+      "cleanupMs": 242.691,
+      "cleanupConfirmed": true
+    },
+    {
+      "receipt": "evidence/live-acceptance-continuation/stop-keyboard-finish-1/receipt.json",
+      "sha256": "4d11efe52836a3bff0e8d140100867fb091aa8172793f075428c8e9d01aea4ee",
+      "caseId": "A32-STOP-KEYBOARD",
+      "lifetimeAttempt": 3,
+      "status": "pass",
+      "physicalStop": true,
+      "cleanupMs": 253.951,
+      "cleanupConfirmed": true
+    },
+    {
+      "receipt": "evidence/live-acceptance-continuation/stop-injected-finish-1/receipt.json",
+      "sha256": "bad36df25a05d592bfc198b49572e592504869e5781c2e9aadcfd44a04e3ff80",
+      "caseId": "A32-STOP-INJECTED",
+      "lifetimeAttempt": 2,
+      "status": "pass",
+      "physicalStop": false,
+      "cleanupConfirmed": true
+    }
+  ],
+  "limits": [
+    "Physical Escape proves the two actual owner taps only. Injected Escape remains separately classified.",
+    "Native source hashes match these receipts; no native executor change was made."
+  ]
+}

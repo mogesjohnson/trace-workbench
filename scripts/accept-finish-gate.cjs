@@ -19,5 +19,5 @@ async function main(args) {
   if (name === 'replay') return require('./replay-workflow-runtime.cjs').serve(options);
   return require('./accept-supervisor-stop.cjs').run({ ...options, caseName: name, audiblePrompt });
 }
-if (require.main === module) main(process.argv.slice(2)).then(value => { console.log(JSON.stringify(value, null, 2)); if (value?.status && !['pass'].includes(value.status)) process.exitCode = 1; }).catch(error => { console.error(error.code || error.message); process.exitCode = 1; });
+if (require.main === module) main(process.argv.slice(2)).then(value => { console.log(JSON.stringify(value, null, 2)); if (Number.isInteger(value)) process.exitCode = value; else if (value?.status && !['pass'].includes(value.status)) process.exitCode = 1; }).catch(error => { console.error(error.code || error.message); process.exitCode = 1; });
 module.exports = { main };
