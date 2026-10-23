@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "status": "partial",
+  "source": "Actual installed Claude CLI, version and auth status commands only",
+  "startedAt": "2026-10-23T16:46:04.393Z",
+  "completedAt": "2026-10-23T16:46:05.002Z",
+  "version": "2.1.309",
+  "executableSha256": "5441781f2b6bbd07354b4a74560ee88c68c9bf05d6db3c7e24c452c91673dc53",
+  "baseCommit": "83d882e3b826bee311691a1a52401a9471096175",
+  "commands": [["--version"], ["auth", "status"]],
+  "environment": "Existing scrubbed acceptance environment plus an absolute CLAUDE_CONFIG_DIR pointing to a fresh private temporary directory",
+  "modelSessionInvoked": false,
+  "desktopInput": false,
+  "credentialsCopied": false,
+  "historiesReadByProbe": false,
+  "isolatedAuthentication": { "loggedIn": false, "authMethod": "none", "exitCode": 1 },
+  "isolatedWrites": { "rootEntryCount": 2, "hasClientState": true },
+  "declaredRealHomeFilesByteIdentical": true,
+  "comparisonScope": [".claude.json", ".claude/settings.json", ".claude/settings.local.json", ".claude/.credentials.json"],
+  "comparisonPrivacy": "Only equality result retained publicly; no original bytes, credential fields, file digests or user paths",
+  "privateProbeDirectoryRemoved": true,
+  "notProven": [
+    "Authenticated model-host isolation",
+    "Actual Skill discovery under an isolated configuration",
+    "Preservation of all other user files or the absence of identical-byte rewrites",
+    "Complete Claude acceptance or a new live attempt"
+  ],
+  "nextRequiredAction": "Separate supported sign-in to an isolated configuration; do not copy or refresh the original credential file. Wire explicit environment selection before any corrective host attempt."
+}
