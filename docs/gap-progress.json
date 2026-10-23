@@ -2,7 +2,7 @@
   "updated": "2026-10-23",
   "title": "TRACE — close the Computer Use gap",
   "goalStatus": "active",
-  "current": "Typing recovery remains verified. Clipboard recovery was archived by owner decision without changing current contents; paste remains unfinished. REPLAY used both provision attempts and is blocked before recording/input. Focus preparation now precedes clipboard mutation. Passing checks are reused; full goal remains active.",
+  "current": "Complete actual Codex workflow passed after verified TRACE reload: exact Unicode text once, stale rejection with not_dispatched and count 0, one fresh increment to 1, stable text and exact owned cleanup. Typing recovery remains verified. Clipboard recovery resolved; paste, Claude preservation, glow, physical stop, REPLAY and final distribution/CI gates remain. No suite rerun.",
   "measurement": "Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row.",
   "checkpoints": [
     {
@@ -129,9 +129,9 @@
       "id": "16",
       "phase": "Demonstrate",
       "title": "Complete real Codex workflow",
-      "status": "active",
-      "detail": "Exact Unicode already passed. Amendment 2 approved and unclaimed. Three MCP process candidates include one older than corrected source; reconnect and prove the connected process loaded corrected files before the complete workflow.",
-      "evidence": "../evidence/live-acceptance-continuation/owner-amendment-2.json"
+      "status": "verified",
+      "detail": "Approved lifetime 5 passed through the actual reconnected Codex MCP: installed skill discovery, exact Unicode once, consumed-observation not_dispatched with count 0, one fresh counter action to 1, stable text, exact helper/fixture exits and persistent host preserved. No corrective retry needed.",
+      "evidence": "../evidence/live-acceptance-continuation/codex-amendment-2-attempt-1/receipt.json"
     },
     {
       "id": "17",

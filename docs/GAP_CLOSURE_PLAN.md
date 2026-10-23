@@ -1,16 +1,16 @@
 # TRACE gap-closure plan and progress
 
-Updated 2026-10-23. **Goal active. 13/22 checkpoints verified (59% of this checklist).**
+Updated 2026-10-23. **Goal active. 14/22 checkpoints verified (64% of this checklist).**
 
 [Open the visual dashboard](GAP_CLOSURE_PROGRESS.html) · [Detailed status](GAP_CLOSURE_STATUS.md) · [Acceptance specification](../SPEC.md)
 
 Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row. This percentage is not a completion claim for the full goal.
 
-**Current work:** Typing recovery remains verified. Clipboard recovery was archived by owner decision without changing current contents; paste remains unfinished. REPLAY used both provision attempts and is blocked before recording/input. Focus preparation now precedes clipboard mutation. Passing checks are reused; full goal remains active.
+**Current work:** Complete actual Codex workflow passed after verified TRACE reload: exact Unicode text once, stale rejection with not_dispatched and count 0, one fresh increment to 1, stable text and exact owned cleanup. Typing recovery remains verified. Clipboard recovery resolved; paste, Claude preservation, glow, physical stop, REPLAY and final distribution/CI gates remain. No suite rerun.
 
 | Verified at stated scope | In progress | To do | Blocked |
 | --- | --- | --- | --- |
-| 13 | 3 | 1 | 5 |
+| 14 | 2 | 1 | 5 |
 
 ## Plan
 
@@ -31,7 +31,7 @@ Each row is one declared checkpoint. Counts measure completed checkpoints, not t
 | 13. Glow clicks and complete lifecycle | Prove | Blocked | Reference click reached the physical edge once, all five counters 1. Full lifetime-6 case failed the strict event window; no TRACE click or full lifecycle pass. Cleanup passed; amended budget exhausted. | [Open](../evidence/live-acceptance-continuation/glow-amendment-2-attempt-2/diagnosis.json) |
 | 14. Typing quarantine acknowledgement | Prove | Verified at stated scope | Supplemental attempt 1 passed: exact abc, independent release, persistent quarantine/restart blocking, verified recovery and exactly one pinned-engine follow-up. Both fixtures closed. | [Open](../evidence/live-acceptance-continuation/typing-supplemental-1/verification.json) |
 | 15. Current-source physical-stop relevance | Prove | In progress | Historical physical Escape passes ran an earlier Session.cs that is absent from every Git object (checked 22 Oct). Needs an owner-present current-source physical stop run. | [Open](../evidence/computer-use-method/production-owner-map.json) |
-| 16. Complete real Codex workflow | Demonstrate | In progress | Exact Unicode already passed. Amendment 2 approved and unclaimed. Three MCP process candidates include one older than corrected source; reconnect and prove the connected process loaded corrected files before the complete workflow. | [Open](../evidence/live-acceptance-continuation/owner-amendment-2.json) |
+| 16. Complete real Codex workflow | Demonstrate | Verified at stated scope | Approved lifetime 5 passed through the actual reconnected Codex MCP: installed skill discovery, exact Unicode once, consumed-observation not_dispatched with count 0, one fresh counter action to 1, stable text, exact helper/fixture exits and persistent host preserved. No corrective retry needed. | [Open](../evidence/live-acceptance-continuation/codex-amendment-2-attempt-1/receipt.json) |
 | 17. Complete real Claude workflow | Demonstrate | Blocked | Actual host discovered both skills and typed exact text. Forwarding dropped dispatch proof; focused fix passed. Client-state writes still block preservation; corrective run waits for a concrete resolution. | [Open](../evidence/live-acceptance-continuation/claude-supplemental-1/receipt.json) |
 | 18. Unicode clipboard paste and restoration | Demonstrate | Blocked | Recovery archived by explicit owner decision; current contents preserved and no pending recovery. Paste remains failed before dispatch. Preparation now verifies focus before synthetic write; four affected offline cases pass. One corrective supplement remains, pending focus resolution. | [Open](../evidence/live-acceptance-continuation/clipboard-supplemental-1/archive-recovery.json) |
 | 19. Full REPLAY editing and two exports | Demonstrate | Blocked | Both full-run attempts stopped during provision before grants, recording, fixture creation or TRACE input. Visibility wait and retained-handle cleanup corrected; second run confirms cleanup but rejects process/window identity equality. Exact mismatch cause unproved; no further run authorized. | [Open](REPLAY_LIVE_RUN.md) |
