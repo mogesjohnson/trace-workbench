@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "scope": "Actual connected MCP source reload, observed before case claim and recorded after completion.",
+  "recordedAt": "2026-10-23T06:06:27.984Z",
+  "ownerAction": "User reported turning TRACE MCP off and on.",
+  "uniqueMatchingServerCount": 1,
+  "server": {
+    "pid": 19256,
+    "parentPid": 25968,
+    "createdUtc": "2026-10-23T05:58:10.2052250Z"
+  },
+  "doctor": {
+    "ready": true,
+    "recoveryRequired": false,
+    "engine": "winapp",
+    "version": "0.7.1"
+  },
+  "source": {
+    "src/computer/controller.cjs": {
+      "sha256": "4ece8dcb0d938266db8b773dac0f724e32feb723ebda78be8f6399404cd21166",
+      "lastWrittenUtc": "2026-10-22T14:38:38.1670117Z"
+    },
+    "src/computer/server.cjs": {
+      "sha256": "1c2f72ff8ad2dd9aa73e0aa5bd4f4a0c0b1f1e716b2270b0abe05b94049dee74",
+      "lastWrittenUtc": "2026-10-22T14:38:38.1790100Z"
+    }
+  },
+  "serverCreatedAfterCorrectedFiles": true,
+  "sourceHashesPinnedBeforeClaim": true,
+  "sourceIntegrityRecheckedAtFinalization": true,
+  "actualHostNodeGenerationVerifiedThroughCleanup": true
+}
