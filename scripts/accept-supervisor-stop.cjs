@@ -108,7 +108,8 @@ async function run(options = {}) {
     for (const name of ['scripts/accept-supervisor-stop.cjs', 'scripts/accept-finish-gate.cjs', 'scripts/finish-acceptance-amendment.cjs', 'scripts/accept-supervisor-quarantine.cjs', 'tests/fixtures/supervised-mcp.cjs', 'src/computer/supervisor.cjs', 'src/computer/controller.cjs', 'src/computer/server.cjs', 'src/computer/winapp-backend.cjs']) files[name] = sha256(await fs.readFile(path.join(ROOT, name)));
     receipt.testedSource = { baseCommit: (await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, windowsHide: true })).stdout.trim(), workingTreeModified: true, files };
     assert.equal((await command(['status'])).recoveryRequired, false);
-    const executable = await buildFixture(), runId = `stop-${randomUUID()}`, statePath = path.join(directory, 'fixture.json');
+    const executable = options.finishClaim ? (await require('./continuation-adapter.cjs').preparedFixture()).executable : await buildFixture();
+    const runId = `stop-${randomUUID()}`, statePath = path.join(directory, 'fixture.json');
     receipt.fixtureSha256 = sha256(await fs.readFile(executable));
     compareDisplay(await command(['display']), display);
     const child = spawn(executable, ['--run-id', runId, '--receipt', statePath, '--commands', path.join(directory, 'fixture-commands.json')], { windowsHide: false, stdio: 'ignore' });
