@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "source": "direct-owner",
+  "caseId": "METHOD-CLIPBOARD-UNICODE-PASTE",
+  "ready": true,
+  "confirmedAt": "2026-10-23T06:11:01.543Z",
+  "anchorOwnership": "run-owned-child",
+  "anchor": {
+    "id": "2623040",
+    "pid": 49416,
+    "processCreationTime": "134372093018464301",
+    "sessionId": 1
+  },
+  "ownerEvidence": {
+    "questionItemId": "[\"request_user_input_async\",\"call_78c054e91d1448de94416bf22e9ecb4e\",0]",
+    "answer": "Plain text copied; fixture foreground; input idle",
+    "timestampBasis": "Recorded immediately upon receiving the direct owner response; source message supplied no timestamp."
+  }
+}

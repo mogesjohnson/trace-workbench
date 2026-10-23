@@ -1,0 +1,219 @@
+{
+  "schemaVersion": 1,
+  "caseId": "METHOD-CLIPBOARD-UNICODE-PASTE",
+  "status": "pass",
+  "startedAt": "2026-10-23T06:13:34.244Z",
+  "snapshot": {
+    "supported": true,
+    "originalMetadataRetained": false
+  },
+  "paste": {
+    "attempted": true,
+    "requests": 1,
+    "dispatches": 1,
+    "outcome": "completed",
+    "clipboardGuardBeforeAndAfter": true
+  },
+  "cleanup": {
+    "nativeSession": {
+      "closed": true,
+      "recoveryRequired": false
+    },
+    "mcp": {
+      "closed": true,
+      "exactGenerationExitConfirmed": true,
+      "processes": [
+        {
+          "pid": 46228,
+          "parent": 5560,
+          "name": "node.exe",
+          "sessionId": 1,
+          "created": "2026-10-23T06:13:34.6168020Z",
+          "exited": true
+        },
+        {
+          "pid": 40832,
+          "parent": 46228,
+          "name": "TraceSupervisor.exe",
+          "sessionId": 1,
+          "created": "2026-10-23T06:13:36.7045540Z",
+          "exited": true
+        },
+        {
+          "pid": 28904,
+          "parent": 40832,
+          "name": "TraceActivityIndicator.exe",
+          "sessionId": 1,
+          "created": "2026-10-23T06:13:36.8779850Z",
+          "exited": true
+        }
+      ]
+    },
+    "input": {
+      "safe": true,
+      "keysReleased": true,
+      "recoveryRequired": false
+    },
+    "fixture": {
+      "exited": true
+    },
+    "ownedResourcesClosed": true,
+    "restoration": {
+      "attempted": true,
+      "inputQuiescenceAcknowledged": true,
+      "verified": true,
+      "exactSupportedBytes": true
+    },
+    "clipboard": {
+      "cleanup": "confirmed",
+      "mode": "text-only"
+    },
+    "independentSupportedBytesRestored": true,
+    "verifier": {
+      "cleanup": "confirmed",
+      "mode": "text-only"
+    },
+    "confirmed": true,
+    "privateArtifactsRemoved": true
+  },
+  "target": {
+    "windowId": "5705526",
+    "pid": 26320,
+    "processCreationTime": "134372096157282012"
+  },
+  "focus": {
+    "publicHasFocus": true,
+    "publicMatchesObservedEdit": true,
+    "independentMatches": true,
+    "textEmpty": true
+  },
+  "syntheticWrite": {
+    "attempted": true,
+    "verified": true,
+    "automaticRestoreDeferred": true,
+    "mode": "text-only"
+  },
+  "effect": {
+    "exactSyntheticText": true,
+    "countUnchanged": true
+  },
+  "completedAt": "2026-10-23T06:13:50.871Z",
+  "decisionId": "owner-supplemental-five-20261022",
+  "contract": "clipboard-supported-snapshot-v1",
+  "ownerDecision": {
+    "ref": "evidence/live-acceptance-continuation/owner-decision.json",
+    "sha256": "02c8b46faaef411a217d4965de83a0bac7e2592d792be1ad6a2e262f0aa7619a"
+  },
+  "historicalAttemptsUsed": 2,
+  "originals": [
+    {
+      "ref": "evidence/computer-use-method/clipboard/live-attempt-1/receipt.json",
+      "sha256": "07b8d79f795150e1b9c4a961c984bbc536e017426b04f2f41c446a183f92af17"
+    },
+    {
+      "ref": "evidence/computer-use-method/clipboard/live-attempt-2/receipt.json",
+      "sha256": "bc2ce5eefd62f6a90a8f87f8794ca72a1861518fa8a5e5491e651149ee003ff8"
+    }
+  ],
+  "claimId": "3c4d3d29-b6bc-4c7c-be81-c7e891d9eee2",
+  "continuationAttempt": 2,
+  "lifetimeAttemptOrdinal": 4,
+  "claimedAt": "2026-10-23T06:13:34.016Z",
+  "prior": {
+    "ref": "evidence/live-acceptance-continuation/clipboard-supplemental-1/receipt.json",
+    "sha256": "27442c5201f6ebaf8986ee05634bcfc50b52d54366578e0b619fe7438a450f0f"
+  },
+  "changedPreconditionSha256": "8f4e4cd9beb0a3416613f51c3c001898613cadda41afa5866d6284892448dce0",
+  "attempt": 4,
+  "testedSource": {
+    "baseCommit": "ed2a7202d9ef9d84797944a19f1fd0983db3ae8b",
+    "workingTreeModified": true,
+    "files": {
+      "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+      "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+      "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+      "native/TraceSupervisor/Program.cs": "c8dc9e6fd440542b624fe93850bdafb4469f72ff81ff33942e96fd3ce5697202",
+      "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+      "native/TraceSupervisor/Session.cs": "d3f7ad4a1d147c593f75912ae5f26d19d7f4de1fb397ef084c64994050e78ca1",
+      "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+      "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+      "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+      "src/computer/controller.cjs": "4ece8dcb0d938266db8b773dac0f724e32feb723ebda78be8f6399404cd21166",
+      "src/computer/server.cjs": "1c2f72ff8ad2dd9aa73e0aa5bd4f4a0c0b1f1e716b2270b0abe05b94049dee74",
+      "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5",
+      "src/computer/lease.cjs": "3600fa756bda99e15aa695731bc0e5a8f6a0893e1f7e333db4d6742ae561389b",
+      "src/computer/activity-indicator.cjs": "42de964cb8fca0f5c30a6c30f1a40173df5f072224339fef6f006ed4ffe2093b",
+      "native/TraceWindowBridge/Program.cs": "eb113326de356280bc4219b21c2b99a1553a066dd170bf9898070ea484bfab46",
+      "native/TraceActivityIndicator/Program.cs": "262b2c70d7f1f271c45d2e66bb1faf6a8d299df87274b12a57540df425645459",
+      "tests/fixtures/supervised-mcp.cjs": "eeade5db7a43d000bc4c7e6a21dac0c32c3c6b5096d1fdaae98812e0faad2399",
+      "tests/fixtures/computer-app/Program.cs": "064a750a8cba970510b45d8ea3a1102fcc2102c0882afde0a017a12e9cafbaf4",
+      "scripts/replacement-acceptance-common.cjs": "b62ca0d06d5c2b657d2373698776c44ff4ec7ae5993b2e183fa7bd3aab274b8b",
+      "scripts/accept-clipboard.cjs": "60e105b3e72f70944d61adf41f7363610c33b6c8fc010d591e5193ca89bc57e2",
+      "scripts/accept-supervisor-quarantine.cjs": "c9a2a0ff863a67f77fe03e197f94936c3f5db5a38e99018af9c5bba71a85dcb8",
+      "scripts/accept-supervisor-recovery.cjs": "5ee71bd15d0f744e0c7a6d21fc472871bc79de82ea4e16f821fceb577319bdf3",
+      "scripts/smoke-computer-live.cjs": "6327ec795cd0a9fba6e34fd0834653c0e200578dcb8873e3eb75fbaf35330f56",
+      "package.json": "e1d70360323c23bd769018345221d304ddcf6969989b9c31535fed1f53637f78",
+      "package-lock.json": "e6a7b9932ff2169daa29da61bec38f1439bf95d3a19ea728041d523f69630dda",
+      "native/TraceClipboard/TraceClipboard.csproj": "d8f8afbfc5799ba4136b06372e31276c67130736f9a2f5e1c325ce43848a419b",
+      "native/TraceClipboard/Program.cs": "9a25c528383dd64c9e3531d1c81e920bae5ef5b2524f70356bf60c6aba7849c1",
+      "native/TraceClipboard/ClipboardService.cs": "f4478e397e6ca3f4ec73c89ffb45daa30183216f61222100c9788e68652b6621",
+      "native/TraceClipboard/Win32Clipboard.cs": "6c71d6d9ef074fb89dce083e503d5ccdab443ebdbc07755007a4ffea6004f065",
+      "native/TraceClipboard/SelfTests.cs": "25e9ab73a094f7b2698a5fa91e80fa14bf4719a43c32097acc2ca280f05bc49d",
+      "src/method/clipboard-provider.cjs": "aed186b84f2d1d43f37d4cbf35eeee12768327a719265122bb6ac78fe3b4a926",
+      "bin/trace.cjs": "fc954e4462621132997ece0d16ee0b7a8f2a986e23c761c1462af5cca5193433",
+      "tests/fixtures/computer-app/TraceComputerFixture.csproj": "6eeb0a93b1ad0b73993fbb70bb248746f147ebd7b6731c50eaf889595439a793",
+      "scripts/continuation-adapter.cjs": "e7d323273febdb31fb7a52e13b11391ac9aa238677a024da0db553e3ac416cb2",
+      "scripts/live-acceptance-continuation.cjs": "e17f97c51ebe126fd7e6aa53bb52726231d14d02ebebceafb0d85b7844924680"
+    },
+    "runtimeOutputs": {
+      "supervisor/manifest": "e1e05692467ea0695bbe145b4c2cf1d9ec0786d0d1d33c4d6a39ddfbcb1c74e4",
+      "supervisor/TraceSupervisor.exe": "9e580841116ca6f8f677a39788e85ecac9dc107e9fb3df519463f8382b8c7cc1",
+      "supervisor/TraceSupervisor.dll": "9bce63bc8b9c823718c9616e593fdd6d897801931e38a3d4b5114a5359b68f5f",
+      "supervisor/TraceSupervisor.runtimeconfig.json": "e3a9d5d0a25ca066e8b70401b5869b5cfc92d16f5fe89b83077cdfd4b7427711",
+      "supervisor/TraceSupervisor.deps.json": "76ddcc9c579e2eda252af9050184d9d9776721a81c9dc2a7231289754bb3b277",
+      "activity-indicator/manifest": "ceb74fbc18083f9ddfd3f3e303908bef7a14d3568f8544c60f023c2059dac371",
+      "activity-indicator/TraceActivityIndicator.exe": "ee65a6e3f40dfb4e813d0c2d683deebf1b405a9b0a669375b6b29d8474c1e753",
+      "activity-indicator/TraceActivityIndicator.dll": "417043ab4bd967a61ee584504b4a7fce5f70da880e38569a99818916e985f446",
+      "activity-indicator/TraceActivityIndicator.runtimeconfig.json": "05917b409d59af31bc8d3021bc06302a0c21c7d05b449603d6cc9f0301a2b66c",
+      "activity-indicator/TraceActivityIndicator.deps.json": "d68bf6e29a3d165d67538b82f3be1dde2f95ddeb01547a1df8005b1cd7938d67",
+      "window-bridge/manifest": "115d2fa7dd544c00bb13f74e828bb01acba3131c05b40247f81eac20e4fff169",
+      "window-bridge/TraceWindowBridge.exe": "946996cdfdaae749b924a7985f60769bb5a433cae67e8ca26e296f502b81fdc8",
+      "window-bridge/TraceWindowBridge.dll": "f22cd3b3ac29e7424cb39aa9e67817be7b73d743329fea8dccd54826113f3b33",
+      "window-bridge/TraceWindowBridge.runtimeconfig.json": "e3a9d5d0a25ca066e8b70401b5869b5cfc92d16f5fe89b83077cdfd4b7427711",
+      "window-bridge/TraceWindowBridge.deps.json": "6f31a47aa2c51378901d4d91d9e3874203a1cd07081bfb1fe7e583e59ceee122",
+      "pinned-engine/winapp.exe": "bf29f665ab4a030f20cd34a9121276301871ee89fd9c13118c7221563858d692",
+      "pinned-engine/libHarfBuzzSharp.dll": "7ddabbcb6f631b08bf7ffd88df53cf4f3aca58ce41e4d44896d80ea4099dd384",
+      "pinned-engine/libSkiaSharp.dll": "016d87c41463f6fabd55baa41bda5b699491e0c4ec64b816bc3f1621b4049c1b",
+      "clipboard/manifest": "6e7402824318ea2ae82fc89fca480e87f78af621a2e539c7158df917394aba37",
+      "clipboard/TraceClipboard.exe": "e0e5a03f64a98962ba4dbbe02f4d26c1dc43ad7467c700092d40a91517bd21b4",
+      "clipboard/TraceClipboard.dll": "fd50eeef30805a7c2dde83c6c39199fa8f4ea4d262ca0c65ea4461f8cac28ed4",
+      "clipboard/TraceClipboard.runtimeconfig.json": "e3a9d5d0a25ca066e8b70401b5869b5cfc92d16f5fe89b83077cdfd4b7427711",
+      "clipboard/TraceClipboard.deps.json": "d3157afa636d8d79e9ae368828538444ac321ee51d626456799ad2592d5bf727"
+    },
+    "fixtureSha256": "e861021c8d4caeb46ceaec3bd4c08f5d241c828dcaeef90007621457ca4110fb",
+    "preparedFixtureManifestSha256": "4c346033983f71468fe0e649f7e5cc09b70b128dd3eced7b88fe4d607d9ff1f4",
+    "fixtureDllSha256": "37b950e572492704aae304b58eb677dcf5c444255e14b9ece9799636c2fde126"
+  },
+  "runtime": {
+    "node": "v26.2.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "sourceUnchangedThroughCleanup": true
+}

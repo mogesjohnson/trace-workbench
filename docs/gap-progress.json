@@ -1,8 +1,8 @@
 {
   "updated": "2026-10-23",
   "title": "TRACE — close the Computer Use gap",
-  "goalStatus": "active",
-  "current": "Complete actual Codex workflow passed after verified TRACE reload: exact Unicode text once, stale rejection with not_dispatched and count 0, one fresh increment to 1, stable text and exact owned cleanup. Typing recovery remains verified. Clipboard recovery resolved; paste, Claude preservation, glow, physical stop, REPLAY and final distribution/CI gates remain. No suite rerun.",
+  "goalStatus": "paused",
+  "current": "Owner requested a shutdown stopping point. Complete Codex workflow and Unicode clipboard paste/restoration passed; all owned fixtures, anchors and native helpers exited. Compatible earlier passes stand. Remaining work: glow, physical stop, Claude preservation, full REPLAY, final distribution and CI. Resume from saved evidence; no passing-case reruns.",
   "measurement": "Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row.",
   "checkpoints": [
     {
@@ -145,9 +145,9 @@
       "id": "18",
       "phase": "Demonstrate",
       "title": "Unicode clipboard paste and restoration",
-      "status": "blocked",
-      "detail": "Recovery archived by explicit owner decision; current contents preserved and no pending recovery. Paste remains failed before dispatch. Preparation now verifies focus before synthetic write; four affected offline cases pass. One corrective supplement remains, pending focus resolution.",
-      "evidence": "../evidence/live-acceptance-continuation/clipboard-supplemental-1/archive-recovery.json"
+      "status": "verified",
+      "detail": "Approved corrective supplement passed: public/independent fresh focus, one completed Unicode paste, exact target text and unchanged count, guarded restoration plus fresh supported-byte comparison, exact native/fixture exits and private-artifact cleanup. Ordinary anchor explicitly closed.",
+      "evidence": "../evidence/live-acceptance-continuation/clipboard-supplemental-2/receipt.json"
     },
     {
       "id": "19",

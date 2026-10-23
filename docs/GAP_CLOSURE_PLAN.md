@@ -1,16 +1,16 @@
 # TRACE gap-closure plan and progress
 
-Updated 2026-10-23. **Goal active. 14/22 checkpoints verified (64% of this checklist).**
+Updated 2026-10-23. **Goal paused. 15/22 checkpoints verified (68% of this checklist).**
 
 [Open the visual dashboard](GAP_CLOSURE_PROGRESS.html) · [Detailed status](GAP_CLOSURE_STATUS.md) · [Acceptance specification](../SPEC.md)
 
 Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row. This percentage is not a completion claim for the full goal.
 
-**Current work:** Complete actual Codex workflow passed after verified TRACE reload: exact Unicode text once, stale rejection with not_dispatched and count 0, one fresh increment to 1, stable text and exact owned cleanup. Typing recovery remains verified. Clipboard recovery resolved; paste, Claude preservation, glow, physical stop, REPLAY and final distribution/CI gates remain. No suite rerun.
+**Current work:** Owner requested a shutdown stopping point. Complete Codex workflow and Unicode clipboard paste/restoration passed; all owned fixtures, anchors and native helpers exited. Compatible earlier passes stand. Remaining work: glow, physical stop, Claude preservation, full REPLAY, final distribution and CI. Resume from saved evidence; no passing-case reruns.
 
 | Verified at stated scope | In progress | To do | Blocked |
 | --- | --- | --- | --- |
-| 14 | 2 | 1 | 5 |
+| 15 | 2 | 1 | 4 |
 
 ## Plan
 
@@ -33,7 +33,7 @@ Each row is one declared checkpoint. Counts measure completed checkpoints, not t
 | 15. Current-source physical-stop relevance | Prove | In progress | Historical physical Escape passes ran an earlier Session.cs that is absent from every Git object (checked 22 Oct). Needs an owner-present current-source physical stop run. | [Open](../evidence/computer-use-method/production-owner-map.json) |
 | 16. Complete real Codex workflow | Demonstrate | Verified at stated scope | Approved lifetime 5 passed through the actual reconnected Codex MCP: installed skill discovery, exact Unicode once, consumed-observation not_dispatched with count 0, one fresh counter action to 1, stable text, exact helper/fixture exits and persistent host preserved. No corrective retry needed. | [Open](../evidence/live-acceptance-continuation/codex-amendment-2-attempt-1/receipt.json) |
 | 17. Complete real Claude workflow | Demonstrate | Blocked | Actual host discovered both skills and typed exact text. Forwarding dropped dispatch proof; focused fix passed. Client-state writes still block preservation; corrective run waits for a concrete resolution. | [Open](../evidence/live-acceptance-continuation/claude-supplemental-1/receipt.json) |
-| 18. Unicode clipboard paste and restoration | Demonstrate | Blocked | Recovery archived by explicit owner decision; current contents preserved and no pending recovery. Paste remains failed before dispatch. Preparation now verifies focus before synthetic write; four affected offline cases pass. One corrective supplement remains, pending focus resolution. | [Open](../evidence/live-acceptance-continuation/clipboard-supplemental-1/archive-recovery.json) |
+| 18. Unicode clipboard paste and restoration | Demonstrate | Verified at stated scope | Approved corrective supplement passed: public/independent fresh focus, one completed Unicode paste, exact target text and unchanged count, guarded restoration plus fresh supported-byte comparison, exact native/fixture exits and private-artifact cleanup. Ordinary anchor explicitly closed. | [Open](../evidence/live-acceptance-continuation/clipboard-supplemental-2/receipt.json) |
 | 19. Full REPLAY editing and two exports | Demonstrate | Blocked | Both full-run attempts stopped during provision before grants, recording, fixture creation or TRACE input. Visibility wait and retained-handle cleanup corrected; second run confirms cleanup but rejects process/window identity equality. Exact mismatch cause unproved; no further run authorized. | [Open](REPLAY_LIVE_RUN.md) |
 | 20. Clean archive installation and rollback | Deliver | In progress | Existing-host exact archive setup and configuration rollback passed. Portable verifier and CI wiring uploaded in draft PR 17; fresh Windows runner and final archive remain. | [Open](ARCHIVE_INSTALL.md) |
 | 21. Final documentation and reviewable commits | Deliver | To do | Reconcile requirement-to-evidence checklist and packaging; README last; planned verification and documentation commits. | [Open](../VERSION_CONTROL.md) |

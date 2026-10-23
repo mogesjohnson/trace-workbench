@@ -44,6 +44,35 @@
       "continuationAttempt": 1,
       "lifetimeAttemptOrdinal": 3,
       "claimedAt": "2026-10-23T05:12:32.778Z"
+    },
+    {
+      "decisionId": "owner-supplemental-five-20261022",
+      "caseId": "METHOD-CLIPBOARD-UNICODE-PASTE",
+      "contract": "clipboard-supported-snapshot-v1",
+      "ownerDecision": {
+        "ref": "evidence/live-acceptance-continuation/owner-decision.json",
+        "sha256": "02c8b46faaef411a217d4965de83a0bac7e2592d792be1ad6a2e262f0aa7619a"
+      },
+      "historicalAttemptsUsed": 2,
+      "originals": [
+        {
+          "ref": "evidence/computer-use-method/clipboard/live-attempt-1/receipt.json",
+          "sha256": "07b8d79f795150e1b9c4a961c984bbc536e017426b04f2f41c446a183f92af17"
+        },
+        {
+          "ref": "evidence/computer-use-method/clipboard/live-attempt-2/receipt.json",
+          "sha256": "bc2ce5eefd62f6a90a8f87f8794ca72a1861518fa8a5e5491e651149ee003ff8"
+        }
+      ],
+      "claimId": "3c4d3d29-b6bc-4c7c-be81-c7e891d9eee2",
+      "continuationAttempt": 2,
+      "lifetimeAttemptOrdinal": 4,
+      "claimedAt": "2026-10-23T06:13:34.016Z",
+      "prior": {
+        "ref": "evidence/live-acceptance-continuation/clipboard-supplemental-1/receipt.json",
+        "sha256": "27442c5201f6ebaf8986ee05634bcfc50b52d54366578e0b619fe7438a450f0f"
+      },
+      "changedPreconditionSha256": "8f4e4cd9beb0a3416613f51c3c001898613cadda41afa5866d6284892448dce0"
     }
   ]
 }

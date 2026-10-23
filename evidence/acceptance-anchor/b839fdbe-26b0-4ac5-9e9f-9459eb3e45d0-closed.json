@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "caseId": "METHOD-CLIPBOARD-UNICODE-PASTE",
+  "status": "closed",
+  "source": "actual-retained-anchor-owner",
+  "recordedAt": "2026-10-23T06:16:38.366Z",
+  "anchor": {
+    "id": "2623040",
+    "pid": 49416,
+    "processCreationTime": "134372093018464301",
+    "sessionId": 1
+  },
+  "ownerProcessExited": true,
+  "ownerExitCode": 0,
+  "downstreamReceipt": {
+    "ref": "evidence/live-acceptance-continuation/clipboard-supplemental-2/receipt.json",
+    "sha256": "5ada790164fc69f1b9419a8ff49d04e9ffb093f9a60f5afb9d5f72262ce7ccc3"
+  },
+  "cleanup": "Explicit close accepted after independent downstream exit, exact anchor identity, all-up input, clear recovery and free lease checks."
+}
