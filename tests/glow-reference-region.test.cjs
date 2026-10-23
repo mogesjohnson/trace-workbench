@@ -32,6 +32,24 @@ function evidence() {
 }
 const rejected = value => assert.throws(() => assertReferenceRegion(value), { code: 'glow_reference_region_invalid' });
 
+test('approved settlement keeps actual resolution and enforces the 1000 ms bound without changing the historical oracle', () => {
+  const make = elapsed => { const value = evidence(); value.proof.toolStartedAt = value.proof.startedAt; value.proof.toolResolvedAt = value.proof.completedAt;
+    value.finalFixture.lastMouseUp.atUtc = at(1507); value.finalFixture.sampledAt = at(1500 + elapsed);
+    value.finalInput.sampledAt = at(1501 + elapsed); value.checkedAt = at(1502 + elapsed); return value; };
+  rejected(make(100));
+  for (const elapsed of [100, 999, 1000]) {
+    const value = make(elapsed), result = assertReferenceRegion({ ...value, settlementMaximumMs: 1000 });
+    assert.equal(result.toolResolvedAt, at(1500)); assert.equal(result.settlementObservedAt, at(1500 + elapsed));
+    assert.equal(result.timingContract, 'owner-approved-settlement-v2');
+  }
+  for (const change of [v => { v.finalFixture.sampledAt = at(2501); v.finalInput.sampledAt = at(2502); v.checkedAt = at(2503); },
+    v => { v.proof.toolResolvedAt = at(1507); }, v => { v.finalFixture.mouseClickCount = 2; },
+    v => { v.finalFixture.lastMouseUp.atUtc = at(1700); }]) {
+    const value = make(100); change(value);
+    assert.throws(() => assertReferenceRegion({ ...value, settlementMaximumMs: 1000 }), { code: 'glow_reference_region_invalid' });
+  }
+});
+
 test('prospective point x=5 can pass only with complete new physical evidence, without a center rule or private output', () => {
   const value = evidence(); assert.equal(validateCheckpoint(value.checkpoint, value.checkedAt), true);
   assert.equal(MAX_CHECKPOINT_MS, 60000);

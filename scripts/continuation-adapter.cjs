@@ -44,6 +44,7 @@ async function evidence(ref, root = ROOT) {
   return { descriptor: { ref, sha256: book.digest(bytes) }, value: JSON.parse(bytes.toString('utf8')) };
 }
 async function claimRequest(input, caseId, { root = ROOT } = {}) {
+  if (input.amendment === 3) return require('./finish-acceptance-amendment.cjs').request(input, caseId, { root });
   const selected = options(input, caseId), decision = await evidence(selected.decisionRef, root);
   book.validateDecision(decision.value, caseId, selected.contract, selected.amendment);
   const amended = selected.amendment === 2;

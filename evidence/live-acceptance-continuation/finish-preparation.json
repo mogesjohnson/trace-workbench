@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "scope": "Approved finish amendment bookkeeping and prospective glow settlement boundary; no desktop input or live claim",
+  "status": "pass",
+  "decision": "evidence/live-acceptance-continuation/owner-finish-decision.json",
+  "checks": {
+    "focusedBoundaryAndAffectedAdapterCases": 17,
+    "failedAtCompletion": 0,
+    "initialFailure": "An existing planning test expected amendment 3 to be unsupported; its expectation was updated for the actual new direct approval and the affected case passed.",
+    "sourceChecksJavaScriptFiles": 99,
+    "nativeExecutorChanged": false,
+    "glowFixtureSourceOutputVerified": true,
+    "computerFixturePrepared": true,
+    "connectedTraceDoctorReady": true,
+    "recoveryRequired": false
+  },
+  "liveClaims": 0,
+  "desktopReadiness": "Still required before live work",
+  "limits": ["Pure and injected checks do not establish live acceptance.", "All original history is preserved; first extension claims append to canonical case ledgers, with exactly one corrective retry after a changed precondition."]
+}

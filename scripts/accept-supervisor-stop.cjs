@@ -24,7 +24,7 @@ const isAccess = code => /^(?:input_busy|desktop_busy|display_mismatch|input_des
 function plan(options = {}) {
   const selected = options.caseName || 'mouse';
   if (!CASES.includes(selected)) throw new Error('Select mouse, keyboard or injected.');
-  return { schemaVersion: 1, caseId: `A32-STOP-${selected.toUpperCase()}`, caseName: selected, attempt: options.attempt ?? 1,
+  return { schemaVersion: 1, caseId: `A32-STOP-${selected.toUpperCase()}`, caseName: selected, attempt: options.finishClaim?.lifetimeAttemptOrdinal ?? options.attempt ?? 1,
     declaredBeforeUiLaunch: true,
     ...(options.prior ? { prior: path.relative(ROOT, path.resolve(options.prior)).replaceAll(path.sep, '/'), changedPrecondition: options.change } : {}),
     display: options.pinnedDisplay ?? 'Actual single-monitor device/bounds/DPI pinned at live preflight.',
@@ -92,7 +92,7 @@ async function run(options = {}) {
   options = { mode: 'plan', caseName: 'mouse', attempt: 1, ...options };
   if (options.mode === 'plan') return plan(options);
   const display = validateDisplay(await command(['display'])), declared = plan({ ...options, pinnedDisplay: display });
-  if (options.attempt === 2) {
+  if (options.attempt === 2 && !options.finishClaim) {
     const previous = JSON.parse(await fs.readFile(path.join(path.resolve(options.prior), 'receipt.json'), 'utf8'));
     assert.equal(previous.caseId, declared.caseId); assert.equal(previous.attempt, 1); assert.ok(['fail', 'blocked'].includes(previous.status));
   }
@@ -104,7 +104,8 @@ async function run(options = {}) {
   let fixture, connection, abort, controlled, pendingOutcome;
   try {
     const files = await supervisorSourceHashes();
-    for (const name of ['scripts/accept-supervisor-stop.cjs', 'scripts/accept-supervisor-quarantine.cjs', 'tests/fixtures/supervised-mcp.cjs', 'src/computer/supervisor.cjs', 'src/computer/controller.cjs', 'src/computer/server.cjs', 'src/computer/winapp-backend.cjs']) files[name] = sha256(await fs.readFile(path.join(ROOT, name)));
+    if (options.finishClaim) Object.assign(receipt, await require('./finish-acceptance-amendment.cjs').claim(options.finishClaim));
+    for (const name of ['scripts/accept-supervisor-stop.cjs', 'scripts/accept-finish-gate.cjs', 'scripts/finish-acceptance-amendment.cjs', 'scripts/accept-supervisor-quarantine.cjs', 'tests/fixtures/supervised-mcp.cjs', 'src/computer/supervisor.cjs', 'src/computer/controller.cjs', 'src/computer/server.cjs', 'src/computer/winapp-backend.cjs']) files[name] = sha256(await fs.readFile(path.join(ROOT, name)));
     receipt.testedSource = { baseCommit: (await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, windowsHide: true })).stdout.trim(), workingTreeModified: true, files };
     assert.equal((await command(['status'])).recoveryRequired, false);
     const executable = await buildFixture(), runId = `stop-${randomUUID()}`, statePath = path.join(directory, 'fixture.json');

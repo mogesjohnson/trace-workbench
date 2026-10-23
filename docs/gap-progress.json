@@ -2,7 +2,7 @@
   "updated": "2026-10-23",
   "title": "TRACE — close the Computer Use gap",
   "goalStatus": "active",
-  "current": "Resumed 23 October. Public Windows CI passed for implementation head 701a35c (PR merge 08d6984): 516 checks passed, five skipped, zero failed, both MCP paths and exact-archive install/rollback passed. Progress is 17/22 scoped checkpoints (77%); five remain. Glow, current-source Escape and REPLAY amendments await direct owner decisions. Final-archive verification and final review remain open. No desktop test is running.",
+  "current": "Owner approved all three bounded finish amendments. Their exact decision, histories and budgets are pinned. Affected harness preparation passed; no native executor change. Next: fresh owner readiness, glow and physical stop, then full REPLAY. Compatible passes remain reused. Current checklist: 17/22 verified (77%); final archive and reconciliation remain open.",
   "measurement": "Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row.",
   "checkpoints": [
     {
@@ -105,8 +105,8 @@
       "id": "13",
       "phase": "Prove",
       "title": "Glow clicks and complete lifecycle",
-      "status": "blocked",
-      "detail": "Reference click reached the physical edge once, all five counters 1. Full lifetime-6 case failed the strict event window; no TRACE click or full lifecycle pass. Cleanup passed; amended budget exhausted.",
+      "status": "active",
+      "detail": "Reference click reached the physical edge once, all five counters 1. Full lifetime-6 case failed the strict event window; no TRACE click or full lifecycle pass. Cleanup passed; amended budget exhausted. Owner approved the finite finish amendment; actual new live evidence is pending.",
       "evidence": "../evidence/live-acceptance-continuation/glow-amendment-2-attempt-2/diagnosis.json"
     },
     {
@@ -121,8 +121,8 @@
       "id": "15",
       "phase": "Prove",
       "title": "Current-source physical-stop relevance",
-      "status": "blocked",
-      "detail": "Historical physical Escape passes ran an earlier Session.cs that is absent from every Git object (checked 22 Oct). Needs an owner-present current-source physical stop run.",
+      "status": "active",
+      "detail": "Historical physical Escape passes ran an earlier Session.cs that is absent from every Git object (checked 22 Oct). Needs an owner-present current-source physical stop run. Owner approved the finite finish amendment; actual new live evidence is pending.",
       "evidence": "../evidence/computer-use-method/production-owner-map.json"
     },
     {
@@ -153,8 +153,8 @@
       "id": "19",
       "phase": "Demonstrate",
       "title": "Full REPLAY editing and two exports",
-      "status": "blocked",
-      "detail": "Both full-run attempts remain blocked during provision. Adapter now checkpoints the rejected window candidate and public mismatch field names before equality; one affected injected case passed without a live run. Earlier mismatch cause remains unknown. Strict identity/cleanup preserved; further run awaits direct cap extension.",
+      "status": "active",
+      "detail": "Both full-run attempts remain blocked during provision. Adapter now checkpoints the rejected window candidate and public mismatch field names before equality; one affected injected case passed without a live run. Earlier mismatch cause remains unknown. Strict identity/cleanup preserved; further run awaits direct cap extension. Owner approved the finite finish amendment; actual new live evidence is pending.",
       "evidence": "REPLAY_LIVE_RUN.md"
     },
     {
