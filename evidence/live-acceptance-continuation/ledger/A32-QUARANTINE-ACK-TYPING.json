@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "selection": {
+    "decisionId": "owner-supplemental-five-20261022",
+    "caseId": "A32-QUARANTINE-ACK-TYPING",
+    "contract": "typing-ack-idle-anchor-v1",
+    "ownerDecision": {
+      "ref": "evidence/live-acceptance-continuation/owner-decision.json",
+      "sha256": "02c8b46faaef411a217d4965de83a0bac7e2592d792be1ad6a2e262f0aa7619a"
+    },
+    "historicalAttemptsUsed": 2,
+    "originals": [
+      {
+        "ref": "evidence/0.1.0-alpha.3.2/quarantine-ack-typing/receipt.json",
+        "sha256": "0935c5d335bbd808261e66caf2a2bcb54f881b86232b22a88703390403c0d8ad"
+      },
+      {
+        "ref": "evidence/0.1.0-alpha.3.2/quarantine-ack-typing-attempt-2/receipt.json",
+        "sha256": "1e323a378613c64750fd973471175e4f7083123e4c4b3aa560b0e0743bda1bb6"
+      }
+    ]
+  },
+  "claims": [
+    {
+      "decisionId": "owner-supplemental-five-20261022",
+      "caseId": "A32-QUARANTINE-ACK-TYPING",
+      "contract": "typing-ack-idle-anchor-v1",
+      "ownerDecision": {
+        "ref": "evidence/live-acceptance-continuation/owner-decision.json",
+        "sha256": "02c8b46faaef411a217d4965de83a0bac7e2592d792be1ad6a2e262f0aa7619a"
+      },
+      "historicalAttemptsUsed": 2,
+      "originals": [
+        {
+          "ref": "evidence/0.1.0-alpha.3.2/quarantine-ack-typing/receipt.json",
+          "sha256": "0935c5d335bbd808261e66caf2a2bcb54f881b86232b22a88703390403c0d8ad"
+        },
+        {
+          "ref": "evidence/0.1.0-alpha.3.2/quarantine-ack-typing-attempt-2/receipt.json",
+          "sha256": "1e323a378613c64750fd973471175e4f7083123e4c4b3aa560b0e0743bda1bb6"
+        }
+      ],
+      "claimId": "7d821508-78b9-4fdf-9353-738eb5223863",
+      "continuationAttempt": 1,
+      "lifetimeAttemptOrdinal": 3,
+      "claimedAt": "2026-10-23T05:09:38.642Z"
+    }
+  ]
+}

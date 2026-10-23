@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "source": "independent-native-cleanup",
+  "caseId": "A32-QUARANTINE-ACK-TYPING",
+  "anchor": {
+    "id": "31917988",
+    "pid": 47776,
+    "processCreationTime": "134372057350830878",
+    "sessionId": 1
+  },
+  "verifiedAt": "2026-10-23T05:10:57.802Z",
+  "nativeRequestsSettled": true,
+  "downstreamStarted": true,
+  "receiptRef": "evidence/live-acceptance-continuation/typing-supplemental-1/receipt.json",
+  "ownedProcesses": [
+    {
+      "pid": 53772,
+      "created": "2026-10-23T05:09:39.1062980Z",
+      "sessionId": 1
+    },
+    {
+      "pid": 20532,
+      "created": "2026-10-23T05:09:40.4124620Z",
+      "sessionId": 1
+    },
+    {
+      "pid": 37360,
+      "created": "2026-10-23T05:09:40.5746090Z",
+      "sessionId": 1
+    },
+    {
+      "pid": 54276,
+      "created": "2026-10-23T05:09:52.021Z",
+      "sessionId": 1
+    },
+    {
+      "pid": 4076,
+      "created": "2026-10-23T05:09:57.8066880Z",
+      "sessionId": 1
+    },
+    {
+      "pid": 34496,
+      "created": "2026-10-23T05:09:59.1153750Z",
+      "sessionId": 1
+    },
+    {
+      "pid": 17996,
+      "created": "2026-10-23T05:09:59.2766360Z",
+      "sessionId": 1
+    },
+    {
+      "pid": 16508,
+      "created": "2026-10-23T05:09:38.832Z",
+      "sessionId": 1
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "ownerId": "a939b3e3-c1ad-47ea-9a49-a04339b45213",
+  "caseId": "A32-QUARANTINE-ACK-TYPING",
+  "scope": "Cleanup of obsolete preparation owner only; no downstream case started from this anchor",
+  "originalFixturePid": 37020,
+  "recordedAt": "2026-10-23T05:19:47.6150960+00:00",
+  "ownerCreated": "2026-10-22T21:28:56.7298620Z",
+  "exactOwnerHandleExit": true,
+  "schemaVersion": 1,
+  "method": "Retained OS process handle after fresh image, command, creation and child-absence checks",
+  "originalFixtureAbsent": true,
+  "remainingOwnedChildren": 0,
+  "ownerPid": 53636
+}

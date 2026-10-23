@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "selection": {
+    "decisionId": "owner-supplemental-five-20261022",
+    "caseId": "CLAUDE-TRACE-SKILL-NATIVE",
+    "contract": "claude-queued-host-settings-v1",
+    "ownerDecision": {
+      "ref": "evidence/live-acceptance-continuation/owner-decision.json",
+      "sha256": "02c8b46faaef411a217d4965de83a0bac7e2592d792be1ad6a2e262f0aa7619a"
+    },
+    "historicalAttemptsUsed": 2,
+    "originals": [
+      {
+        "ref": "evidence/computer-use-method/claude-host-attempt-1/receipt.json",
+        "sha256": "aa724fd9fcb831b6ba2aaa5f133e142f79bfdabd92bb0e0f607ea3d5c221fbb1"
+      },
+      {
+        "ref": "evidence/computer-use-method/claude-host-attempt-2/receipt.json",
+        "sha256": "c866366f12bf2aab0f2d877ea7c41c16d6726e5926e9d18a3d0edafb555887e5"
+      }
+    ]
+  },
+  "claims": [
+    {
+      "decisionId": "owner-supplemental-five-20261022",
+      "caseId": "CLAUDE-TRACE-SKILL-NATIVE",
+      "contract": "claude-queued-host-settings-v1",
+      "ownerDecision": {
+        "ref": "evidence/live-acceptance-continuation/owner-decision.json",
+        "sha256": "02c8b46faaef411a217d4965de83a0bac7e2592d792be1ad6a2e262f0aa7619a"
+      },
+      "historicalAttemptsUsed": 2,
+      "originals": [
+        {
+          "ref": "evidence/computer-use-method/claude-host-attempt-1/receipt.json",
+          "sha256": "aa724fd9fcb831b6ba2aaa5f133e142f79bfdabd92bb0e0f607ea3d5c221fbb1"
+        },
+        {
+          "ref": "evidence/computer-use-method/claude-host-attempt-2/receipt.json",
+          "sha256": "c866366f12bf2aab0f2d877ea7c41c16d6726e5926e9d18a3d0edafb555887e5"
+        }
+      ],
+      "claimId": "bc1eb47d-a576-497e-a2e8-5a5d19965717",
+      "continuationAttempt": 1,
+      "lifetimeAttemptOrdinal": 3,
+      "claimedAt": "2026-10-23T04:59:04.154Z"
+    }
+  ]
+}
