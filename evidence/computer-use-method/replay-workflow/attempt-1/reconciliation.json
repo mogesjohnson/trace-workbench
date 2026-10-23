@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A4-REPLAY",
+  "status": "blocked",
+  "scope": "Read-only cleanup reconciliation and prospective correction; no full workflow pass.",
+  "originalReceiptSha256": "b2aba9fa7a2113ef50ad2b5538106c94147973ce785f8681cdf9f815b9c70bec",
+  "recordedAt": "2026-10-23T05:36:20.250Z",
+  "cleanup": {
+    "exactMainProcess": {
+      "pid": 26792,
+      "processCreationTime": "134372070506487014",
+      "sessionId": 1,
+      "exited": true
+    },
+    "grantsCreated": 0,
+    "requestsDispatched": 0,
+    "recordingsStarted": 0,
+    "traceInputActions": 0
+  },
+  "correction": {
+    "description": "Wait up to ten seconds for exactly one visible editor window after preload readiness; retain the actual ChildProcess before readiness and through Electron connection teardown.",
+    "files": {
+      "scripts/accept-replay-workflow.cjs": "0697443303b0ba829dafb275b20c55aa9c47e8f085575154e30d707d8b5a4799",
+      "scripts/replay-workflow-runtime.cjs": "0ac71e13c155edb039a8150b3f8c2062b72a5c7f57f2a9776f077092879e243f",
+      "tests/accept-replay-workflow.test.cjs": "3bde24a3786d78a1c4ac8d6e2f20c59da0d6f51b244c2402ab19cdbbb7cb1e49"
+    },
+    "focusedCheck": {
+      "command": "node --test --test-name-pattern=\"cleanup is idempotent\" tests/accept-replay-workflow.test.cjs",
+      "tests": 1,
+      "passed": 1
+    }
+  }
+}

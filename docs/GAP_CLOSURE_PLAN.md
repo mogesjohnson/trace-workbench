@@ -6,11 +6,11 @@ Updated 2026-10-23. **Goal active. 13/22 checkpoints verified (59% of this check
 
 Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row. This percentage is not a completion claim for the full goal.
 
-**Current work:** Typing quarantine acknowledgement passed with exact text, durable recovery and one follow-up; its ordinary anchor is closed. Passed checks are reused. Glow amended budget is exhausted after a reference click timing-proof failure; no TRACE click/lifecycle pass. Claude discovered both skills and typed correctly; forwarding fix is checked, client-state preservation remains unresolved. Clipboard failed before paste; native cleanup reconciled, changed contents preserved and protected recovery pending. Archive verifier is uploaded as draft PR 17. Full goal remains active.
+**Current work:** Typing recovery remains verified. Clipboard recovery was archived by owner decision without changing current contents; paste remains unfinished. REPLAY used both provision attempts and is blocked before recording/input. Focus preparation now precedes clipboard mutation. Passing checks are reused; full goal remains active.
 
 | Verified at stated scope | In progress | To do | Blocked |
 | --- | --- | --- | --- |
-| 13 | 4 | 1 | 4 |
+| 13 | 3 | 1 | 5 |
 
 ## Plan
 
@@ -31,13 +31,13 @@ Each row is one declared checkpoint. Counts measure completed checkpoints, not t
 | 13. Glow clicks and complete lifecycle | Prove | Blocked | Reference click reached the physical edge once, all five counters 1. Full lifetime-6 case failed the strict event window; no TRACE click or full lifecycle pass. Cleanup passed; amended budget exhausted. | [Open](../evidence/live-acceptance-continuation/glow-amendment-2-attempt-2/diagnosis.json) |
 | 14. Typing quarantine acknowledgement | Prove | Verified at stated scope | Supplemental attempt 1 passed: exact abc, independent release, persistent quarantine/restart blocking, verified recovery and exactly one pinned-engine follow-up. Both fixtures closed. | [Open](../evidence/live-acceptance-continuation/typing-supplemental-1/verification.json) |
 | 15. Current-source physical-stop relevance | Prove | In progress | Historical physical Escape passes ran an earlier Session.cs that is absent from every Git object (checked 22 Oct). Needs an owner-present current-source physical stop run. | [Open](../evidence/computer-use-method/production-owner-map.json) |
-| 16. Complete real Codex workflow | Demonstrate | In progress | Exact Unicode already passed live. Stale-outcome correction is checked; amendment 2 is approved. Complete workflow still needs proof through the actual connected server loaded from corrected source. | [Open](../evidence/live-acceptance-continuation/owner-amendment-2.json) |
+| 16. Complete real Codex workflow | Demonstrate | In progress | Exact Unicode already passed. Amendment 2 approved and unclaimed. Three MCP process candidates include one older than corrected source; reconnect and prove the connected process loaded corrected files before the complete workflow. | [Open](../evidence/live-acceptance-continuation/owner-amendment-2.json) |
 | 17. Complete real Claude workflow | Demonstrate | Blocked | Actual host discovered both skills and typed exact text. Forwarding dropped dispatch proof; focused fix passed. Client-state writes still block preservation; corrective run waits for a concrete resolution. | [Open](../evidence/live-acceptance-continuation/claude-supplemental-1/receipt.json) |
-| 18. Unicode clipboard paste and restoration | Demonstrate | Blocked | Supported snapshot and synthetic write verified; focus mismatch stopped before paste. Native cleanup reconciled; guarded restoration refused changed clipboard contents. Protected recovery awaits owner archive/retain choice. | [Open](../evidence/live-acceptance-continuation/clipboard-supplemental-1/recovery.json) |
-| 19. Full REPLAY editing and two exports | Demonstrate | In progress | Reviewed runtime preserves unknown outcomes as blocked, immutable private recovery context and request-bound reconciliation. 35 focused checks pass. Actual TRACE controls and both edited/audio exports still need live proof. | [Open](../scripts/replay-workflow-runtime.cjs) |
+| 18. Unicode clipboard paste and restoration | Demonstrate | Blocked | Recovery archived by explicit owner decision; current contents preserved and no pending recovery. Paste remains failed before dispatch. Preparation now verifies focus before synthetic write; four affected offline cases pass. One corrective supplement remains, pending focus resolution. | [Open](../evidence/live-acceptance-continuation/clipboard-supplemental-1/archive-recovery.json) |
+| 19. Full REPLAY editing and two exports | Demonstrate | Blocked | Both full-run attempts stopped during provision before grants, recording, fixture creation or TRACE input. Visibility wait and retained-handle cleanup corrected; second run confirms cleanup but rejects process/window identity equality. Exact mismatch cause unproved; no further run authorized. | [Open](REPLAY_LIVE_RUN.md) |
 | 20. Clean archive installation and rollback | Deliver | In progress | Existing-host exact archive setup and configuration rollback passed. Portable verifier and CI wiring uploaded in draft PR 17; fresh Windows runner and final archive remain. | [Open](ARCHIVE_INSTALL.md) |
 | 21. Final documentation and reviewable commits | Deliver | To do | Reconcile requirement-to-evidence checklist and packaging; README last; planned verification and documentation commits. | [Open](../VERSION_CONTROL.md) |
-| 22. Draft PR and required hosted CI | Deliver | Blocked | Draft PRs 14–17 uploaded; next live-results draft is being prepared. Retained CI annotation reports account billing/spending restrictions before job startup. | [Open](../evidence/computer-use-method/ci-pr15-current.json) |
+| 22. Draft PR and required hosted CI | Deliver | Blocked | Draft PRs 14–18 uploaded. PR 18 CI failed before steps due to account payments/spending restrictions. No new CI retry until that external condition changes. | [Open](GAP_CLOSURE_STATUS.md) |
 
 ## Next
 

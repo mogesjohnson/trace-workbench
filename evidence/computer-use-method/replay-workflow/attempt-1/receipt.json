@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A4-REPLAY",
+  "requirement": "APP-01",
+  "planContract": 1,
+  "attempt": 1,
+  "ownerDecision": "evidence/computer-use-method/replay-workflow/owner-instruction.json",
+  "status": "blocked",
+  "startedAt": "2026-10-23T05:30:36.687Z",
+  "paidRequests": 0,
+  "lastCommandId": 1,
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "testedSource": {
+    "traceCommit": "9ce2341d3b4dc608002a673daee498fed18371ef",
+    "traceWorkingTreeClean": false,
+    "replayCommit": "221502e8c0af25fb1929ff8f200c4774659b7b87",
+    "files": {
+      "scripts/accept-replay-workflow.cjs": "fc6df53260d7a11f28bfe6e24ec52852a11006f96446f53be05337f188fee8fe",
+      "scripts/replay-workflow-runtime.cjs": "f8bf794b0fd2db1e488edebf5eb526e4feb18d069f7ab4e1d738c1aa0477171a",
+      "scripts/replacement-acceptance-common.cjs": "b62ca0d06d5c2b657d2373698776c44ff4ec7ae5993b2e183fa7bd3aab274b8b",
+      "scripts/continuation-adapter.cjs": "e7d323273febdb31fb7a52e13b11391ac9aa238677a024da0db553e3ac416cb2",
+      "src/computer/controller.cjs": "4ece8dcb0d938266db8b773dac0f724e32feb723ebda78be8f6399404cd21166",
+      "package-lock.json": "e6a7b9932ff2169daa29da61bec38f1439bf95d3a19ea728041d523f69630dda"
+    },
+    "replayHarnessSha256": "02b988192d44b020e6b30a2bb15785e9c8d1f8ebec68aa0c405dfda37baffeaa"
+  },
+  "state": {
+    "status": "blocked",
+    "next": "provision",
+    "completed": [],
+    "requests": [],
+    "cleanup": {
+      "confirmed": false,
+      "instances": [
+        {
+          "label": "editor",
+          "transportClosed": true,
+          "grantRevoked": true,
+          "processExited": false
+        }
+      ]
+    },
+    "sourceContentVerified": false,
+    "limits": [
+      "Live execution needs an explicit owner go-ahead and a fresh directory; preparing the adapter ran nothing live.",
+      "TRACE evidence is bound to the local TRACE journal, fixture state and REPLAY state; it cannot prove semantic intent.",
+      "No complete APP-01 claim until a live run, root visual review, confirmed cleanup and Codex review."
+    ]
+  },
+  "recoveryCheckpoint": {
+    "path": ".runtime/replay-workflow/8ec37014-b60c-4dc0-8829-18b6104b1119/recovery/8f3bc55b-6281-4117-8c49-be0573bbf4d4.json",
+    "sha256": "61febd10f6febebab5cf1a0034958c799ddaef6d36c41a4280d372eac92b7fa9",
+    "bytes": 1656
+  },
+  "terminalReason": "stage_failed",
+  "error": {
+    "stage": "provision",
+    "code": "replay_editor_window_ambiguous"
+  },
+  "reconciliation": [
+    {
+      "label": "editor",
+      "connected": false
+    }
+  ],
+  "completedAt": "2026-10-23T05:30:51.865Z"
+}

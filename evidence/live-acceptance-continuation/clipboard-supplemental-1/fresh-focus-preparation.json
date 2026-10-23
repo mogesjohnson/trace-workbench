@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "scope": "Offline preparation contract only; no live paste or full-case pass.",
+  "recordedAt": "2026-10-23T05:54:01.287Z",
+  "command": "node --test --test-name-pattern='live workflow pastes once|incorrect native focus' tests/accept-clipboard.test.cjs",
+  "tests": 2,
+  "passed": 2,
+  "failed": 0,
+  "behavior": [
+    "Resolve the unique intended edit in the fresh action observation.",
+    "Accept a fresh selector after focus when independently verified.",
+    "Reject wrong focus before clipboard write, defer or paste."
+  ],
+  "originalFailureCause": "unproved",
+  "originalPrivateRuntimeArtifacts": "removed_after_owned_teardown",
+  "liveRetryRun": false,
+  "files": {
+    "scripts/accept-clipboard.cjs": "60e105b3e72f70944d61adf41f7363610c33b6c8fc010d591e5193ca89bc57e2",
+    "tests/accept-clipboard.test.cjs": "2ca9219e49c9d21c1925736e71ceb0616d898a7910dc9e14a5ef8c4c22785255"
+  }
+}

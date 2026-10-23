@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "caseId": "METHOD-CLIPBOARD-UNICODE-PASTE",
+  "status": "pass",
+  "scope": "Owner-approved recovery archival only. No paste, original restoration or whole-case acceptance.",
+  "ownerDecisionRef": "evidence/live-acceptance-continuation/clipboard-supplemental-1/owner-archive-decision.json",
+  "recordedAt": "2026-10-23T05:32:14.117Z",
+  "archive": {
+    "restored": false,
+    "currentClipboardPreserved": true,
+    "recoveryArchived": true
+  },
+  "helperCleanup": {
+    "cleanup": "confirmed",
+    "mode": "text-only"
+  },
+  "independentRecoveryCheck": {
+    "ready": true,
+    "recoveryPending": false
+  },
+  "verifierCleanup": {
+    "cleanup": "confirmed",
+    "mode": "text-only"
+  },
+  "clipboardContentsWritten": false,
+  "originalBytesDeleted": false
+}

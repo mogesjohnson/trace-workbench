@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "status": "blocked",
+  "scope": "Read-only reconciliation; original result unchanged.",
+  "recordedAt": "2026-10-23T05:46:44.874Z",
+  "receiptSha256": "98614c9392bbb6ed72dcb33862652160586b182855252df1c9c70656208d7537",
+  "error": "replay_identity_changed",
+  "exactMismatchingField": "not_retained",
+  "cause": "unproved",
+  "provisionCompleted": false,
+  "grantsCreated": 0,
+  "recordingsStarted": 0,
+  "fixtureCreated": false,
+  "traceInputDispatched": false,
+  "exactEditorCleanupConfirmed": true,
+  "budget": {
+    "attemptsUsed": 2,
+    "furtherFullRunAuthorized": false
+  },
+  "sourceFinding": "Both native providers read Process.StartTime.ToFileTimeUtc(). A later read-only comparison on an existing unrelated window agreed; this does not establish the failed REPLAY probe values or cause."
+}

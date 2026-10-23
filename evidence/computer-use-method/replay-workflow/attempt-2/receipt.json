@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A4-REPLAY",
+  "requirement": "APP-01",
+  "planContract": 1,
+  "attempt": 2,
+  "ownerDecision": "evidence/computer-use-method/replay-workflow/owner-instruction.json",
+  "prior": {
+    "path": "evidence/computer-use-method/replay-workflow/attempt-1",
+    "status": "blocked",
+    "changedPrecondition": "Wait for exactly one visible editor after preload readiness; retain the actual ChildProcess before readiness and through Electron teardown. Prior partial-acquisition process exit independently reconciled."
+  },
+  "status": "blocked",
+  "startedAt": "2026-10-23T05:36:22.124Z",
+  "paidRequests": 0,
+  "lastCommandId": 1,
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "testedSource": {
+    "traceCommit": "9ce2341d3b4dc608002a673daee498fed18371ef",
+    "traceWorkingTreeClean": false,
+    "replayCommit": "221502e8c0af25fb1929ff8f200c4774659b7b87",
+    "files": {
+      "scripts/accept-replay-workflow.cjs": "0697443303b0ba829dafb275b20c55aa9c47e8f085575154e30d707d8b5a4799",
+      "scripts/replay-workflow-runtime.cjs": "0ac71e13c155edb039a8150b3f8c2062b72a5c7f57f2a9776f077092879e243f",
+      "scripts/replacement-acceptance-common.cjs": "b62ca0d06d5c2b657d2373698776c44ff4ec7ae5993b2e183fa7bd3aab274b8b",
+      "scripts/continuation-adapter.cjs": "e7d323273febdb31fb7a52e13b11391ac9aa238677a024da0db553e3ac416cb2",
+      "src/computer/controller.cjs": "4ece8dcb0d938266db8b773dac0f724e32feb723ebda78be8f6399404cd21166",
+      "package-lock.json": "e6a7b9932ff2169daa29da61bec38f1439bf95d3a19ea728041d523f69630dda"
+    },
+    "replayHarnessSha256": "02b988192d44b020e6b30a2bb15785e9c8d1f8ebec68aa0c405dfda37baffeaa"
+  },
+  "state": {
+    "status": "blocked",
+    "next": "provision",
+    "completed": [],
+    "requests": [],
+    "cleanup": {
+      "confirmed": true,
+      "instances": [
+        {
+          "label": "editor",
+          "transportClosed": true,
+          "grantRevoked": true,
+          "processExited": true
+        }
+      ]
+    },
+    "sourceContentVerified": false,
+    "limits": [
+      "Live execution needs an explicit owner go-ahead and a fresh directory; preparing the adapter ran nothing live.",
+      "TRACE evidence is bound to the local TRACE journal, fixture state and REPLAY state; it cannot prove semantic intent.",
+      "No complete APP-01 claim until a live run, root visual review, confirmed cleanup and Codex review."
+    ]
+  },
+  "recoveryCheckpoint": {
+    "path": ".runtime/replay-workflow/deec85f5-c1a0-4fb6-bbdf-a121c8c521e5/recovery/5c9088b2-ea3c-49fa-b553-b9100284cc63.json",
+    "sha256": "c07eb03fd2d5fb4ac6d88eeaed4b1eca354279d72f44f903cb2fe5b3634f0de5",
+    "bytes": 1656
+  },
+  "terminalReason": "stage_failed",
+  "error": {
+    "stage": "provision",
+    "code": "replay_identity_changed"
+  },
+  "reconciliation": [
+    {
+      "label": "editor",
+      "connected": false
+    }
+  ],
+  "completedAt": "2026-10-23T05:36:36.209Z"
+}
