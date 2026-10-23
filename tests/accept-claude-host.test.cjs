@@ -382,6 +382,11 @@ test('CLI contract enables skill use, confines builtins, keeps exact MCP allowli
   const env = hostEnvironment({ ANTHROPIC_API_KEY: 'PRIVATE', ANTHROPIC_BASE_URL: 'PRIVATE', CLAUDE_CODE_USE_BEDROCK: '1', CLAUDE_CONFIG_DIR: 'other', CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD: '1', SAFE: 'yes' });
   assert.equal(env.ANTHROPIC_API_KEY, undefined); assert.equal(env.CLAUDE_CODE_USE_BEDROCK, undefined); assert.equal(env.CLAUDE_CONFIG_DIR, undefined); assert.equal(env.SAFE, 'yes');
   assert.equal(env.CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD, undefined);
+  const isolated = path.resolve('synthetic-private-claude-config');
+  assert.equal(hostEnvironment({ CLAUDE_CONFIG_DIR: 'inherited' }, { configDirectory: isolated }).CLAUDE_CONFIG_DIR, isolated);
+  for (const directory of ['relative', path.parse(os.homedir()).root, os.homedir(), path.join(os.homedir(), '.claude'), path.join(os.homedir(), '.claude/nested')]) {
+    assert.throws(() => hostEnvironment({}, { configDirectory: directory }), { code: 'claude_configuration_directory_invalid' });
+  }
 });
 
 test('private settings snapshots distinguish JSON formatting, semantic changes, unknown keys and missing files without leaking values', async () => {
@@ -589,6 +594,13 @@ test('startup preflight inspects ordinary plugin metadata, skips unrelated links
   } };
   const options = { home, cwd, managedFiles: [] };
   assert.equal((await preflightStartup(options, io)).skippedReparseEntries, 1);
+  const configDirectory = path.join(directory, 'isolated-config'); await fs.mkdir(configDirectory);
+  assert.equal((await preflightStartup({ ...options, configDirectory }, io)).isolatedConfiguration, true);
+  await fs.mkdir(path.join(configDirectory, 'skills'));
+  await fs.writeFile(path.join(configDirectory, 'skills/shadow.md'), 'unexpected');
+  await assert.rejects(preflightStartup({ ...options, configDirectory }, io), { code: 'claude_isolated_startup_content' });
+  const linkedConfig = path.join(directory, 'linked-config'); await fs.symlink(configDirectory, linkedConfig, 'junction');
+  await assert.rejects(preflightStartup({ ...options, configDirectory: linkedConfig }, io), { code: 'claude_configuration_directory_unsafe' });
   const managed = path.join(directory, 'managed.json');
   for (const value of [{ hooks: { SessionStart: [{}] } }, { enabledPlugins: { private: true } }]) {
     await fs.writeFile(managed, JSON.stringify(value));
@@ -685,8 +697,10 @@ test('host runner uses a retained child handle, stdin prompt and bounded in-memo
   child.stdin = new Writable({ write(chunk, _encoding, done) { prompt = chunk.toString(); done(); }, final(done) {
     queueMicrotask(() => { child.stdout.write(JSON.stringify({ type: 'result', is_error: false, result: 'PRIVATE_MODEL_PROSE' }) + '\n'); child.emit('close', 0); }); done(); } });
   child.kill = () => { killed = true; child.emit('close', 1); };
-  const output = await invokeHost({ config: 'config', cwd: 'empty-workspace', skillDirectory: 'installed-skill', settings: 'private-settings', prompt: 'PRIVATE_PROMPT',
+  const configDirectory = path.resolve('synthetic-private-claude-config');
+  const output = await invokeHost({ config: 'config', cwd: 'empty-workspace', skillDirectory: 'installed-skill', settings: 'private-settings', configDirectory, prompt: 'PRIVATE_PROMPT',
     allowedReads: reads, spawnImpl: (exe, args, options) => { captured = { exe, args, options }; return child; } });
+  assert.equal(captured.options.env.CLAUDE_CONFIG_DIR, configDirectory);
   assert.equal(prompt, 'PRIVATE_PROMPT'); assert.equal(JSON.stringify(captured).includes('PRIVATE_PROMPT'), false);
   assert.equal(captured.options.shell, false); assert.equal(killed, false); assert.equal(output.connected, false);
   assert.equal(JSON.stringify(output).includes('PRIVATE_MODEL_PROSE'), false);

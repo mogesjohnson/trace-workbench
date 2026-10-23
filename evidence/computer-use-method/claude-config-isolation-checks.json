@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "observedDateUtc": "2026-10-23",
+  "scope": "Focused acceptance-harness changes only; no model session or desktop action",
+  "command": "node --test --test-name-pattern=\"CLI contract enables|startup preflight inspects|host runner uses\" tests/accept-claude-host.test.cjs",
+  "tests": 3,
+  "passed": 3,
+  "failed": 0,
+  "skipped": 0,
+  "checks": [
+    "Explicit isolated environment overrides a scrubbed inherited selector; relative/default/ancestor state directories are rejected",
+    "Startup rejects isolated skill shadowing and reparse directories before CLI probes",
+    "Retained host spawn receives the same explicit selected configuration environment"
+  ],
+  "syntaxChecks": ["scripts/accept-claude-host.cjs", "tests/accept-claude-host.test.cjs"],
+  "liveAcceptanceClaimed": false,
+  "notProven": "Actual isolated Skill discovery and complete authenticated host workflow remain separate live acceptance gates."
+}

@@ -2,7 +2,7 @@
   "updated": "2026-10-23",
   "title": "TRACE — close the Computer Use gap",
   "goalStatus": "active",
-  "current": "Resumed from the shutdown checkpoint. Codex and clipboard passes stand; no live tests repeated. GAP_CLOSURE_FINISH_PLAN.md consolidates the remaining amendments and prerequisites. Latest shutdown-head CI confirms billing/spending blocked all steps. Glow/REPLAY budgets and current-source Escape need direct decisions; Claude isolation is a candidate preservation fix, not yet verified.",
+  "current": "Claude corrective lifetime 4 passed: both skills, real images/actions, stale not_dispatched, exact text/count, strict real-settings preservation and exact cleanup. Temporary sign-in and private auth log removed. Codex/clipboard and other compatible passes stand. Remaining: glow, current-source stop, full REPLAY, final distribution/docs and CI; amendment decisions and billing pending.",
   "measurement": "Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row.",
   "checkpoints": [
     {
@@ -137,9 +137,9 @@
       "id": "17",
       "phase": "Demonstrate",
       "title": "Complete real Claude workflow",
-      "status": "blocked",
-      "detail": "Actual host discovered both skills and typed exact text. Forwarding dropped dispatch proof; focused fix passed. Client-state writes still block preservation; corrective run waits for a concrete resolution.",
-      "evidence": "../evidence/live-acceptance-continuation/claude-supplemental-1/receipt.json"
+      "status": "verified",
+      "detail": "Corrective lifetime 4 passed on Claude 2.1.309 with explicitly isolated state: both Skills, five received PNGs, exact text/count 1, stale not_dispatched, fresh recovery, all real-settings intervals preserved, installed bundles/source unchanged and exact cleanup. Temporary sign-in removed. Guarded isolated-host scope; no semantic-image or REA-analysis claim.",
+      "evidence": "../evidence/live-acceptance-continuation/claude-supplemental-2/receipt.json"
     },
     {
       "id": "18",

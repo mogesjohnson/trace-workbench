@@ -147,6 +147,7 @@ function plan(options = {}) {
       continuationAttempt: options.continuationAttempt, lifetimeAttemptOrdinal: options.continuationAttempt + 2, ownerDecisionRef: options.continuationDecision }
     : { attempt: options.attempt ?? 1 }),
     declaredBeforeHostOrUi: true,
+    clientStateScope: options.claudeConfigDirectory ? 'Explicit isolated CLI configuration; real user settings remain independently compared.' : 'Default user CLI configuration.',
     ...(options.prior ? { prior: options.prior, changedPrecondition: options.change } : {}),
     scope: supplemental ? 'HOST-01 partial: actual installed TRACE and REA instruction discovery, scoped production TRACE MCP/images, one owned-fixture effect and stale-observation recovery.'
       : 'HOST-01 partial: actual installed TRACE skill invocation, scoped production MCP/images, one owned-fixture effect and stale-observation recovery.',
@@ -179,6 +180,10 @@ function parseArgs(args) {
     else if (value === '--attempt') { options.attempt = Number(args[++i]); legacyAttemptSpecified = true; }
     else if (value === '--continuation-decision') options.continuationDecision = args[++i];
     else if (value === '--continuation-attempt') options.continuationAttempt = Number(args[++i]);
+    else if (value === '--claude-config-dir') {
+      options.claudeConfigDirectory = args[++i];
+      need(typeof options.claudeConfigDirectory === 'string' && path.isAbsolute(options.claudeConfigDirectory), 'invalid_arguments');
+    }
     else if (value === '--prior') options.prior = args[++i];
     else if (value === '--change') options.change = args[++i];
     else if (!value.startsWith('--') && !options.directory) options.directory = value;
@@ -506,16 +511,24 @@ function hostArguments(config, home, settings, requiredSkills = [TRACE_SKILL]) {
     '--add-dir', home, '--permission-mode', 'dontAsk', '--permission-prompts', 'none',
     '--no-session-persistence', '--no-chrome', '--output-format', 'stream-json', '--verbose', '--effort', 'low'];
 }
-function hostEnvironment(environment = process.env) {
+function hostEnvironment(environment = process.env, { configDirectory } = {}) {
   const result = { ...environment, CLAUDE_CODE_SKIP_PROMPT_HISTORY: '1', ENABLE_TOOL_SEARCH: 'false' };
   for (const key of Object.keys(result)) if (/^ANTHROPIC_|^CLAUDE_CODE_(OAUTH_TOKEN|USE_BEDROCK|USE_VERTEX|USE_FOUNDRY)$/.test(key)
     || ['ELECTRON_RUN_AS_NODE', 'CLAUDE_CODE_SIMPLE', 'CLAUDECODE', 'CLAUDE_CONFIG_DIR', 'CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD'].includes(key)) delete result[key];
+  if (configDirectory !== undefined) {
+    need(typeof configDirectory === 'string' && path.isAbsolute(configDirectory), 'claude_configuration_directory_invalid');
+    const relative = path.relative(path.join(os.homedir(), '.claude'), configDirectory);
+    need(!samePath(configDirectory, os.homedir()) && relative && (relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)), 'claude_configuration_directory_invalid');
+    const homeRelative = path.relative(configDirectory, os.homedir());
+    need(homeRelative.startsWith(`..${path.sep}`) || path.isAbsolute(homeRelative), 'claude_configuration_directory_invalid');
+    result.CLAUDE_CONFIG_DIR = path.resolve(configDirectory);
+  }
   return result;
 }
-async function invokeHost({ config, cwd, home = os.homedir(), settings, prompt, allowedReads, requiredSkills = [TRACE_SKILL], reaInstructionPath, signal, spawnImpl = spawn, timeoutMs = 240000 }) {
+async function invokeHost({ config, cwd, home = os.homedir(), settings, configDirectory, prompt, allowedReads, requiredSkills = [TRACE_SKILL], reaInstructionPath, signal, spawnImpl = spawn, timeoutMs = 240000 }) {
   const state = streamState({ allowedReads, requiredSkills, reaInstructionPath }), decoder = new StringDecoder('utf8');
   return new Promise((resolve, reject) => {
-    const child = spawnImpl(CLAUDE, hostArguments(config, home, settings, requiredSkills), { cwd, env: hostEnvironment(), windowsHide: true, shell: false, stdio: ['pipe', 'pipe', 'pipe'] });
+    const child = spawnImpl(CLAUDE, hostArguments(config, home, settings, requiredSkills), { cwd, env: hostEnvironment(process.env, { configDirectory }), windowsHide: true, shell: false, stdio: ['pipe', 'pipe', 'pipe'] });
     let buffer = '', bytes = 0, terminated = false, escalation, abandonment, settled = false;
     const finish = (code, exited) => {
       if (settled) return; settled = true;
@@ -833,8 +846,24 @@ async function writePrivateSettingsDiff(evidence, intervals, root = ROOT, io = f
   return { sha256: sha(bytes), count: ['overall', 'hostProbes', 'preHost', 'host', 'postHost']
     .reduce((total, name) => total + (intervals[name]?.length ?? 0), 0) };
 }
-async function preflightStartup({ home, cwd, managedFiles = [MANAGED_SETTINGS] }, io = fs) {
+async function preflightStartup({ home, cwd, configDirectory, managedFiles = [MANAGED_SETTINGS] }, io = fs) {
   need((await io.readdir(cwd)).length === 0, 'claude_workspace_not_empty');
+  if (configDirectory !== undefined) {
+    hostEnvironment({}, { configDirectory }); // Same explicit-path policy as probes and host.
+    let ancestor = path.parse(path.resolve(configDirectory)).root;
+    for (const component of path.relative(ancestor, path.resolve(configDirectory)).split(path.sep).filter(Boolean)) {
+      ancestor = path.join(ancestor, component); const stat = await io.lstat(ancestor);
+      need(stat.isDirectory() && !stat.isSymbolicLink(), 'claude_configuration_directory_unsafe');
+    }
+    need(samePath(await io.realpath(configDirectory), configDirectory), 'claude_configuration_directory_unsafe');
+    // Added home directory supplies the installed skills. The selected config must not shadow them or add plugins.
+    for (const name of ['skills', 'plugins', '.claude-plugin']) {
+      try {
+        const folder = path.join(configDirectory, name), stat = await io.lstat(folder);
+        need(stat.isDirectory() && !stat.isSymbolicLink() && (await io.readdir(folder)).length === 0, 'claude_isolated_startup_content');
+      } catch (error) { if (error.code !== 'ENOENT') throw error; }
+    }
+  }
   // User settings (including the authorized second-brain SessionStart hook) are
   // inactive with project-only sources. Added directories do not load settings.
   for (const file of managedFiles) {
@@ -860,7 +889,7 @@ async function preflightStartup({ home, cwd, managedFiles = [MANAGED_SETTINGS] }
     } catch (error) { if (error.code !== 'ENOENT') throw error; }
   }
   return { settingSources: ['project'], freshWorkspace: true, ordinarySkillPluginsAbsent: true, skippedReparseEntries,
-    managedFileScopeOnly: true };
+    managedFileScopeOnly: true, isolatedConfiguration: configDirectory !== undefined };
 }
 async function run(options) {
   if (options.mode === 'plan') return plan(options);
@@ -895,12 +924,16 @@ async function run(options) {
     receipt.display = validateDisplay(await native(['display']));
     need((await native(['keystate', 'all'])).down.length === 0, 'input_busy');
     need((await native(['status'])).recoveryRequired === false, 'input_recovery_required');
+    directory = await fs.mkdtemp(path.join(os.tmpdir(), 'trace-claude-host-')); await fs.mkdir(path.join(directory, 'workspace'));
+    receipt.startupPreflight = await preflightStartup({ home: os.homedir(), cwd: path.join(directory, 'workspace'), configDirectory: options.claudeConfigDirectory });
+    receipt.clientStateScope = declared.clientStateScope;
     beforeSettings = await fingerprintSettings();
     // These Claude invocations occur only in --live, never during preparation or pure tests.
-    const version = await execFileAsync(CLAUDE, ['--version'], { windowsHide: true, timeout: 10000, env: hostEnvironment() });
+    const selectedEnvironment = hostEnvironment(process.env, { configDirectory: options.claudeConfigDirectory });
+    const version = await execFileAsync(CLAUDE, ['--version'], { windowsHide: true, timeout: 10000, env: selectedEnvironment });
     receipt.hostVersion = version.stdout.match(/\d+\.\d+\.\d+/)?.[0]; need(!!receipt.hostVersion, 'claude_version_unavailable');
     need(supportedHostVersion(receipt.hostVersion), 'claude_fail_closed_hooks_unavailable');
-    const auth = JSON.parse((await execFileAsync(CLAUDE, ['auth', 'status'], { windowsHide: true, timeout: 10000, env: hostEnvironment() })).stdout);
+    const auth = JSON.parse((await execFileAsync(CLAUDE, ['auth', 'status'], { windowsHide: true, timeout: 10000, env: selectedEnvironment })).stdout);
     need(auth.loggedIn === true && auth.authMethod === 'claude.ai', 'existing_subscription_required');
     receipt.existingSubscription = true;
     // Both checks run before claim, so either stop consumes no supplemental attempt.
@@ -921,8 +954,6 @@ async function run(options) {
     let executable;
     if (supplemental) { const prepared = await preparedFixture(); executable = prepared.executable; receipt.preparedFixture = prepared.summary; }
     else executable = await buildFixture();
-    directory = await fs.mkdtemp(path.join(os.tmpdir(), 'trace-claude-host-')); await fs.mkdir(path.join(directory, 'workspace'));
-    receipt.startupPreflight = await preflightStartup({ home: os.homedir(), cwd: path.join(directory, 'workspace') });
     if (abort.signal.aborted) throw fail('acceptance_interrupted');
     return executable;
     };
@@ -957,7 +988,7 @@ async function run(options) {
     need(receipt.settingsIntervals.preHost.preserved, 'claude_settings_changed_before_host');
     monitor = createWriterMonitor();
     hostStarted = true; await persist();
-    receipt.hostRun = await invokeHost({ config: mcp, cwd: path.join(directory, 'workspace'), home: os.homedir(), settings,
+    receipt.hostRun = await invokeHost({ config: mcp, cwd: path.join(directory, 'workspace'), home: os.homedir(), settings, configDirectory: options.claudeConfigDirectory,
       allowedReads, requiredSkills, reaInstructionPath: rea?.path, prompt: promptFor({ payload, reaInstructionPath: rea?.path }), signal: abort.signal,
       spawnImpl: (...args) => { const child = spawn(...args); monitor.own(child.pid); monitor.start(); return child; } });
     hostAfterSettings = await fingerprintSettings();

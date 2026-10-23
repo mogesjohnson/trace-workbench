@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "status": "partial",
+  "startedAt": "2026-10-23T16:52:38.348Z",
+  "modelSessionInvoked": false,
+  "desktopInput": false,
+  "credentialsCopied": false,
+  "liveAcceptanceClaimed": false,
+  "source": "Actual selected-directory startup validation and subscription auth status; no model session",
+  "startupPreflight": {
+    "settingSources": [
+      "project"
+    ],
+    "freshWorkspace": true,
+    "ordinarySkillPluginsAbsent": true,
+    "skippedReparseEntries": 12,
+    "managedFileScopeOnly": true,
+    "isolatedConfiguration": true
+  },
+  "authenticatedSubscription": true,
+  "realUserSettingsPreserved": true,
+  "realCredentialBytesUnchanged": true,
+  "executableSha256": "5441781f2b6bbd07354b4a74560ee88c68c9bf05d6db3c7e24c452c91673dc53",
+  "harnessSha256": "c39edbc9337ec20aa4b7d3ee6d2dc1db118552a311c6ae3f967bb4ef1f409026",
+  "notProven": [
+    "Actual isolated Skill discovery",
+    "Authenticated model-host settings preservation",
+    "Complete Claude acceptance"
+  ],
+  "temporaryWorkspaceRemoved": true,
+  "isolatedAuthenticatedConfigurationRetained": true,
+  "completedAt": "2026-10-23T16:52:38.814Z"
+}

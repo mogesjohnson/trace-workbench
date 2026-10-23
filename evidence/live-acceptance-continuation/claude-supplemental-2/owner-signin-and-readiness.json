@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "source": "Direct owner responses in this chat",
+  "recordedAfterCase": true,
+  "recordedDateUtc": "2026-10-23",
+  "separateSignIn": {
+    "questionCall": "call_d6794104f3154521b26ca33c5d11675e",
+    "answer": "Use separate Claude sign-in",
+    "scope": "Supported separate subscription sign-in only; no credential copy or model session during sign-in"
+  },
+  "desktopReadiness": {
+    "questionCall": "call_9cfe22cb003848f1806b429b80ee5f66",
+    "answer": "Ready — I’ll foreground a normal app after replying",
+    "scope": "Fresh readiness for the existing approved final Claude corrective; response before foregrounding the ordinary app"
+  },
+  "budget": "No new budget. Existing continuation attempt 2, lifetime ordinal 4, under the original owner-decision.json. These responses do not approve the pending glow, Escape or REPLAY amendments."
+}
