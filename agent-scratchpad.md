@@ -10,6 +10,8 @@ Claude's new isolated account authenticated successfully. One background Sonnet 
 
 **Next:** upload this focused preparation and inspect its required CI once. Reuse existing passes. Only a later direct bounded decision can permit missing glow lifecycle and REPLAY pause supplements; no screen readiness is requested now. Final exact artifact and full requirement reconciliation remain open. Checklist stays 18/22 (82%); no merge or release. Root remains High.
 
+**Uploaded checkpoint:** draft PR 25 contains the background preparation; head `4f6a966` passed hosted CI run 40040170535, including archive installation and rollback. A subsequent documentation-only reconciliation adds [the working requirement checklist](docs/REQUIREMENT_EVIDENCE_REVIEW.md) and corrects the specification's stale pending replacement-approval wording using the existing direct decision. The old probe stays failed; the approved production invariants remain required. This documentation commit changes the source archive and will receive its own required hosted check; no extra local suite or desktop test is needed.
+
 ## Compact resume checkpoint — 23 October 2026
 
 - **Latest owner decision:** option 1, correct intended-target hit rather than exact center pixel placement. [Exact question and answer](evidence/live-acceptance-continuation/owner-glow-target-hit-decision.json). Preserve the original glow failure. This changes the criterion, not the exhausted live-attempt budget or missing lifecycle evidence.

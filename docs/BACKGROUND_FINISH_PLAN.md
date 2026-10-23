@@ -13,6 +13,8 @@ Updated 23 October 2026. The owner resumed **background-only** work. No screen c
 
 Six selected offline checks passed: the target-hit assertion's success and rejection boundaries, the historical glow oracle, and the affected REPLAY controls/export-precondition checks. These use injected state and do not open an application. The pinned retained-evidence verifier also passed its narrow target-hit review.
 
+[The working requirement-to-evidence checklist](REQUIREMENT_EVIDENCE_REVIEW.md) maps every product requirement and named milestone gate without promoting missing proof. The specification now recognizes the already-approved production-owner replacement; the old failed feasibility probe does not require another approval or rerun. Full invariant reconciliation remains distinct from that approval.
+
 A separate Claude Code review completed using the newly signed-in isolated account, Sonnet at medium effort, no tools or MCP servers, a $0.35 invocation cap and a two-minute process limit. It reported no blocking findings in one turn and $0.042504 of model usage. This is a source review rather than another Claude desktop acceptance session. The review's timestamp limitation is explicit in the offline verifier: reference completion supplies a lower bound, not a recovered TRACE dispatch-start checkpoint. Authentication and raw model output stay local.
 
 ## Desktop work prepared for a later decision
