@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A4-REPLAY",
+  "requirement": "APP-01",
+  "status": "declared",
+  "claimsAttempt": false,
+  "package": {
+    "replayCommit": "221502e8c0af25fb1929ff8f200c4774659b7b87",
+    "executableSha256": "22f35d67d22e00f156b57089e27031b1b033d888fdfd6223183c346f4fc167ec",
+    "asarSha256": "d74797f6a2b4cd9d9dbce1ecaff7dc655b0869b3455ac4da604e85403c36b7cc"
+  },
+  "recipe": {
+    "duration": 6,
+    "sourceSelection": "root-reviewed-six-second-captured-segment-before-edits",
+    "effectStart": 1,
+    "effectEnd": 3,
+    "narrationStart": 1.5,
+    "narrationDuration": 1,
+    "samples": [
+      0.5,
+      2,
+      4
+    ],
+    "callout": {
+      "id": "trace-callout",
+      "type": "text",
+      "text": "TRACE verified synthetic fixture",
+      "x": 0.1,
+      "y": 0.05,
+      "width": 0.6,
+      "height": 0.13,
+      "start": 1,
+      "end": 3
+    },
+    "privacy": {
+      "id": "trace-privacy",
+      "type": "blur",
+      "x": 0.34,
+      "y": 0.25,
+      "width": 0.32,
+      "height": 0.4,
+      "start": 1,
+      "end": 3
+    }
+  },
+  "demonstration": {
+    "text": "TRACE REPLAY demo",
+    "increments": 2,
+    "fixtureActions": 3,
+    "editorActions": 2,
+    "playbackActions": 1,
+    "editorPosition": 2,
+    "editorMinimumAdvance": 0.2,
+    "playbackMinimumAdvance": 0.2,
+    "textureMinimum": 5
+  },
+  "stages": [
+    "provision",
+    "fixture-ready",
+    "fixture-record-start",
+    "fixture-record-stop",
+    "prepare-source-review",
+    "confirm-source-review",
+    "walkthrough-record-start",
+    "edit-fixture",
+    "trace-editor-controls",
+    "export-fixture",
+    "prepare-completed-playback",
+    "trace-completed-playback",
+    "walkthrough-record-stop",
+    "export-walkthrough",
+    "verify-media",
+    "root-review",
+    "cleanup"
+  ],
+  "evidenceInputs": {
+    "fixture-ready": "{ traceSessionId, observationId }: a TRACE session opened on the run-owned fixture after launch and a fresh observation of it.",
+    "fixture-record-stop": "{ traceSessionId }: at least 3 completed TRACE actions on the fixture after recording starts.",
+    "prepare-source-review": "{ sourceStart }: explicit nonnegative source-media seconds; root selects a six-second interval containing a useful action and the completed synthetic result.",
+    "confirm-source-review": "{ pass:true, reviewedEntireSegment:true, sourceSha256, sourceStart, sourceEnd, segmentSha256, reviewedFrames:[{sha256,observed}], observedAction:{from,to,description}, observedResult:{frameSha256,text,count} }: review the entire retained segment and all frames; action offsets are segment seconds, result must show the exact expected text and Count:2.",
+    "trace-editor-controls": "{ traceSessionId }: at least 2 completed TRACE actions on the first editor after its preview opens at position 2.",
+    "trace-completed-playback": "{ traceSessionId }: at least 1 completed TRACE action on the first editor after the completed export opens.",
+    "root-review": "{ pass: true, reviewedFrames: [{ sha256, observed }] }: one entry per produced review frame."
+  },
+  "scope": "Two isolated packaged REPLAY instances, owned fixture capture, trim/callout/blur/offline WAV placement, separate actual TRACE editor controls, two exports and independent media/cleanup proof.",
+  "pauses": {
+    "fixture-ready": "The adapter launches the prepared synthetic fixture during provision. Root opens a TRACE session on that exact window and observes it; the adapter measures texture in the declared privacy region from that observation.",
+    "fixture-record-stop": "Root types \"TRACE REPLAY demo\" and increments twice through actual connected TRACE. Retain recording around the final increment, including at least six seconds afterward, so a reviewed six-second segment can show a useful action and its completed result. Minimum total recording is eight seconds.",
+    "prepare-source-review": "Inspect the retained captured source to select sourceStart. The runtime renders that six-second source interval and hashes source, review segment and decoded frames. No wall-clock mapping is inferred from a late command response.",
+    "confirm-source-review": "Root reviews the entire actual retained segment and every source frame before any edit/export. Bind an observed useful action and the exact synthetic text/Count:2 result to that interval and its hashes. Final fixture state alone cannot pass.",
+    "trace-editor-controls": "While the second instance records the exact first editor, root uses actual connected TRACE to start and then pause its preview. The preview must end paused past position 2.2 with the saved recipe unchanged.",
+    "trace-completed-playback": "Root uses actual TRACE controls to play the imported completed fixture-demo.mp4 in the first editor; independent preview clock must advance.",
+    "root-review": "Root inspects actual decoded before/during/after frames, both videos and measured audio. Signal measurements do not prove semantic listening."
+  },
+  "outputs": [
+    "fixture-demo.mp4",
+    "editor-walkthrough.mp4"
+  ],
+  "boundaries": [
+    "No paid provider requests; offline one-second PCM WAV only.",
+    "API edits are not TRACE native-control evidence.",
+    "No Playwright UI clicks, DOM-driven edits or arbitrary renderer/main-process evaluation.",
+    "Provision only through existing smoke flags/preload grant APIs; inspect native identities read-only.",
+    "Retain app handle before readiness, require exitCode OR signalCode plus exact OS birth exit, revoke grants and close transports.",
+    "No automatic retry after mutation uncertainty; preserve request IDs and terminal evidence."
+  ],
+  "remaining": [
+    "Live execution needs an explicit owner go-ahead and a fresh directory; preparing the adapter ran nothing live.",
+    "TRACE evidence is bound to the local TRACE journal, fixture state and REPLAY state; it cannot prove semantic intent.",
+    "No complete APP-01 claim until a live run, root visual review, confirmed cleanup and Codex review."
+  ],
+  "declaredBeforeUi": true,
+  "attempt": 2,
+  "ownerDecision": "evidence/computer-use-method/replay-workflow/owner-instruction.json",
+  "prior": {
+    "path": "evidence/computer-use-method/replay-workflow/attempt-1",
+    "status": "blocked",
+    "changedPrecondition": "Wait for exactly one visible editor after preload readiness; retain the actual ChildProcess before readiness and through Electron teardown. Prior partial-acquisition process exit independently reconciled."
+  }
+}

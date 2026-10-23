@@ -1,0 +1,9 @@
+{
+  "id": 1,
+  "ok": false,
+  "error": {
+    "stage": "provision",
+    "code": "replay_editor_window_ambiguous"
+  },
+  "terminal": "blocked"
+}
