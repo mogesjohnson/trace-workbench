@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "source": "direct-owner",
+  "caseId": "METHOD-CLIPBOARD-UNICODE-PASTE",
+  "ready": true,
+  "confirmedAt": "2026-10-23T06:13:16.888Z",
+  "anchorOwnership": "run-owned-child",
+  "anchor": {
+    "id": "2623040",
+    "pid": 49416,
+    "processCreationTime": "134372093018464301",
+    "sessionId": 1
+  },
+  "ownerEvidence": {
+    "questionItemId": "[\"request_user_input_async\",\"call_4b4c6ca95ae4424e8588409bab09701c\",0]",
+    "answer": "I’ll click the fixture now, then leave input idle",
+    "sequence": "Owner submits response, then immediately foregrounds the exact anchor; one preclaim check follows a 10-second wait.",
+    "timestampBasis": "Recorded immediately upon receiving the direct owner response; source message supplied no timestamp."
+  }
+}

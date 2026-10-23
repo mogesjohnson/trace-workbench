@@ -1,0 +1,39 @@
+{
+  "source": "actual-connected-codex",
+  "step": "closed",
+  "tools": [
+    {
+      "name": "mcp__trace_computer__trace_computer_close_session",
+      "arguments": {
+        "sessionId": "1a69a9db-332b-4d3a-96a0-7c0ed3871d1c"
+      },
+      "result": {
+        "sessionId": "1a69a9db-332b-4d3a-96a0-7c0ed3871d1c",
+        "closed": true
+      }
+    }
+  ],
+  "nativeExits": [
+    {
+      "role": "supervisor",
+      "pid": 31260,
+      "parentPid": 19256,
+      "processCreationTime": "134372088908158738",
+      "session": 1,
+      "exited": true
+    },
+    {
+      "role": "marker",
+      "pid": 9668,
+      "parentPid": 31260,
+      "processCreationTime": "134372088909944604",
+      "session": 1,
+      "exited": true
+    }
+  ],
+  "adjudication": {
+    "by": "active-codex-model",
+    "actualConversationEvidenceReviewed": true,
+    "actualImagesInspected": true
+  }
+}

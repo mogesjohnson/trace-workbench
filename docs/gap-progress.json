@@ -2,7 +2,7 @@
   "updated": "2026-10-23",
   "title": "TRACE — close the Computer Use gap",
   "goalStatus": "active",
-  "current": "Typing recovery remains verified. Clipboard recovery was archived by owner decision without changing current contents; paste remains unfinished. REPLAY used both provision attempts and is blocked before recording/input. Focus preparation now precedes clipboard mutation. Passing checks are reused; full goal remains active.",
+  "current": "Resumed from the shutdown checkpoint. Codex and clipboard passes stand; no live tests repeated. GAP_CLOSURE_FINISH_PLAN.md consolidates the remaining amendments and prerequisites. Latest shutdown-head CI confirms billing/spending blocked all steps. Glow/REPLAY budgets and current-source Escape need direct decisions; Claude isolation is a candidate preservation fix, not yet verified.",
   "measurement": "Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row.",
   "checkpoints": [
     {
@@ -129,9 +129,9 @@
       "id": "16",
       "phase": "Demonstrate",
       "title": "Complete real Codex workflow",
-      "status": "active",
-      "detail": "Exact Unicode already passed. Amendment 2 approved and unclaimed. Three MCP process candidates include one older than corrected source; reconnect and prove the connected process loaded corrected files before the complete workflow.",
-      "evidence": "../evidence/live-acceptance-continuation/owner-amendment-2.json"
+      "status": "verified",
+      "detail": "Approved lifetime 5 passed through the actual reconnected Codex MCP: installed skill discovery, exact Unicode once, consumed-observation not_dispatched with count 0, one fresh counter action to 1, stable text, exact helper/fixture exits and persistent host preserved. No corrective retry needed.",
+      "evidence": "../evidence/live-acceptance-continuation/codex-amendment-2-attempt-1/receipt.json"
     },
     {
       "id": "17",
@@ -145,9 +145,9 @@
       "id": "18",
       "phase": "Demonstrate",
       "title": "Unicode clipboard paste and restoration",
-      "status": "blocked",
-      "detail": "Recovery archived by explicit owner decision; current contents preserved and no pending recovery. Paste remains failed before dispatch. Preparation now verifies focus before synthetic write; four affected offline cases pass. One corrective supplement remains, pending focus resolution.",
-      "evidence": "../evidence/live-acceptance-continuation/clipboard-supplemental-1/archive-recovery.json"
+      "status": "verified",
+      "detail": "Approved corrective supplement passed: public/independent fresh focus, one completed Unicode paste, exact target text and unchanged count, guarded restoration plus fresh supported-byte comparison, exact native/fixture exits and private-artifact cleanup. Ordinary anchor explicitly closed.",
+      "evidence": "../evidence/live-acceptance-continuation/clipboard-supplemental-2/receipt.json"
     },
     {
       "id": "19",
@@ -178,8 +178,8 @@
       "phase": "Deliver",
       "title": "Draft PR and required hosted CI",
       "status": "blocked",
-      "detail": "Draft PRs 14–18 uploaded. PR 18 CI failed before steps due to account payments/spending restrictions. No new CI retry until that external condition changes.",
-      "evidence": "GAP_CLOSURE_STATUS.md"
+      "detail": "Draft PRs through 20 uploaded. Shutdown-head run 39910599102 failed with zero steps; its exact annotation confirms account payments/spending restrictions. No retry until that condition changes.",
+      "evidence": "../evidence/computer-use-method/ci-shutdown-head.json"
     }
   ]
 }

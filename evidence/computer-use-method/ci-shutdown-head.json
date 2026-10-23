@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "observedDateUtc": "2026-10-23",
+  "source": "GitHub Actions jobs and check-run annotations API",
+  "repository": "mogesjohnson/trace-workbench",
+  "headSha": "ee73b88d0a1ce8d6a3da0aec47ba9c15ea70a3e4",
+  "runId": 39910599102,
+  "jobId": 120272450126,
+  "runUrl": "https://github.com/mogesjohnson/trace-workbench/actions/runs/39910599102",
+  "status": "completed",
+  "conclusion": "failure",
+  "steps": 0,
+  "annotation": "The job was not started because recent account payments have failed or your spending limit needs to be increased. Please check the 'Billing & plans' section in your settings",
+  "scope": "Read-only inspection of the final shutdown-head job. No CI retry or account change requested. This does not establish build or test results."
+}
