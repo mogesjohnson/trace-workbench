@@ -253,7 +253,13 @@ function createWorkflow(deps, locations) {
         await checkpoint();
         need(inside(root, app.info.libraryPath), 'replay_library_not_isolated');
         const window = identity(await deps.editorWindowIdentity(handle));
-        need(['pid', 'processCreationTime', 'sessionId'].every(key => window[key] === app.identity[key]), 'replay_identity_changed');
+        // Retain the rejected candidate before equality can fail. It never replaces the launched cleanup identity.
+        app.windowIdentityCandidate = { pid: window.pid, processCreationTime: window.processCreationTime,
+          sessionId: window.sessionId, windowId: window.windowId };
+        const mismatchedFields = ['pid', 'processCreationTime', 'sessionId'].filter(key => window[key] !== app.identity[key]);
+        (values.identityChecks ??= []).push({ label, matches: mismatchedFields.length === 0, mismatchedFields });
+        await checkpoint();
+        need(mismatchedFields.length === 0, 'replay_identity_changed');
         app.identity = { ...app.identity, ...window };
         await checkpoint();
         const grant = await deps.createGrant(app.page, `TRACE ${label} workflow`); app.grantId = grant.grant.id;
@@ -396,6 +402,7 @@ function createWorkflow(deps, locations) {
     // Private, noncredential recovery data; never expose handles, grants, setup or transports.
     recovery: () => ({ schemaVersion: 1, privateRoot: locations.privateRoot, capturedAt: now(),
       instances: owned.map(app => ({ label: app.label, root: app.root, launchedPid: app.launchedPid, identity: app.identity,
+        ...(app.windowIdentityCandidate ? { windowIdentityCandidate: structuredClone(app.windowIdentityCandidate) } : {}),
         libraryPath: app.info?.libraryPath, importRoot: app.importRoot, exportRoot: app.exportRoot })),
       fixture: fixture ? { launchedPid: fixture.handle.child?.pid, runId: fixture.handle.runId, statePath: fixture.handle.statePath,
         identity: fixture.identity } : undefined,
@@ -406,6 +413,7 @@ function createWorkflow(deps, locations) {
       next: STAGES[next] ?? null, completed: [...completed], requests: requests.map(({ app, command, requestId, state, reconciliation, reconciledBy }) =>
         ({ app, command, requestId, state, ...(reconciliation ? { reconciliation } : {}), ...(reconciledBy ? { reconciledBy } : {}) })), cleanup: values.cleanup,
       sourceReview: values.sourceReview, sourceContentVerified: values.sourceContentVerified ?? false,
+      identityChecks: structuredClone(values.identityChecks ?? []),
       selectedRecipe: values.selectedRecipe, measurements: values.measurements, limits: plan().remaining }),
     async advance(stage, input) {
       need(!failed && !active && STAGES[next] === stage, 'replay_stage_out_of_order'); active = true;
