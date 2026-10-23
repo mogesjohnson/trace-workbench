@@ -605,6 +605,17 @@ async function verifyOwnershipExit(evidence, waitExit) {
   }
   return true;
 }
+function upstreamState(response, name) {
+  const result = stateOf(response);
+  if (response.isError) {
+    const error = fail(codeOf(result.error));
+    // Preserve the production server's dispatch evidence through the second MCP
+    // boundary. A code alone cannot establish whether input was dispatched.
+    if (name === 'act' && ['not_dispatched', 'unknown'].includes(result.outcome)) error.details = { outcome: result.outcome };
+    throw error;
+  }
+  return result;
+}
 async function serveGuard(configPath) {
   need(path.isAbsolute(configPath || ''), 'invalid_guard_config');
   const config = JSON.parse(await fs.readFile(configPath, 'utf8'));
@@ -639,7 +650,7 @@ async function serveGuard(configPath) {
       assertDisplay: async () => compareDisplay(await native(['display']), config.display),
       call: async (name, args, options) => {
         const response = await client.callTool({ name: `trace_computer_${name}`, arguments: args }, { timeout: 30000, ...(options?.signal ? { signal: options.signal } : {}) });
-        const result = stateOf(response); if (response.isError) throw fail(codeOf(result.error));
+        const result = upstreamState(response, name);
         if (name === 'open_session') await ownership.opened(result.window);
         if (name === 'close_session' && result.closed === true) await ownership.sessionClosed();
         return result;
@@ -1063,5 +1074,5 @@ if (require.main === module) {
     .catch(error => { process.stderr.write(JSON.stringify({ code: codeOf(error) }) + '\n'); process.exitCode = 1; });
 }
 module.exports = { plan, parseArgs, prepareAndClaimContinuation, evidenceDescriptor, preparedFixture, verifyTestedSource, loadReaInstructions,
-  createOwnershipTracker, verifyOwnershipExit, createGuard, MAX_GUARD_ADMISSIONS, loadInstalledBundle, fingerprintSettings, compareSettings, changedKeyPaths, privateSettingsIntervals, terminalHostStatus, listClaudeProcesses, createWriterMonitor, writePrivateSettingsDiff, preflightStartup, supportedHostVersion, scopedReadPath, hostToolAllowed, hostSettings, runHostHook,
+  createOwnershipTracker, verifyOwnershipExit, upstreamState, createGuard, MAX_GUARD_ADMISSIONS, loadInstalledBundle, fingerprintSettings, compareSettings, changedKeyPaths, privateSettingsIntervals, terminalHostStatus, listClaudeProcesses, createWriterMonitor, writePrivateSettingsDiff, preflightStartup, supportedHostVersion, scopedReadPath, hostToolAllowed, hostSettings, runHostHook,
   streamState, observeEvent, summarize, hostArguments, hostEnvironment, invokeHost, promptFor, completed, run };
