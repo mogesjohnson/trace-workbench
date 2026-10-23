@@ -139,8 +139,10 @@ async function runCase({ clipboard, preparedSnapshot, freshClipboard, connect, l
     requireThat(focused.outcome === 'completed', focused.error?.code || 'fixture_focus_uncertain');
     frame = focused.observation;
     const state = await fixture.state();
+    // Element IDs belong to their observation. Resolve the intended edit again after focus.
+    const currentEdits = frame?.elements?.filter(item => item.name === 'TRACE text input' && item.enabled) || [];
     receipt.focus = { publicHasFocus: frame?.focused?.hasFocus === true,
-      publicMatchesObservedEdit: frame?.focused?.elementId === edits[0].id,
+      publicMatchesObservedEdit: currentEdits.length === 1 && frame?.focused?.elementId === currentEdits[0].id,
       independentMatches: state?.focusedControl === 'traceTextInput', textEmpty: state?.text === '' };
     requireThat(Object.values(receipt.focus).every(value => value === true), 'fixture_focus_mismatch');
     checkAbort();

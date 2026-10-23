@@ -41,7 +41,10 @@ function harness(options = {}) {
       if (name === 'observe') return { observationId: 'before-click', elements: [{ id: 'edit-id', name: 'TRACE text input', enabled: true }] };
       if (name === 'act' && args.action.type === 'click') {
         assert.equal(args.observationId, 'before-click'); assert.equal(args.action.elementId, 'edit-id');
-        return { outcome: 'completed', observation: { observationId: 'after-click', focused: { hasFocus: true, elementId: options.wrongFocus ? 'other' : 'edit-id' } } };
+        const currentId = options.changedSelectorAfterFocus ? 'fresh-edit-id' : 'edit-id';
+        return { outcome: 'completed', observation: { observationId: 'after-click',
+          elements: [{ id: currentId, name: 'TRACE text input', enabled: true }],
+          focused: { hasFocus: true, elementId: options.wrongFocus ? 'other' : currentId } } };
       }
       if (name === 'act') {
         assert.deepEqual(args.action, { type: 'press_key', key: 'CTRL+V' }); assert.equal(args.observationId, 'after-click');
@@ -122,6 +125,9 @@ test('incorrect native focus rejects clipboard mutation and the only paste befor
   assert.equal(receipt.paste.attempted, false); assert.equal(h.events.includes('restore'), true);
   assert.equal(h.events.includes('write'), false); assert.equal(h.events.includes('defer'), false);
   assert.deepEqual(receipt.focus, { publicHasFocus: true, publicMatchesObservedEdit: false, independentMatches: true, textEmpty: true });
+  const fresh = harness({ changedSelectorAfterFocus: true }), current = await fresh.run();
+  assert.equal(current.status, 'pass'); assert.equal(current.focus.publicMatchesObservedEdit, true);
+  assert.equal(fresh.events.filter(item => item === 'mcp-act-press_key').length, 1);
 });
 
 test('lost paste receipt still gets independent fixture inspection and cannot replay', async () => {
