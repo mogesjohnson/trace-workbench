@@ -32,10 +32,10 @@ function injectedRuntime(options = {}) {
     processIdentity: async appPid => { if (options.identityFails) throw Object.assign(new Error(), { code: 'identity_failed' }); return nativeIdentity(appPid, appPid + 100); },
     readyApp: async app => { if (options.readinessFails && app.label === 'editor') throw Object.assign(new Error(), { code: 'readiness_failed' });
       return { page: { label: app.label }, info: { libraryPath: path.join(root, app.label, '.replay-smoke/Library') } }; },
-    editorWindowIdentity: async app => nativeIdentity(app.process().pid, app.process().pid + 100),
-    createGrant: async page => ({ grant: { id: id(page.label === 'editor' ? 1 : 2),
+    editorWindowIdentity: async app => ({ ...nativeIdentity(app.process().pid, app.process().pid + 100), ...options.editorIdentityPatch }),
+    createGrant: async page => { events.push(`grant:${page.label}`); return { grant: { id: id(page.label === 'editor' ? 1 : 2),
       importRoots: [path.join(root, page.label, 'agent-imports')], exportRoots: [path.join(root, page.label, 'agent-exports')] },
-      setup: { mcp: { mcpServers: { replay: { label: page.label } } } } }),
+      setup: { mcp: { mcpServers: { replay: { label: page.label } } } } }; },
     connectMcp: async entry => ({ label: entry.label }),
     command: async (client, name, input, revision, requestId) => {
       calls.push({ label: client.label, name, input: structuredClone(input), revision, requestId });
@@ -220,7 +220,7 @@ test('readiness failure still retains and closes the exact returned app handle b
   assert.ok(f.events.includes('stop:editor')); assert.ok(f.events.some(value => value.startsWith('exact-exit:11:')));
 });
 
-test('acquisition checkpoints survive identity/readiness boundaries without serializing app handles or grant credentials', async () => {
+test('acquisition checkpoints retain rejected window identity without grants or retargeted cleanup', async () => {
   const failed = injectedRuntime({ identityFails: true });
   await assert.rejects(failed.workflow.advance('provision'), { code: 'identity_failed' });
   assert.deepEqual(failed.recoveryCheckpoints[0].instances, [{ label: 'editor', root: path.join(root, 'editor'), launchedPid: 11,
@@ -236,6 +236,19 @@ test('acquisition checkpoints survive identity/readiness boundaries without seri
   assert.equal(full.fixture.identity.windowId, '901');
   assert.doesNotMatch(JSON.stringify(full), /grantId|mcpServers|client|handle|transport|token/i);
   await f.workflow.cleanup();
+  for (const [field, value] of [['pid', 99], ['processCreationTime', '999999'], ['sessionId', 2]]) {
+    const rejected = injectedRuntime({ editorIdentityPatch: { [field]: value, unexpected: 'PRIVATE_CREDENTIAL' } });
+    await assert.rejects(rejected.workflow.advance('provision'), { code: 'replay_identity_changed' });
+    const captured = rejected.recoveryCheckpoints.at(-1).instances[0];
+    assert.equal(captured.identity[field], nativeIdentity(11, 111)[field]);
+    assert.equal(captured.windowIdentityCandidate[field], value);
+    assert.equal(captured.windowIdentityCandidate.unexpected, undefined);
+    assert.deepEqual(rejected.workflow.state().identityChecks, [{ label: 'editor', matches: false, mismatchedFields: [field] }]);
+    assert.equal(rejected.apps.length, 1); assert.equal(rejected.calls.length, 0);
+    assert.equal(rejected.events.some(event => event.startsWith('grant:') || event === 'launch:fixture'), false);
+    assert.equal((await rejected.workflow.cleanup()).confirmed, true);
+    assert.ok(rejected.events.includes(`exact-exit:11:${nativeIdentity(11, 111).processCreationTime}`));
+  }
 });
 
 function durableReceipt(entry, patch = {}) {
