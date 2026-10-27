@@ -12,7 +12,7 @@ Keep one implementation commit, one verification commit, and one documentation c
 
 ## Versions and releases
 
-The current implementation is `0.1.0-alpha.3.3`: alpha.3.1 added visible desktop-session ownership and alpha.3.3 adds deeper observation and not-dispatched outcomes. Alpha.3.2 native supervision is blocked by its feasibility probe, and milestone acceptance remains incomplete. `0.1.0-alpha.1` established analysis and `0.1.0-alpha.2` added the Computer Use executor. TRACE's product version is independent of upstream package and skill versions. Keep the package manifest, lockfile, and release notes consistent when changing a version. [SPEC.md](SPEC.md) records milestone acceptance.
+The current preview is `0.1.0-alpha.3.3`. Native supervision and recovery are implemented; the owner-approved production-owner replacement resolves the obsolete failed probe prerequisite at its documented scope. Functional acceptance is reconciled in [the requirement map](docs/REQUIREMENT_EVIDENCE_REVIEW.md); final versioned distribution and reviewed release remain open. TRACE versions are independent of upstream package and skill versions. Keep package, lockfile and release notes consistent when preparing a candidate; a version bump alone is not release publication.
 
 Use `v<package-version>` tags for published releases. A merged PR is not a release. Publish only after the version, artifacts, required checks, and known limits are recorded. Report CI account or billing failures as release blockers, with the run linked.
 
