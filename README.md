@@ -4,9 +4,9 @@
 
 Shared tools that give agents abilities beyond written instructions.
 
-**Prepared version:** `0.1.0` · **Status:** Windows preview; functional evidence reconciled, release pending
+**Version:** [`0.1.0`](https://github.com/mogesjohnson/trace-workbench/releases/tag/v0.1.0) · **Status:** Published for the declared Windows scope
 
-**27 October checkpoint:** 20 of 22 declared checkpoints are verified (91%, not an effort estimate). The two missing live effects passed: glow lifecycle and causal REPLAY pause. Follow the [progress plan](docs/GAP_CLOSURE_PLAN.md), [visual dashboard](docs/GAP_CLOSURE_PROGRESS.html) and [requirement checklist](docs/REQUIREMENT_EVIDENCE_REVIEW.md). Final versioned distribution and reviewed release remain open.
+**27 October release:** all 22 declared checkpoints are complete at their stated scopes. [Download v0.1.0](https://github.com/mogesjohnson/trace-workbench/releases/tag/v0.1.0) with verified source/setup ZIP and checksums. The [requirement checklist](docs/REQUIREMENT_EVIDENCE_REVIEW.md) preserves historical failures and operating limits.
 
 TRACE provides local tools for **Codex, Claude Code, Grok Build, and Gemini CLI**. The first two skills are **Reverse Engineer Anything** and **Computer Use**. The Windows executor exposes six MCP tools for discovering windows, observing screenshots and controls, acting, and releasing desktop ownership. A screen-edge glow shows when TRACE owns the desktop.
 
@@ -45,14 +45,9 @@ Review each plan before applying it. Setup pins the Windows engine locally; conf
 
 [Verification and limits](docs/VERIFICATION.md) · [Observed computer workflow](docs/OBSERVED-WORKFLOW.md)
 
-## Remaining
+## Release and operating limits
 
-- **Final review:** functional requirements have scoped support in the [requirement map](docs/REQUIREMENT_EVIDENCE_REVIEW.md). Final version, archive, reviewed integration and publication remain delivery gates.
-- **Distribution:** checkpoint CI and its exact archive passed. Final versioned artifacts need their own exact-byte installation/rollback acceptance and required hosted checks after any change. Reviewed merges and release publication remain separate.
-- **Unverified:** Grok/Gemini live behavior.
-- **Deferred:** display transitions.
-
-See [SPEC.md](SPEC.md) and the [prepared release notes](docs/RELEASE_0.1.0.md). No release is published.
+[Publication receipt](evidence/release-0.1.0/publication.json) binds the exact source, passing hosted CI and verified assets. [Release notes](docs/RELEASE_0.1.0.md) describe setup and scope. Broader display transitions, optional hosts/providers and independent background GUI operation remain unverified or deferred.
 
 ```powershell
 npm test
