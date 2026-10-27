@@ -1,0 +1,92 @@
+{
+  "caseId": "A32-RECOVERY-SUPERVISOR-DEATH-TYPING",
+  "input": "typing",
+  "failure": "supervisor-death",
+  "status": "pass",
+  "startedAt": "2026-10-21T22:27:09.111Z",
+  "cleanup": {
+    "connectionClosed": true,
+    "supervisorExited": true,
+    "inputChildExited": true,
+    "inputState": {
+      "available": true,
+      "at": "2026-10-21T22:27:31.118Z",
+      "phase": "native closed; owned fixture not yet closed",
+      "down": []
+    },
+    "fixtureExited": true,
+    "recovery": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    }
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "initialKeys": [],
+  "target": {
+    "windowId": "10620164",
+    "pid": 31640,
+    "processCreationTime": "134370952294372947"
+  },
+  "controlled": {
+    "pid": 6828,
+    "processCreationTime": "134370952401063862",
+    "inJob": true,
+    "supervisorPid": 9136
+  },
+  "held": {
+    "67": true
+  },
+  "interruptedAt": "2026-10-21T22:27:20.290Z",
+  "childExitIndependently": true,
+  "quarantine": {
+    "survivesReadOnlyChecks": true,
+    "separateArtifactRoot": true,
+    "blocksNewSession": true,
+    "doctorCode": "input_recovery_required",
+    "openCode": "input_recovery_required"
+  },
+  "recoveryApply": {
+    "recovered": true,
+    "recoveryRequired": false,
+    "processExitConfirmed": true,
+    "released": true,
+    "attempted": [
+      67
+    ],
+    "remainingDown": []
+  },
+  "keysAfter": [],
+  "effect": {
+    "text": "abc",
+    "count": 0,
+    "unchangedAfterCleanup": true
+  },
+  "followup": {
+    "outcome": "completed",
+    "before": 0,
+    "after": 1,
+    "exactIncrement": 1,
+    "provider": "pinned-engine"
+  },
+  "requestResult": {
+    "outcome": "unknown",
+    "code": "supervisor_exited"
+  },
+  "completedAt": "2026-10-21T22:27:31.369Z"
+}

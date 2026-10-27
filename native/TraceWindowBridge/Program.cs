@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 
@@ -14,7 +15,7 @@ internal static class Program
             if (!OperatingSystem.IsWindows()) throw new BridgeException("unsupported_platform", "Windows is required.");
             if (args.Length == 1 && args[0] == "info")
             {
-                Write(new { version = 1, runtime = "net9.0-windows", capabilities = new[] { "bounds", "activate", "release-left" } });
+                Write(new { version = 1, runtime = "net9.0-windows", capabilities = new[] { "identities", "identity", "bounds", "activate", "release-left" } });
                 return 0;
             }
             if (args.Length == 1 && args[0] == "release-left")
@@ -33,19 +34,51 @@ internal static class Program
                 Write(new { released = true, button = "left", alreadyReleased = !wasDown, method = "public-win32-sendinput" });
                 return 0;
             }
-            if (args.Length != 3 || (args[0] != "bounds" && args[0] != "activate") ||
+            if (args.Length is >= 2 and <= 101 && args[0] == "identities")
+            {
+                var identities = new List<object>();
+                foreach (var argument in args[1..])
+                {
+                    var pair = argument.Split(':');
+                    if (pair.Length != 2 || !long.TryParse(pair[0], out var handle) || handle <= 0 || !uint.TryParse(pair[1], out var processId) || processId == 0)
+                        throw new BridgeException("invalid_arguments", "Batch identities require exact HWND:PID pairs.");
+                    try { identities.Add(ReadIdentity(new nint(handle), processId)); }
+                    catch (Exception error)
+                    {
+                        identities.Add(new { hwnd = handle.ToString(), pid = processId,
+                            identityError = new { code = error is BridgeException bridge ? bridge.Code : "window_bridge_failed" } });
+                    }
+                }
+                Write(new { windows = identities });
+                return 0;
+            }
+            if (args.Length != 3 || (args[0] != "identity" && args[0] != "bounds" && args[0] != "activate") ||
                 !long.TryParse(args[1], out var raw) || raw <= 0 || !uint.TryParse(args[2], out var pid) || pid == 0)
                 throw new BridgeException("invalid_arguments", "Usage: TraceWindowBridge info|release-left OR bounds|activate <HWND> <PID>");
             var hwnd = new nint(raw);
             SetProcessDpiAwarenessContext(new nint(-4)); // PER_MONITOR_AWARE_V2; physical pixel geometry.
             Guard(hwnd, pid);
+            using var process = Process.GetProcessById((int)pid);
+            var creationTime = process.StartTime.ToFileTimeUtc().ToString();
+            var sessionId = process.SessionId;
+            var owner = GetWindow(hwnd, 4 /* GW_OWNER */);
+            if (args[0] == "identity")
+            {
+                Guard(hwnd, pid);
+                Write(new { hwnd = raw.ToString(), pid, processCreationTime = creationTime, sessionId,
+                    ownerWindowId = owner == 0 ? null : owner.ToInt64().ToString(), method = "public-win32-identity" });
+                return 0;
+            }
             if (args[0] == "activate") Activate(hwnd, pid);
             Guard(hwnd, pid);
             if (!GetWindowRect(hwnd, out var outer)) throw new Win32Exception(Marshal.GetLastWin32Error());
             var hr = DwmGetWindowAttribute(hwnd, 9 /* DWMWA_EXTENDED_FRAME_BOUNDS */, out var frame, Marshal.SizeOf<Rect>());
             if (hr != 0) throw new BridgeException("frame_bounds_unavailable", "DWM extended frame bounds are unavailable.");
             Guard(hwnd, pid);
-            Write(new { hwnd = raw.ToString(), pid, windowBounds = outer.ToBounds(), frameBounds = frame.ToBounds(), foreground = GetForegroundWindow() == hwnd, minimized = IsIconic(hwnd), enabled = IsWindowEnabled(hwnd), method = "public-win32-dwm" });
+            Guard(hwnd, pid);
+            Write(new { hwnd = raw.ToString(), pid, processCreationTime = creationTime, sessionId,
+                ownerWindowId = owner == 0 ? null : owner.ToInt64().ToString(),
+                windowBounds = outer.ToBounds(), frameBounds = frame.ToBounds(), foreground = GetForegroundWindow() == hwnd, minimized = IsIconic(hwnd), enabled = IsWindowEnabled(hwnd), method = "public-win32-dwm" });
             return 0;
         }
         catch (Exception error)
@@ -61,6 +94,18 @@ internal static class Program
         if (!IsWindow(hwnd)) throw new BridgeException("window_closed", "The selected window no longer exists.");
         GetWindowThreadProcessId(hwnd, out var actualPid);
         if (actualPid != expectedPid) throw new BridgeException("window_identity_changed", "The window no longer belongs to the selected process.");
+    }
+
+    private static object ReadIdentity(nint hwnd, uint pid)
+    {
+        Guard(hwnd, pid);
+        using var process = Process.GetProcessById((int)pid);
+        var created = process.StartTime.ToFileTimeUtc().ToString();
+        var session = process.SessionId;
+        var owner = GetWindow(hwnd, 4 /* GW_OWNER */);
+        Guard(hwnd, pid);
+        return new { hwnd = hwnd.ToInt64().ToString(), pid, processCreationTime = created, sessionId = session,
+            ownerWindowId = owner == 0 ? null : owner.ToInt64().ToString(), method = "public-win32-identity" };
     }
 
     private static void Activate(nint hwnd, uint pid)
@@ -120,6 +165,7 @@ internal static class Program
     [DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool IsWindow(nint hwnd);
     [DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool IsWindowEnabled(nint hwnd);
     [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(nint hwnd, out uint pid);
+    [DllImport("user32.dll")] private static extern nint GetWindow(nint hwnd, uint command);
     [DllImport("user32.dll", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool GetWindowRect(nint hwnd, out Rect rect);
     [DllImport("dwmapi.dll")] private static extern int DwmGetWindowAttribute(nint hwnd, uint attribute, out Rect value, int size);
     [DllImport("user32.dll")] private static extern nint GetForegroundWindow();

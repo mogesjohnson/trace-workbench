@@ -1,0 +1,68 @@
+{
+  "caseId": "METHOD-BROWSER",
+  "observedAt": "2026-10-20T19:03:50Z",
+  "status": "pass",
+  "scope": "Actual supplied Playwright Page in an owned headless Edge process against an owned loopback HTTP fixture; coordinated semantic browser execution and cleanup.",
+  "sourceCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+  "sourceState": "Working-tree implementation; source hashes below are authoritative for this run.",
+  "runtime": {
+    "node": "26.2.0",
+    "playwright": "1.62.1",
+    "browser": "Microsoft Edge 155.0.4283.62",
+    "platform": "Windows x64",
+    "headless": true,
+    "viewport": { "width": 1000, "height": 700 },
+    "profile": "Playwright-created isolated temporary profile and context; no existing user profile supplied.",
+    "desktopInput": false,
+    "pageNavigationScope": "Owned 127.0.0.1 fixture origin and an explicit about:blank out-of-scope rejection check."
+  },
+  "reproduce": {
+    "workingDirectory": "repository root",
+    "environment": {
+      "TRACE_PLAYWRIGHT_MODULE": "<absolute installed Playwright module directory outside checkout>",
+      "TRACE_BROWSER_EXECUTABLE": "<absolute installed Chromium-compatible browser executable>"
+    },
+    "command": "node --test tests/method-browser.test.cjs",
+    "prerequisites": "Supply the two existing private runtime paths above. No package installation, download, dependency pin change, or browser launch occurs inside the provider itself. The acceptance harness launches its owned headless process."
+  },
+  "results": { "tests": 3, "passed": 3, "failed": 0, "skipped": 0, "exitCode": 0 },
+  "cases": [
+    {
+      "name": "METHOD-BROWSER actual headless Edge fills, submits, reads and verifies once after lost reply",
+      "status": "pass",
+      "expected": "Separate fill, submit and semantic read steps; final application text matches; an intentionally lost submit receipt is reconciled without resubmission; owned task tab closes.",
+      "actual": { "verifiedResult": "Saved: Résumé 日本語", "serverSaveCount": 1, "unknownSubmitReconciled": true, "pngObserved": true, "ariaObserved": true, "consoleDiagnosticObserved": true, "ownedTabClosed": true }
+    },
+    {
+      "name": "METHOD-BROWSER actual navigation invalidates captures and disabled controls never dispatch",
+      "status": "pass",
+      "expected": "Disabled semantic control rejects before input; actual page navigation invalidates old observation; fresh bounded navigation succeeds; outside-scope page is not ready.",
+      "actual": { "disabledControlRejected": true, "stalePageRejected": true, "freshNavigationSucceeded": true, "outOfScopeRejected": true }
+    },
+    {
+      "name": "METHOD-BROWSER attached pages remain open and owned tab disposal is explicit",
+      "status": "pass",
+      "expected": "Disposing an attached provider preserves its page; disposing a created-page provider closes only the created page.",
+      "actual": { "attachedPagePreserved": true, "createdPageClosed": true }
+    }
+  ],
+  "cleanup": "Assertions verified task-owned tab disposal and attached-page preservation. Test teardown awaited context.close(), browser.close(), and loopback server.close(). This is not an independent native process/input-recovery assertion.",
+  "sourceHashes": {
+    "src/method/shared.cjs": "ae373a1d112a958cac4e1835c53c8c6126ced4a01a856b91609efdcd5bbaa11b",
+    "src/method/capabilities.cjs": "387445a1fd1bdb518cf0375f94a07857045097acbb7452c030897c3652837c31",
+    "src/method/coordinator.cjs": "11c350aa39d3932d439a218335fd4defac3070fd71eb40654ddbec925049e91f",
+    "src/method/browser-provider.cjs": "3b011610abd046f96ae8a086fe2f59b31bb2e40244d073741d88a224ed542257",
+    "src/method/index.cjs": "e244ddb29a3979f73e7b9a0f51f44425c4a806aaaeb9314830543375835a0876",
+    "tests/method-browser.test.cjs": "88b08072de118850991320d33f68ba8824a7f4fe4e7eb919ba92b1d82a4c613a"
+  },
+  "artifacts": [
+    { "path": "evidence/computer-use-method/browser/test-output.txt", "sha256": "f75462ac52cd3d5772f13c141bcdd7213b61097793ed0e0573b5980b1c69dff2" }
+  ],
+  "limits": [
+    "An owned headless browser fixture is distinct from visible native desktop input and model-host acceptance.",
+    "This proves the tested structured form/navigation/read/console/tab-lifecycle class, not arbitrary websites, authentication, downloads, popups or every browser operation.",
+    "The supplied Page and its declared origin scope are trusted integration boundaries; the provider is not a sandbox.",
+    "Browser/runtime paths remain private environment configuration outside Git; a registry entry alone does not install or connect a browser.",
+    "Physical recovery, global clipboard transactions, application lifecycle recipes and remote artifact transfer require their own evidence."
+  ]
+}

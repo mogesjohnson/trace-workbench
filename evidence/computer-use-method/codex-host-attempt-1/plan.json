@@ -1,0 +1,31 @@
+{
+  "caseId": "CODEX-TRACE-SKILL-NATIVE",
+  "attempt": 1,
+  "host": "Codex desktop active conversation",
+  "declaredBeforeUi": true,
+  "scope": "Actual connected MCP and actual model image inspection of an owned fixture; installed TRACE and REA skill discovery recorded separately.",
+  "initial": {
+    "text": "",
+    "count": 0
+  },
+  "payload": "TRACE Codex verified café 日本語",
+  "actions": [
+    "Discover exact owned PID/title and generation",
+    "Open and inspect actual PNG and accessibility",
+    "Click observed edit and verify public plus independent focus",
+    "Type the declared literal once",
+    "Invoke counter using the consumed typing observation; require stale_observation and independent unchanged count",
+    "Observe afresh; invoke counter exactly once",
+    "Independently verify exact text/count1; close native session; prove release and clear recovery; close retained owned fixture"
+  ],
+  "expected": {
+    "exactText": true,
+    "count": 1,
+    "staleRejected": true
+  },
+  "notProven": [
+    "Claude host",
+    "REPLAY real-app workflow",
+    "All native recovery or release gates"
+  ]
+}

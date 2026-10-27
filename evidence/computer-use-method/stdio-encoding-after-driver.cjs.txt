@@ -1,0 +1,27 @@
+'use strict';
+// Desktop-free private-pipe check. info does not construct ClipboardService or call clipboard APIs.
+const fs=require('node:fs/promises');
+const path=require('node:path');
+const {spawn}=require('node:child_process');
+const {createHash}=require('node:crypto');
+const {DEFAULT_CLIPBOARD,clipboardSourceHashes}=require('../src/method/clipboard-provider.cjs');
+const id='TRACE café 日本語 🙂';
+function one(bytes){return new Promise((resolve,reject)=>{
+ const child=spawn(DEFAULT_CLIPBOARD,['--stdio'],{windowsHide:true,stdio:['pipe','pipe','pipe']});
+ let out='',err='';child.stdout.on('data',c=>out+=c);child.stderr.on('data',c=>err+=c);
+ child.on('error',reject);child.stdin.on('error',()=>{});
+ child.once('exit',(code,signal)=>{let replies=[];try{replies=out.trim().split(/\r?\n/).filter(Boolean).map(JSON.parse);}catch{}
+ resolve({exitCode:code,signal,processExited:true,idExact:replies[0]?.id===id,infoResponses:replies.filter(r=>r.result?.transport==='private-inherited-stdio').length,
+   errors:replies.filter(r=>r.error).map(r=>r.error.code),stderrPresent:!!err});});
+ const split=bytes.indexOf(0xc3)+1;
+ child.stdin.write(bytes.subarray(0,split));setTimeout(()=>child.stdin.end(bytes.subarray(split)),5);
+});}
+(async()=>{
+ const unicode=Buffer.from(JSON.stringify({id,command:'info'})+'\n','utf8');
+ const invalid=Buffer.concat([Buffer.from('{"id":"'),Buffer.from([0xc3,0x28]),Buffer.from('","command":"info"}\n')]);
+ const receipt={caseId:'PRIVATE-STDIO-UTF8',observedAt:new Date().toISOString(),scope:'Actual redirected clipboard-helper info pipes only; zero ClipboardService construction, clipboard reads/writes or desktop input.',
+ executableSha256:createHash('sha256').update(await fs.readFile(DEFAULT_CLIPBOARD)).digest('hex'),source:await clipboardSourceHashes(),
+ splitUnicode:await one(unicode),malformedUtf8:await one(invalid)};
+ const file=process.argv[2];if(!file)throw Error('Report required');await fs.writeFile(path.resolve(file),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
+ console.log(JSON.stringify({splitUnicode:receipt.splitUnicode,malformedUtf8:receipt.malformedUtf8}));
+})().catch(e=>{console.error(e.code||e.name);process.exitCode=1});

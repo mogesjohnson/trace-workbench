@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "declaredBeforeUiLaunch": true,
+  "caseId": "A32-RECOVERY-MATRIX",
+  "attempt": 1,
+  "target": "One fresh owned synthetic WinForms fixture per cell, bound by discovered HWND/PID/creation time",
+  "initial": {
+    "text": "",
+    "count": 0,
+    "keysDown": [],
+    "display": {
+      "monitors": 1,
+      "displays": [
+        {
+          "device": "\\\\.\\DISPLAY1",
+          "primary": true,
+          "dpi": 144,
+          "bounds": {
+            "x": 0,
+            "y": 0,
+            "width": 2880,
+            "height": 1800
+          }
+        }
+      ]
+    }
+  },
+  "capture": {
+    "coordinateSpace": "window-local-physical-pixels",
+    "dpiAwareness": "PER_MONITOR_AWARE_V2",
+    "imageDimensions": "Original observed target-window PNG dimensions; no resizing or guessed scaling."
+  },
+  "substitution": "Private launch-file-selected backend substitutes one final pinned-engine dispatch with the source-owned controlled provider. Public tools/action schemas stay unchanged.",
+  "expected": [
+    "Physical input is independently observed held before interruption",
+    "Owned input child exit is independently established before release is accepted",
+    "Declared keyboard/buttons are independently all released",
+    "An ordinary pinned-engine follow-up increments the owned fixture exactly once",
+    "Supervisor death retains per-user quarantine; check does not clear it; a competing artifact-root owner is blocked; verified apply clears it"
+  ],
+  "literalEffect": "Interrupted type-hold produces ab followed by one or more c characters because the deliberately held final key can autorepeat; retain exact observed synthetic text and verify it stops changing after cleanup.",
+  "cells": [
+    {
+      "id": "A32-RECOVERY-NODE-DEATH-CHORD",
+      "failure": "node-death",
+      "input": "chord"
+    }
+  ],
+  "cleanup": "Close native/MCP ownership before the owned fixture; preserve uncertainty and stop the matrix after a failed or blocked cell.",
+  "betweenCases": "Optional private preparation of a separately owned ordinary anchor only after independent input-child/native-owner exit, closed MCP, all-up input and clear recovery. Preparation is recorded separately and never substitutes for recovery proof.",
+  "budget": "One attempt plus one corrective retry, only with explicit prior evidence and a changed precondition. Fresh directories never erase earlier outcomes.",
+  "outsideScope": {
+    "physicalEscape": "not_run: requires an actual physical key press",
+    "failedCleanupAcknowledgement": "not_run: requires a native two-phase fault seam after independent real-input release confirmation",
+    "pinnedEngineDispatch": "Only setup and follow-up use the pinned engine; held input is the labeled controlled provider.",
+    "liveModelHosts": "not_run"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CODEX-TRACE-SKILL-NATIVE",
+  "continuationAttempt": 2,
+  "lifetimeAttemptOrdinal": 4,
+  "status": "blocked",
+  "actualScope": {
+    "exactUnicode": "pass",
+    "publicAndIndependentFocus": "pass",
+    "staleErrorCode": "stale_observation",
+    "independentCounterAfterRejection": 0,
+    "fullRecoveryCounter": "not_run"
+  },
+  "actualStaleResult": {
+    "error": {
+      "code": "stale_observation",
+      "message": "Use the latest observationId. Every action consumes it."
+    }
+  },
+  "sourceFinding": "Consumed and expired observation guards reject before backend.act; their thrown errors currently lack explicit outcome metadata, and server.errorResult projects only code/message. The actual stale error therefore lacks the top-level not_dispatched required by the approved case.",
+  "cleanup": "Actual connected close completed; explicit cleanup-only reconciliation independently verified exact helper-generation exits, attached host identity, all-up input, clear recovery and exact fixture exit. No native session or owned fixture remains.",
+  "attemptBudget": "Both approved supplemental attempts are consumed. No fifth lifetime attempt is authorized.",
+  "historicalReceiptsPreserved": true,
+  "correctiveWork": "Add explicit proven pre-dispatch metadata to the two stale guards and preserve it at the MCP boundary; never infer non-dispatch from an arbitrary error-code string. Require meaningful controller/actual MCP transport tests before any future live plan."
+}

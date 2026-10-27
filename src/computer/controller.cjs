@@ -8,7 +8,9 @@ const { DesktopLease } = require('./lease.cjs');
 const { ActivityIndicator } = require('./activity-indicator.cjs');
 
 const fail = (code, message) => Object.assign(new Error(message), { code });
-const identityMatches = (a, b) => a && b && a.id === b.id && a.pid === b.pid && a.processName === b.processName;
+const identityMatches = (a, b) => a && b && a.id === b.id && a.pid === b.pid && a.processName === b.processName
+  && (b.processCreationTime === undefined || a.processCreationTime === b.processCreationTime)
+  && (b.sessionId === undefined || a.sessionId === b.sessionId);
 function safeError(error) {
   const result = { code: error.code ?? 'backend_error', message: String(error.message).slice(0, 1500) };
   if (['unknown', 'not_dispatched'].includes(error.details?.outcome)) result.outcome = error.details.outcome;
@@ -16,9 +18,11 @@ function safeError(error) {
   if (recovery && typeof recovery.attempted === 'boolean') {
     result.recovery = { attempted: recovery.attempted };
     if (typeof recovery.released === 'boolean') result.recovery.released = recovery.released;
+    if (typeof recovery.processExitConfirmed === 'boolean') result.recovery.processExitConfirmed = recovery.processExitConfirmed;
     if (recovery.button === 'left') result.recovery.button = 'left';
     if (recovery.method === 'public-win32-sendinput') result.recovery.method = recovery.method;
-    if (['native_drained', 'not_dispatched', 'process_exit_unconfirmed'].includes(recovery.reason)) result.recovery.reason = recovery.reason;
+    if (recovery.method === 'declared-sendinput') result.recovery.method = recovery.method;
+    if (['native_drained', 'not_dispatched', 'process_exit_unconfirmed', 'cancelled', 'native_timeout', 'physical_escape', 'parent_exited', 'stdin_eof', 'normal_exit', 'operation_failed', 'input_release_unconfirmed'].includes(recovery.reason)) result.recovery.reason = recovery.reason;
     if (typeof recovery.code === 'string' && /^[a-z_]{1,64}$/.test(recovery.code)) result.recovery.code = recovery.code;
   }
   if (Array.isArray(error.details?.preparation)) {
@@ -89,8 +93,8 @@ function createComputerController(options = {}) {
   const runtimeDirectory = path.resolve(options.runtimeDirectory ?? defaultRuntimeDirectory());
   // Artifact directories may differ between hosts. Desktop ownership must not.
   // userInfo comes from the OS rather than the configurable artifact path.
-  const lease = options.lease ?? new DesktopLease(path.join(os.userInfo().homedir, '.trace-desktop-lease'));
-  const indicator = options.indicator ?? new ActivityIndicator();
+  const lease = options.lease ?? backend.supervisor ?? new DesktopLease(path.join(os.userInfo().homedir, '.trace-desktop-lease'));
+  const indicator = options.indicator ?? backend.supervisor?.indicator() ?? new ActivityIndicator();
   const observationTtlMs = options.observationTtlMs ?? 60000;
   const now = options.now ?? Date.now;
   const shutdown = new AbortController();
@@ -134,8 +138,8 @@ function createComputerController(options = {}) {
     }
   }
   async function currentWindow(session, signal) {
-    const windows = await backend.listWindows({ signal });
-    const current = windows.find(window => window.id === session.window.id);
+    const current = backend.currentWindow ? await backend.currentWindow(session.window, { signal })
+      : (await backend.listWindows({ signal })).find(window => window.id === session.window.id);
     if (!identityMatches(current, session.window)) {
       session.observation = null;
       throw fail('window_changed', 'The selected window closed or its process identity changed. Open a new session.');
@@ -172,6 +176,8 @@ function createComputerController(options = {}) {
       elements: snapshot.elements ?? [], observedAt: new Date(observedAtMs).toISOString(),
       coordinateSpace: 'window-local-physical-pixels', captureMethod: snapshot.captureMethod ?? 'native-window',
       accessibility: { truncated: snapshot.truncated === true, depth: snapshot.depth },
+      focused: snapshot.focused ? { ...snapshot.focused } : { available: false, code: 'focus_unavailable' },
+      targetState: snapshot.targetState ?? { available: false },
       ...(snapshot.restoredFromMinimized === true ? { preparation: [{ step: 'restore', status: 'restored' }] } : {}),
       screenshot: { data: bytes.toString('base64'), mimeType: 'image/png', width, height, sha256: createHash('sha256').update(bytes).digest('hex') },
     };
@@ -195,7 +201,9 @@ function createComputerController(options = {}) {
       return queued(async signal => {
         const selected = discovered.get(windowId);
         if (!selected) throw fail('unknown_window', 'Select a windowId returned by list_windows.');
-        const current = targetWindows(await backend.listWindows({ signal })).find(window => window.id === windowId);
+        if (selected.identity?.available === false) throw fail('window_identity_unavailable', 'The selected window identity could not be inspected. Choose an available target.');
+        const current = backend.currentWindow ? await backend.currentWindow(selected, { signal })
+          : targetWindows(await backend.listWindows({ signal })).find(window => window.id === windowId);
         if (!identityMatches(selected, current)) throw fail('window_changed', 'The discovered window changed. Refresh the window list.');
         const id = randomUUID();
         await lease.acquire(id);
@@ -228,10 +236,12 @@ function createComputerController(options = {}) {
         signal = markedSignal(signal);
         await lease.assert(sessionId);
         const observation = session.observation;
-        if (!observation || observation.id !== observationId) throw fail('stale_observation', 'Use the latest observationId. Every action consumes it.');
+        // These guards run before backend.act. Preserve that proof on the rejected
+        // promise; the public MCP boundary must not infer dispatch from a code name.
+        if (!observation || observation.id !== observationId) throw Object.assign(fail('stale_observation', 'Use the latest observationId. Every action consumes it.'), { details: { outcome: 'not_dispatched' } });
         if (now() - observation.observedAtMs > observationTtlMs) {
           session.observation = null;
-          throw fail('stale_observation', 'Observation expired. Observe again before input.');
+          throw Object.assign(fail('stale_observation', 'Observation expired. Observe again before input.'), { details: { outcome: 'not_dispatched' } });
         }
         const checked = validateAction(action, observation.result);
         session.observation = null;
@@ -239,18 +249,21 @@ function createComputerController(options = {}) {
         signal.throwIfAborted();
         const actionId = randomUUID();
         await record(session, { type: 'action_started', actionId, observationId, actionType: checked.type });
+        let nativeCompleted = false;
         try {
           signal.throwIfAborted();
           indicator.assertActive();
           const nativeResult = await backend.act({ window: session.window, observation: observation.snapshot, action: checked, signal });
+          nativeCompleted = true;
           const fresh = await observeInternal(session, signal, observation.snapshot.depth);
           await record(session, { type: 'action_completed', actionId, observationId: fresh.observationId });
           return { actionId, outcome: 'completed', verification: 'fresh_observation', nativeResult, observation: fresh };
         } catch (error) {
           session.observation = null;
-          const outcome = error.details?.outcome === 'not_dispatched' ? 'not_dispatched' : 'unknown';
+          const outcome = !nativeCompleted && error.details?.outcome === 'not_dispatched' ? 'not_dispatched' : 'unknown';
           await record(session, { type: outcome === 'not_dispatched' ? 'action_not_dispatched' : 'action_unknown', actionId, errorCode: error.code ?? 'backend_error' }).catch(() => {});
           const projected = safeError(error);
+          if (nativeCompleted && projected.outcome === 'not_dispatched') projected.outcome = 'unknown';
           if (outcome === 'not_dispatched' && !indicator.signal.aborted && !projected.inputRecoveryRequired) {
             return { actionId, outcome, error: projected, nextStep: 'The requested input was not sent. Observe again and resolve the reported condition before at most one new attempt.' };
           }

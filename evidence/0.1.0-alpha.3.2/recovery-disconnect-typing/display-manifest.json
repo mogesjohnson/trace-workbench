@@ -1,0 +1,24 @@
+{
+  "observedAt": "2026-10-21T22:19:33.551Z",
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "capture": {
+    "coordinateSpace": "window-local-physical-pixels",
+    "dpiAwareness": "PER_MONITOR_AWARE_V2",
+    "imageDimensions": "Original observed target-window PNG dimensions; no resizing or guessed scaling."
+  }
+}

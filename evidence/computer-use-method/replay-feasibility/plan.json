@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "caseId": "TRACE-REPLAY-TWO-INSTANCE-FEASIBILITY",
+  "attempt": 1,
+  "status": "running",
+  "startedAt": "2026-10-22T13:42:48.354Z",
+  "scope": "Two isolated native REPLAY instances; second captures the exact first editor via public MCP. No TRACE input or full APP-01 editing/export acceptance.",
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "cleanup": {},
+  "paidRequests": 0,
+  "nativeInputActions": 0,
+  "declaredBeforeUi": true,
+  "initial": "Two fresh smoke roots, synthetic test video, existing pinned package; real libraries untouched.",
+  "actions": [
+    "Generate synthetic video; launch two smoke instances with both isolation flags.",
+    "Verify exact independent libraries, app HWND/PID and separate MCP grants.",
+    "Play the first synthetic project using its API; select its exact HWND from second capture.sources.",
+    "Record four seconds through public MCP; stop by exact recordingId.",
+    "Probe actual recording and decode two frames; verify nonblack/different pixels and inspect a retained private frame.",
+    "Close transports; revoke owned grants; close retained app processes."
+  ],
+  "expected": {
+    "durationSeconds": "1.5 to 12",
+    "minimumWidth": 400,
+    "minimumHeight": 300,
+    "distinctInstances": true,
+    "decodedFramesDiffer": true,
+    "exactTarget": true
+  },
+  "budget": "One attempt plus one corrective attempt after a recorded change. No silent retry."
+}

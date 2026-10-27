@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "caseId": "R31-GLOW-NATIVE",
+  "attempt": 2,
+  "status": "blocked",
+  "receiptPreserved": true,
+  "observations": {
+    "nativeOwnershipAndVisibleGlow": "passed",
+    "referenceTool": "One actual sky.click on the observed edge button completed; no replay.",
+    "requestedPhysicalPoint": {
+      "x": 7,
+      "y": 900
+    },
+    "fixtureRecordedPhysicalPoint": {
+      "x": 5,
+      "y": 900
+    },
+    "postTerminalCounters": {
+      "count": 1,
+      "mouseClickCount": 1,
+      "mouseDownCount": 1,
+      "mouseUpCount": 0,
+      "activationCount": 1
+    },
+    "userReported": "User supplied an image of a WinForms Access to path is denied exception and reported clicking its continuation/allow action.",
+    "terminalCleanup": "MCP/native/marker/fixture exits and all-up input/clear quarantine confirmed in original receipt; separate owned anchor also closed."
+  },
+  "diagnosis": {
+    "observedCodeDefect": "WriteStatus caught IOException but allowed UnauthorizedAccessException to escape GUI event dispatch.",
+    "unproven": "The exact original failing file operation and lock holder were not retained; temporary publication contention is a supported hypothesis, not a proven original lock attribution.",
+    "separateGap": "Reference clickable point differed from planned exact screen point; successful button activation does not satisfy the existing exact-coordinate oracle."
+  },
+  "fix": {
+    "receipt": "evidence/computer-use-method/glow-status-publication.json",
+    "behavior": "One payload write to a unique temp file; retry only atomic publication, bounded to seven attempts/126 ms wait; permanent failure latched and fixture exits nonzero; harness rejects stale state after owned exit.",
+    "scope": "File-only regression; no repeat of the exhausted full glow case."
+  },
+  "references": [
+    "receipt.json",
+    "reference-tool.json",
+    "post-terminal-fixture-status.json"
+  ]
+}

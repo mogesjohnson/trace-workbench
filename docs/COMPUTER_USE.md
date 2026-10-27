@@ -15,9 +15,9 @@ npm run computer:config -- --plan
 npm run computer:config -- --apply
 ```
 
-Engine setup downloads Microsoft winapp CLI `0.7.1`, checks the pinned archive and native-file hashes, and builds TRACE's public Win32 window bridge and screen-edge activity marker under ignored `.runtime/` storage. The marker builds against an empty local package feed. Setup does not install global tools or change PATH. After helper source changes, rerun setup before using them; diagnostics verify source/output hashes without opening UI.
+Engine setup downloads Microsoft winapp CLI `0.7.1`, checks the pinned archive and native-file hashes, and builds TRACE's public Win32 window bridge, screen-edge activity marker, native input supervisor and text-only clipboard helper under ignored `.runtime/` storage. Helpers build against an empty local package feed. Setup does not install global tools or change PATH. After helper source changes, rerun setup before using them; diagnostics verify source/output hashes without opening UI or reading clipboard contents.
 
-Configuration adds `trace-computer` to Codex, Claude Code, Grok Build and Gemini CLI. It preserves unrelated parsed settings, creates exact-byte `.trace.backup.*` files, and refuses conflicting server entries or skill content. TOML layout is preserved where possible; inline-table layouts may be normalized. Inspect reported partial progress before retrying a failed write.
+Configuration adds `trace-computer` to Codex, Claude Code, Grok Build and Gemini CLI. It preserves unrelated parsed settings and refuses conflicting server entries or skill content. Client settings retain exact-byte `.trace.backup.*` files. Complete skill bundles use per-file ownership hashes and exact backups under the private `.trace/skill-backups` directory outside skill discovery. TOML layout is preserved where possible; inline-table layouts may be normalized. Inspect reported partial progress before retrying a failed write.
 
 Use identical repeated `--client` options with both plan and apply to narrow the scope. Client names are `codex`, `claude_code`, `grok_build`, and `gemini_cli`.
 
@@ -38,11 +38,20 @@ The server supports activation, coordinate/element clicks, typing, allowed key c
 
 Frames and a metadata journal are stored locally under the OS user's TRACE computer-data directory. `TRACE_COMPUTER_RUNTIME` can select another absolute artifact directory; this does not change the global per-user desktop lease. Journals omit typed text, editable values and screenshot bytes. Frames themselves can contain private content.
 
-A live session retains its desktop lease until closed or disconnected. Windows releases the named-pipe lease after process termination. Cancelled/failed input returns an unknown outcome when delivery cannot be established; re-observe before deciding whether to retry. Human activity or other automation can still change the desktop.
+The current implementation starts a detached native supervisor per desktop session. It owns the global per-user lease and marker and assigns each operation child to a kill-on-close job while suspended. Mutating input has a durable encrypted recovery record before execution. Session readiness and operation completion are published only after their corresponding native lifecycle gates. Cancelled/failed input returns an unknown outcome when delivery cannot be established; re-observe before deciding whether to retry. Human activity or other automation can still change the desktop.
 
 The marker does not activate a window or intercept clicks. If it cannot start, the session is rejected. If it exits unexpectedly, TRACE stops further input and cancels in-flight work. Verify the action outcome and cleanup, then close the failed session before reopening. The glow shows desktop ownership; it does not isolate the user from input. [Background worker research](BACKGROUND_WORKER.md) records the separate VM/PC proposal and acceptance requirements.
 
-Interrupted pointer gestures get a short drain interval, then owned-process termination and left-button recovery after confirmed exit. Failed recovery blocks further input in that server and reports `input_recovery_required`. This quarantine is process-local: check the owned process and mouse state before restarting or switching servers. The alpha.3 held-drag test verifies a native cancellation/release primitive followed by a click. It bypasses MCP action cancellation; full live cancellation, timeout, disconnect, server-crash and failed-cleanup acceptance remain pending. Lease-release unit tests do not prove physical input cleanup after a server crash.
+Interrupted operations get a bounded drain interval, job termination and exit verification before declared keyboard/buttons are balanced. Failed or unconfirmed cleanup retains per-user recovery state across controllers and artifact directories. Restarting a server does not clear it. Inspect and apply recovery with:
+
+```powershell
+node bin/trace.cjs computer recover --check
+node bin/trace.cjs computer recover --apply
+```
+
+Inspection does not clear state. Apply validates recorded process creation/user/session identity, confirms owned-process exit and verifies input release before clearing. Unavailable foreground/desktop input access remains unresolved. Physical Escape during held mouse and keyboard input has passed scoped acceptance; a separate injected Escape case remained an ordinary action. [The gap-closure checkpoint](GAP_CLOSURE_STATUS.md) distinguishes source, ordinary operation and recovery receipts. Controlled held-mouse timeout, chord cancellation and failed-acknowledgement mouse quarantine also have passing MCP evidence with independent release and exact follow-up; other recovery cells remain incomplete. The historical alpha.3 primitive is not substituted for those cases.
+
+The [method library](../src/method/README.md) composes these six tools with ready structured-browser, application-recipe and artifact providers. Its canonical guidance is installed as one manifest-owned skill bundle. A supplied Playwright Page and host-specific application ownership inspector remain explicit runtime dependencies; installing instructions alone cannot provide them. Clipboard transactions are explicitly text-only and reject unsupported formats before mutation. Before any native paste, durably defer automatic restoration; acknowledge input quiescence only after owned native cleanup is independently confirmed. Helper EOF or close then preserves recovery instead of exposing private original bytes to an uncertain late paste. Actual paste/restoration acceptance is separate from native input acceptance.
 
 To recover configuration, close the affected host, restore its matching backup, and reconnect. Restore the shared skill and discovery copies together if rolling back. Existing differing entries are reported as conflicts rather than silently replaced.
 

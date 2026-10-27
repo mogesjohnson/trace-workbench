@@ -1,0 +1,66 @@
+'use strict';
+// Owned-fixture lifecycle only. Native UI actions are made by the actual Codex MCP tools.
+const fs = require('node:fs/promises');
+const path = require('node:path');
+const {createHash,randomUUID}=require('node:crypto');
+const root=path.resolve(__dirname,'..');
+const {command}=require('../scripts/accept-supervisor-quarantine.cjs');
+const {launchOwnedFixture}=require('../scripts/accept-clipboard.cjs');
+const {supervisorSourceHashes,verifySupervisorFiles}=require('../src/computer/supervisor.cjs');
+const {loadInstalledBundle}=require('../scripts/accept-claude-host.cjs');
+const sha=b=>createHash('sha256').update(b).digest('hex');
+const delay=ms=>new Promise(r=>setTimeout(r,ms));
+(async()=>{
+ const evidence=path.join(root,'evidence/computer-use-method/codex-host-attempt-2');
+ await fs.mkdir(evidence);
+ const directory=path.join(root,'.runtime','codex-host',randomUUID()); await fs.mkdir(directory,{recursive:true});
+ const plan={caseId:'CODEX-TRACE-SKILL-NATIVE',attempt:2,prior:'evidence/computer-use-method/codex-host-attempt-1/receipt.json',changedPrecondition:'Acceptance-only managed-bundle validation now preserves unrelated regular backup files; strict canonical validation is unchanged.',host:'Codex desktop active conversation',declaredBeforeUi:true,
+ scope:'Actual connected MCP and actual model image inspection of an owned fixture; installed TRACE and REA skill discovery recorded separately.',
+ initial:{text:'',count:0},payload:'TRACE Codex verified café 日本語',
+ actions:['Discover exact owned PID/title and generation','Open and inspect actual PNG and accessibility','Click observed edit and verify public plus independent focus','Type the declared literal once','Invoke counter using the consumed typing observation; require stale_observation and independent unchanged count','Observe afresh; invoke counter exactly once','Independently verify exact text/count1; close native session; prove release and clear recovery; close retained owned fixture'],
+ expected:{exactText:true,count:1,staleRejected:true},notProven:['Claude host','REPLAY real-app workflow','All native recovery or release gates']};
+ await fs.writeFile(path.join(evidence,'plan.json'),JSON.stringify(plan,null,2)+'\n',{flag:'wx'});
+ await fs.copyFile(__filename,path.join(evidence,'driver.cjs.txt'));
+ const receipt={caseId:plan.caseId,attempt:2,prior:plan.prior,changedPrecondition:plan.changedPrecondition,host:plan.host,scope:plan.scope,status:'running',startedAt:new Date().toISOString(),cleanup:{},events:[]};
+ const save=()=>fs.writeFile(path.join(evidence,'receipt.json'),JSON.stringify(receipt,null,2)+'\n');
+ let fixture;
+ try{
+  await save(); await verifySupervisorFiles();
+  receipt.display=await command(['display']);
+  if((await command(['status'])).recoveryRequired) throw Object.assign(new Error(),{code:'input_recovery_required'});
+  if((await command(['input-access'])).observable!==true)throw Object.assign(new Error(),{code:'input_state_unavailable'});
+  if((await command(['keystate','all'])).down.length)throw Object.assign(new Error(),{code:'input_busy'});
+  const bundle=await loadInstalledBundle(path.join(require('node:os').homedir(),'.agents/skills/trace-computer-use'));
+  receipt.skills={traceBundleSha256:bundle.bundleSha256,reaSkillSha256:sha(await fs.readFile(path.join(require('node:os').homedir(),'.agents/skills/reverse-engineer-anything/SKILL.md'))),source:'Actual active Codex skill catalog plus model-read installed instructions/references; REA analysis not rerun.'};
+  receipt.testedSource={baseCommit:'2870cb9f307a3be5315266e1c7a0eecf725c4f53',workingTreeModified:true,files:await supervisorSourceHashes()};
+  for(const name of ['scripts/accept-clipboard.cjs','src/computer/server.cjs','src/computer/controller.cjs','src/computer/winapp-backend.cjs','tests/fixtures/computer-app/Program.cs'])receipt.testedSource.files[name]=sha(await fs.readFile(path.join(root,name)));
+  const executable=path.join(root,'.runtime/computer-fixture/bin/TraceComputerFixture.exe');
+  receipt.fixtureSha256=sha(await fs.readFile(executable));
+  fixture=await launchOwnedFixture({executable,directory});
+  const initial=await fixture.state(); if(initial.text!==''||initial.count!==0)throw Object.assign(new Error(),{code:'initial_mismatch'});
+  receipt.target={pid:fixture.pid,title:fixture.title}; await save();
+  await fs.writeFile(path.join(directory,'ready.json'),JSON.stringify(receipt.target));
+  console.log(JSON.stringify({ready:true,directory,target:receipt.target,payload:plan.payload}));
+  let index=0,done=false;
+  while(!done){
+   const file=path.join(directory,`command-${++index}.json`);
+   for(let i=0;;i++){try{await fs.access(file);break;}catch(e){if(e.code!=='ENOENT')throw e;if(i>=6000)throw Object.assign(new Error(),{code:'host_checkpoint_timeout'});await delay(100);}}
+   const action=JSON.parse(await fs.readFile(file,'utf8'));
+   const state=await fixture.state();
+   const safe={count:state.count,textExact:state.text===plan.payload,textEmpty:state.text==='',focusedControl:state.focusedControl};
+   receipt.events.push({step:action.step,at:new Date().toISOString(),independent:safe,hostEvidence:action.evidence||{}});
+   if(action.type==='finish'){
+    receipt.effect={exactSyntheticText:safe.textExact,count:state.count};
+    receipt.cleanup.keysDown=(await command(['keystate','all'])).down;
+    receipt.cleanup.recoveryRequired=(await command(['status'])).recoveryRequired;
+    if(action.evidence?.sessionClosed!==true||receipt.cleanup.keysDown.length||receipt.cleanup.recoveryRequired)throw Object.assign(new Error(),{code:'cleanup_unconfirmed'});
+    receipt.cleanup.fixture=await fixture.close(); fixture=null;
+    const stale=receipt.events.find(e=>e.step==='stale-rejected');
+    receipt.status=safe.textExact&&state.count===1&&stale?.hostEvidence?.code==='stale_observation'&&stale.independent.count===0&&stale.independent.textExact?'pass':'fail';done=true;
+   }
+   await save(); await fs.writeFile(path.join(directory,`reply-${index}.json`),JSON.stringify({step:action.step,independent:safe,status:receipt.status}));
+  }
+ }catch(e){receipt.status='blocked';receipt.error={code:/^[a-zA-Z0-9_-]+$/.test(e.code||'')?e.code:'host_fixture_failure'};
+  if(fixture){try{const state=await command(['status']),keys=await command(['keystate','all']);if(!state.recoveryRequired&&!keys.down.length&&!state.ownerAlive){receipt.cleanup.fixture=await fixture.close();fixture=null;}}catch{}}
+ }finally{receipt.completedAt=new Date().toISOString();receipt.cleanup.fixtureRetained=!!fixture;await save();console.log(JSON.stringify({terminal:true,status:receipt.status,cleanup:receipt.cleanup,error:receipt.error}));}
+})().catch(e=>{console.error(e.code||e.name);process.exitCode=1;});

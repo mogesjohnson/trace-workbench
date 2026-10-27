@@ -1,0 +1,41 @@
+'use strict';
+const fs=require('node:fs/promises'),path=require('node:path'),{spawn,execFile}=require('node:child_process'),{promisify}=require('node:util'),{randomUUID}=require('node:crypto');
+const ROOT=path.resolve(__dirname,'..'),exec=promisify(execFile),delay=ms=>new Promise(r=>setTimeout(r,ms));
+const {run}=require('../scripts/accept-supervisor-recovery.cjs');
+const {prepareAcceptanceForeground}=require('../scripts/acceptance-foreground.cjs');
+const {WinappBackend,DEFAULT_BRIDGE}=require('../src/computer/winapp-backend.cjs');
+const {DEFAULT_SUPERVISOR}=require('../src/computer/supervisor.cjs');
+const {exited}=require('../scripts/accept-supervisor-quarantine.cjs');
+const command=async args=>JSON.parse((await exec(DEFAULT_SUPERVISOR,args,{windowsHide:true})).stdout);
+const directory=(f,i)=>path.join(ROOT,`evidence/0.1.0-alpha.3.2/recovery-${f}-${i}${f==='disconnect'&&i==='chord'?'-attempt-2':''}`);
+async function main(){
+ const cells=[['disconnect','chord'],['disconnect','typing'],...['node-death','supervisor-death'].flatMap(f=>['mouse','chord','typing'].map(i=>[f,i]))];
+ const access=await command(['input-access']),keys=await command(['keystate','all']),recovery=await command(['status']);
+ console.log(JSON.stringify({phase:'PREFLIGHT',observable:access.observable,code:access.code,heldCount:keys.down.length,recoveryRequired:recovery.recoveryRequired}));
+ if(!access.observable||keys.down.length||recovery.recoveryRequired)throw new Error('preflight_blocked_no_case_started');
+ for(const [f,i] of cells)try{await fs.access(directory(f,i));throw new Error('existing_case_directory');}catch(e){if(e.code!=='ENOENT')throw e;}
+ const privateRoot=path.join(ROOT,'.runtime','matrix-anchor-'+randomUUID());await fs.mkdir(privateRoot);
+ await fs.writeFile(path.join(privateRoot,'plan.json'),JSON.stringify({setup:'Exact owned ordinary anchor, no injected input; activation only after native cleanup',cells,scope:'One corrective disconnect-chord retry after journal-only fix; other listed cells are new attempts; exhausted cancellation cases excluded'},null,2));
+ const runId='matrix-anchor-'+randomUUID(),statePath=path.join(privateRoot,'fixture.json');
+ const child=spawn(path.join(ROOT,'.runtime/computer-fixture/bin/TraceComputerFixture.exe'),['--run-id',runId,'--receipt',statePath,'--commands',path.join(privateRoot,'commands.json')],{stdio:'ignore',windowsHide:false});
+ let anchor;try{
+  for(let n=0;n<100;n++){try{await fs.access(statePath);break;}catch{}await delay(50);}
+  const backend=new WinappBackend(),matches=(await backend.listWindows()).filter(w=>w.pid===child.pid&&w.title===`TRACE Computer Fixture — ${runId}`);await backend.close();
+  if(matches.length!==1)throw new Error('anchor_discovery_failed');const t=matches[0];anchor={hwnd:t.id,pid:t.pid,processCreationTime:t.processCreationTime,sessionId:t.sessionId};
+  await fs.writeFile(path.join(privateRoot,'owner.json'),JSON.stringify(anchor));
+  const prepareForeground=proof=>prepareAcceptanceForeground({anchor,inspectSafety:async()=>({available:proof.mcpClosed===true&&proof.nativeOwnerExitVerified===true&&proof.inputChildExitVerified===true,leaseActive:false,nativeOperationActive:false,inputChildExitVerified:proof.inputChildExitVerified,input:{available:true,down:(await command(['keystate','all'])).down},recovery:{available:true,...await command(['status'])}})});
+  const initial=await prepareForeground({mcpClosed:true,nativeOwnerExitVerified:true,inputChildExitVerified:true});console.log(JSON.stringify({phase:'ANCHOR',...initial}));if(!initial.prepared)throw new Error('anchor_preparation_failed');
+  for(const [failure,input] of cells){
+   const retry=failure==='disconnect'&&input==='chord';
+   const result=await run({mode:'live',directory:directory(failure,input),caseId:`A32-RECOVERY-${failure.toUpperCase()}-${input.toUpperCase()}`,attempt:retry?2:1,...(retry?{prior:path.join(ROOT,'evidence/0.1.0-alpha.3.2/recovery-disconnect-chord'),change:'Fixed Windows journal sharing violation with bounded rename-only retries; no input replay; terminal RPC result now retained.'}:{}),prepareForeground});
+   const receipt=JSON.parse(await fs.readFile(path.join(directory(failure,input),`a32-recovery-${failure}-${input}/receipt.json`)));
+   console.log(JSON.stringify({phase:'CELL',status:result.status,cases:result.cases,preparation:receipt.cleanup.foregroundPreparation}));
+   if(result.status!=='pass'||receipt.cleanup.foregroundPreparation?.prepared!==true)break;
+  }
+ }finally{
+  let exact=false,released=false;try{if(anchor){const actual=JSON.parse((await exec(DEFAULT_BRIDGE,['identity',anchor.hwnd,String(anchor.pid)],{windowsHide:true})).stdout);exact=actual.processCreationTime===anchor.processCreationTime&&actual.sessionId===anchor.sessionId;}released=(await command(['status'])).recoveryRequired===false&&(await command(['keystate','all'])).down.length===0;}catch{}
+  let closed=false;if((exact||!anchor)&&released){child.kill();try{closed=await exited(child.pid,5000);}catch{}}else child.unref();
+  console.log(JSON.stringify({phase:'ANCHOR-CLEANUP',exactIdentity:exact,inputReleased:released,independentExitConfirmed:closed,retained:!closed}));
+ }
+}
+main().catch(e=>{console.error(e.code||e.message);process.exitCode=1});

@@ -1,0 +1,42 @@
+{
+  "caseId": "METHOD-APPLICATION-RECIPE",
+  "observedAt": "2026-10-21T02:57:44Z",
+  "status": "pass",
+  "scope": "Known-application recipe lifecycle using actual source-owned non-GUI Node child processes and challenged IPC identity/document readback. No GUI application or native input was launched.",
+  "runtime": { "node": "26.2.0", "platform": "Windows x64", "shell": false, "desktopInput": false },
+  "command": "node --test tests/method-application.test.cjs",
+  "results": { "tests": 8, "passed": 8, "failed": 0, "skipped": 0, "exitCode": 0 },
+  "sourceState": "Working-tree implementation; source hashes identify the tested files. Runtime temporary roots, profile paths, document paths and process IDs are deliberately omitted.",
+  "cases": [
+    { "name": "known recipe actually launches shell:false non-GUI child with exact Unicode document and profile arguments", "status": "pass", "actual": "Configured executable and literal argument vector launched one source-owned child. Spaces, ampersand and Unicode remained part of one document argument. Its actual IPC response reported the configured profile and independently read document bytes; coordinator effect verification passed. Explicit created-resource disposal confirmed child exit." },
+    { "name": "attach verifies actual PID and creation generation without launching and preserves attached resources", "status": "pass", "actual": "An already-running fixture was attached by explicit PID plus its observed per-instance generation. Adapter disposal left that attached process running; the test harness later cleaned its own fixture." },
+    { "name": "invalid document paths and arbitrary executable/argument fields fail before any child exists", "status": "pass", "actual": "Relative paths, paths outside document roots, directories, public executable fields, arbitrary argument fields and a mismatched host environment were rejected without launching a child." },
+    { "name": "actual process lifetime revalidation prevents stale reads and killing a PID-replacement candidate", "status": "pass", "actual": "A changed generation injected into the actual fixture inspector response rejected both observation and disposal; the real child remained alive. Restoring the correct inspection allowed owned disposal." },
+    { "name": "uncertain post-launch inspection retains the owned process and never falls back to another launch", "status": "pass", "actual": "Inspection failure after actual spawn returned unknown delivery and cleanup. A second launch was rejected while the first child remained tracked; explicit verified disposal later cleaned it." },
+    { "name": "wrong-generation attach is rejected without launch fallback or terminating the actual process", "status": "pass", "actual": "Mismatched supplied generation rejected attachment. No replacement process was launched and the actual fixture remained running." },
+    { "name": "exact application slot selects the correct profile among ready providers of the same app", "status": "pass", "actual": "The registry used advertised exact windowIds to select the requested second profile rather than the higher-ranked other instance. Actual child inspection confirmed that selected profile." },
+    { "name": "unsuccessful owned-process termination retains cleanup quarantine and cannot report ready", "status": "pass", "actual": "A controlled kill(false) branch retained the actual child, cleanup unknown and unavailable/quarantined diagnostics. Restoring termination allowed confirmed cleanup." }
+  ],
+  "documentProof": { "syntheticContentBytes": 27, "sha256": "fbee5280495a031b3736996d0901dbed213f91be0e6271dbd131d72e0d3dba30", "source": "Actual fixture readFile result compared independently with the harness readFile result." },
+  "ownershipProof": "The test inspector challenged the actual ChildProcess IPC channel with a fresh nonce and compared PID plus a random generation created inside that running fixture. This proves that source-owned fixture instance. It does not claim generic Windows process creation-time or GUI profile inspection for arbitrary applications.",
+  "cleanup": "Every test-owned fixture was explicitly disposed or cleaned by the test harness. Attached-preservation assertions occurred before harness cleanup. No user application/profile was attached or terminated.",
+  "sourceHashes": {
+    "src/method/application-provider.cjs": "868c7ecbbdeed4043a0dadbd7a52ce38651d60206f663c3ed1665ff97e789663",
+    "src/method/capabilities.cjs": "e5570c75c61bc684d895ac384e6a46bb2463afd945646255fb03f7310a9298d3",
+    "src/method/shared.cjs": "ae373a1d112a958cac4e1835c53c8c6126ced4a01a856b91609efdcd5bbaa11b",
+    "src/method/coordinator.cjs": "11c350aa39d3932d439a218335fd4defac3070fd71eb40654ddbec925049e91f",
+    "src/method/index.cjs": "fa29d905bf70edc9215bf9878aee969ad59cb905d04e12109939a14c7f238ee8",
+    "tests/method-application.test.cjs": "8d415dc5cbfa2d6d7f569f93b1d07d41f42cad7e56a8bc8cf24199541d08b411",
+    "examples/method/application-fixture.cjs": "7028057ea6f645931605d747a9c54b3b4ced153285a4a76a7ecf783f44eefffb",
+    "examples/method/application.cjs": "04350e1865b2bee966b7b6b21dc816553a7033dc61ea6970c8d4ff6a60fce156"
+  },
+  "output": { "path": "evidence/computer-use-method/application/test-output.txt", "sha256": "baed6ab0796ea841ed4a61fbf39465ad60147cb09808e011a2a130b6ee91fd9c" },
+  "limits": [
+    "Recipes are trusted host configuration, not a sandbox. Public action payloads cannot select executable paths, arbitrary argument vectors or remote execution.",
+    "A real application recipe still needs an actual OS/app ownership inspector proving executable, process generation, profile/root and document binding. PID/name guesses are insufficient.",
+    "A document argument confirms delivery to the process, not opening/editing/saving. Verified opened-byte evidence here comes from this fixture's explicit application protocol.",
+    "Coordinator close releases use and keeps applications running. Explicit disposal terminates only the tracked created direct child after reinspection; attached processes remain open.",
+    "Launchers that exit and hand work to another process, arbitrary app document editing, unsaved-document shutdown protocols and native GUI acceptance are not established by this recipe fixture.",
+    "A new adapter receives a new logical slot generation; it cannot silently resume an old checkpoint or infer an old process from matching profile labels."
+  ]
+}

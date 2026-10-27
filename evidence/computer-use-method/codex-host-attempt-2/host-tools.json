@@ -1,0 +1,229 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CODEX-TRACE-SKILL-NATIVE",
+  "attempt": 2,
+  "source": "Actual connected Codex MCP tool results in this active conversation; whitelist summaries, no SDK replacement.",
+  "target": {
+    "id": "29166646",
+    "pid": 48244,
+    "processName": "TraceComputerFixture",
+    "title": "TRACE Computer Fixture — clipboard-092475f4-0cef-4ebf-a87a-f231642de7bb",
+    "bounds": {
+      "x": null,
+      "y": null,
+      "width": 582,
+      "height": 726
+    },
+    "processCreationTime": "134370958306606315",
+    "sessionId": 1,
+    "ownerWindowId": null
+  },
+  "doctor": {
+    "ready": true,
+    "engine": "winapp",
+    "version": "0.7.1",
+    "platform": "win32",
+    "architecture": "x64",
+    "transport": "public-cli",
+    "integrity": "verified",
+    "bridge": {
+      "version": 1,
+      "runtime": ".NET 9",
+      "method": "public-win32-dwm"
+    },
+    "activityIndicator": {
+      "available": true,
+      "integrity": "verified",
+      "protocol": 1
+    },
+    "supervision": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    },
+    "limitations": [
+      "Windows x64",
+      "minimized observations restore the selected window",
+      "unlocked interactive desktop for input",
+      "horizontal scroll unsupported",
+      "no secure desktop or elevation bypass"
+    ]
+  },
+  "open": {
+    "sessionId": "b98fef8f-296a-407a-89e3-304ebbfa3b63",
+    "window": {
+      "id": "29166646",
+      "pid": 48244,
+      "processName": "TraceComputerFixture",
+      "title": "TRACE Computer Fixture — clipboard-092475f4-0cef-4ebf-a87a-f231642de7bb",
+      "bounds": {
+        "x": null,
+        "y": null,
+        "width": 582,
+        "height": 726
+      },
+      "processCreationTime": "134370958306606315",
+      "sessionId": 1,
+      "ownerWindowId": null
+    },
+    "activityIndicator": {
+      "active": true,
+      "monitors": 1,
+      "protocol": 1,
+      "owner": "native-supervisor"
+    }
+  },
+  "initial": {
+    "observationId": "424e1c62-c9d2-4d40-9a44-1195fa76e0bd",
+    "window": {
+      "id": "29166646",
+      "pid": 48244,
+      "processName": "TraceComputerFixture",
+      "title": "TRACE Computer Fixture — clipboard-092475f4-0cef-4ebf-a87a-f231642de7bb",
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      },
+      "processCreationTime": "134370958306606315",
+      "sessionId": 1,
+      "ownerWindowId": null
+    },
+    "bounds": {
+      "x": 1158,
+      "y": 537,
+      "width": 564,
+      "height": 717
+    },
+    "focused": {
+      "available": true,
+      "hasFocus": true,
+      "elementId": "traceTextInput",
+      "name": "TRACE text input",
+      "controlType": "Edit",
+      "provenance": "winapp-get-focused",
+      "binding": "observed-control",
+      "nativeSelector": "txt-tracetextinput-4ae1"
+    },
+    "screenshot": {
+      "mimeType": "image/png",
+      "width": 564,
+      "height": 717,
+      "sha256": "b5ace3defe10153e162c3fb3da2584c4329fcf34c3f4376a93dd60c814bede4d"
+    }
+  },
+  "focus": {
+    "action": {
+      "type": "click",
+      "elementId": "traceTextInput"
+    },
+    "outcome": "completed",
+    "observation": {
+      "observationId": "d50f4b9d-a4c1-4140-8c98-751e6353ed02",
+      "window": {
+        "id": "29166646",
+        "pid": 48244,
+        "processName": "TraceComputerFixture",
+        "title": "TRACE Computer Fixture — clipboard-092475f4-0cef-4ebf-a87a-f231642de7bb",
+        "bounds": {
+          "x": 1158,
+          "y": 537,
+          "width": 564,
+          "height": 717
+        },
+        "processCreationTime": "134370958306606315",
+        "sessionId": 1,
+        "ownerWindowId": null
+      },
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      },
+      "focused": {
+        "available": true,
+        "hasFocus": true,
+        "elementId": "traceTextInput",
+        "name": "TRACE text input",
+        "controlType": "Edit",
+        "provenance": "winapp-get-focused",
+        "binding": "observed-control",
+        "nativeSelector": "txt-tracetextinput-4ae1"
+      },
+      "screenshot": {
+        "mimeType": "image/png",
+        "width": 564,
+        "height": 717,
+        "sha256": "732d64cb26fc9c05c37ec315be442c13664d8d6fcd9b0354a7905cd023bfb01c"
+      }
+    }
+  },
+  "type": {
+    "action": {
+      "type": "type_text",
+      "text": "TRACE Codex verified café 日本語"
+    },
+    "outcome": "completed",
+    "observation": {
+      "observationId": "832503dc-4783-4ecf-a16c-802783d49e44",
+      "window": {
+        "id": "29166646",
+        "pid": 48244,
+        "processName": "TraceComputerFixture",
+        "title": "TRACE Computer Fixture — clipboard-092475f4-0cef-4ebf-a87a-f231642de7bb",
+        "bounds": {
+          "x": 1158,
+          "y": 537,
+          "width": 564,
+          "height": 717
+        },
+        "processCreationTime": "134370958306606315",
+        "sessionId": 1,
+        "ownerWindowId": null
+      },
+      "bounds": {
+        "x": 1158,
+        "y": 537,
+        "width": 564,
+        "height": 717
+      },
+      "focused": {
+        "available": true,
+        "hasFocus": true,
+        "elementId": "traceTextInput",
+        "name": "TRACE text input",
+        "controlType": "Edit",
+        "provenance": "winapp-get-focused",
+        "binding": "observed-control",
+        "nativeSelector": "txt-tracetextinput-4ae1"
+      },
+      "screenshot": {
+        "mimeType": "image/png",
+        "width": 564,
+        "height": 717,
+        "sha256": "7639cf539385b2b8fa00795a3b437301abfb2488bd39f023ccb8fb6212ea0190"
+      }
+    }
+  },
+  "close": {
+    "sessionId": "b98fef8f-296a-407a-89e3-304ebbfa3b63",
+    "closed": true
+  },
+  "imageInspection": {
+    "by": "Active Codex model",
+    "initial": "Empty edit and Count: 0 visually observed.",
+    "afterTyping": "Mojibake visibly observed in the edit; independent fixture text comparison failed. No counter or stale recovery was attempted."
+  },
+  "frames": [
+    {
+      "path": "initial.png",
+      "sha256": "b5ace3defe10153e162c3fb3da2584c4329fcf34c3f4376a93dd60c814bede4d"
+    },
+    {
+      "path": "after-typing.png",
+      "sha256": "7639cf539385b2b8fa00795a3b437301abfb2488bd39f023ccb8fb6212ea0190"
+    }
+  ]
+}

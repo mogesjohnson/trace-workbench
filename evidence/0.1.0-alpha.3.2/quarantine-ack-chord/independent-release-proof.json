@@ -1,0 +1,8 @@
+{
+  "verifiedAt": "2026-10-22T03:51:11.328Z",
+  "childPid": 37460,
+  "childExited": true,
+  "keysDown": [],
+  "source": "separate native helper and OS process probe outside the tested MCP process",
+  "beforeFailureInjection": true
+}

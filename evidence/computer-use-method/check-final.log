@@ -1,0 +1,5 @@
+
+> trace-workbench@0.1.0-alpha.3.3 check
+> node scripts/check.cjs
+
+Syntax, JSON, local documentation links, and dependency pins passed (76 JavaScript files).

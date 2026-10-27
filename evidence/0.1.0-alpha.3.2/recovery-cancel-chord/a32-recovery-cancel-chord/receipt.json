@@ -1,0 +1,44 @@
+{
+  "caseId": "A32-RECOVERY-CANCEL-CHORD",
+  "input": "chord",
+  "failure": "cancel",
+  "status": "fail",
+  "startedAt": "2026-10-21T12:30:58.229Z",
+  "cleanup": {
+    "connectionClosed": true,
+    "inputState": {
+      "available": true,
+      "at": "2026-10-21T12:31:00.176Z",
+      "phase": "native closed; owned fixture not yet closed",
+      "down": []
+    },
+    "fixtureExited": true,
+    "recovery": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    }
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "initialKeys": [],
+  "error": {
+    "code": "ERR_ASSERTION",
+    "message": "Owned target session did not open."
+  },
+  "completedAt": "2026-10-21T12:31:00.489Z"
+}

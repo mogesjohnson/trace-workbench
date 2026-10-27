@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "selection": {
+    "decisionId": "owner-supplemental-five-20261022",
+    "caseId": "CODEX-TRACE-SKILL-NATIVE",
+    "contract": "codex-utf8-host-v1",
+    "ownerDecision": {
+      "ref": "evidence/live-acceptance-continuation/owner-decision.json",
+      "sha256": "02c8b46faaef411a217d4965de83a0bac7e2592d792be1ad6a2e262f0aa7619a"
+    },
+    "historicalAttemptsUsed": 2,
+    "originals": [
+      {
+        "ref": "evidence/computer-use-method/codex-host-attempt-1/receipt.json",
+        "sha256": "b7d53fbabff03d480b9f1d5f0b6430ad30948cff2f814dd0000b47daaf5f0a61"
+      },
+      {
+        "ref": "evidence/computer-use-method/codex-host-attempt-2/receipt.json",
+        "sha256": "15d564c1a2673bba35e90fb70cc17d8993429f2e169701214640bc54196882a1"
+      }
+    ]
+  },
+  "claims": [
+    {
+      "decisionId": "owner-supplemental-five-20261022",
+      "caseId": "CODEX-TRACE-SKILL-NATIVE",
+      "contract": "codex-utf8-host-v1",
+      "ownerDecision": {
+        "ref": "evidence/live-acceptance-continuation/owner-decision.json",
+        "sha256": "02c8b46faaef411a217d4965de83a0bac7e2592d792be1ad6a2e262f0aa7619a"
+      },
+      "historicalAttemptsUsed": 2,
+      "originals": [
+        {
+          "ref": "evidence/computer-use-method/codex-host-attempt-1/receipt.json",
+          "sha256": "b7d53fbabff03d480b9f1d5f0b6430ad30948cff2f814dd0000b47daaf5f0a61"
+        },
+        {
+          "ref": "evidence/computer-use-method/codex-host-attempt-2/receipt.json",
+          "sha256": "15d564c1a2673bba35e90fb70cc17d8993429f2e169701214640bc54196882a1"
+        }
+      ],
+      "claimId": "f9d19c85-2e49-4c03-96c4-befcee5efcc6",
+      "continuationAttempt": 1,
+      "lifetimeAttemptOrdinal": 3,
+      "claimedAt": "2026-10-22T14:25:38.724Z"
+    },
+    {
+      "decisionId": "owner-supplemental-five-20261022",
+      "caseId": "CODEX-TRACE-SKILL-NATIVE",
+      "contract": "codex-utf8-host-v1",
+      "ownerDecision": {
+        "ref": "evidence/live-acceptance-continuation/owner-decision.json",
+        "sha256": "02c8b46faaef411a217d4965de83a0bac7e2592d792be1ad6a2e262f0aa7619a"
+      },
+      "historicalAttemptsUsed": 2,
+      "originals": [
+        {
+          "ref": "evidence/computer-use-method/codex-host-attempt-1/receipt.json",
+          "sha256": "b7d53fbabff03d480b9f1d5f0b6430ad30948cff2f814dd0000b47daaf5f0a61"
+        },
+        {
+          "ref": "evidence/computer-use-method/codex-host-attempt-2/receipt.json",
+          "sha256": "15d564c1a2673bba35e90fb70cc17d8993429f2e169701214640bc54196882a1"
+        }
+      ],
+      "claimId": "2249390c-e358-4901-9165-69432e3b40a4",
+      "continuationAttempt": 2,
+      "lifetimeAttemptOrdinal": 4,
+      "claimedAt": "2026-10-22T14:34:09.906Z",
+      "prior": {
+        "ref": "evidence/live-acceptance-continuation/codex/attempt-1/receipt.json",
+        "sha256": "e7a23461b1e07fd5e4cbb4292c4c55c870fb45dc8339a571551b8249f6c6e982"
+      },
+      "changedPreconditionSha256": "16cd82de2225c6dfee6fad394ebb76bd14ab2d84151c1733482eef73975cddc0"
+    }
+  ]
+}

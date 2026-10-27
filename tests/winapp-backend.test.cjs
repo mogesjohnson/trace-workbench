@@ -32,7 +32,8 @@ function mock(handler) {
       if (override !== undefined) return json(override);
     }
     if (args[0] === 'info') return json({ version: 1 });
-    if (args[0] === 'bounds' || args[0] === 'activate') return json({ hwnd: '1234', pid: 456, frameBounds: { ...rect }, windowBounds: { ...rect }, foreground: true, minimized: false });
+    if (args[0] === 'identities') return json({ windows: args.slice(1).map(pair => { const [hwnd, pid] = pair.split(':'); return { hwnd, pid: Number(pid) }; }) });
+    if (args[0] === 'identity' || args[0] === 'bounds' || args[0] === 'activate') return json({ hwnd: '1234', pid: 456, frameBounds: { ...rect }, windowBounds: { ...rect }, foreground: true, minimized: false });
     if (args[1] === 'status') return json(status());
     if (args[1] === 'inspect') return json(inspect());
     if (args[1] === 'get-focused') return json({ hasFocus: true, element: { selector: 'calculate', name: 'Calculate', type: 'Button' } });
@@ -95,6 +96,40 @@ test('doctor refuses to claim a marker is usable when the .NET Desktop runtime i
 test('discovery preserves PID and dimensions without inventing unknown x/y', async () => {
   const { backend } = mock(args => args[1] === 'list-windows' ? [{ hwnd: 1234, processId: 456, processName: 'TraceFixture', title: 'TRACE fixture', width: 300, height: 400 }] : undefined);
   assert.deepEqual(await backend.listWindows(), [{ ...window, bounds: { x: null, y: null, width: 300, height: 400 } }]);
+});
+
+test('discovery reads owner and creation identity without requiring capturable window geometry', async () => {
+  const { backend, calls } = mock(args => {
+    if (args[1] === 'list-windows') return [{ hwnd: 1234, processId: 456, processName: 'TraceFixture', width: 0, height: 0 }];
+    if (args[0] === 'identities') return { windows: [{ hwnd: '1234', pid: 456, processCreationTime: '123456789012345678', sessionId: 2, ownerWindowId: '1000' }] };
+    if (args[0] === 'bounds') throw new BackendError('invalid_bounds', 'Not capturable.');
+  });
+  const result = await backend.listWindows();
+  assert.equal(result[0].ownerWindowId, '1000');
+  assert.equal(result[0].processCreationTime, '123456789012345678');
+  assert.ok(calls.every(call => call.args[0] !== 'bounds'));
+});
+
+test('window identities use one bounded batch and reject substituted or duplicate targets', async () => {
+  const nativeWindows = Array.from({ length: 101 }, (_, i) => ({ hwnd: 1000 + i, processId: 2000 + i, processName: 'Fixture', width: 10, height: 20 }));
+  const { backend, calls } = mock(args => args[1] === 'list-windows' ? nativeWindows : undefined);
+  assert.equal((await backend.listWindows()).length, 101);
+  assert.equal(calls.filter(call => call.args[0] === 'identities').length, 2);
+  assert.ok(calls.filter(call => call.args[0] === 'identities').every(call => call.args.length <= 101));
+  const bad = mock(args => args[1] === 'list-windows' ? [nativeWindows[0]] : args[0] === 'identities' ? { windows: [{ hwnd: '999', pid: 2000 }] } : undefined);
+  await assert.rejects(bad.backend.listWindows(), { code: 'window_identity_changed' });
+});
+
+test('focus binds transient selectors by unique AutomationId, exact bounds and control metadata', async () => {
+  const { backend } = mock(args => args[1] === 'get-focused' ? { hasFocus: true, element: { selector: 'txt-transient-1234', automationId: 'input', name: 'Report', type: 'Edit', className: 'NativeEdit', x: 10, y: 20, width: 30, height: 40 } } : undefined);
+  const edit = { id: 'input', automationId: 'input', name: 'Report', controlType: 'Edit', className: 'NativeEdit', bounds: { x: 10, y: 20, width: 30, height: 40 } };
+  const focused = await backend.focused(window, undefined, [edit]);
+  assert.equal(focused.elementId, 'input');
+  assert.equal(focused.nativeSelector, 'txt-transient-1234');
+  assert.equal(focused.binding, 'observed-control');
+  assert.equal((await backend.focused(window, undefined, [edit, { ...edit, id: 'duplicate' }])).elementId, null);
+  assert.equal((await backend.focused(window, undefined, [{ ...edit, automationId: 'different' }])).elementId, null);
+  assert.equal((await backend.focused(window, undefined, [{ ...edit, bounds: { ...edit.bounds, x: 11 } }])).elementId, null);
 });
 
 test('observation pins HWND/PID, selects one root, derives PNG dimensions and revalidates', async () => {

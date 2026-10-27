@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A32-PROBE-FOCUSED-TYPING-REGRESSION",
+  "observedAt": "2026-10-20T18:56:37.507Z",
+  "testedSource": {
+    "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+    "workingTreeModified": true,
+    "files": {
+      "native/TraceSupervisor/InputState.cs": "72f130714f56a67976510a7bbe7732af45cc295265c80622130f826916f5d09a",
+      "native/TraceSupervisor/Native.cs": "45f4d02b4bda2725dbd49decdaa142726d7a98ded4b945d6ecb8c05369e962b3",
+      "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+      "native/TraceSupervisor/Program.cs": "dba15ba3e26b9af014cd71e68ec474b1968b8a4a93e3ff5507ac141e9be14382",
+      "native/TraceSupervisor/Recovery.cs": "8d2841a01644c6181ed5dccf24af1313bfa73540308ca8542bb49a57d324c35c",
+      "native/TraceSupervisor/Session.cs": "4d0d6fc345c720812c512913c515531598852b8fa93f6b22a28b8429d13873e9",
+      "native/TraceSupervisor/SessionProcess.cs": "c3d4db80be2f8a7e9fe88f4f44f5e0d8ae8787cc2c514aa9af2d9be9f035afec",
+      "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+      "src/computer/supervisor.cjs": "d2f57d8d88171b63eb67e0cd81adefd110d02f94ff3309bb622aa9b2cb19356f",
+      "src/computer/controller.cjs": "9f19f4f058d5094cc9b4a237b4ed658539d55719cf73aed18052b5fc1385e48b",
+      "src/computer/winapp-backend.cjs": "1ce7768fec3e7915a40d0707517058372516d6ebad45354eab4ffb5475b82131",
+      "native/TraceWindowBridge/Program.cs": "b4eddabe97dffefdffb2c3f892a2c0797e68f0f8f0a7dcdfbd5c6f0721dfff89",
+      "tests/fixtures/computer-app/Program.cs": "064a750a8cba970510b45d8ea3a1102fcc2102c0882afde0a017a12e9cafbaf4",
+      "scripts/accept-supervised-typing.cjs": "407da7393b37fd1c7fdff65df726d417378ea989e9ae1fddfb577bb0c06e47d6"
+    }
+  },
+  "runtime": {
+    "node": "v26.2.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "status": "fail",
+  "cleanup": {
+    "controllerClosed": true,
+    "fixtureExited": true,
+    "finalKeysDown": [],
+    "recovery": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    }
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "initialKeySamples": [
+    [],
+    [],
+    []
+  ],
+  "fixtureSha256": "6461490c7c06332d52a5580f39cf632d885fa86b519661964cc8c96285d04dd2",
+  "error": {
+    "code": "ERR_ASSERTION",
+    "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'not_dispatched'\n- 'completed'\n"
+  },
+  "completedAt": "2026-10-20T18:57:00.771Z"
+}

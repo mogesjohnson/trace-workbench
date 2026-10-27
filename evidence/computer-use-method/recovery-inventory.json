@@ -1,0 +1,1758 @@
+{
+  "schemaVersion": 1,
+  "scope": "File-only inventory of retained alpha.3.2 evidence; no new runtime validation or completion claim.",
+  "statusRule": "Latest recorded attempt; a separate terminal record takes precedence over a preserved running checkpoint. A recorded pass is scoped to its receipt and tested source. Historical failures remain retained.",
+  "originalRecoveryCells": [
+    {
+      "cellId": "A32-RECOVERY-CANCEL-CHORD",
+      "failure": "cancel",
+      "input": "chord",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-cancel-chord",
+          "status": "fail",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-cancel-chord/a32-recovery-cancel-chord/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-cancel-chord/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-cancel-chord/matrix.json",
+            "status": "incomplete",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-CANCEL-CHORD",
+                "status": "fail",
+                "receipt": "a32-recovery-cancel-chord/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-cancel-chord/a32-recovery-cancel-chord/receipt.json",
+              "caseId": "A32-RECOVERY-CANCEL-CHORD",
+              "status": "fail",
+              "startedAt": "2026-10-21T12:30:58.229Z",
+              "completedAt": "2026-10-21T12:31:00.489Z",
+              "errorCode": "ERR_ASSERTION"
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-chord/a32-recovery-cancel-chord/fixture.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-chord/a32-recovery-cancel-chord/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-chord/a32-recovery-cancel-chord/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-chord/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-chord/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-chord/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-cancel-chord/matrix.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "a7b592b37a4c846b3bed303bb3e6afd9579d971c7e0b09ca989c52d13dffe79a",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "c5f32061b34e6cc34f58541dbb27046d4c0c4e57466cb0603779cdc79865b07a",
+                  "tests/fixtures/supervised-mcp.cjs": "fcfb23900565ddd9d28b63c84614fd4589f1a0c9449a36ad4bf5eb27d247da7e",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "attempt": 2,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-cancel-chord-attempt-2",
+          "status": "pass",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-cancel-chord-attempt-2/a32-recovery-cancel-chord/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-cancel-chord-attempt-2/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-cancel-chord-attempt-2/matrix.json",
+            "status": "pass",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-CANCEL-CHORD",
+                "status": "pass",
+                "receipt": "a32-recovery-cancel-chord/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-cancel-chord-attempt-2/a32-recovery-cancel-chord/receipt.json",
+              "caseId": "A32-RECOVERY-CANCEL-CHORD",
+              "status": "pass",
+              "startedAt": "2026-10-21T12:33:16.890Z",
+              "completedAt": "2026-10-21T12:33:50.551Z",
+              "errorCode": null
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-chord-attempt-2/a32-recovery-cancel-chord/fixture.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-chord-attempt-2/a32-recovery-cancel-chord/focused.png",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-chord-attempt-2/a32-recovery-cancel-chord/followup-artifact-root/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-chord-attempt-2/a32-recovery-cancel-chord/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-chord-attempt-2/a32-recovery-cancel-chord/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-chord-attempt-2/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-chord-attempt-2/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-chord-attempt-2/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-cancel-chord-attempt-2/matrix.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "a7b592b37a4c846b3bed303bb3e6afd9579d971c7e0b09ca989c52d13dffe79a",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "2a94c180cd85d06fd60fdf1669ff8bad6d90e3c0ff3eb0ef186e7f89c061f0ca",
+                  "tests/fixtures/supervised-mcp.cjs": "fcfb23900565ddd9d28b63c84614fd4589f1a0c9449a36ad4bf5eb27d247da7e",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "status": "pass",
+      "attemptBudgetExhausted": false,
+      "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-cancel-chord-attempt-2/a32-recovery-cancel-chord/receipt.json"
+    },
+    {
+      "cellId": "A32-RECOVERY-CANCEL-MOUSE",
+      "failure": "cancel",
+      "input": "mouse",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse",
+          "status": "fail",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse/a32-recovery-cancel-mouse/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse/matrix.json",
+            "status": "incomplete",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-CANCEL-MOUSE",
+                "status": "fail",
+                "receipt": "a32-recovery-cancel-mouse/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse/a32-recovery-cancel-mouse/receipt.json",
+              "caseId": "A32-RECOVERY-CANCEL-MOUSE",
+              "status": "fail",
+              "startedAt": "2026-10-20T19:05:53.229Z",
+              "completedAt": "2026-10-20T19:05:53.547Z",
+              "errorCode": "ERR_ASSERTION"
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse/a32-recovery-cancel-mouse/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse/matrix.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "72f130714f56a67976510a7bbe7732af45cc295265c80622130f826916f5d09a",
+                  "native/TraceSupervisor/Native.cs": "45f4d02b4bda2725dbd49decdaa142726d7a98ded4b945d6ecb8c05369e962b3",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "dba15ba3e26b9af014cd71e68ec474b1968b8a4a93e3ff5507ac141e9be14382",
+                  "native/TraceSupervisor/Recovery.cs": "8d2841a01644c6181ed5dccf24af1313bfa73540308ca8542bb49a57d324c35c",
+                  "native/TraceSupervisor/Session.cs": "e6c8747a7c5f5226573184e7eeff45ed7e9c8fd3cac483bed29df64c616f7ceb",
+                  "native/TraceSupervisor/SessionProcess.cs": "c3d4db80be2f8a7e9fe88f4f44f5e0d8ae8787cc2c514aa9af2d9be9f035afec",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "2481eaf4190744793b1e9753b040c33bace516f190a327d9fb4e65ca1109c040",
+                  "tests/fixtures/supervised-mcp.cjs": "80ed229e7f1fc61bcd976f7c4c09312aa0d983afa9b0e24a52d4c1b96fbfa445",
+                  "src/computer/supervisor.cjs": "d2f57d8d88171b63eb67e0cd81adefd110d02f94ff3309bb622aa9b2cb19356f",
+                  "src/computer/controller.cjs": "bad7aef77da825f43db7e91ebdb78eed3aeb7dfe2e72860aa287523fe4902e13",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "57e633b40a8468e9a75ed44c8460d7c5221a6d161572ee296ffc4a61e66c5adb"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "attempt": 2,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse-attempt-2",
+          "status": "blocked",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse-attempt-2/a32-recovery-cancel-mouse/termination.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse-attempt-2/plan.json",
+          "matrixRecord": null,
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse-attempt-2/a32-recovery-cancel-mouse/receipt.json",
+              "caseId": "A32-RECOVERY-CANCEL-MOUSE",
+              "status": "running",
+              "startedAt": "2026-10-21T02:47:04.445Z",
+              "errorCode": null
+            }
+          ],
+          "terminalRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse-attempt-2/a32-recovery-cancel-mouse/termination.json",
+              "caseId": "A32-RECOVERY-CANCEL-MOUSE",
+              "status": "blocked",
+              "observedAt": "2026-10-21T02:51:07.593Z",
+              "scope": "Native journal proves its release acknowledgment; full independent follow-up and terminal cleanup receipt were not completed.",
+              "remaining": "Foreground input accessibility and complete acceptance remain unverified; no passing case is claimed."
+            }
+          ],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse-attempt-2/a32-recovery-cancel-mouse/fixture.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse-attempt-2/a32-recovery-cancel-mouse/focused.png",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse-attempt-2/a32-recovery-cancel-mouse/followup-artifact-root/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse-attempt-2/a32-recovery-cancel-mouse/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse-attempt-2/a32-recovery-cancel-mouse/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse-attempt-2/a32-recovery-cancel-mouse/termination.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse-attempt-2/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse-attempt-2/plan.json"
+          ],
+          "testedSourceRecords": []
+        }
+      ],
+      "status": "blocked",
+      "attemptBudgetExhausted": true,
+      "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-cancel-mouse-attempt-2/a32-recovery-cancel-mouse/termination.json",
+      "qualification": "Original running checkpoint is preserved; separate termination record reports blocked. No passing case is claimed."
+    },
+    {
+      "cellId": "A32-RECOVERY-CANCEL-TYPING",
+      "failure": "cancel",
+      "input": "typing",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-cancel-typing",
+          "status": "blocked",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-cancel-typing/a32-recovery-cancel-typing/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-cancel-typing/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-cancel-typing/matrix.json",
+            "status": "incomplete",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-CANCEL-TYPING",
+                "status": "blocked",
+                "receipt": "a32-recovery-cancel-typing/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-cancel-typing/a32-recovery-cancel-typing/receipt.json",
+              "caseId": "A32-RECOVERY-CANCEL-TYPING",
+              "status": "blocked",
+              "startedAt": "2026-10-21T12:33:58.619Z",
+              "completedAt": "2026-10-21T12:33:59.140Z",
+              "errorCode": "foreground_access_denied"
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-typing/a32-recovery-cancel-typing/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-typing/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-typing/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-typing/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-cancel-typing/matrix.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "a7b592b37a4c846b3bed303bb3e6afd9579d971c7e0b09ca989c52d13dffe79a",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "2a94c180cd85d06fd60fdf1669ff8bad6d90e3c0ff3eb0ef186e7f89c061f0ca",
+                  "tests/fixtures/supervised-mcp.cjs": "fcfb23900565ddd9d28b63c84614fd4589f1a0c9449a36ad4bf5eb27d247da7e",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "attempt": 2,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-cancel-typing-attempt-2",
+          "status": "blocked",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-cancel-typing-attempt-2/a32-recovery-cancel-typing/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-cancel-typing-attempt-2/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-cancel-typing-attempt-2/matrix.json",
+            "status": "incomplete",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-CANCEL-TYPING",
+                "status": "blocked",
+                "receipt": "a32-recovery-cancel-typing/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-cancel-typing-attempt-2/a32-recovery-cancel-typing/receipt.json",
+              "caseId": "A32-RECOVERY-CANCEL-TYPING",
+              "status": "blocked",
+              "startedAt": "2026-10-21T12:40:27.924Z",
+              "completedAt": "2026-10-21T12:40:28.362Z",
+              "errorCode": "foreground_access_denied"
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-typing-attempt-2/a32-recovery-cancel-typing/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-typing-attempt-2/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-typing-attempt-2/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-cancel-typing-attempt-2/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-cancel-typing-attempt-2/matrix.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "a7b592b37a4c846b3bed303bb3e6afd9579d971c7e0b09ca989c52d13dffe79a",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "2a94c180cd85d06fd60fdf1669ff8bad6d90e3c0ff3eb0ef186e7f89c061f0ca",
+                  "tests/fixtures/supervised-mcp.cjs": "fcfb23900565ddd9d28b63c84614fd4589f1a0c9449a36ad4bf5eb27d247da7e",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "status": "blocked",
+      "attemptBudgetExhausted": true,
+      "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-cancel-typing-attempt-2/a32-recovery-cancel-typing/receipt.json"
+    },
+    {
+      "cellId": "A32-RECOVERY-DISCONNECT-CHORD",
+      "failure": "disconnect",
+      "input": "chord",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord",
+          "status": "fail",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord/a32-recovery-disconnect-chord/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord/matrix.json",
+            "status": "incomplete",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-DISCONNECT-CHORD",
+                "status": "fail",
+                "receipt": "a32-recovery-disconnect-chord/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord/a32-recovery-disconnect-chord/receipt.json",
+              "caseId": "A32-RECOVERY-DISCONNECT-CHORD",
+              "status": "fail",
+              "startedAt": "2026-10-21T22:14:57.067Z",
+              "completedAt": "2026-10-21T22:15:22.458Z",
+              "errorCode": "acceptance_timeout"
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord/a32-recovery-disconnect-chord/diagnosis.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord/a32-recovery-disconnect-chord/fixture.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord/a32-recovery-disconnect-chord/focused.png",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord/a32-recovery-disconnect-chord/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord/a32-recovery-disconnect-chord/primary/events.json.tmp",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord/a32-recovery-disconnect-chord/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord/matrix.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "1c8e32cd8f45c9aa9a7b4d13de9d705257b995a92398054d6c85b4b5d0e7fe56",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "0dc0ad9faee39ef5c918a378641d1c80e1a92d9ed0dc5378f15a823ada393694",
+                  "tests/fixtures/supervised-mcp.cjs": "fcfb23900565ddd9d28b63c84614fd4589f1a0c9449a36ad4bf5eb27d247da7e",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5",
+                  "scripts/acceptance-foreground.cjs": "1cd017f2bf19324772add70aa89747c04387d50e82d26bb56ad4268ad68eae81"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "attempt": 2,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord-attempt-2",
+          "status": "pass",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord-attempt-2/a32-recovery-disconnect-chord/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord-attempt-2/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord-attempt-2/matrix.json",
+            "status": "pass",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-DISCONNECT-CHORD",
+                "status": "pass",
+                "receipt": "a32-recovery-disconnect-chord/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord-attempt-2/a32-recovery-disconnect-chord/receipt.json",
+              "caseId": "A32-RECOVERY-DISCONNECT-CHORD",
+              "status": "pass",
+              "startedAt": "2026-10-21T22:19:11.843Z",
+              "completedAt": "2026-10-21T22:19:33.435Z",
+              "errorCode": null
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord-attempt-2/a32-recovery-disconnect-chord/fixture.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord-attempt-2/a32-recovery-disconnect-chord/focused.png",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord-attempt-2/a32-recovery-disconnect-chord/followup-artifact-root/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord-attempt-2/a32-recovery-disconnect-chord/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord-attempt-2/a32-recovery-disconnect-chord/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord-attempt-2/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord-attempt-2/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord-attempt-2/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord-attempt-2/matrix.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "1c8e32cd8f45c9aa9a7b4d13de9d705257b995a92398054d6c85b4b5d0e7fe56",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "27baa43ea58d3279abbaa100aba80399ab9035c4531f969f50d177980505d14d",
+                  "tests/fixtures/supervised-mcp.cjs": "eeade5db7a43d000bc4c7e6a21dac0c32c3c6b5096d1fdaae98812e0faad2399",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5",
+                  "scripts/acceptance-foreground.cjs": "1cd017f2bf19324772add70aa89747c04387d50e82d26bb56ad4268ad68eae81"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "status": "pass",
+      "attemptBudgetExhausted": false,
+      "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-disconnect-chord-attempt-2/a32-recovery-disconnect-chord/receipt.json"
+    },
+    {
+      "cellId": "A32-RECOVERY-DISCONNECT-MOUSE",
+      "failure": "disconnect",
+      "input": "mouse",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-disconnect-mouse",
+          "status": "pass",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-disconnect-mouse/a32-recovery-disconnect-mouse/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-disconnect-mouse/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-disconnect-mouse/matrix.json",
+            "status": "pass",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-DISCONNECT-MOUSE",
+                "status": "pass",
+                "receipt": "a32-recovery-disconnect-mouse/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-disconnect-mouse/a32-recovery-disconnect-mouse/receipt.json",
+              "caseId": "A32-RECOVERY-DISCONNECT-MOUSE",
+              "status": "pass",
+              "startedAt": "2026-10-21T22:14:26.834Z",
+              "completedAt": "2026-10-21T22:14:55.466Z",
+              "errorCode": null
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-mouse/a32-recovery-disconnect-mouse/fixture.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-mouse/a32-recovery-disconnect-mouse/focused.png",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-mouse/a32-recovery-disconnect-mouse/followup-artifact-root/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-mouse/a32-recovery-disconnect-mouse/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-mouse/a32-recovery-disconnect-mouse/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-mouse/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-mouse/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-mouse/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-disconnect-mouse/matrix.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "1c8e32cd8f45c9aa9a7b4d13de9d705257b995a92398054d6c85b4b5d0e7fe56",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "0dc0ad9faee39ef5c918a378641d1c80e1a92d9ed0dc5378f15a823ada393694",
+                  "tests/fixtures/supervised-mcp.cjs": "fcfb23900565ddd9d28b63c84614fd4589f1a0c9449a36ad4bf5eb27d247da7e",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5",
+                  "scripts/acceptance-foreground.cjs": "1cd017f2bf19324772add70aa89747c04387d50e82d26bb56ad4268ad68eae81"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "status": "pass",
+      "attemptBudgetExhausted": false,
+      "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-disconnect-mouse/a32-recovery-disconnect-mouse/receipt.json"
+    },
+    {
+      "cellId": "A32-RECOVERY-DISCONNECT-TYPING",
+      "failure": "disconnect",
+      "input": "typing",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-disconnect-typing",
+          "status": "pass",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-disconnect-typing/a32-recovery-disconnect-typing/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-disconnect-typing/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-disconnect-typing/matrix.json",
+            "status": "pass",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-DISCONNECT-TYPING",
+                "status": "pass",
+                "receipt": "a32-recovery-disconnect-typing/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-disconnect-typing/a32-recovery-disconnect-typing/receipt.json",
+              "caseId": "A32-RECOVERY-DISCONNECT-TYPING",
+              "status": "pass",
+              "startedAt": "2026-10-21T22:19:34.837Z",
+              "completedAt": "2026-10-21T22:19:58.888Z",
+              "errorCode": null
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-typing/a32-recovery-disconnect-typing/fixture.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-typing/a32-recovery-disconnect-typing/focused.png",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-typing/a32-recovery-disconnect-typing/followup-artifact-root/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-typing/a32-recovery-disconnect-typing/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-typing/a32-recovery-disconnect-typing/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-typing/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-typing/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-disconnect-typing/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-disconnect-typing/matrix.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "1c8e32cd8f45c9aa9a7b4d13de9d705257b995a92398054d6c85b4b5d0e7fe56",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "27baa43ea58d3279abbaa100aba80399ab9035c4531f969f50d177980505d14d",
+                  "tests/fixtures/supervised-mcp.cjs": "eeade5db7a43d000bc4c7e6a21dac0c32c3c6b5096d1fdaae98812e0faad2399",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5",
+                  "scripts/acceptance-foreground.cjs": "1cd017f2bf19324772add70aa89747c04387d50e82d26bb56ad4268ad68eae81"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "status": "pass",
+      "attemptBudgetExhausted": false,
+      "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-disconnect-typing/a32-recovery-disconnect-typing/receipt.json"
+    },
+    {
+      "cellId": "A32-RECOVERY-NODE-DEATH-CHORD",
+      "failure": "node-death",
+      "input": "chord",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-node-death-chord",
+          "status": "pass",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-node-death-chord/a32-recovery-node-death-chord/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-node-death-chord/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-node-death-chord/matrix.json",
+            "status": "pass",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-NODE-DEATH-CHORD",
+                "status": "pass",
+                "receipt": "a32-recovery-node-death-chord/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-node-death-chord/a32-recovery-node-death-chord/receipt.json",
+              "caseId": "A32-RECOVERY-NODE-DEATH-CHORD",
+              "status": "pass",
+              "startedAt": "2026-10-21T22:20:24.982Z",
+              "completedAt": "2026-10-21T22:20:47.159Z",
+              "errorCode": null
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-chord/a32-recovery-node-death-chord/fixture.json",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-chord/a32-recovery-node-death-chord/focused.png",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-chord/a32-recovery-node-death-chord/followup-artifact-root/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-chord/a32-recovery-node-death-chord/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-chord/a32-recovery-node-death-chord/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-chord/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-chord/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-chord/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-node-death-chord/matrix.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "1c8e32cd8f45c9aa9a7b4d13de9d705257b995a92398054d6c85b4b5d0e7fe56",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "27baa43ea58d3279abbaa100aba80399ab9035c4531f969f50d177980505d14d",
+                  "tests/fixtures/supervised-mcp.cjs": "eeade5db7a43d000bc4c7e6a21dac0c32c3c6b5096d1fdaae98812e0faad2399",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5",
+                  "scripts/acceptance-foreground.cjs": "1cd017f2bf19324772add70aa89747c04387d50e82d26bb56ad4268ad68eae81"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "status": "pass",
+      "attemptBudgetExhausted": false,
+      "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-node-death-chord/a32-recovery-node-death-chord/receipt.json"
+    },
+    {
+      "cellId": "A32-RECOVERY-NODE-DEATH-MOUSE",
+      "failure": "node-death",
+      "input": "mouse",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-node-death-mouse",
+          "status": "pass",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-node-death-mouse/a32-recovery-node-death-mouse/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-node-death-mouse/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-node-death-mouse/matrix.json",
+            "status": "pass",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-NODE-DEATH-MOUSE",
+                "status": "pass",
+                "receipt": "a32-recovery-node-death-mouse/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-node-death-mouse/a32-recovery-node-death-mouse/receipt.json",
+              "caseId": "A32-RECOVERY-NODE-DEATH-MOUSE",
+              "status": "pass",
+              "startedAt": "2026-10-21T22:20:00.504Z",
+              "completedAt": "2026-10-21T22:20:23.460Z",
+              "errorCode": null
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-mouse/a32-recovery-node-death-mouse/fixture.json",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-mouse/a32-recovery-node-death-mouse/focused.png",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-mouse/a32-recovery-node-death-mouse/followup-artifact-root/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-mouse/a32-recovery-node-death-mouse/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-mouse/a32-recovery-node-death-mouse/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-mouse/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-mouse/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-mouse/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-node-death-mouse/matrix.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "1c8e32cd8f45c9aa9a7b4d13de9d705257b995a92398054d6c85b4b5d0e7fe56",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "27baa43ea58d3279abbaa100aba80399ab9035c4531f969f50d177980505d14d",
+                  "tests/fixtures/supervised-mcp.cjs": "eeade5db7a43d000bc4c7e6a21dac0c32c3c6b5096d1fdaae98812e0faad2399",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5",
+                  "scripts/acceptance-foreground.cjs": "1cd017f2bf19324772add70aa89747c04387d50e82d26bb56ad4268ad68eae81"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "status": "pass",
+      "attemptBudgetExhausted": false,
+      "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-node-death-mouse/a32-recovery-node-death-mouse/receipt.json"
+    },
+    {
+      "cellId": "A32-RECOVERY-NODE-DEATH-TYPING",
+      "failure": "node-death",
+      "input": "typing",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-node-death-typing",
+          "status": "pass",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-node-death-typing/a32-recovery-node-death-typing/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-node-death-typing/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-node-death-typing/matrix.json",
+            "status": "pass",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-NODE-DEATH-TYPING",
+                "status": "pass",
+                "receipt": "a32-recovery-node-death-typing/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-node-death-typing/a32-recovery-node-death-typing/receipt.json",
+              "caseId": "A32-RECOVERY-NODE-DEATH-TYPING",
+              "status": "pass",
+              "startedAt": "2026-10-21T22:20:48.621Z",
+              "completedAt": "2026-10-21T22:21:12.524Z",
+              "errorCode": null
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-typing/a32-recovery-node-death-typing/fixture.json",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-typing/a32-recovery-node-death-typing/focused.png",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-typing/a32-recovery-node-death-typing/followup-artifact-root/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-typing/a32-recovery-node-death-typing/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-typing/a32-recovery-node-death-typing/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-typing/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-typing/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-node-death-typing/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-node-death-typing/matrix.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "1c8e32cd8f45c9aa9a7b4d13de9d705257b995a92398054d6c85b4b5d0e7fe56",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "27baa43ea58d3279abbaa100aba80399ab9035c4531f969f50d177980505d14d",
+                  "tests/fixtures/supervised-mcp.cjs": "eeade5db7a43d000bc4c7e6a21dac0c32c3c6b5096d1fdaae98812e0faad2399",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5",
+                  "scripts/acceptance-foreground.cjs": "1cd017f2bf19324772add70aa89747c04387d50e82d26bb56ad4268ad68eae81"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "status": "pass",
+      "attemptBudgetExhausted": false,
+      "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-node-death-typing/a32-recovery-node-death-typing/receipt.json"
+    },
+    {
+      "cellId": "A32-RECOVERY-SUPERVISOR-DEATH-CHORD",
+      "failure": "supervisor-death",
+      "input": "chord",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-chord",
+          "status": "pass",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-chord/a32-recovery-supervisor-death-chord/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-chord/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-chord/matrix.json",
+            "status": "pass",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-SUPERVISOR-DEATH-CHORD",
+                "status": "pass",
+                "receipt": "a32-recovery-supervisor-death-chord/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-chord/a32-recovery-supervisor-death-chord/receipt.json",
+              "caseId": "A32-RECOVERY-SUPERVISOR-DEATH-CHORD",
+              "status": "pass",
+              "startedAt": "2026-10-21T22:21:39.259Z",
+              "completedAt": "2026-10-21T22:22:04.381Z",
+              "errorCode": null
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-chord/a32-recovery-supervisor-death-chord/competing-artifact-root/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-chord/a32-recovery-supervisor-death-chord/fixture.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-chord/a32-recovery-supervisor-death-chord/focused.png",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-chord/a32-recovery-supervisor-death-chord/followup-artifact-root/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-chord/a32-recovery-supervisor-death-chord/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-chord/a32-recovery-supervisor-death-chord/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-chord/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-chord/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-chord/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-chord/matrix.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "1c8e32cd8f45c9aa9a7b4d13de9d705257b995a92398054d6c85b4b5d0e7fe56",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "27baa43ea58d3279abbaa100aba80399ab9035c4531f969f50d177980505d14d",
+                  "tests/fixtures/supervised-mcp.cjs": "eeade5db7a43d000bc4c7e6a21dac0c32c3c6b5096d1fdaae98812e0faad2399",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5",
+                  "scripts/acceptance-foreground.cjs": "1cd017f2bf19324772add70aa89747c04387d50e82d26bb56ad4268ad68eae81"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "status": "pass",
+      "attemptBudgetExhausted": false,
+      "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-chord/a32-recovery-supervisor-death-chord/receipt.json"
+    },
+    {
+      "cellId": "A32-RECOVERY-SUPERVISOR-DEATH-MOUSE",
+      "failure": "supervisor-death",
+      "input": "mouse",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-mouse",
+          "status": "pass",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-mouse/a32-recovery-supervisor-death-mouse/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-mouse/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-mouse/matrix.json",
+            "status": "pass",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-SUPERVISOR-DEATH-MOUSE",
+                "status": "pass",
+                "receipt": "a32-recovery-supervisor-death-mouse/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-mouse/a32-recovery-supervisor-death-mouse/receipt.json",
+              "caseId": "A32-RECOVERY-SUPERVISOR-DEATH-MOUSE",
+              "status": "pass",
+              "startedAt": "2026-10-21T22:21:14.036Z",
+              "completedAt": "2026-10-21T22:21:37.723Z",
+              "errorCode": null
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-mouse/a32-recovery-supervisor-death-mouse/competing-artifact-root/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-mouse/a32-recovery-supervisor-death-mouse/fixture.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-mouse/a32-recovery-supervisor-death-mouse/focused.png",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-mouse/a32-recovery-supervisor-death-mouse/followup-artifact-root/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-mouse/a32-recovery-supervisor-death-mouse/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-mouse/a32-recovery-supervisor-death-mouse/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-mouse/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-mouse/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-mouse/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-mouse/matrix.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "1c8e32cd8f45c9aa9a7b4d13de9d705257b995a92398054d6c85b4b5d0e7fe56",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "27baa43ea58d3279abbaa100aba80399ab9035c4531f969f50d177980505d14d",
+                  "tests/fixtures/supervised-mcp.cjs": "eeade5db7a43d000bc4c7e6a21dac0c32c3c6b5096d1fdaae98812e0faad2399",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5",
+                  "scripts/acceptance-foreground.cjs": "1cd017f2bf19324772add70aa89747c04387d50e82d26bb56ad4268ad68eae81"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "status": "pass",
+      "attemptBudgetExhausted": false,
+      "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-mouse/a32-recovery-supervisor-death-mouse/receipt.json"
+    },
+    {
+      "cellId": "A32-RECOVERY-SUPERVISOR-DEATH-TYPING",
+      "failure": "supervisor-death",
+      "input": "typing",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing",
+          "status": "not_run",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing/preparation-termination.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing/plan.json",
+          "matrixRecord": null,
+          "receiptRecords": [],
+          "terminalRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing/preparation-termination.json",
+              "caseId": "A32-RECOVERY-SUPERVISOR-DEATH-TYPING",
+              "status": "not_run",
+              "caseLaunched": false,
+              "originalPlanPreserved": true,
+              "reason": "Outer orchestrator returned exit code1 after writing the display/plan and before creating a case receipt or launching the case. Exact subprocess error output was not retained; no failed input is inferred.",
+              "terminal": {
+                "handle": 84416,
+                "exitCode": 1
+              }
+            }
+          ],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing/plan.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing/preparation-termination.json"
+          ],
+          "executionKind": "preparation_only",
+          "testedSourceRecords": []
+        },
+        {
+          "attempt": 1,
+          "executionKind": "first_actual_execution",
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing-first-live",
+          "status": "pass",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing-first-live/a32-recovery-supervisor-death-typing/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing-first-live/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing-first-live/matrix.json",
+            "status": "pass",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-SUPERVISOR-DEATH-TYPING",
+                "status": "pass",
+                "receipt": "a32-recovery-supervisor-death-typing/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing-first-live/a32-recovery-supervisor-death-typing/receipt.json",
+              "caseId": "A32-RECOVERY-SUPERVISOR-DEATH-TYPING",
+              "status": "pass",
+              "startedAt": "2026-10-21T22:27:09.111Z",
+              "completedAt": "2026-10-21T22:27:31.369Z",
+              "errorCode": null
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing-first-live/a32-recovery-supervisor-death-typing/competing-artifact-root/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing-first-live/a32-recovery-supervisor-death-typing/fixture.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing-first-live/a32-recovery-supervisor-death-typing/focused.png",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing-first-live/a32-recovery-supervisor-death-typing/followup-artifact-root/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing-first-live/a32-recovery-supervisor-death-typing/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing-first-live/a32-recovery-supervisor-death-typing/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing-first-live/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing-first-live/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing-first-live/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing-first-live/matrix.json",
+              "testedSource": {
+                "baseCommit": "2870cb9f307a3be5315266e1c7a0eecf725c4f53",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "1c8e32cd8f45c9aa9a7b4d13de9d705257b995a92398054d6c85b4b5d0e7fe56",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "27baa43ea58d3279abbaa100aba80399ab9035c4531f969f50d177980505d14d",
+                  "tests/fixtures/supervised-mcp.cjs": "eeade5db7a43d000bc4c7e6a21dac0c32c3c6b5096d1fdaae98812e0faad2399",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "status": "pass",
+      "attemptBudgetExhausted": false,
+      "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-supervisor-death-typing-first-live/a32-recovery-supervisor-death-typing/receipt.json",
+      "qualification": "Original preparation-only not_run is retained separately from the first actual execution, whose receipt and matrix both report pass."
+    },
+    {
+      "cellId": "A32-RECOVERY-TIMEOUT-CHORD",
+      "failure": "timeout",
+      "input": "chord",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-timeout-chord",
+          "status": "pass",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-timeout-chord/a32-recovery-timeout-chord/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-timeout-chord/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-timeout-chord/matrix.json",
+            "status": "pass",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-TIMEOUT-CHORD",
+                "status": "pass",
+                "receipt": "a32-recovery-timeout-chord/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-timeout-chord/a32-recovery-timeout-chord/receipt.json",
+              "caseId": "A32-RECOVERY-TIMEOUT-CHORD",
+              "status": "pass",
+              "startedAt": "2026-10-21T12:48:31.631Z",
+              "completedAt": "2026-10-21T12:48:56.749Z",
+              "errorCode": null
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-chord/a32-recovery-timeout-chord/fixture.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-chord/a32-recovery-timeout-chord/focused.png",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-chord/a32-recovery-timeout-chord/followup-artifact-root/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-chord/a32-recovery-timeout-chord/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-chord/a32-recovery-timeout-chord/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-chord/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-chord/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-chord/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-timeout-chord/matrix.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "1c8e32cd8f45c9aa9a7b4d13de9d705257b995a92398054d6c85b4b5d0e7fe56",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "2a94c180cd85d06fd60fdf1669ff8bad6d90e3c0ff3eb0ef186e7f89c061f0ca",
+                  "tests/fixtures/supervised-mcp.cjs": "fcfb23900565ddd9d28b63c84614fd4589f1a0c9449a36ad4bf5eb27d247da7e",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "status": "pass",
+      "attemptBudgetExhausted": false,
+      "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-timeout-chord/a32-recovery-timeout-chord/receipt.json"
+    },
+    {
+      "cellId": "A32-RECOVERY-TIMEOUT-MOUSE",
+      "failure": "timeout",
+      "input": "mouse",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse",
+          "status": "fail",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse/a32-recovery-timeout-mouse/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse/matrix.json",
+            "status": "incomplete",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-TIMEOUT-MOUSE",
+                "status": "fail",
+                "receipt": "a32-recovery-timeout-mouse/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse/a32-recovery-timeout-mouse/receipt.json",
+              "caseId": "A32-RECOVERY-TIMEOUT-MOUSE",
+              "status": "fail",
+              "startedAt": "2026-10-21T02:56:02.658Z",
+              "completedAt": "2026-10-21T02:56:03.055Z",
+              "errorCode": "input_busy"
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse/a32-recovery-timeout-mouse/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse/matrix.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "7adc69cbc3cfaad23b6b8bb1a114f2b98a18a8a6d406d78d96a8b5ab219e45ea",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "9e41f833f141c555848cad6d1961803b7e1215bbb32b2f6c1afed996af2fa00d",
+                  "tests/fixtures/supervised-mcp.cjs": "80ed229e7f1fc61bcd976f7c4c09312aa0d983afa9b0e24a52d4c1b96fbfa445",
+                  "src/computer/supervisor.cjs": "1f58a1e065403c499e54eeae2eb43e6edde9a4fadbf4f7f05f3715f892df8ff0",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "attempt": 2,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse-attempt-2",
+          "status": "pass",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse-attempt-2/a32-recovery-timeout-mouse/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse-attempt-2/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse-attempt-2/matrix.json",
+            "status": "pass",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-TIMEOUT-MOUSE",
+                "status": "pass",
+                "receipt": "a32-recovery-timeout-mouse/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse-attempt-2/a32-recovery-timeout-mouse/receipt.json",
+              "caseId": "A32-RECOVERY-TIMEOUT-MOUSE",
+              "status": "pass",
+              "startedAt": "2026-10-21T02:57:33.374Z",
+              "completedAt": "2026-10-21T02:57:59.559Z",
+              "errorCode": null
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse-attempt-2/a32-recovery-timeout-mouse/fixture.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse-attempt-2/a32-recovery-timeout-mouse/focused.png",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse-attempt-2/a32-recovery-timeout-mouse/followup-artifact-root/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse-attempt-2/a32-recovery-timeout-mouse/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse-attempt-2/a32-recovery-timeout-mouse/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse-attempt-2/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse-attempt-2/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse-attempt-2/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse-attempt-2/matrix.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "7adc69cbc3cfaad23b6b8bb1a114f2b98a18a8a6d406d78d96a8b5ab219e45ea",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "c5f32061b34e6cc34f58541dbb27046d4c0c4e57466cb0603779cdc79865b07a",
+                  "tests/fixtures/supervised-mcp.cjs": "7e1a54cb075f1b2c2f8373222a6e7eeb2c0b94c16769ba5e6c38240d307d1eb7",
+                  "src/computer/supervisor.cjs": "1f58a1e065403c499e54eeae2eb43e6edde9a4fadbf4f7f05f3715f892df8ff0",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "status": "pass",
+      "attemptBudgetExhausted": false,
+      "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-timeout-mouse-attempt-2/a32-recovery-timeout-mouse/receipt.json"
+    },
+    {
+      "cellId": "A32-RECOVERY-TIMEOUT-TYPING",
+      "failure": "timeout",
+      "input": "typing",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/recovery-timeout-typing",
+          "status": "pass",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-timeout-typing/a32-recovery-timeout-typing/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/recovery-timeout-typing/plan.json",
+          "matrixRecord": {
+            "path": "evidence/0.1.0-alpha.3.2/recovery-timeout-typing/matrix.json",
+            "status": "pass",
+            "cases": [
+              {
+                "caseId": "A32-RECOVERY-TIMEOUT-TYPING",
+                "status": "pass",
+                "receipt": "a32-recovery-timeout-typing/receipt.json"
+              }
+            ]
+          },
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-timeout-typing/a32-recovery-timeout-typing/receipt.json",
+              "caseId": "A32-RECOVERY-TIMEOUT-TYPING",
+              "status": "pass",
+              "startedAt": "2026-10-21T22:13:51.434Z",
+              "completedAt": "2026-10-21T22:14:24.750Z",
+              "errorCode": null
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-typing/a32-recovery-timeout-typing/fixture.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-typing/a32-recovery-timeout-typing/focused.png",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-typing/a32-recovery-timeout-typing/followup-artifact-root/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-typing/a32-recovery-timeout-typing/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-typing/a32-recovery-timeout-typing/receipt.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-typing/display-manifest.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-typing/matrix.json",
+            "evidence/0.1.0-alpha.3.2/recovery-timeout-typing/plan.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/recovery-timeout-typing/matrix.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "1c8e32cd8f45c9aa9a7b4d13de9d705257b995a92398054d6c85b4b5d0e7fe56",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-recovery.cjs": "0dc0ad9faee39ef5c918a378641d1c80e1a92d9ed0dc5378f15a823ada393694",
+                  "tests/fixtures/supervised-mcp.cjs": "fcfb23900565ddd9d28b63c84614fd4589f1a0c9449a36ad4bf5eb27d247da7e",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5",
+                  "scripts/acceptance-foreground.cjs": "1cd017f2bf19324772add70aa89747c04387d50e82d26bb56ad4268ad68eae81"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "status": "pass",
+      "attemptBudgetExhausted": false,
+      "statusBasis": "evidence/0.1.0-alpha.3.2/recovery-timeout-typing/a32-recovery-timeout-typing/receipt.json"
+    }
+  ],
+  "stopCases": [
+    {
+      "caseId": "A32-STOP-INJECTED",
+      "type": "injected_escape_negative_control",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/stop-injected-escape",
+          "status": "pass",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/stop-injected-escape/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/stop-injected-escape/plan.json",
+          "matrixRecord": null,
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/stop-injected-escape/receipt.json",
+              "caseId": "A32-STOP-INJECTED",
+              "status": "pass",
+              "startedAt": "2026-10-21T12:39:28.252Z",
+              "completedAt": "2026-10-21T12:40:03.456Z",
+              "errorCode": null
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/stop-injected-escape/fixture.json",
+            "evidence/0.1.0-alpha.3.2/stop-injected-escape/focused.png",
+            "evidence/0.1.0-alpha.3.2/stop-injected-escape/plan.json",
+            "evidence/0.1.0-alpha.3.2/stop-injected-escape/planned-new-session-followup/events.json",
+            "evidence/0.1.0-alpha.3.2/stop-injected-escape/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/stop-injected-escape/receipt.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/stop-injected-escape/receipt.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "a7b592b37a4c846b3bed303bb3e6afd9579d971c7e0b09ca989c52d13dffe79a",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-stop.cjs": "f10771d14149548c773ce6b3e05f817571852d8061501d5f6da7c3dfe8d28d69",
+                  "scripts/accept-supervisor-quarantine.cjs": "7f5f401c584c669885acbdeaf9bb94fe90498d457610ab83b5604351ab2432fd",
+                  "tests/fixtures/supervised-mcp.cjs": "fcfb23900565ddd9d28b63c84614fd4589f1a0c9449a36ad4bf5eb27d247da7e",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "caseId": "A32-STOP-KEYBOARD",
+      "type": "physical_escape",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/stop-physical-keyboard",
+          "status": "blocked",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/stop-physical-keyboard/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/stop-physical-keyboard/plan.json",
+          "matrixRecord": null,
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/stop-physical-keyboard/receipt.json",
+              "caseId": "A32-STOP-KEYBOARD",
+              "status": "blocked",
+              "startedAt": "2026-10-21T12:36:23.268Z",
+              "completedAt": "2026-10-21T12:36:25.478Z",
+              "errorCode": "foreground_access_denied"
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/stop-physical-keyboard/fixture.json",
+            "evidence/0.1.0-alpha.3.2/stop-physical-keyboard/plan.json",
+            "evidence/0.1.0-alpha.3.2/stop-physical-keyboard/receipt.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/stop-physical-keyboard/receipt.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "a7b592b37a4c846b3bed303bb3e6afd9579d971c7e0b09ca989c52d13dffe79a",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-stop.cjs": "f10771d14149548c773ce6b3e05f817571852d8061501d5f6da7c3dfe8d28d69",
+                  "scripts/accept-supervisor-quarantine.cjs": "7f5f401c584c669885acbdeaf9bb94fe90498d457610ab83b5604351ab2432fd",
+                  "tests/fixtures/supervised-mcp.cjs": "fcfb23900565ddd9d28b63c84614fd4589f1a0c9449a36ad4bf5eb27d247da7e",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "attempt": 2,
+          "directory": "evidence/0.1.0-alpha.3.2/stop-physical-keyboard-attempt-2",
+          "status": "pass",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/stop-physical-keyboard-attempt-2/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/stop-physical-keyboard-attempt-2/plan.json",
+          "matrixRecord": null,
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/stop-physical-keyboard-attempt-2/receipt.json",
+              "caseId": "A32-STOP-KEYBOARD",
+              "status": "pass",
+              "startedAt": "2026-10-21T12:38:19.450Z",
+              "completedAt": "2026-10-21T12:39:19.591Z",
+              "errorCode": null
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/stop-physical-keyboard-attempt-2/fixture.json",
+            "evidence/0.1.0-alpha.3.2/stop-physical-keyboard-attempt-2/focused.png",
+            "evidence/0.1.0-alpha.3.2/stop-physical-keyboard-attempt-2/plan.json",
+            "evidence/0.1.0-alpha.3.2/stop-physical-keyboard-attempt-2/planned-new-session-followup/events.json",
+            "evidence/0.1.0-alpha.3.2/stop-physical-keyboard-attempt-2/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/stop-physical-keyboard-attempt-2/receipt.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/stop-physical-keyboard-attempt-2/receipt.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "a7b592b37a4c846b3bed303bb3e6afd9579d971c7e0b09ca989c52d13dffe79a",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-stop.cjs": "f10771d14149548c773ce6b3e05f817571852d8061501d5f6da7c3dfe8d28d69",
+                  "scripts/accept-supervisor-quarantine.cjs": "7f5f401c584c669885acbdeaf9bb94fe90498d457610ab83b5604351ab2432fd",
+                  "tests/fixtures/supervised-mcp.cjs": "fcfb23900565ddd9d28b63c84614fd4589f1a0c9449a36ad4bf5eb27d247da7e",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "caseId": "A32-STOP-MOUSE",
+      "type": "physical_escape",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/stop-physical-mouse",
+          "status": "pass",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/stop-physical-mouse/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/stop-physical-mouse/plan.json",
+          "matrixRecord": null,
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/stop-physical-mouse/receipt.json",
+              "caseId": "A32-STOP-MOUSE",
+              "status": "pass",
+              "startedAt": "2026-10-21T12:35:25.840Z",
+              "completedAt": "2026-10-21T12:36:15.402Z",
+              "errorCode": null
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/stop-physical-mouse/fixture.json",
+            "evidence/0.1.0-alpha.3.2/stop-physical-mouse/focused.png",
+            "evidence/0.1.0-alpha.3.2/stop-physical-mouse/plan.json",
+            "evidence/0.1.0-alpha.3.2/stop-physical-mouse/planned-new-session-followup/events.json",
+            "evidence/0.1.0-alpha.3.2/stop-physical-mouse/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/stop-physical-mouse/receipt.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/stop-physical-mouse/receipt.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "a7b592b37a4c846b3bed303bb3e6afd9579d971c7e0b09ca989c52d13dffe79a",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-stop.cjs": "f10771d14149548c773ce6b3e05f817571852d8061501d5f6da7c3dfe8d28d69",
+                  "scripts/accept-supervisor-quarantine.cjs": "7f5f401c584c669885acbdeaf9bb94fe90498d457610ab83b5604351ab2432fd",
+                  "tests/fixtures/supervised-mcp.cjs": "fcfb23900565ddd9d28b63c84614fd4589f1a0c9449a36ad4bf5eb27d247da7e",
+                  "src/computer/supervisor.cjs": "fd0e1c47dc7b898c14c23d65ed3afab153e546363d0318ed957d1d4fd36c5397",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "status": "pass"
+    }
+  ],
+  "quarantineCases": [
+    {
+      "caseId": "A32-QUARANTINE-ACK-MOUSE",
+      "type": "failed_cleanup_acknowledgement_quarantine",
+      "attempts": [
+        {
+          "attempt": 1,
+          "directory": "evidence/0.1.0-alpha.3.2/quarantine-ack-mouse",
+          "status": "pass",
+          "statusBasis": "evidence/0.1.0-alpha.3.2/quarantine-ack-mouse/receipt.json",
+          "planPath": "evidence/0.1.0-alpha.3.2/quarantine-ack-mouse/plan.json",
+          "matrixRecord": null,
+          "receiptRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/quarantine-ack-mouse/receipt.json",
+              "caseId": "A32-QUARANTINE-ACK-MOUSE",
+              "status": "pass",
+              "startedAt": "2026-10-21T03:01:43.107Z",
+              "completedAt": "2026-10-21T03:02:09.224Z",
+              "errorCode": null
+            }
+          ],
+          "terminalRecords": [],
+          "evidencePaths": [
+            "evidence/0.1.0-alpha.3.2/quarantine-ack-mouse/fixture.json",
+            "evidence/0.1.0-alpha.3.2/quarantine-ack-mouse/focused.png",
+            "evidence/0.1.0-alpha.3.2/quarantine-ack-mouse/followup/events.json",
+            "evidence/0.1.0-alpha.3.2/quarantine-ack-mouse/independent-release-proof.json",
+            "evidence/0.1.0-alpha.3.2/quarantine-ack-mouse/plan.json",
+            "evidence/0.1.0-alpha.3.2/quarantine-ack-mouse/primary/events.json",
+            "evidence/0.1.0-alpha.3.2/quarantine-ack-mouse/receipt.json",
+            "evidence/0.1.0-alpha.3.2/quarantine-ack-mouse/restarted-other-artifact-root/events.json"
+          ],
+          "testedSourceRecords": [
+            {
+              "path": "evidence/0.1.0-alpha.3.2/quarantine-ack-mouse/receipt.json",
+              "testedSource": {
+                "baseCommit": "48bcef21a3764882c3388e139b6b8cffdbac0acc",
+                "workingTreeModified": true,
+                "files": {
+                  "native/TraceSupervisor/InputState.cs": "99c338c61944943547217316b226ceb5701b0ad2fa335026ce8826702759b45b",
+                  "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+                  "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+                  "native/TraceSupervisor/Program.cs": "a4057da60c6359eb4af44bd0f0a9ccfd410a4810ca22798c3e7791d8b1231220",
+                  "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+                  "native/TraceSupervisor/Session.cs": "7adc69cbc3cfaad23b6b8bb1a114f2b98a18a8a6d406d78d96a8b5ab219e45ea",
+                  "native/TraceSupervisor/SessionProcess.cs": "1bfd7ae5f35e0a6ebfb7d77f38dbc4761a6a2c758128953c0be3ca9f8b8fab14",
+                  "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+                  "scripts/accept-supervisor-quarantine.cjs": "7e6d5c90f2b1f3bbf1eb3629405aec0f032644dedde3ef41c7b7974ac16676b8",
+                  "tests/fixtures/supervised-mcp.cjs": "44bc29ec424ac6f62fbae7d4fb1f28b46728975c340e439795d374c52161007c",
+                  "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+                  "src/computer/controller.cjs": "2a27e951aeef6fa8b988592f8e9f9819faa4340e38051a6bc7b654e3eccf7546",
+                  "src/computer/supervisor.cjs": "1f58a1e065403c499e54eeae2eb43e6edde9a4fadbf4f7f05f3715f892df8ff0",
+                  "src/computer/winapp-backend.cjs": "6a42caf46052dc020436a72f4c0e3a8edf6d19c7428361c52c6b647835cf81c5"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "status": "pass"
+    }
+  ],
+  "totals": {
+    "originalRecoveryCells": 15,
+    "recoveryStatuses": {
+      "pass": 13,
+      "blocked": 2
+    },
+    "recoveryAttemptDirectories": 21,
+    "recoveryCaseReceipts": 20,
+    "recoveryTerminalRecords": 2,
+    "stopCases": 3,
+    "stopStatuses": {
+      "pass": 3
+    },
+    "quarantineCases": 1,
+    "quarantineStatuses": {
+      "pass": 1
+    },
+    "recoveryPreparationOnlyDirectories": 1
+  },
+  "limitations": [
+    "Plan declarations of outsideScope are historical and do not override later separate stop or quarantine receipts.",
+    "All statuses describe recorded acceptance evidence, not current live input state.",
+    "No secrets, private control-file paths, raw clipboard metadata, or raw event contents are reproduced."
+  ]
+}

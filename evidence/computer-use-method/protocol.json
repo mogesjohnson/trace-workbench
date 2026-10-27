@@ -1,0 +1,22 @@
+{
+  "observedAt": "2026-10-21T12:52:11.222Z",
+  "result": "pass",
+  "scope": "read-only CLI stdio discovery and provider diagnostics; no desktop action or model-host session",
+  "server": {
+    "name": "trace-computer",
+    "version": "0.1.0-alpha.3.3"
+  },
+  "toolCount": 6,
+  "toolNames": [
+    "trace_computer_act",
+    "trace_computer_close_session",
+    "trace_computer_doctor",
+    "trace_computer_list_windows",
+    "trace_computer_observe",
+    "trace_computer_open_session"
+  ],
+  "doctorReturnedStructuredResult": true,
+  "providerReady": true,
+  "desktopActions": 0,
+  "modelRequests": 0
+}

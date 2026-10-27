@@ -1,0 +1,86 @@
+{
+  "caseId": "A32-RECOVERY-TIMEOUT-CHORD",
+  "input": "chord",
+  "failure": "timeout",
+  "status": "pass",
+  "startedAt": "2026-10-21T12:48:31.631Z",
+  "cleanup": {
+    "connectionClosed": true,
+    "inputChildExited": true,
+    "inputState": {
+      "available": true,
+      "at": "2026-10-21T12:48:56.505Z",
+      "phase": "native closed; owned fixture not yet closed",
+      "down": []
+    },
+    "fixtureExited": true,
+    "recovery": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    }
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "initialKeys": [],
+  "target": {
+    "windowId": "7868512",
+    "pid": 35280,
+    "processCreationTime": "134370605119461044"
+  },
+  "controlled": {
+    "pid": 41124,
+    "processCreationTime": "134370605241903362",
+    "inJob": true,
+    "supervisorPid": 46692
+  },
+  "held": {
+    "160": true,
+    "162": true
+  },
+  "interruptedAt": "2026-10-21T12:48:44.428Z",
+  "childExitIndependently": true,
+  "nativeOutcome": {
+    "code": "native_timeout",
+    "outcome": "unknown",
+    "recovery": {
+      "attempted": true,
+      "released": true,
+      "processExitConfirmed": true,
+      "method": "declared-sendinput",
+      "reason": "native_timeout",
+      "childPid": 41124,
+      "childCreated": "134370605241903362",
+      "declaredKeysDown": [],
+      "stopCleanupMs": null
+    }
+  },
+  "keysAfter": [],
+  "effect": {
+    "text": "",
+    "count": 0,
+    "unchangedAfterCleanup": true
+  },
+  "followup": {
+    "outcome": "completed",
+    "before": 0,
+    "after": 1,
+    "exactIncrement": 1,
+    "provider": "pinned-engine"
+  },
+  "completedAt": "2026-10-21T12:48:56.749Z"
+}

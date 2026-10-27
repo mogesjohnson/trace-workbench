@@ -5,6 +5,10 @@ const { test } = require("node:test");
 const { Client, InMemoryTransport } = require("@modelcontextprotocol/client");
 const { StdioClientTransport } = require("@modelcontextprotocol/client/stdio");
 const { createComputerServer, runComputerServer } = require("../src/computer/server.cjs");
+const { createComputerController } = require("../src/computer/controller.cjs");
+const fs = require("node:fs/promises");
+const os = require("node:os");
+const path = require("node:path");
 
 // Synthetic one-pixel PNG: protocol checks never access the user's desktop.
 const PNG = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==";
@@ -53,6 +57,27 @@ async function connection(t, overrides, run = false) {
   t.after(async () => { await client.close(); await server.close(); });
   await client.connect(clientTransport);
   return { client, server, fake };
+}
+async function realControllerConnection(t) {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "trace-mcp-controller-"));
+  const window = { id: "101", pid: 42, processName: "synthetic-fixture", title: "Synthetic MCP target" };
+  let clock = 0, dispatches = 0;
+  const backend = {
+    doctor: async () => ({ ready: true }), listWindows: async () => [{ ...window }],
+    observe: async ({ screenshotPath }) => { await fs.writeFile(screenshotPath, Buffer.from(PNG, "base64")); return { window: { ...window }, bounds: { x: 0, y: 0, width: 1, height: 1 }, elements: [], screenshot: { path: screenshotPath } }; },
+    act: async () => { dispatches++; return { performed: true }; },
+  };
+  const controller = createComputerController({ backend, runtimeDirectory: directory, now: () => clock, observationTtlMs: 60000,
+    lease: { acquire: async () => {}, assert: async () => {}, release: async () => {} },
+    indicator: { signal: new AbortController().signal, start: async () => ({ active: true }), assertActive() {}, stop: async () => {} },
+  });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  const server = createComputerServer({ controller }); await server.connect(serverTransport);
+  const client = new Client({ name: "trace-real-controller-contract", version: "1.0.0" }); await client.connect(clientTransport);
+  t.after(async () => { await client.close(); await server.close(); await fs.rm(directory, { recursive: true, force: true }); });
+  const call = async (name, args = {}) => client.callTool({ name: `trace_computer_${name}`, arguments: args });
+  await call("list_windows"); const opened = (await call("open_session", { windowId: window.id })).structuredContent;
+  return { backend, call, sessionId: opened.sessionId, advance: value => { clock += value; }, get dispatches() { return dispatches; } };
 }
 
 function assertImageResult(result, path = []) {
@@ -180,6 +205,44 @@ test("unknown action outcome remains unknown, with its refreshed image intact", 
   assertImageResult(result, ["observation"]);
   assert.equal(result.structuredContent.outcome, "unknown");
   assert.equal(result.structuredContent.error.code, "CAPTURE_FAILED");
+});
+test("actual SDK MCP preserves real controller consumed and expired observation nondispatch proofs", async t => {
+  const runtime = await realControllerConnection(t), session = { sessionId: runtime.sessionId };
+  const first = (await runtime.call("observe", session)).structuredContent;
+  const request = { ...session, observationId: first.observationId, action: { type: "activate" } };
+  assert.equal((await runtime.call("act", request)).structuredContent.outcome, "completed");
+  assert.equal(runtime.dispatches, 1);
+  const consumed = await runtime.call("act", request);
+  assert.equal(consumed.isError, true); assert.equal(consumed.structuredContent.error.code, "stale_observation"); assert.equal(consumed.structuredContent.outcome, "not_dispatched");
+  assert.deepEqual(JSON.parse(consumed.content[0].text), consumed.structuredContent); assert.equal(runtime.dispatches, 1);
+  const fresh = (await runtime.call("observe", session)).structuredContent; runtime.advance(60001);
+  const expired = await runtime.call("act", { ...request, observationId: fresh.observationId });
+  assert.equal(expired.isError, true); assert.equal(expired.structuredContent.outcome, "not_dispatched"); assert.equal(expired.structuredContent.error.code, "stale_observation"); assert.equal(runtime.dispatches, 1);
+});
+test("real controller same-code backend error and capture failure after possible input remain unknown over MCP", async t => {
+  const runtime = await realControllerConnection(t), session = { sessionId: runtime.sessionId };
+  let mutated = 0;
+  runtime.backend.act = async () => { mutated++; throw Object.assign(new Error("after possible input"), { code: "stale_observation" }); };
+  const first = (await runtime.call("observe", session)).structuredContent;
+  const action = await runtime.call("act", { ...session, observationId: first.observationId, action: { type: "activate" } });
+  assert.equal(mutated, 1); assert.equal(action.structuredContent.outcome, "unknown"); assert.equal(action.structuredContent.error.code, "stale_observation");
+  const second = (await runtime.call("observe", session)).structuredContent;
+  runtime.backend.act = async () => { mutated++; return { performed: true }; };
+  runtime.backend.observe = async () => { throw Object.assign(new Error("capture error"), { code: "stale_observation", details: { outcome: "not_dispatched" } }); };
+  const capture = await runtime.call("act", { ...session, observationId: second.observationId, action: { type: "activate" } });
+  assert.equal(mutated, 2); assert.equal(capture.structuredContent.outcome, "unknown"); assert.equal(capture.structuredContent.error.outcome, "unknown");
+});
+test("MCP act errors use explicit rejection evidence only and projection cannot manufacture nondispatch", async t => {
+  const failure = () => Object.assign(new Error("same code"), { code: "stale_observation", details: { outcome: "not_dispatched" } });
+  const { client } = await connection(t, { act: async () => { throw failure(); }, observe: async () => { throw failure(); } });
+  const args = { sessionId: OBSERVATION.sessionId, observationId: OBSERVATION.observationId, action: { type: "activate" } };
+  assert.equal((await client.callTool({ name: "trace_computer_act", arguments: args })).structuredContent.outcome, "not_dispatched");
+  assert.equal((await client.callTool({ name: "trace_computer_observe", arguments: { sessionId: OBSERVATION.sessionId } })).structuredContent.outcome, undefined);
+  const generic = await connection(t, { act: async () => { throw Object.assign(new Error("possibly mutated"), { code: "stale_observation" }); } });
+  assert.equal((await generic.client.callTool({ name: "trace_computer_act", arguments: args })).structuredContent.outcome, "unknown");
+  const projected = await connection(t, { act: async () => ({ outcome: "completed", get observation() { throw failure(); } }) });
+  const result = await projected.client.callTool({ name: "trace_computer_act", arguments: args });
+  assert.equal(result.isError, true); assert.equal(result.structuredContent.outcome, "unknown");
 });
 
 test("malformed controller screenshots fail without returning corrupt image content", async (t) => {

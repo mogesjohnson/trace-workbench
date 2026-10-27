@@ -1,0 +1,10 @@
+✔ METHOD-BROWSER actual headless Edge fills, submits, reads and verifies once after lost reply (2625.9942ms)
+ℹ {"scope":"real-owned-loopback-page","browser":"155.0.4283.62","playwright":"1.62.1","headless":true,"desktopInput":false,"saveCount":1,"verifiedResult":"Saved: Résumé 日本語","ownedTabClosed":true}
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2735.1841

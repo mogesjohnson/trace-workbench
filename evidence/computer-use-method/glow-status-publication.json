@@ -1,0 +1,34 @@
+{
+  "caseId": "GLOW-STATUS-PUBLICATION-REGRESSION",
+  "at": "2026-10-22T03:39:48.841Z",
+  "result": {
+    "pass": true,
+    "checks": [
+      "transient-sharing-and-access-denied-publish-only",
+      "unique-temporary-per-publication",
+      "permanent-and-unknown-failures-bounded-and-latched",
+      "write-failure-never-replays-payload",
+      "owned-real-file-lock-roundtrip-and-exact-bytes"
+    ],
+    "uiCreated": 0,
+    "inputActions": 0,
+    "clipboardOperations": 0,
+    "eventReplays": 0,
+    "maximumPublishAttempts": 7,
+    "maximumPauseMs": 126
+  },
+  "outputManifest": {
+    "version": 1,
+    "sources": {
+      "tests/fixtures/glow-app/Program.cs": "a90cca0bd2f8c182673dd88f633868e135be310fe32eb391941c470216cea442",
+      "tests/fixtures/glow-app/TraceGlowFixture.csproj": "cda1d4a7fc15c3688217cbfcbced6b789ff09ac83bda6cdb8e8109452c261cc6"
+    },
+    "files": {
+      "TraceGlowFixture.exe": "691478da5212084ef94e428f4e1957007a70357607b800da05e3f89897396b35",
+      "TraceGlowFixture.dll": "6a0bd07159dd0ffd4efc7a2b260ed2af642ab12b6c3c4c92d01aedf3a2b09d73",
+      "TraceGlowFixture.runtimeconfig.json": "05917b409d59af31bc8d3021bc06302a0c21c7d05b449603d6cc9f0301a2b66c",
+      "TraceGlowFixture.deps.json": "7185c5fc354388ca40cb165a4cc181ba446c78c4a68eeb3a7efb556acfc7dc17"
+    }
+  },
+  "scope": "File-only injected faults and actual Windows lock/atomic-replace roundtrip; no GUI, input, clipboard or repeated edge-click case."
+}

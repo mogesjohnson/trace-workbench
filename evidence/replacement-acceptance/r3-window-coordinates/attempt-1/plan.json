@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "planContract": 1,
+  "caseId": "R3-WINDOW-COORDINATES",
+  "replaces": [
+    "A3-WINDOW"
+  ],
+  "historicalStatus": "exhausted fail; focused regression kept separate",
+  "attempt": 1,
+  "ownerDecision": "evidence/replacement-acceptance/owner-decision.json",
+  "executionRequiresExplicitOwnerDecision": true,
+  "declaredBeforeUiLaunch": true,
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "target": "Fresh owned synthetic WinForms fixture, exact HWND/PID/creation time/session",
+  "initial": {
+    "count": 0,
+    "text": "",
+    "keysDown": [],
+    "recoveryRequired": false
+  },
+  "actions": [
+    "Observe target; command one move; stale invoke must be not_dispatched/window_moved with count0",
+    "Fresh observation; one measured coordinate counter click gives count1",
+    "Observe target; command one minimize; stale invoke must be not_dispatched/window_moved with count1",
+    "Fresh observation restores/settles target; one measured coordinate counter click gives count2"
+  ],
+  "expected": {
+    "finalCount": 2,
+    "text": "",
+    "maximumPrimaryClicks": 2,
+    "staleRejections": 2,
+    "released": true
+  },
+  "cleanup": [
+    "Settle native work, close session and MCP",
+    "Verify exact native owner/marker/Node exit",
+    "Independently verify all input up while fixture remains accessible",
+    "Close exact owned fixture",
+    "Persist terminal receipt even on cleanup failure"
+  ],
+  "budget": "One attempt plus one same-case corrective attempt with prior evidence and explicit changed precondition; no automatic replay.",
+  "limits": [
+    "Selected single-monitor mode only",
+    "Owned fixture via actual MCP; no host/release acceptance",
+    "No rerun of depth/dialog or exhausted historical IDs"
+  ]
+}

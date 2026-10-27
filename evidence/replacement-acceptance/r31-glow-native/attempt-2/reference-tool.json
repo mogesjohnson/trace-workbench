@@ -1,0 +1,22 @@
+{
+  "source": "Actual active Codex call to OpenAI bundled Computer Use via mcp__node_repl__js",
+  "tool": "sky.click",
+  "input": {
+    "windowId": 9768766,
+    "element_index": 1
+  },
+  "grounding": {
+    "title": "TRACE owned glow acceptance fixture",
+    "observedElement": "1 button TRACE edge click counter ID: traceGlowEdgeButton",
+    "screenshot": {
+      "width": 1920,
+      "height": 1200
+    },
+    "measuredPhysicalTargetPoint": {
+      "x": 7,
+      "y": 900
+    }
+  },
+  "actualToolText": "{\"action\":{\"windowId\":9768766,\"elementIndex\":1,\"source\":\"Observed unique TRACE edge click counter\",\"at\":\"2026-10-22T03:31:52.372Z\",\"completed\":true},\"tree\":\"Window: \\\"TRACE owned glow acceptance fixture\\\", App: TraceGlowFixture.exe.\\n\\t0 window TRACE owned glow acceptance fixture Secondary Actions: Raise ID: traceGlowFixture\\n\\t\\t1 button TRACE edge click counter ID: traceGlowEdgeButton\\n\\nThe focused UI element is 0 window TRACE owned glow acceptance fixture Secondary Actions: Raise ID: traceGlowFixture.\"}",
+  "noReplay": true
+}

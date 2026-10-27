@@ -6,7 +6,7 @@ const fs = require("node:fs/promises");
 const os = require("node:os");
 const path = require("node:path");
 const toml = require("smol-toml");
-const { plan, apply, CLIENTS } = require("../src/computer/configuration.cjs");
+const { plan, apply, rollback, CLIENTS, loadSkillBundle } = require("../src/computer/configuration.cjs");
 const { parseArguments } = require("../scripts/configure-computer.cjs");
 
 const ROOT = path.resolve(__dirname, "..");
@@ -53,6 +53,7 @@ test("computer configuration defaults to a four-client plan without filesystem w
   assert.deepEqual(result.server, SERVER);
   assert.equal(result.entries.length, 7);
   assert.ok(result.entries.every((entry) => entry.action === "add"));
+  assert.ok(result.skill.files.some(file => file.path === "references/readiness-routing.md" && /^[a-f0-9]{64}$/.test(file.sha256)));
   assert.deepEqual(await fs.readdir(home), []);
 });
 
@@ -87,8 +88,10 @@ test("applying config preserves unrelated values and exact original-byte backups
     }
   }
   const source = await fs.readFile(SKILL);
+  const bundle = await loadSkillBundle(path.dirname(SKILL));
   for (const clientFolder of [".agents", ".claude", ".grok"]) {
     assert.deepEqual(await fs.readFile(path.join(home, clientFolder, "skills", "trace-computer-use", "SKILL.md")), source);
+    for (const [relative, bytes] of bundle.files) assert.deepEqual(await fs.readFile(path.join(home, clientFolder, "skills", "trace-computer-use", relative)), bytes);
   }
   const second = await apply({ home });
   assert.equal(second.applied, true);
@@ -100,6 +103,50 @@ test("applying config preserves unrelated values and exact original-byte backups
   }
 });
 
+test("installation receipt rolls back all owned client and bundle changes exactly", async (t) => {
+  const home = await temporaryHome(t);
+  const original = Buffer.from('# exact fixture bytes\r\nmodel = "retain"\r\n');
+  await write(home, CLIENTS.codex.path, original);
+  const installed = await apply({ home });
+  assert.equal(installed.applied, true);
+  const result = await rollback({ home, receipt:installed });
+  assert.equal(result.applied, true);
+  assert.deepEqual(await fs.readFile(path.join(home, CLIENTS.codex.path)), original);
+  for (const client of ["claude_code", "grok_build", "gemini_cli"]) await assert.rejects(fs.access(path.join(home, CLIENTS[client].path)), { code:"ENOENT" });
+  for (const relative of [".agents", ".claude", ".grok"]) await assert.rejects(fs.access(path.join(home, relative, "skills", "trace-computer-use")), { code:"ENOENT" });
+  assert.equal((await rollback({ home, receipt:installed })).applied, true);
+});
+
+test("rollback refuses concurrent configuration edits before altering any installed skill", async (t) => {
+  const home = await temporaryHome(t);
+  const installed = await apply({ home, clients:["codex"] });
+  const target = path.join(home, CLIENTS.codex.path);
+  const current = await fs.readFile(target, "utf8");
+  await fs.writeFile(target, current+'\n# later human edit\n');
+  const result = await rollback({ home, receipt:installed });
+  assert.equal(result.applied, false);
+  assert.equal(result.conflicts, 1);
+  assert.equal(await fs.readFile(target, "utf8"), current+'\n# later human edit\n');
+  assert.deepEqual(await fs.readFile(path.join(home, ".agents/skills/trace-computer-use/SKILL.md")), await fs.readFile(SKILL));
+});
+
+test("a partial installation retains receipts and rolls back client settings plus the failed bundle", async (t) => {
+  const home = await temporaryHome(t);
+  const original = Buffer.from('model = "before"\r\n');
+  await write(home, CLIENTS.codex.path, original);
+  const result = await apply({ home, beforeFileWrite:({index}) => {
+    if (index === 1) throw Object.assign(new Error('owned fixture failure'), { code:"fixture_failure" });
+  } });
+  assert.equal(result.applied, false);
+  assert.equal(result.error.code, "fixture_failure");
+  assert.equal(result.completed.filter(item => item.kind === "configuration").length, 4);
+  assert.equal(result.bundleRecovery.rollback.applied, true);
+  const restored = await rollback({ home, receipt:result });
+  assert.equal(restored.applied, true);
+  assert.deepEqual(await fs.readFile(path.join(home, CLIENTS.codex.path)), original);
+  await assert.rejects(fs.access(path.join(home, ".agents/skills/trace-computer-use")), { code:"ENOENT" });
+});
+
 test("narrowed client scope creates only the selected configuration and skill discoveries", async (t) => {
   const home = await temporaryHome(t);
   const result = await apply({ home, clients: ["gemini_cli", "gemini_cli"] });
@@ -107,7 +154,7 @@ test("narrowed client scope creates only the selected configuration and skill di
   assert.deepEqual(result.clients, ["gemini_cli"]);
   assert.equal(result.entries.length, 2);
   assert.deepEqual((await readConfig(home, "gemini_cli")).mcpServers["trace-computer"], SERVER);
-  assert.deepEqual((await fs.readdir(home)).sort(), [".agents", ".gemini"]);
+  assert.deepEqual((await fs.readdir(home)).sort(), [".agents", ".gemini", ".trace"]);
 });
 
 test("a differing server entry blocks the complete apply before other configuration or skills are written", async (t) => {
