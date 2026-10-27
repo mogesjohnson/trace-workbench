@@ -20,6 +20,7 @@
     "computer:doctor": "node bin/trace.cjs computer doctor",
     "computer:mcp": "node bin/trace.cjs computer mcp",
     "test:computer:mcp": "node scripts/smoke-computer-mcp.cjs",
+    "verify:archive": "node scripts/verify-archive-install.cjs --verify",
     "test:computer:live": "node scripts/smoke-computer-live.cjs --live"
   },
   "dependencies": {
