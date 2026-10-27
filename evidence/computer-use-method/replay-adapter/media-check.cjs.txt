@@ -1,0 +1,40 @@
+'use strict';
+// Scratch, not committed: exercises the production media path on synthetic media. No UI, no REPLAY launch.
+const fs = require('node:fs/promises'), path = require('node:path'), { execFileSync } = require('node:child_process'), { createHash } = require('node:crypto');
+const repo = process.argv[2], work = process.argv[3];
+const runtime = require(path.join(repo, 'scripts/replay-workflow-runtime.cjs')), flow = require(path.join(repo, 'scripts/accept-replay-workflow.cjs'));
+const { createRequire } = require('node:module');
+const fromReplay = createRequire(path.join(path.resolve(repo, '../replay-studio'), 'package.json'));
+const ffmpeg = fromReplay('./scripts/media-inspection-smoke.cjs').ffmpeg;
+const ff = args => execFileSync(ffmpeg, ['-v', 'error', '-nostdin', '-y', ...args], { windowsHide: true });
+(async () => {
+  const source = path.join(work, 'source.webm');
+  ff(['-f', 'lavfi', '-i', 'testsrc2=size=840x1000:rate=30', '-t', '10', '-c:v', 'libvpx-vp9', '-deadline', 'realtime', '-b:v', '2M', source]);
+  const W = 840, H = 1000, p = flow.RECIPE.privacy, c = flow.RECIPE.callout, px = Math.round(p.x * W), py = Math.round(p.y * H), pw = Math.round(p.width * W), ph = Math.round(p.height * H);
+  const make = (name, { blur = true, callout = true, delay = 1500 }) => {
+    const out = path.join(work, name);
+    const v = `[0:v]trim=start=1:end=7,setpts=PTS-STARTPTS,fps=30,split[a][b];[b]crop=${pw}:${ph}:${px}:${py},boxblur=20:3[bl];`
+      + `[a][bl]overlay=${px}:${py}:enable='${blur ? 'between(t,1,3)' : 'lt(t,0)'}'[c];[c]${callout ? `drawbox=x=${Math.round(c.x * W)}:y=${Math.round(c.y * H)}:w=${Math.round(c.width * W)}:h=${Math.round(c.height * H)}:color=0x101820@0.9:t=fill:enable='between(t,1,3)'` : 'null'},format=yuv420p[v];`
+      + `[1:a]adelay=${delay}|${delay},apad=whole_dur=6[aud]`;
+    ff(['-i', source, '-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=48000:duration=1', '-filter_complex', v, '-map', '[v]', '-map', '[aud]', '-t', '6', '-c:v', 'libx264', '-crf', '18', '-c:a', 'aac', out]);
+    return out;
+  };
+  const privateRoot = path.join(work, 'private'); await fs.mkdir(privateRoot);
+  const deps = runtime.createDeps({ privateRoot, common: {}, note: async () => {}, checkpoint: async () => {} });
+  const sourceSha256 = createHash('sha256').update(await fs.readFile(source)).digest('hex');
+  const check = async (label, file, kind = 'fixture') => {
+    const measured = await deps.independentMediaVerification(kind, { output: file }, flow.RECIPE, { sourcePath: source, sourceSha256 });
+    let verdict; try { flow.validateMeasurements(measured, kind); verdict = 'pass'; } catch (error) { verdict = error.code; }
+    const { frames, sha256, ...shown } = measured;
+    console.log(label, verdict, JSON.stringify(Object.fromEntries(Object.entries(shown).map(([k, v]) => [k, typeof v === 'number' ? Math.round(v * 10000) / 10000 : v]))), `frames=${frames.length}`);
+    await fs.rm(path.join(privateRoot, 'review'), { recursive: true, force: true });
+  };
+  await check('expected-export', make('good.mp4', {}));
+  await check('no-blur', make('noblur.mp4', { blur: false }));
+  await check('no-callout', make('nocallout.mp4', { callout: false }));
+  await check('audio-late', make('late.mp4', { delay: 2600 }));
+  await check('walkthrough', make('walk.mp4', {}), 'walkthrough');
+  const prepared = await deps.prepareOfflineAssets();
+  console.log('offline-assets', JSON.stringify({ wavDuration: prepared.wavDuration, paidRequests: prepared.paidRequests, bootstrapInside: flow.inside(privateRoot, prepared.bootstrapVideo) }));
+  console.log('pins', JSON.stringify(Object.fromEntries(Object.entries(await deps.verifyPins()).map(([k, v]) => [k, v === flow.PIN[k]]))));
+})().catch(error => { console.error('FAILED', error.code, error.message.slice(0, 300)); process.exitCode = 1; });

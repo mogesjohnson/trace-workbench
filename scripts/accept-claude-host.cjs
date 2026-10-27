@@ -16,6 +16,7 @@ const { buildFixture } = require('./smoke-computer-live.cjs');
 const { launchOwnedFixture } = require('./accept-clipboard.cjs');
 const { stateOf, validateDisplay, compareDisplay } = require('./accept-supervisor-recovery.cjs');
 const continuation = require('./live-acceptance-continuation.cjs');
+const attribution = require('./claude-settings-attribution.cjs');
 const ROOT = path.resolve(__dirname, '..');
 const CLAUDE = path.join(os.homedir(), '.local/bin/claude.exe');
 const SERVER = 'trace-acceptance';
@@ -723,6 +724,81 @@ function compareSettings(before, after) {
   }
   return { preserved: changes.every(change => change.kind === 'formatting_only'), changes };
 }
+// Private attribution input only: changed key names to depth 2 (depth 3 under projects, whose
+// second level is a project path), never values. Names can be private paths, so this result
+// must stay under ignored .runtime/.
+function changedKeyPaths(before, after) {
+  const paths = [], object = item => item && typeof item === 'object' && !Array.isArray(item);
+  const changed = (x, y) => [...new Set([...Object.keys(x), ...Object.keys(y)])].sort().filter(child => canonicalJson(x[child]) !== canonicalJson(y[child]));
+  for (const [source] of SETTING_SOURCES) {
+    const a = before[source], b = after[source];
+    if ((!a && !b) || (a && b && a.bytes.equals(b.bytes))) continue;
+    if (!a?.valid || !b?.valid) { paths.push({ source, path: [], whole: true }); continue; }
+    for (const key of [...new Set([...Object.keys(a.value), ...Object.keys(b.value)])].sort()) {
+      const x = a.value[key], y = b.value[key];
+      if (canonicalJson(x) === canonicalJson(y)) continue;
+      // A project entry that appears or disappears is compared against an empty entry.
+      const projects = key === 'projects' && [x, y].every(item => item === undefined || object(item));
+      const nested = projects || [x, y].every(object) ? changed(x ?? {}, y ?? {}) : [];
+      if (!nested.length) paths.push({ source, path: [key] });
+      for (const child of nested) {
+        const p = x?.[child], q = y?.[child];
+        if (projects && [p, q].every(item => item === undefined || object(item))) {
+          for (const grandchild of changed(p ?? {}, q ?? {})) paths.push({ source, path: [key, child, grandchild] });
+        } else paths.push({ source, path: [key, child] });
+      }
+    }
+  }
+  return paths;
+}
+// Every Claude Code process can write ~/.claude.json, so a settings difference is
+// attributable to the launched host only while no other Claude process runs. Matching
+// is by image name, which also covers the desktop app; it fails closed.
+async function listClaudeProcesses(exec = execFileAsync) {
+  const script = "Get-CimInstance Win32_Process -Filter \"Name='claude.exe'\" | ForEach-Object { [pscustomobject]@{ pid = [int]$_.ProcessId; created = $_.CreationDate.ToUniversalTime().ToString('o') } } | ConvertTo-Json -Compress";
+  const { stdout } = await exec('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], { windowsHide: true, timeout: 15000 });
+  const text = String(stdout).trim();
+  if (!text) return [];
+  const value = JSON.parse(text);
+  return (Array.isArray(value) ? value : [value]).map(item => {
+    need(Number.isInteger(item?.pid) && item.pid > 0 && typeof item.created === 'string' && item.created.length > 0, 'claude_process_enumeration_invalid');
+    return { pid: item.pid, created: item.created };
+  });
+}
+// Samples during the host run. The owned host is pinned by PID plus the creation time
+// first seen for that PID; a writer that starts and exits between samples is not seen.
+function createWriterMonitor({ list = listClaudeProcesses, intervalMs = 2000 } = {}) {
+  let owned = null, timer = null, samples = 0, failures = 0, pending = Promise.resolve();
+  const unowned = new Set();
+  const take = async () => {
+    try {
+      for (const item of await list()) {
+        if (owned && item.pid === owned.pid && (owned.created ??= item.created) === item.created) continue;
+        unowned.add(`${item.pid}:${item.created}`);
+      }
+      samples++;
+    } catch { failures++; }
+  };
+  return {
+    // Called inside the spawn path, so it never throws: an unusable identity fails exclusion.
+    own(pid) { if (!Number.isInteger(pid) || pid <= 0 || owned) failures++; else owned = { pid, created: undefined }; },
+    sample() { pending = pending.then(take); return pending; },
+    start() { if (!timer) { timer = setInterval(() => { void this.sample(); }, intervalMs); timer.unref?.(); } },
+    async stop() { clearInterval(timer); timer = null; await pending; },
+    result() {
+      return { exclusive: samples > 0 && failures === 0 && unowned.size === 0, unownedProcesses: unowned.size, samples, sampleFailures: failures,
+        scope: `Image-name samples every ${intervalMs} ms while the host runs and once after its exit; a writer between samples is not detected.` };
+    },
+  };
+}
+// Shareable receipts keep only this file's hash and the overall changed-path count.
+async function writePrivateSettingsDiff(evidence, intervals, root = ROOT, io = fs) {
+  const folder = path.join(root, '.runtime', 'claude-host', path.basename(evidence));
+  await io.mkdir(folder, { recursive: true });
+  const bytes = Buffer.from(JSON.stringify({ schemaVersion: 1, intervals }, null, 2) + '\n');
+  await io.writeFile(path.join(folder, 'private-settings-diff.json'), bytes, { flag: 'wx', mode: 0o600 });
+  return { sha256: sha(bytes), count: intervals.overall?.length ?? 0 };
+}
 async function preflightStartup({ home, cwd, managedFiles = [path.join(process.env.ProgramFiles || 'C:/Program Files', 'ClaudeCode/managed-settings.json')] }, io = fs) {
   need((await io.readdir(cwd)).length === 0, 'claude_workspace_not_empty');
   // User settings (including the authorized second-brain SessionStart hook) are
@@ -776,6 +852,7 @@ async function run(options) {
   const abort = new AbortController(), interrupt = () => abort.abort();
   process.once('SIGINT', interrupt); process.once('SIGTERM', interrupt);
   let directory, fixture, beforeSettings, installed, rea, journal, hostStarted = false, guardClosed = false;
+  let probedSettings, hostBeforeSettings, hostAfterSettings, monitor;
   const skillDirectory = path.join(os.homedir(), '.claude/skills/trace-computer-use');
   try {
     await persist();
@@ -792,6 +869,11 @@ async function run(options) {
     const auth = JSON.parse((await execFileAsync(CLAUDE, ['auth', 'status'], { windowsHide: true, timeout: 10000, env: hostEnvironment() })).stdout);
     need(auth.loggedIn === true && auth.authMethod === 'claude.ai', 'existing_subscription_required');
     receipt.existingSubscription = true;
+    // Both checks run before claim, so either stop consumes no supplemental attempt.
+    probedSettings = await fingerprintSettings();
+    receipt.settingsIntervals = { hostProbes: compareSettings(beforeSettings, probedSettings) };
+    need(receipt.settingsIntervals.hostProbes.preserved, 'claude_probe_changed_settings');
+    need((await listClaudeProcesses()).length === 0, 'claude_concurrent_writer');
     installed = await loadInstalledBundle(skillDirectory);
     receipt.installedSkill = { bundleSha256: installed.bundleSha256, files: installed.manifest.files };
     if (supplemental) { rea = await loadReaInstructions(); receipt.installedReaInstructions = { sha256: rea.sha256, scope: 'Instruction discovery only; no REA analysis.' }; }
@@ -836,9 +918,16 @@ async function run(options) {
       traceInstructionPath: path.join(skillDirectory, 'SKILL.md'), ...(rea ? { reaInstructionPath: rea.path } : {}) }), { flag: 'wx', mode: 0o600 });
     await fs.writeFile(settings, JSON.stringify(hostSettings(policy, supplemental)), { flag: 'wx', mode: 0o600 });
     if (abort.signal.aborted) throw fail('acceptance_interrupted');
+    hostBeforeSettings = await fingerprintSettings();
+    receipt.settingsIntervals.preHost = compareSettings(probedSettings, hostBeforeSettings);
+    need(receipt.settingsIntervals.preHost.preserved, 'claude_settings_changed_before_host');
+    monitor = createWriterMonitor();
     hostStarted = true; await persist();
     receipt.hostRun = await invokeHost({ config: mcp, cwd: path.join(directory, 'workspace'), home: os.homedir(), settings,
-      allowedReads, requiredSkills, reaInstructionPath: rea?.path, prompt: promptFor({ payload, reaInstructionPath: rea?.path }), signal: abort.signal });
+      allowedReads, requiredSkills, reaInstructionPath: rea?.path, prompt: promptFor({ payload, reaInstructionPath: rea?.path }), signal: abort.signal,
+      spawnImpl: (...args) => { const child = spawn(...args); monitor.own(child.pid); monitor.start(); return child; } });
+    hostAfterSettings = await fingerprintSettings();
+    receipt.settingsIntervals.host = compareSettings(hostBeforeSettings, hostAfterSettings);
     let guard;
     for (let i = 0; i < 700; i++) {
       try { guard = JSON.parse(await fs.readFile(journal, 'utf8')); } catch {}
@@ -876,12 +965,44 @@ async function run(options) {
     if (fixture && receipt.cleanup.guardClosed && receipt.cleanup.input.released && !receipt.cleanup.input.recoveryRequired) {
       try { receipt.cleanup.fixture = await fixture.close(); } catch (error) { receipt.cleanup.fixture = { exited: false, code: codeOf(error) }; }
     }
+    if (monitor) {
+      await monitor.sample(); await monitor.stop();
+      receipt.settingsWriterExclusion = monitor.result();
+    }
     if (beforeSettings) {
+      let finalSettings;
       try {
-        receipt.settingsComparison = compareSettings(beforeSettings, await fingerprintSettings());
+        finalSettings = await fingerprintSettings();
+        receipt.settingsComparison = compareSettings(beforeSettings, finalSettings);
+        if (hostAfterSettings) receipt.settingsIntervals.postHost = compareSettings(hostAfterSettings, finalSettings);
         receipt.userSettingsUnchanged = receipt.settingsComparison.preserved;
       }
       catch { receipt.userSettingsUnchanged = false; }
+      // Attribution never changes a block. A change seen while another Claude process may
+      // have written stays contaminated; a single-writer change is only a host-window candidate.
+      if (receipt.userSettingsUnchanged === false) {
+        receipt.settingsAttribution = receipt.settingsWriterExclusion?.exclusive === true && receipt.settingsIntervals?.host?.preserved === false
+          && receipt.settingsIntervals.postHost?.preserved === true ? 'host_window_candidate' : receipt.settingsWriterExclusion ? 'contaminated_or_unattributed' : 'unattributed';
+        if (finalSettings) {
+          try {
+            const host = hostBeforeSettings && hostAfterSettings ? changedKeyPaths(hostBeforeSettings, hostAfterSettings) : undefined;
+            let hostClassification;
+            if (host) {
+              // Key classes come from the exact host binary's own routine sets. Only counts are shareable.
+              const table = await attribution.loadTable().catch(() => null);
+              const binary = receipt.testedSource?.claudeExecutableSha256;
+              const entry = table?.table.entries.find(item => item.claudeExecutableSha256 === binary);
+              hostClassification = attribution.classifyChangedPaths(host, entry, directory && path.join(directory, 'workspace'));
+              receipt.settingsKeyAttribution = { interval: 'host', tableSha256: table?.sha256 ?? null, binaryInTable: !!entry,
+                windowAttribution: receipt.settingsAttribution, counts: hostClassification.counts,
+                scope: 'Classes name keys the exact host binary treats as routine saved state; they do not establish preservation. Any change blocks.' };
+            }
+            receipt.privateSettingsDiff = await writePrivateSettingsDiff(evidence, { overall: changedKeyPaths(beforeSettings, finalSettings),
+              ...(host ? { host, hostClassification: hostClassification.classified } : {}),
+              ...(hostAfterSettings ? { postHost: changedKeyPaths(hostAfterSettings, finalSettings) } : {}) });
+          } catch { receipt.privateSettingsDiff = { written: false }; }
+        }
+      }
     }
     if (installed) {
       try { receipt.installedSkillUnchanged = (await loadInstalledBundle(installed.directory)).bundleSha256 === installed.bundleSha256; }
@@ -923,5 +1044,5 @@ if (require.main === module) {
     .catch(error => { process.stderr.write(JSON.stringify({ code: codeOf(error) }) + '\n'); process.exitCode = 1; });
 }
 module.exports = { plan, parseArgs, prepareAndClaimContinuation, evidenceDescriptor, preparedFixture, verifyTestedSource, loadReaInstructions,
-  createOwnershipTracker, verifyOwnershipExit, createGuard, MAX_GUARD_ADMISSIONS, loadInstalledBundle, fingerprintSettings, compareSettings, preflightStartup, supportedHostVersion, scopedReadPath, hostToolAllowed, hostSettings, runHostHook,
+  createOwnershipTracker, verifyOwnershipExit, createGuard, MAX_GUARD_ADMISSIONS, loadInstalledBundle, fingerprintSettings, compareSettings, changedKeyPaths, listClaudeProcesses, createWriterMonitor, writePrivateSettingsDiff, preflightStartup, supportedHostVersion, scopedReadPath, hostToolAllowed, hostSettings, runHostHook,
   streamState, observeEvent, summarize, hostArguments, hostEnvironment, invokeHost, promptFor, completed, run };

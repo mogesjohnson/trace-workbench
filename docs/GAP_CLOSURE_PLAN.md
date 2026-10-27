@@ -1,12 +1,12 @@
 # TRACE gap-closure plan and progress
 
-Updated 2026-10-22. **Goal paused. 12/22 checkpoints verified (55% of this checklist).**
+Updated 2026-10-22. **Goal active. 12/22 checkpoints verified (55% of this checklist).**
 
 [Open the visual dashboard](GAP_CLOSURE_PROGRESS.html) · [Detailed status](GAP_CLOSURE_STATUS.md) · [Acceptance specification](../SPEC.md)
 
 Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row. This percentage is not a completion claim for the full goal.
 
-**Current work:** Codex implementation and live testing are paused. GitHub checkpoint and detailed Claude handoff are being prepared; Codex will review Claude's changes when asked.
+**Current work:** Claude continues from the paused Codex checkpoint on claude/gap-closure-next (draft PR 15). The baseline and the stale-outcome correction were rechecked. Claude host settings comparison now excludes concurrent Claude writers and classifies changed client-state keys from a static table keyed by the exact host binary (pure and injected tests; not yet live). The REPLAY production adapter and durable manual loop are implemented and checked offline; a live run waits for the owner. The glow and Claude workflow live attempts wait for Codex. Codex reviews when the owner asks.
 
 | Verified at stated scope | In progress | To do | Blocked |
 | --- | --- | --- | --- |
@@ -28,13 +28,13 @@ Each row is one declared checkpoint. Counts measure completed checkpoints, not t
 | 10. Production owner exclusion and handoff | Prove | Verified at stated scope | Approved exclusion/handoff subcase passed; broader owner invariants still include a current-source stop gap. | [Open](../evidence/replacement-acceptance/r32-production-owner/attempt-2/receipt.json) |
 | 11. Mouse and chord quarantine acknowledgements | Prove | Verified at stated scope | Separate scoped live passes; neither substitutes for typing quarantine. | [Open](../evidence/0.1.0-alpha.3.2/quarantine-ack-chord/receipt.json) |
 | 12. REPLAY two-window recording setup | Demonstrate | Verified at stated scope | Actual 3.795-second recording, correct owned editor, decoded frame review, exact app exits and revoked grants. Full demo still pending. | [Open](../evidence/computer-use-method/replay-feasibility/verification.json) |
-| 13. Glow clicks and complete lifecycle | Prove | In progress | First supplement stopped before clicks on RGB serialization in the harness. Correction verified; one approved corrective supplement remains. | [Open](../evidence/live-acceptance-continuation/glow-supplemental-1/receipt.json) |
+| 13. Glow clicks and complete lifecycle | Prove | In progress | First supplement stopped before clicks on RGB serialization in the harness. Correction verified; one approved corrective supplement remains. It needs a real Sky reference click, so it waits for a Codex session. | [Open](../evidence/live-acceptance-continuation/glow-supplemental-1/receipt.json) |
 | 14. Typing quarantine acknowledgement | Prove | In progress | Supplement approved; exact owned foreground anchor and fresh direct owner idle readiness required before claim. | [Open](LIVE_ACCEPTANCE_CONTINUATION.md) |
-| 15. Current-source physical-stop relevance | Prove | In progress | Historical physical Escape passes exist; later native changes still need relevant live proof. | [Open](../evidence/computer-use-method/production-owner-map.json) |
+| 15. Current-source physical-stop relevance | Prove | In progress | Historical physical Escape passes ran an earlier Session.cs that is absent from every Git object (checked 22 Oct). Needs an owner-present current-source physical stop run. | [Open](../evidence/computer-use-method/production-owner-map.json) |
 | 16. Complete real Codex workflow | Demonstrate | Blocked | Exact Unicode now passed live. Stale error lacked outcome metadata; product correction is tested. Both supplements consumed: a reconnected host and a new owner budget decision are needed for another live run. | [Open](../evidence/live-acceptance-continuation/codex/attempt-2/diagnosis.json) |
-| 17. Complete real Claude workflow | Demonstrate | In progress | Discovery and FIFO fixes prepared. Need actual workflow, both skills and accountable settings preservation. | [Open](LIVE_ACCEPTANCE_CONTINUATION.md) |
+| 17. Complete real Claude workflow | Demonstrate | In progress | Discovery and FIFO fixes prepared. Settings comparison now blocks concurrent Claude writers, records per-interval private changes and classifies them against a static table for the exact host binary (not yet live). Any change still blocks. Waits for a Codex-driven run with the actual workflow and both skills. | [Open](CLAUDE_SETTINGS_ATTRIBUTION_PLAN.md) |
 | 18. Unicode clipboard paste and restoration | Demonstrate | In progress | Text-only adapter and identifier preflight implemented. Unsupported formats preserved; supported live paste and exact-byte restoration unproved. | [Open](../evidence/computer-use-method/clipboard/format-support-preflight.json) |
-| 19. Full REPLAY editing and two exports | Demonstrate | In progress | Fixed-stage preparation module and injected checks exist. Production adapter/manual loop plus both edited/audio exports and actual TRACE controls remain. | [Open](CLAUDE_NEXT_STEPS.md) |
+| 19. Full REPLAY editing and two exports | Demonstrate | In progress | Production runtime adapter and durable manual loop added; 25 focused tests plus offline media and journal checks pass. Not run live: both edited/audio exports and actual TRACE controls still need an owner-approved run. | [Open](../evidence/computer-use-method/replay-adapter/offline-checks.json) |
 | 20. Clean archive installation and rollback | Deliver | To do | Verify the exact final archive on Windows, preserve client settings and prove rollback. | [Open](../SPEC.md) |
 | 21. Final documentation and reviewable commits | Deliver | To do | Reconcile requirement-to-evidence checklist and packaging; README last; planned verification and documentation commits. | [Open](../VERSION_CONTROL.md) |
 | 22. Draft PR and required hosted CI | Deliver | Blocked | New final-source PR/checks remain. Last inspected older CI could not start due to GitHub billing; fresh CI must establish current status. | [Open](GAP_CLOSURE_STATUS.md) |

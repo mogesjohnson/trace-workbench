@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A4-REPLAY",
+  "status": "adapter_verified_offline_not_run_live",
+  "verifiedAt": "2026-10-22",
+  "scope": "Production runtime adapter and durable manual command loop for scripts/accept-replay-workflow.cjs, checked without opening any UI, launching REPLAY or the fixture, or sending input. No APP-01 attempt is claimed or consumed.",
+  "testedSource": {
+    "baseCommit": "91bbc8fdbbc17a1f41f79197e3560218b09aeee9",
+    "files": {
+      "scripts/accept-replay-workflow.cjs": "6484890cc43da11ea63d2aae065a4a3771f9620a6422e23ccecfad7d824a7e32",
+      "scripts/replay-workflow-runtime.cjs": "253fe33ace9cd5c37f12e93475063c4a1c6a59138ba3f6ce67985cdd35651a5a"
+    },
+    "replayCommit": "221502e8c0af25fb1929ff8f200c4774659b7b87"
+  },
+  "checks": {
+    "unitAndInjected": {
+      "command": "node --test tests/accept-replay-workflow.test.cjs tests/replay-workflow-runtime.test.cjs",
+      "result": "25 passed, 0 failed"
+    },
+    "fullSuite": { "command": "npm test", "result": "478 tests: 472 passed, 6 skipped, 0 failed" },
+    "sourceChecks": { "command": "npm run check", "result": "passed (91 JavaScript files)" },
+    "productionMediaPath": {
+      "script": "media-check.cjs.txt",
+      "method": "The production createDeps().independentMediaVerification ran with the REPLAY checkout's own ffmpeg/ffprobe on a synthetic 840x1000 VP9 WebM source and H.264/AAC exports that imitate REPLAY's export graph (trim 1-7 s, box blur and filled callout at 1-3 s, one-second 440 Hz tone placed at 1.5 s). Each result then went through validateMeasurements.",
+      "results": {
+        "expected-export": { "verdict": "pass", "duration": 6, "beforeEffectDifference": 0.2542, "afterEffectDifference": 0.259, "calloutDifference": 113.763,
+          "privacySourceEnergy": 226.624, "privacyOutputEnergy": 2.7279, "audioBeforeRms": 0, "audioDuringRms": 0.0883, "audioAfterRms": 0 },
+        "no-blur": { "verdict": "replay_effect_timing_unverified", "privacySourceEnergy": 226.624, "privacyOutputEnergy": 226.0415 },
+        "no-callout": { "verdict": "replay_effect_timing_unverified", "calloutDifference": 0.0952 },
+        "audio-late": { "verdict": "replay_narration_placement_unverified", "audioDuringRms": 0, "audioAfterRms": 0.0456 },
+        "walkthrough": { "verdict": "pass", "decodedFrameDifference": 17.6172 }
+      },
+      "offlineAssets": { "wavDuration": 1, "paidRequests": 0, "bootstrapInsidePrivateRoot": true },
+      "packagePins": { "replayCommit": true, "executableSha256": true, "asarSha256": true }
+    },
+    "productionTraceEvidencePath": {
+      "script": "journal-check.cjs.txt",
+      "method": "The production createDeps().verifyTraceEvidence read one existing local TRACE session journal (2 completed actions) and verified its final observation PNG hash, read-only. The retained PNG was decoded at the same size used for the fixture texture measurement.",
+      "results": { "verified": true, "wrongPid": "replay_trace_target_mismatch", "sessionOpenedBeforeTarget": "replay_trace_session_predates_target",
+        "privacyRegionEnergyOfThatUnrelatedWindow": 278.71 }
+    },
+    "cli": "Child-process test: --plan is pure; --status, --advance and --live without an owner decision fail closed with a code and create no run directory."
+  },
+  "foundAndFixed": [
+    "Running the workflow file as the CLI loaded the runtime before module.exports existed (circular require); exports now precede the CLI block, with a regression test.",
+    "The loop read its idle clock after its first await; it now starts the idle window at entry."
+  ],
+  "limits": [
+    "No live REPLAY, fixture, TRACE input or export ran. Readiness of the real fixture texture, capture, editing, playback and cleanup remains unproven until an owner-approved live run.",
+    "The synthetic exports imitate REPLAY's export graph; they are not REPLAY output.",
+    "TRACE evidence binding relies on the local TRACE journal written by the connected host; it does not prove semantic intent.",
+    "A live run needs .runtime helpers and the prepared fixture in the checkout it runs from (they exist only in the main checkout)."
+  ]
+}
