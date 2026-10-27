@@ -26,3 +26,5 @@ Broader display/DPI transitions, secure/elevated desktops, independent backgroun
 Use the [README setup commands](../README.md#computer-use-setup), [operation/recovery guide](COMPUTER_USE.md) and [archive verifier](ARCHIVE_INSTALL.md). Configuration plans preserve unrelated entries and exact backups. Reconnect existing MCP hosts after updating source.
 
 The release includes the source/setup ZIP, acceptance manifest, distribution receipt, release notes and SHA-256 checksums. Fresh hosted Windows CI verified installation/rollback from those exact ZIP bytes. The prepublication manifest is retained as a snapshot; the distribution/publication receipts close REL-01. `npm` publication remains outside scope (`private: true`). Tag `v0.1.0` identifies the reviewed tested source.
+
+The corrected companion acceptance manifest pins exact Git blob bytes at the release source. One original prepublication documentation digest included a checkout CRLF at the final newline; the source ZIP and tag remain unchanged. See the release metadata correction and updated companion checksums.

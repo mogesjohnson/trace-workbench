@@ -68,7 +68,7 @@
       "id": "REL-01",
       "status": "pending",
       "ref": "docs/FINISH_GATE_REVIEW.md",
-      "sha256": "0854fb2d09b16432b631cc5faaa2c44b6eb623392e44786e7676b3cbf976d5e7",
+      "sha256": "3e2c814dbeb59fcb68f623c78c5f66eca7a85c15811e5c849e0ba3a99d67bb50",
       "boundary": "Pending final exact archive, hosted gate, reviewed integration and approved publication."
     }
   ],
@@ -112,5 +112,19 @@
     "releaseTag": "v0.1.0",
     "npmPublication": false
   },
-  "history": "Original failures, partial audits, frozen decisions and proposals remain unchanged; this manifest is a scoped reconciliation, not a new live run."
+  "history": "Original failures, partial audits, frozen decisions and proposals remain unchanged; this manifest is a scoped reconciliation, not a new live run.",
+  "evidenceSourceCommit": "190a06abfc7bc3b87e67e6b4ee070d4ea70b3308",
+  "hashEncoding": "Raw Git blob bytes at evidenceSourceCommit; no checkout line-ending conversion",
+  "metadataCorrection": {
+    "correctedAt": "2026-10-27T23:50:07.235Z",
+    "reason": "The original digest included a checkout CRLF at the final newline; Git stored LF. The companion manifest now pins exact source-archive bytes.",
+    "corrections": [
+      {
+        "ref": "docs/FINISH_GATE_REVIEW.md",
+        "originalCheckoutSha256": "0854fb2d09b16432b631cc5faaa2c44b6eb623392e44786e7676b3cbf976d5e7",
+        "gitBlobSha256": "3e2c814dbeb59fcb68f623c78c5f66eca7a85c15811e5c849e0ba3a99d67bb50"
+      }
+    ],
+    "sourceArchiveAndTagUnchanged": true
+  }
 }

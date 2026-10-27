@@ -23,3 +23,5 @@ Older failed CI/probe/live receipts remain historical. Later compatible successf
 5. Update the dashboard and second-brain with the actual merged commit, CI URL, release URL and checksums. Only then close REL-01 and the full goal.
 
 No additional mouse, Escape, clipboard, host, glow, REPLAY recording or export reruns are needed unless relevant runtime source/environment changes invalidate retained evidence. Final archive verification is a distinct distribution gate.
+
+When preparing an acceptance manifest, hash raw Git blob bytes at the exact evidence source commit, rather than checkout bytes that Git may normalize. Verify every manifest digest against the archived source before upload. Hosted ZIP reproduction used `TZ=UTC`.
