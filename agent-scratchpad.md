@@ -1,5 +1,13 @@
 # Agent handoff
 
+## Latest: both missing effects passed — 27 October 2026
+
+Resume here, ahead of older prepared/blocked notes. [Glow lifetime 9](evidence/live-acceptance-continuation/glow-lifecycle-9/receipt.json) passed zero-input ordinary-close and owned-parent-loss measurements (748 ms / 1,422 ms), visible absence, unchanged focus and exact cleanup. Compatible source/display allows the approved combination with the retained owner-accepted hit; lifetime 8 remains failed. [REPLAY lifetime 5](evidence/live-acceptance-continuation/replay-pause-5/receipt.json) passed one journal-bound native Pause click with stable position 34.283217 before the 180.066667-second end. Root inspected actual frames. Original recording/edit/export audit stays partial historically; its missing pause is now supplied.
+
+Both one-attempt/no-retry supplements are consumed. All owned helpers/apps closed; independent snapshot found all 12 PIDs absent. Desktop is released. User approved four unchanged proof PNGs up to 1.5 MiB; uploaded total is 1,253,725 bytes. Draft PR 32 depends on 31; PR 33 depends on 32. Each has 207 added lines, 4 files, 2 commits. No compatible passing live check was repeated.
+
+Next: finish final documentation and exact versioned distribution, then present a concrete integration/release approval. See [final gate review](docs/FINISH_GATE_REVIEW.md) and [requirement mapping](docs/REQUIREMENT_EVIDENCE_REVIEW.md). Progress is 20/22 (91% of the checklist), not full-goal completion. Preserve mixed recovery scopes, three older owner-exit metadata gaps, original failures and frozen authorization files. No new desktop slot or paid Claude session is needed. Required CI 40580446444 passed d981e06; a changed final artifact needs its own exact-byte gate. No merge/tag/release yet.
+
 ## Both narrow workers prepared — 27 October 2026
 
 PR 30 at `d344fdb` supplies the explicit production pause CLI, root PNG review, real journal binding and ordered cleanup. Required CI 40577819231 passed, including archive installation/rollback. PR 29 at `1d679b7` also passed CI 40566252882; PR 28 at `a7e67d6` passed CI 40559238356. Runtime preparation is not live acceptance. No app, capture, native input, media subprocess or actual claim ran locally. Existing production source tests are reused; selected offline checks covered only changed contracts and new failure boundaries.

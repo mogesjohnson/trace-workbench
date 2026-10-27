@@ -2,7 +2,7 @@
   "updated": "2026-10-27",
   "title": "TRACE — close the Computer Use gap",
   "goalStatus": "active",
-  "current": "Background preparation is complete. Both narrow harnesses are uploaded; production runtime CI and exact-archive checks passed at d344fdb. Existing authorization covers one glow lifecycle and one pause attempt, with no retries. Desktop readiness was withdrawn; no live attempt or screen control has started. Progress remains 18/22 (82%).",
+  "current": "Both missing live effects passed on 27 October: glow ordinary-close/owner-loss cleanup and a causal REPLAY pause. Receipts and four approved proof PNGs are uploaded in PRs 32–33. Desktop work is finished. Final documentation and exact versioned distribution remain; 20/22 checkpoints verified (91%).",
   "measurement": "Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row.",
   "checkpoints": [
     {
@@ -98,16 +98,16 @@
       "phase": "Demonstrate",
       "title": "REPLAY two-window recording setup",
       "status": "verified",
-      "detail": "Actual 3.795-second recording, correct owned editor, decoded frame review, exact app exits and revoked grants. Full demo still pending.",
+      "detail": "Actual two-window recording feasibility passed; the full editing/export workflow and missing pause supplement are now retained in checkpoint 19.",
       "evidence": "../evidence/computer-use-method/replay-feasibility/verification.json"
     },
     {
       "id": "13",
       "phase": "Prove",
       "title": "Glow clicks and complete lifecycle",
-      "status": "blocked",
-      "detail": "Target-hit subproof remains verified and lifetime 8 stays failed. The zero-input lifecycle-only worker is prepared; lifetime 9 is authorized once, no retry. Ordinary-close/owner-loss measurements await fresh desktop readiness.",
-      "evidence": "../evidence/live-acceptance-continuation/glow-target-hit-verification.json"
+      "status": "verified",
+      "detail": "Authorized lifetime 9 passed with zero input: measured glow absence in 748 ms after ordinary close and 1,422 ms after owner loss. Compatible retained target-hit proof completes the declared scope. Original lifetime 8 failure stays unchanged.",
+      "evidence": "../evidence/live-acceptance-continuation/glow-lifecycle-9/receipt.json"
     },
     {
       "id": "14",
@@ -153,16 +153,16 @@
       "id": "19",
       "phase": "Demonstrate",
       "title": "Full REPLAY editing and two exports",
-      "status": "blocked",
-      "detail": "Recording, edits, two exports and media/cleanup evidence remain retained. The causal pause worker is prepared for lifetime 5 once, no retry, with long media and actual screenshot review. Live pause proof awaits its own fresh idle slot; no workflow repeat.",
-      "evidence": "../evidence/live-acceptance-continuation/replay-finish-2/verification.json"
+      "status": "verified",
+      "detail": "Retained recording, edits and two exports plus authorized lifetime 5 causal pause: exactly one native click, stable paused position 34.283217 of 180.066667 seconds, fresh images/journal and verified cleanup. Original partial audit stays unchanged.",
+      "evidence": "../evidence/live-acceptance-continuation/replay-pause-5/receipt.json"
     },
     {
       "id": "20",
       "phase": "Deliver",
       "title": "Clean archive installation and rollback",
       "status": "active",
-      "detail": "Production checkpoint d344fdb passed Windows CI and exact-archive installation/rollback. Its artifact keeps that exact scope; a final versioned release archive and checksum remain separate gates.",
+      "detail": "Current-source d981e06 passed Windows CI and exact-archive installation/rollback. A final versioned release archive and checksum remain separate gates.",
       "evidence": "ARCHIVE_INSTALL.md"
     },
     {
@@ -170,7 +170,7 @@
       "phase": "Deliver",
       "title": "Final documentation and reviewable commits",
       "status": "pending",
-      "detail": "Eight owner invariants and all requirement rows are mapped. Final disposition and documentation still depend on the two live results and reviewed final delivery; source preparation alone does not complete this row.",
+      "detail": "All requirements and eight owner invariants are mapped. Final documentation, reviewed integration and versioned delivery are being reconciled against the completed live results.",
       "evidence": "../VERSION_CONTROL.md"
     },
     {
@@ -178,15 +178,14 @@
       "phase": "Deliver",
       "title": "Draft PR and required hosted CI",
       "status": "verified",
-      "detail": "PR 24 head 04407b7 passed required hosted CI run 40012731237, including archive checks. New background preparation needs its own final-head CI. No merge or release claim.",
+      "detail": "PR 31 head d981e06 passed required CI run 40580446444, including both MCP paths and exact-archive installation/rollback. Final release source still needs its own required gate.",
       "evidence": "../evidence/computer-use-method/public-ci-parallel-fixes.json"
     }
   ],
   "next": [
-    "Wait for fresh desktop readiness. Existing [narrow authorization](../evidence/live-acceptance-continuation/owner-narrow-finish-decision.json) already covers one attempt each; do not request the same scope again.",
-    "Run only glow ordinary-close and owned-parent-loss cleanup. Reuse the retained intended-target hit; do not repeat clicks or physical Escape.",
-    "In a separate idle slot, run the prepared pause-only REPLAY worker. Inspect its actual pending PNG, supply one hash-bound Pause point, and retain independent state plus exact cleanup. Reuse completed recording, editing and exports.",
-    "Finish requirement disposition, final versioned artifacts and reviewed integration after the two results. No merge or release is authorized."
+    "Complete final requirement disposition and user guidance using the published glow and pause receipts. Preserve original failures and mixed-scope recovery limits.",
+    "Prepare the final versioned source/setup archive, acceptance manifest and checksums; verify its exact bytes through required hosted CI.",
+    "Present the concrete integration/release candidate for final owner approval. No merge, tag or publication is authorized yet."
   ],
-  "footer": "No desktop control is running. The two narrow attempts are authorized, but neither is claimed and fresh readiness is still required. Passing host, clipboard, stop and recovery checks remain verified at compatible scopes. Earlier failures remain unchanged."
+  "footer": "Desktop control is finished and all owned helpers are closed. Both narrow attempts were consumed and passed. No repeat of compatible passing live checks is needed. Final reviewed distribution remains open."
 }
