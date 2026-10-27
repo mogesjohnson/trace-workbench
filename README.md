@@ -6,7 +6,7 @@ Shared tools that give agents abilities beyond written instructions.
 
 **Version:** `0.1.0-alpha.3.3` · **Status:** Windows preview, milestone acceptance incomplete
 
-**23 October checkpoint (UTC):** typing quarantine recovery passed; 13 of 22 declared checkpoints are verified (59%, not an effort estimate). Compatible passing checks are reused. Follow the [progress plan](docs/GAP_CLOSURE_PLAN.md), [visual dashboard](docs/GAP_CLOSURE_PROGRESS.html) and [current evidence](docs/GAP_CLOSURE_STATUS.md). Full live and release acceptance remain incomplete.
+**27 October checkpoint:** 18 of 22 declared checkpoints are verified (82%, not an effort estimate). The [owner-invariant review](docs/PRODUCTION_OWNER_RECONCILIATION.md) reconciles existing evidence without repeating tests. Follow the [progress plan](docs/GAP_CLOSURE_PLAN.md), [visual dashboard](docs/GAP_CLOSURE_PROGRESS.html) and [requirement checklist](docs/REQUIREMENT_EVIDENCE_REVIEW.md). Full live and release acceptance remain incomplete.
 
 TRACE provides local tools for **Codex, Claude Code, Grok Build, and Gemini CLI**. The first two skills are **Reverse Engineer Anything** and **Computer Use**. The Windows executor exposes six MCP tools for discovering windows, observing screenshots and controls, acting, and releasing desktop ownership. A screen-edge glow shows when TRACE owns the desktop.
 
@@ -31,10 +31,10 @@ Review each plan before applying it. Setup pins the Windows engine locally; conf
 
 ## Verified
 
-- The prior local suite recorded **520 tests, 514 passed, six skipped, zero failed**, with source checks for 95 JavaScript files. Those results are reused at their actual scope. This continuation ran one focused MCP regression for the changed Claude forwarding boundary; it did not rerun the full suite. Test counts describe cases and edge conditions, not features.
+- Required Windows [CI passed at source checkpoint `0d9a6a9`](https://github.com/mogesjohnson/trace-workbench/actions/runs/40040530734), including source checks, the required suite, both MCP paths and exact-archive installation/rollback. Compatible local and live passes are reused; test counts describe cases and edge conditions, not features.
 - Method coordination, routing, checkpoints and artifact identity are implemented; actual headless browser and eight child-process application cases have scoped passing evidence.
-- Native supervision, durable quarantine, physical-stop handling and strict UTF-8 transport are implemented. Recovery coverage links 15 failure/input pairs at their recorded source scopes; full acceptance remains incomplete.
-- Actual Codex typing preserved `TRACE Codex verified café 日本語` exactly. Its complete host workflow still needs proof through a connected server loaded from corrected source. An extra bounded budget is approved but unclaimed.
+- Native supervision, durable quarantine and strict UTF-8 transport are implemented. [Recovery coverage](evidence/computer-use-method/effective-recovery-map.json) links 15 failure/input pairs at their recorded source scopes, preserving three older exit-metadata limits. [Actual physical mouse/keyboard stops and ordinary injected Escape passed](evidence/live-acceptance-continuation/finish-stop-verification.json).
+- Required actual [Codex](evidence/live-acceptance-continuation/codex-amendment-2-attempt-1/receipt.json) and [Claude](evidence/live-acceptance-continuation/claude-supplemental-2/receipt.json) host workflows passed at their declared scopes. [Clipboard paste and restoration passed](evidence/live-acceptance-continuation/clipboard-supplemental-2/receipt.json). No repeat is needed.
 - Typing quarantine acknowledgement passed with exact `abc`, independent release, persistent recovery across restart and one exact pinned-engine follow-up. Owned native work, fixture and readiness anchor exited.
 - Observation reads the accessibility tree 8 levels deep by default and up to 32 on request; the action reuses that depth. Live: a control 14 levels deep was invoked exactly once.
 - Rejected actions report `not_dispatched` when input provably never started, and `unknown` when it may have. Live: moved, blocked, unsupported-scroll and changed-focus cases left the fixture unchanged.
@@ -46,12 +46,10 @@ Review each plan before applying it. Setup pins the Windows engine locally; conf
 
 ## Remaining
 
-- **Live gates:** complete glow lifecycle, clipboard paste/restoration, Claude workflow/settings and current-source physical-stop proof. Typing quarantine, window targeting and cancellation replacements have passed at their recorded scopes.
-- **Glow and Codex:** [amendment 2 is approved](evidence/live-acceptance-continuation/owner-amendment-2.json). Both amended glow attempts are consumed; no new glow run is authorized. Codex's amended attempts remain unclaimed.
-- **Clipboard:** the first supplement stopped before paste. Native cleanup is reconciled; guarded restoration refused changed clipboard contents and retained protected recovery.
-- **REPLAY:** two-instance recording feasibility passed. The production adapter, durable recovery and a source-segment content review gate are implemented and checked offline. Actual controls, editing/audio and both final exports remain unproved.
-- **Distribution:** existing-host exact-archive setup/configuration/rollback preparation passed. [The archive verifier](docs/ARCHIVE_INSTALL.md), fresh Windows CI and the final release archive still need end-to-end acceptance.
-- **Hosted CI:** the inspected [PR 15 check](evidence/computer-use-method/ci-pr15-current.json) could not start due to account billing/spending. Required hosted CI remains blocked.
+- **Glow lifecycle:** intended-target hit is supported under the [owner-selected criterion](evidence/live-acceptance-continuation/glow-target-hit-verification.json); ordinary-close and owner-process-loss measurements remain missing. Original failures and exhausted budgets stay unchanged. A narrow supplement needs its bounded execution plan and fresh desktop readiness.
+- **REPLAY pause:** [recording, edits, offline audio, two exports and completed-file playback are retained](evidence/live-acceptance-continuation/replay-finish-2/verification.json). A user-caused pause before playback ends remains unproved. Reuse completed work; do not repeat the full workflow.
+- **Final review:** finish requirement/documentation disposition after the missing live results. The [eight owner invariants](docs/PRODUCTION_OWNER_RECONCILIATION.md) now have scoped evidence; this does not complete all CU-04 or release gates.
+- **Distribution:** checkpoint CI and its exact archive passed. Final versioned artifacts need their own exact-byte installation/rollback acceptance and required hosted checks after any change. Reviewed merges and release publication remain separate.
 - **Unverified:** Grok/Gemini live behavior.
 - **Deferred:** display transitions.
 

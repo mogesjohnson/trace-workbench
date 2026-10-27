@@ -2,6 +2,8 @@
 
 Updated 23 October 2026. The owner resumed **background-only** work. No screen capture, window activation, mouse, keyboard, clipboard access or live acceptance is authorized by that instruction. The full goal remains open at 18/22 scoped checkpoints (82%).
 
+**27 October continuation:** the owner initially offered desktop readiness, then said there was no 20-minute window before any UI launch. Desktop execution remains deferred; no new attempt or input was claimed. Background review completed the [eight-invariant reconciliation](PRODUCTION_OWNER_RECONCILIATION.md), and the README now reuses completed host, clipboard and stop results. The prior final-head CI passed; later documentation archives retain their own check scope. No merge, version bump or release is authorized.
+
 ## Changes prepared without desktop control
 
 - Added a pure intended-target assertion for the owner's [criterion choice](../evidence/live-acceptance-continuation/owner-glow-target-hit-decision.json). It checks the actual physical event, half-open button bounds, all five exact counters, released left input and checkpoint time. The historical full driver still uses its original exact-center assertion. A future bounded supplement can reuse the new assertion without changing previous receipts.
@@ -13,7 +15,7 @@ Updated 23 October 2026. The owner resumed **background-only** work. No screen c
 
 Six selected offline checks passed: the target-hit assertion's success and rejection boundaries, the historical glow oracle, and the affected REPLAY controls/export-precondition checks. These use injected state and do not open an application. The pinned retained-evidence verifier also passed its narrow target-hit review.
 
-[The working requirement-to-evidence checklist](REQUIREMENT_EVIDENCE_REVIEW.md) maps every product requirement and named milestone gate without promoting missing proof. The specification now recognizes the already-approved production-owner replacement; the old failed feasibility probe does not require another approval or rerun. Full invariant reconciliation remains distinct from that approval.
+[The working requirement-to-evidence checklist](REQUIREMENT_EVIDENCE_REVIEW.md) maps every product requirement and named milestone gate without promoting missing proof. The specification recognizes the already-approved production-owner replacement; the old failed feasibility probe does not require another approval or rerun. [The completed invariant reconciliation](PRODUCTION_OWNER_RECONCILIATION.md) retains eight scoped rows and their metadata limits; full glow lifecycle remains separate.
 
 A separate Claude Code review completed using the newly signed-in isolated account, Sonnet at medium effort, no tools or MCP servers, a $0.35 invocation cap and a two-minute process limit. It reported no blocking findings in one turn and $0.042504 of model usage. This is a source review rather than another Claude desktop acceptance session. The review's timestamp limitation is explicit in the offline verifier: reference completion supplies a lower bound, not a recovered TRACE dispatch-start checkpoint. Authentication and raw model output stay local.
 
