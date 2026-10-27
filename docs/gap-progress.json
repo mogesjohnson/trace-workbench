@@ -1,8 +1,8 @@
 {
-  "updated": "2026-10-23",
+  "updated": "2026-10-27",
   "title": "TRACE — close the Computer Use gap",
   "goalStatus": "active",
-  "current": "Background-only work resumed. 18/22 checkpoints remain verified (82%). Target-hit assertion and pinned offline review are prepared; original glow failure and missing lifecycle stay explicit. REPLAY now rejects automatic end as pause proof. No desktop tests or completed host/stop checks are being repeated.",
+  "current": "Background preparation is complete. Both narrow harnesses are uploaded; production runtime CI and exact-archive checks passed at d344fdb. Existing authorization covers one glow lifecycle and one pause attempt, with no retries. Desktop readiness was withdrawn; no live attempt or screen control has started. Progress remains 18/22 (82%).",
   "measurement": "Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row.",
   "checkpoints": [
     {
@@ -106,7 +106,7 @@
       "phase": "Prove",
       "title": "Glow clicks and complete lifecycle",
       "status": "blocked",
-      "detail": "Pinned offline review passes the owner-selected target-hit subproof and preserves the original lifetime 8 failure. Ordinary-close/parent-loss stages remain missing; older pre-supervisor evidence cannot transfer. No new live budget granted.",
+      "detail": "Target-hit subproof remains verified and lifetime 8 stays failed. The zero-input lifecycle-only worker is prepared; lifetime 9 is authorized once, no retry. Ordinary-close/owner-loss measurements await fresh desktop readiness.",
       "evidence": "../evidence/live-acceptance-continuation/glow-target-hit-verification.json"
     },
     {
@@ -153,8 +153,8 @@
       "id": "19",
       "phase": "Demonstrate",
       "title": "Full REPLAY editing and two exports",
-      "status": "active",
-      "detail": "Approved lifetime 4 completed all 17 runtime stages, two exports, independent media checks, sampled output review and exact cleanup. Audit stays partial: playback ended before the second native toggle click, so user-caused pause is unproved. Review this narrow disposition; do not repeat the full workflow.",
+      "status": "blocked",
+      "detail": "Recording, edits, two exports and media/cleanup evidence remain retained. The causal pause worker is prepared for lifetime 5 once, no retry, with long media and actual screenshot review. Live pause proof awaits its own fresh idle slot; no workflow repeat.",
       "evidence": "../evidence/live-acceptance-continuation/replay-finish-2/verification.json"
     },
     {
@@ -162,7 +162,7 @@
       "phase": "Deliver",
       "title": "Clean archive installation and rollback",
       "status": "active",
-      "detail": "Fresh hosted Windows runner passed exact archive 08d6984: locked setup, provider/MCP checks, four client configurations, exact backups, preservation, idempotence, conflicts and rollback. Final release archive and checksum publication remain open; a different archive does not inherit this pass.",
+      "detail": "Production checkpoint d344fdb passed Windows CI and exact-archive installation/rollback. Its artifact keeps that exact scope; a final versioned release archive and checksum remain separate gates.",
       "evidence": "ARCHIVE_INSTALL.md"
     },
     {
@@ -170,7 +170,7 @@
       "phase": "Deliver",
       "title": "Final documentation and reviewable commits",
       "status": "pending",
-      "detail": "Reconcile requirement-to-evidence checklist and packaging; README last; planned verification and documentation commits.",
+      "detail": "Eight owner invariants and all requirement rows are mapped. Final disposition and documentation still depend on the two live results and reviewed final delivery; source preparation alone does not complete this row.",
       "evidence": "../VERSION_CONTROL.md"
     },
     {
@@ -183,10 +183,10 @@
     }
   ],
   "next": [
-    "Finish the background preparation and independent Claude source review; see [the background finish plan](BACKGROUND_FINISH_PLAN.md).",
-    "Upload a focused draft PR depending on PR 24; run its required hosted CI and exact-archive checks. No broad local rerun.",
-    "Keep desktop control stopped. A later direct bounded decision is needed only for missing glow lifecycle and REPLAY pause proof; reuse compatible passes.",
-    "Reconcile the full requirement-to-evidence checklist and final artifact scope. No merge or release is authorized by background-only resume."
+    "Wait for fresh desktop readiness. Existing [narrow authorization](../evidence/live-acceptance-continuation/owner-narrow-finish-decision.json) already covers one attempt each; do not request the same scope again.",
+    "Run only glow ordinary-close and owned-parent-loss cleanup. Reuse the retained intended-target hit; do not repeat clicks or physical Escape.",
+    "In a separate idle slot, run the prepared pause-only REPLAY worker. Inspect its actual pending PNG, supply one hash-bound Pause point, and retain independent state plus exact cleanup. Reuse completed recording, editing and exports.",
+    "Finish requirement disposition, final versioned artifacts and reviewed integration after the two results. No merge or release is authorized."
   ],
-  "footer": "Background-only work is active. Physical-stop, Codex, Claude and clipboard passes remain verified at their recorded scopes. Exhausted glow and REPLAY limits remain in force; the criterion decision grants no extra attempts. No desktop control is running."
+  "footer": "No desktop control is running. The two narrow attempts are authorized, but neither is claimed and fresh readiness is still required. Passing host, clipboard, stop and recovery checks remain verified at compatible scopes. Earlier failures remain unchanged."
 }
