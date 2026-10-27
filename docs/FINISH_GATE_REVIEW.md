@@ -15,10 +15,10 @@ The [requirement map](REQUIREMENT_EVIDENCE_REVIEW.md) accounts for all nine prod
 
 Both narrow runs completed exact owned cleanup; an independent snapshot found all 12 owned PIDs absent. Desktop control is finished. Four unchanged synthetic PNGs total 1,253,725 bytes, within the owner's explicit 1.5 MiB shared budget, and are uploaded in draft PRs 32–33. No raw private logs or credentials are published.
 
-## Remaining delivery gates
+## Completed delivery gates
 
-1. Reconcile final README, specification, version and release notes with the completed evidence. Keep frozen proposals and historical receipts unchanged.
-2. Prepare the final versioned source/setup archive, acceptance manifest and SHA-256 checksums. Required hosted CI must verify that exact archive and installation/rollback. Existing successful run [40580446444](https://github.com/mogesjohnson/trace-workbench/actions/runs/40580446444) remains valid for `d981e06`, not a different final artifact.
-3. Present the concrete candidate for owner approval, then integrate reviewed PRs in dependency order and publish only after the merged source/artifact gates pass. No merge, tag or release has occurred.
+1. Final README, specification, version and release notes are reconciled with accepted scoped evidence; historical receipts and frozen proposals remain unchanged.
+2. Final main source `190a06abfc7bc3b87e67e6b4ee070d4ea70b3308` passed [hosted CI](https://github.com/mogesjohnson/trace-workbench/actions/runs/40603566212) and exact-archive installation/rollback. Published ZIP bytes and all uploaded assets were independently downloaded and hash-verified.
+3. The owner approved integration/publication. All 29 prepared PRs are merged and [v0.1.0](https://github.com/mogesjohnson/trace-workbench/releases/tag/v0.1.0) is published with source ZIP, manifest, receipt, notes and checksums. See [publication evidence](../evidence/release-0.1.0/publication.json).
 
 No additional desktop, host, Escape, clipboard, recording or export test is needed for this review. Remaining work runs in the background.

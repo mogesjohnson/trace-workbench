@@ -1,6 +1,6 @@
 # Requirement-to-evidence review
 
-Reviewed 27 October 2026 after the two authorized missing-effect supplements. This is a working reconciliation of [SPEC.md](../SPEC.md), its named cases and retained evidence. It is **not final release acceptance**. A retained pass keeps its original source, display, provider and host scope; no desktop case was repeated for this document.
+Reviewed 27 October 2026 after the two authorized missing-effect supplements. This is a working reconciliation of [SPEC.md](../SPEC.md), its named cases and retained evidence. Final scoped release acceptance is recorded in the [publication receipt](../evidence/release-0.1.0/publication.json). A retained pass keeps its original source, display, provider and host scope; no desktop case was repeated for this document.
 
 ## Product requirements
 
@@ -14,7 +14,7 @@ Reviewed 27 October 2026 after the two authorized missing-effect supplements. Th
 | CU-04: ownership, interruption and recovery | [Eight-invariant reconciliation](PRODUCTION_OWNER_RECONCILIATION.md), [15-cell recovery map](../evidence/computer-use-method/effective-recovery-map.json), [current-source stop audit](../evidence/live-acceptance-continuation/finish-stop-verification.json) | All eight owner invariants have scoped supporting evidence; the old map stays historically blocked. Separate invariant, quarantine and lifecycle scopes below. [Glow lifetime 9](../evidence/live-acceptance-continuation/glow-lifecycle-9/receipt.json) supplies the missing lifecycle proof. Together these satisfy the approved normal-desktop CU-04 scope, retaining mixed-source and legacy metadata limits. |
 | HOST-01: actual agents | [Codex](../evidence/live-acceptance-continuation/codex-amendment-2-attempt-1/receipt.json), [Claude](../evidence/live-acceptance-continuation/claude-supplemental-2/receipt.json) | Required workflows passed at their declared scopes. No rerun needed. Semantic image comprehension, REA semantic analysis and optional Grok/Gemini workflows remain distinct. |
 | APP-01: real application result | [REPLAY audit and artifact hashes](../evidence/live-acceptance-continuation/replay-finish-2/verification.json) | Scoped pass: retained recording, edits, exports and media audit plus [lifetime 5](../evidence/live-acceptance-continuation/replay-pause-5/receipt.json) prove a native-click pause before end. Original partial audit and sampled-review limits remain unchanged. |
-| REL-01: consistent, verified distribution | [PR 25](https://github.com/mogesjohnson/trace-workbench/pull/25), [archive scope](ARCHIVE_INSTALL.md), [version-control rules](../VERSION_CONTROL.md) | Open: final acceptance disposition, final version/artifact, reviewed integration and release publication. Hosted CI is source/archive evidence, not a release. |
+| REL-01: consistent, verified distribution | [PR 25](https://github.com/mogesjohnson/trace-workbench/pull/25), [archive scope](ARCHIVE_INSTALL.md), [version-control rules](../VERSION_CONTROL.md) | Pass: reviewed stack merged; version 0.1.0 tagged and published after final hosted source and exact-archive installation/rollback passed. Uploaded assets were independently downloaded and hash-verified in the [publication receipt](../evidence/release-0.1.0/publication.json). |
 
 ## Named milestone cases
 
@@ -34,10 +34,10 @@ Reviewed 27 October 2026 after the two authorized missing-effect supplements. Th
 | A33-DEPTH / A33-OUTCOME | Both passed in [alpha.3.3 status](../evidence/0.1.0-alpha.3.3/case-status.json); retain their relevant source/environment scope. |
 | A4-HOST | Required [Codex](../evidence/live-acceptance-continuation/codex-amendment-2-attempt-1/receipt.json) and [Claude](../evidence/live-acceptance-continuation/claude-supplemental-2/receipt.json) workflows passed. The background Claude source reviewer is not a new host-acceptance receipt. |
 | A4-REPLAY | [Lifetime 4 audit](../evidence/live-acceptance-continuation/replay-finish-2/verification.json) stays partial historically. Authorized [lifetime 5](../evidence/live-acceptance-continuation/replay-pause-5/receipt.json) supplies the missing causal pause: advancing preview, one journal-bound native click, stable paused position 34.283217 seconds before the 180.066667-second end, and exact cleanup. Their approved combination satisfies APP-01 at its declared scope. |
-| RC-INSTALL / historical A4-INSTALL | [Fresh-runner archive verification](ARCHIVE_INSTALL.md) passed for its pinned source/archive. New or final release artifacts require their own exact-byte acceptance. Noninteractive installation does not prove desktop behavior. |
-| RC-CI | [PR 24 run](https://github.com/mogesjohnson/trace-workbench/actions/runs/40012731237) passed its source. [Latest preparation run](https://github.com/mogesjohnson/trace-workbench/actions/runs/40580446444) passed head `d981e06`, including exact-archive installation and rollback. Later changed archives require their own check. Old billing failures remain historical. |
-| V1-ACCEPT | All functional requirements have scoped support. REL-01 remains open pending final version/artifact, reviewed integration and publication; this working map does not declare the goal complete. |
-| V1-RELEASE | Not performed. No approved version bump, reviewed merge, release tag or published final artifact is implied. |
+| RC-INSTALL / historical A4-INSTALL | [Fresh-runner archive verification](ARCHIVE_INSTALL.md) passed for its pinned source/archive. The final published artifact has its own exact-byte acceptance in the publication receipt. Noninteractive installation does not prove desktop behavior. |
+| RC-CI | Final release main source `190a06abfc7bc3b87e67e6b4ee070d4ea70b3308` passed [hosted run 40603566212](https://github.com/mogesjohnson/trace-workbench/actions/runs/40603566212), including both MCP paths and exact-archive installation/rollback. The published ZIP and all uploaded assets were independently hash-verified. Prior billing/CI failures remain historical. |
+| V1-ACCEPT | All functional requirements have scoped support. REL-01 is now complete at the published source/artifact scope; the publication receipt records final delivery. |
+| V1-RELEASE | Completed: approved reviewed integration, matching package/lockfile/tag version 0.1.0, passing final hosted/archive checks and [verified GitHub release](https://github.com/mogesjohnson/trace-workbench/releases/tag/v0.1.0). |
 
 ## Artifacts, boundaries and next action
 
@@ -45,4 +45,4 @@ The requested [fixture-demo.mp4](../evidence/live-acceptance-continuation/replay
 
 The supported desktop scope remains Windows x64, unlocked normal integrity, one pinned monitor mode and accessible UIA targeting. Secure/elevated desktops, wider display acceptance and independent background GUI workers are outside the demonstrated scope. Background CLI tests and reviews use no desktop input.
 
-The two narrow attempts are consumed and passed; desktop control is finished. Retain the full goal, 20/22 checklist count, prior failures and private authentication boundaries. Final README/version/artifact reconciliation and reviewed release remain open. No compatible passing live case needs repetition.
+The two narrow attempts are consumed and passed; desktop control is finished. All 22 declared checkpoints and required scoped release gates are complete. Prior failures, private authentication boundaries and optional operating limits remain preserved. No compatible passing live case was repeated.
