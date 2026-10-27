@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-10-22",
+  "sourceCommit": "5e5a363411bdd4d7b4842edb3ae6500b0d87147e",
+  "run": "https://github.com/mogesjohnson/trace-workbench/actions/runs/39810890980",
+  "job": "windows",
+  "checkRunId": 119936500786,
+  "status": "blocked",
+  "githubConclusion": "failure",
+  "stepsStarted": 0,
+  "annotation": "The job was not started because recent account payments have failed or your spending limit needs to be increased. Please check the 'Billing & plans' section in your settings",
+  "scope": "Actual GitHub check-run annotation inspected read-only. CI did not test source; local checks cannot replace required hosted CI."
+}

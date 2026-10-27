@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-22T21:51:14.378Z",
+  "sourceBase": "42ab54d7636bbfc06cd66e400f7661c4859d8c6d",
+  "workingTreeModified": true,
+  "command": "node --test tests/live-acceptance-continuation.test.cjs tests/continuation-adapter.test.cjs tests/accept-codex-host.test.cjs tests/replacement-glow.test.cjs",
+  "tests": {
+    "total": 58,
+    "passed": 58,
+    "failed": 0,
+    "skipped": 0
+  },
+  "files": {
+    "scripts/live-acceptance-continuation.cjs": "e17f97c51ebe126fd7e6aa53bb52726231d14d02ebebceafb0d85b7844924680",
+    "scripts/continuation-adapter.cjs": "e7d323273febdb31fb7a52e13b11391ac9aa238677a024da0db553e3ac416cb2",
+    "scripts/accept-codex-host.cjs": "9ad51efa27a516365a609c7f4cef1b9ba64053f9bbece15a50530da2a4c76d6f",
+    "scripts/accept-replacement-glow.cjs": "a3b7d7bfc2b65ad541ee9b494c81e8e04bcb85fd65c278f088a4d6bacb42d9ff",
+    "tests/live-acceptance-continuation.test.cjs": "51b6858de66df8092c5a2602d929fcf448d4e785d2211d666ed692f0d6e5388e",
+    "tests/continuation-adapter.test.cjs": "a75cf438b594ded0b663ef8d80f5cf1a590912e515b45ec85aff7ff5a64ab933",
+    "tests/accept-codex-host.test.cjs": "499e48b1dbc9269f4f36259a6d831487f762869d78cf15848ac01021a3ddb48e",
+    "tests/replacement-glow.test.cjs": "28c3db4ee6b09087e5776df9a8cdc4458ce7268c90cffb86231621b0d0663921"
+  },
+  "proposal": {
+    "ref": "docs/LIVE_ACCEPTANCE_AMENDMENT_2.md",
+    "sha256": "84a4d9df1d91ff28f257b35d0a09d4ce9fc22a159b9a75feaa6480d35061ef90"
+  },
+  "scope": "Pure/injected temporary-root preparation. No real approval, claim, ledger mutation, UI, native input, host or clipboard execution.",
+  "limits": [
+    "Only actual new owner approval can extend the finite glow/Codex caps.",
+    "Connected Codex loaded-source proof and both live cases remain incomplete."
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "source": "Actual Sky accessibility click in active Codex conversation",
+  "invocation": {
+    "tool": "sky.click",
+    "windowId": 4525906,
+    "element_index": 1
+  },
+  "result": {
+    "returnedWithoutError": true
+  },
+  "proof": {
+    "source": "external-sky-accessibility",
+    "executor": "Sky",
+    "tool": "sky.click",
+    "operation": "click",
+    "mechanism": "accessibility-mouse",
+    "completed": true,
+    "synthetic": false,
+    "noInvoke": true,
+    "checkpointId": "<private-checkpoint>",
+    "elementId": "traceGlowEdgeButton",
+    "elementIndex": 1,
+    "toolReceiptRef": "actual-tool-call:sky-glow-corrective-20261022",
+    "target": {
+      "windowId": "4525906",
+      "pid": 47988,
+      "processCreationTime": "134371773739757255",
+      "windowsSessionId": 1
+    },
+    "display": {
+      "monitors": 1,
+      "primary": true,
+      "device": "\\\\.\\DISPLAY1",
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 2880,
+        "height": 1800
+      },
+      "dpiX": 144,
+      "dpiY": 144,
+      "captureWidth": 2880,
+      "captureHeight": 1800
+    },
+    "startedAt": "2026-10-22T21:17:22.171Z",
+    "completedAt": "2026-10-22T21:17:22.445Z"
+  },
+  "afterAccessibility": {
+    "focused_element": "0 window TRACE owned glow acceptance fixture Secondary Actions: Raise ID: traceGlowFixture",
+    "tree": "Window: \"TRACE owned glow acceptance fixture\", App: TraceGlowFixture.exe.\n\t0 window TRACE owned glow acceptance fixture Secondary Actions: Raise ID: traceGlowFixture\n\t\t1 button TRACE edge click counter ID: traceGlowEdgeButton\n\nThe focused UI element is 0 window TRACE owned glow acceptance fixture Secondary Actions: Raise ID: traceGlowFixture."
+  },
+  "sanitization": {
+    "privateCheckpointRedacted": true,
+    "originalReceiptRetainedPrivately": true,
+    "originalSha256": "e7cecf3bc309df1c64209ab2a6a6f4a1c6a847360f1267a72d759b80b997e7c0"
+  }
+}

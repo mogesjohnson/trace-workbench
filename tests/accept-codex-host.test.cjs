@@ -40,6 +40,35 @@ test('fixed historical budget and original attempt flags fail closed', () => {
   assert.throws(() => driver.parseArgs(['--attempt', '3']));
   assert.throws(() => driver.parseArgs(['--continuation', '3']));
 });
+test('Codex amendment plan and CLI preserve explicit new decision and lifetime 5 or 6', () => {
+  const first = driver.parseArgs(['--plan', '--amendment', '2', '--continuation', '1', '--decision-ref', 'evidence/amendment-decision.json']);
+  const declared = driver.plan(first); assert.equal(declared.lifetimeAttemptOrdinal, 5); assert.equal(declared.historicalAttemptsUsed, 4);
+  assert.equal(declared.ownerDecision, 'evidence/amendment-decision.json'); assert.equal(declared.history.length, 4);
+  assert.equal(driver.plan({ amendment: 2, continuationAttempt: 2 }).lifetimeAttemptOrdinal, 6);
+  assert.throws(() => driver.plan({ amendment: 3, continuationAttempt: 1 }));
+  assert.throws(() => driver.parseArgs(['--amendment', '2']), { code: 'explicit_continuation_required' });
+  assert.equal(driver.plan({ continuationAttempt: 2 }).lifetimeAttemptOrdinal, 4);
+});
+test('amendment CLI never advertises the original approval and requires an explicit decision before start', async () => {
+  const options = driver.parseArgs(['--plan', '--amendment', '2', '--continuation', '1']);
+  assert.equal(options.decisionRef, undefined); assert.equal(driver.plan(options).ownerDecision, null);
+  assert.equal(driver.parseArgs(['--plan']).decisionRef, require('../scripts/continuation-adapter.cjs').DECISION);
+  assert.throws(() => driver.parseArgs(['--start', '--amendment', '2', '--continuation', '1']), { code: 'amendment_decision_required' });
+  let prepares = 0;
+  await assert.rejects(driver.start({ amendment: 2, continuationAttempt: 1 }, { prepare: async () => { prepares++; } }), { code: 'amendment_decision_required' });
+  assert.equal(prepares, 0);
+});
+test('amended Codex start forwards the new actual decision instead of substituting the previous decision', async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'trace-codex-amended-forward-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  await fs.mkdir(path.join(root, 'evidence'));
+  let received, launches = 0;
+  const receipt = await driver.start({ directory: 'evidence/run', amendment: 2, continuationAttempt: 1, decisionRef: 'evidence/new-actual-decision.json' }, {
+    root, prepare: async () => ({ fixture: {} }), claimRequest: async input => { received = input; return {}; },
+    claim: async () => { throw Object.assign(new Error(), { code: 'invalid_continuation' }); }, launch: async () => { launches++; } });
+  assert.equal(received.amendment, 2); assert.equal(received.decisionRef, 'evidence/new-actual-decision.json');
+  assert.equal(launches, 0); assert.equal(receipt.status, 'blocked');
+});
 test('checkpoint order and actual connected provenance required', () => {
   assert.throws(() => driver.validateCheckpoint(event('typed', []), typed, context('focused')), /checkpoint_order/);
   assert.throws(() => driver.validateCheckpoint({ ...event('discovery', []), source: 'sdk' }, empty, context('discovery')), /checkpoint_order/);

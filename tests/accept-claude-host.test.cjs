@@ -10,7 +10,7 @@ const { PassThrough, Readable, Writable } = require('node:stream');
 const { plan, parseArgs, createGuard, streamState, observeEvent, summarize, hostArguments,
   hostEnvironment, invokeHost, completed, run, supportedHostVersion, scopedReadPath,
   hostToolAllowed, hostSettings, runHostHook, loadInstalledBundle, fingerprintSettings, compareSettings, preflightStartup, MAX_GUARD_ADMISSIONS,
-  changedKeyPaths, listClaudeProcesses, createWriterMonitor, writePrivateSettingsDiff,
+  changedKeyPaths, privateSettingsIntervals, terminalHostStatus, listClaudeProcesses, createWriterMonitor, writePrivateSettingsDiff,
   prepareAndClaimContinuation, preparedFixture, verifyTestedSource, loadReaInstructions,
   createOwnershipTracker, verifyOwnershipExit } = require('../scripts/accept-claude-host.cjs');
 const { loadSkillBundle } = require('../src/computer/configuration.cjs');
@@ -438,6 +438,106 @@ test('Claude process enumeration parses one, many or none and rejects malformed 
   assert.equal((await listClaudeProcesses(exec('[{"pid":7,"created":"a"},{"pid":8,"created":"b"}]'))).length, 2);
   await assert.rejects(listClaudeProcesses(exec('[{"pid":0,"created":"a"}]')), { code: 'claude_process_enumeration_invalid' });
   await assert.rejects(listClaudeProcesses(exec('{"pid":7}')), { code: 'claude_process_enumeration_invalid' });
+});
+
+test('empty project additions and deletions retain private project identity without values', async () => {
+  let value = { projects: {} };
+  const io = { readFile: async file => {
+    if (path.basename(file) !== '.claude.json') throw Object.assign(new Error(), { code: 'ENOENT' });
+    return Buffer.from(JSON.stringify(value));
+  } };
+  const before = await fingerprintSettings(path.resolve('synthetic-home'), io);
+  value = { projects: { PRIVATE_PROJECT: {} } };
+  const after = await fingerprintSettings(path.resolve('synthetic-home'), io);
+  const expected = [{ source: 'clientState', path: ['projects', 'PRIVATE_PROJECT'] }];
+  assert.deepEqual(changedKeyPaths(before, after), expected);
+  assert.deepEqual(changedKeyPaths(after, before), expected);
+  assert.equal(compareSettings(before, after).preserved, false);
+  assert.equal(JSON.stringify(compareSettings(before, after)).includes('PRIVATE_PROJECT'), false);
+});
+
+function cleanTerminalReceipt() {
+  return { status: 'pass', cleanup: { confirmed: true }, userSettingsUnchanged: true,
+    settingsComparison: { preserved: true },
+    settingsIntervals: Object.fromEntries(['hostProbes', 'preHost', 'host', 'postHost'].map(name => [name, { preserved: true }])),
+    settingsWriterExclusion: { exclusive: true, samples: 2, sampleFailures: 0, unownedProcesses: 0 } };
+}
+
+test('terminal oracle blocks writer contamination, unavailable enumeration and missing interval evidence', () => {
+  assert.equal(terminalHostStatus(cleanTerminalReceipt()), 'pass');
+  for (const writer of [undefined, { exclusive: false, samples: 2, sampleFailures: 0, unownedProcesses: 1 },
+    { exclusive: false, samples: 1, sampleFailures: 1, unownedProcesses: 0 },
+    { exclusive: true, samples: 0, sampleFailures: 0, unownedProcesses: 0 },
+    { exclusive: true, samples: 2, sampleFailures: 1, unownedProcesses: 0 },
+    { exclusive: true, samples: 2, sampleFailures: 0, unownedProcesses: 1 }]) {
+    const receipt = cleanTerminalReceipt(); receipt.settingsWriterExclusion = writer;
+    assert.equal(terminalHostStatus(receipt), 'blocked');
+  }
+  for (const name of ['hostProbes', 'preHost', 'host', 'postHost']) {
+    const receipt = cleanTerminalReceipt(); delete receipt.settingsIntervals[name];
+    assert.equal(terminalHostStatus(receipt), 'blocked');
+    receipt.settingsIntervals[name] = { preserved: false };
+    assert.equal(terminalHostStatus(receipt), 'blocked');
+  }
+  const unknownCleanup = cleanTerminalReceipt(); unknownCleanup.cleanup.confirmed = false;
+  assert.equal(terminalHostStatus(unknownCleanup), 'blocked');
+  const historicalBlock = cleanTerminalReceipt(); historicalBlock.status = 'blocked';
+  assert.equal(terminalHostStatus(historicalBlock), 'blocked');
+});
+
+test('reverted semantic writes remain blocking and retain all private interval paths', async t => {
+  let value = { numStartups: 1, PRIVATE_KEY: 'SECRET_VALUE' };
+  const io = { readFile: async file => {
+    if (path.basename(file) !== '.claude.json') throw Object.assign(new Error(), { code: 'ENOENT' });
+    return Buffer.from(JSON.stringify(value));
+  } };
+  const before = await fingerprintSettings(path.resolve('synthetic-home'), io);
+  value = { numStartups: 2, PRIVATE_KEY: 'OTHER_SECRET' };
+  const hostAfter = await fingerprintSettings(path.resolve('synthetic-home'), io);
+  const final = before;
+  const receipt = cleanTerminalReceipt();
+  receipt.settingsComparison = compareSettings(before, final);
+  receipt.settingsIntervals.host = compareSettings(before, hostAfter);
+  receipt.settingsIntervals.postHost = compareSettings(hostAfter, final);
+  assert.equal(receipt.settingsComparison.preserved, true);
+  assert.equal(terminalHostStatus(receipt), 'blocked');
+  const intervals = privateSettingsIntervals({ before, probed: before, hostBefore: before, hostAfter, final });
+  assert.deepEqual(intervals.overall, []);
+  for (const name of ['host', 'postHost']) assert.ok(intervals[name].some(item => item.path[0] === 'PRIVATE_KEY'));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'trace-reverted-diff-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const result = await writePrivateSettingsDiff(path.join(root, 'evidence/attempt'), intervals, root);
+  assert.equal(result.count, 4);
+  const bytes = await fs.readFile(path.join(root, '.runtime/claude-host/attempt/private-settings-diff.json'), 'utf8');
+  assert.ok(bytes.includes('PRIVATE_KEY'));
+  for (const secret of ['SECRET_VALUE', 'OTHER_SECRET']) assert.equal(bytes.includes(secret), false);
+  assert.equal(JSON.stringify({ result, receipt }).includes('PRIVATE_KEY'), false);
+  // Even if the terminal read fails, already observed changes remain available privately.
+  assert.deepEqual(privateSettingsIntervals({ before, probed: before, hostBefore: before, hostAfter }).host, intervals.host);
+});
+
+test('managed settings join every fingerprint and semantic changes block without leaking private names or values', async () => {
+  const home = path.resolve('synthetic-home'), managed = path.resolve('synthetic-policy/managed-settings.json');
+  let bytes = Buffer.from('{"PRIVATE_POLICY":"SECRET_VALUE"}');
+  const io = { readFile: async file => {
+    if (file !== managed) throw Object.assign(new Error(), { code: 'ENOENT' });
+    if (bytes === null) throw Object.assign(new Error(), { code: 'ENOENT' });
+    return bytes;
+  } };
+  const before = await fingerprintSettings(home, io, managed);
+  bytes = Buffer.from('{ "PRIVATE_POLICY": "SECRET_VALUE" }');
+  assert.equal(compareSettings(before, await fingerprintSettings(home, io, managed)).preserved, true);
+  bytes = Buffer.from('{"PRIVATE_POLICY":"CHANGED_SECRET"}');
+  const after = await fingerprintSettings(home, io, managed), comparison = compareSettings(before, after);
+  assert.equal(comparison.preserved, false); assert.equal(comparison.changes[0].source, 'managedSettings');
+  assert.deepEqual(changedKeyPaths(before, after), [{ source: 'managedSettings', path: ['PRIVATE_POLICY'] }]);
+  const receipt = cleanTerminalReceipt(); receipt.settingsIntervals.host = comparison;
+  assert.equal(terminalHostStatus(receipt), 'blocked');
+  for (const secret of ['PRIVATE_POLICY', 'SECRET_VALUE', 'CHANGED_SECRET']) assert.equal(JSON.stringify(comparison).includes(secret), false);
+  bytes = null;
+  assert.equal(compareSettings(before, await fingerprintSettings(home, io, managed)).changes[0].after, 'missing');
+  bytes = Buffer.from('invalid');
+  assert.equal(compareSettings(before, await fingerprintSettings(home, io, managed)).changes[0].after, 'unparseable');
 });
 
 test('writer monitor excludes only the pinned host generation and fails closed on others, errors or no samples', async () => {

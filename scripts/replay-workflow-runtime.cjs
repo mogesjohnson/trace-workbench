@@ -43,6 +43,11 @@ async function readJson(file) {
 }
 // Polling readers treat a Windows sharing conflict or a foreign partial write as "not yet".
 const readSettled = file => readJson(file).catch(error => SHARING.includes(error.code) || error instanceof SyntaxError ? null : Promise.reject(error));
+async function readRequestReceipt(libraryPath, requestId) {
+  need(/^trace-replay-[a-f0-9-]{36}$/.test(requestId), 'replay_request_id_invalid');
+  const file = path.join(path.dirname(libraryPath), 'Automation', 'requests', `${digest(requestId)}.json`);
+  return readSettled(file);
+}
 async function writeAtomic(file, value) {
   const temporary = `${file}.${randomUUID()}.tmp`;
   await fs.writeFile(temporary, JSON.stringify(value, null, 2) + '\n', { flag: 'wx' });
@@ -55,6 +60,18 @@ async function writeAtomic(file, value) {
 }
 const publicError = error => ({ code: /^[a-z_]{1,80}$/.test(error?.code || '') ? error.code : 'replay_stage_failed',
   ...(/^[A-Z_]{1,64}$/.test(error?.replayCode || '') ? { replayCode: error.replayCode } : {}) });
+
+async function persistRecovery(privateRoot, snapshot) {
+  const directory = path.join(privateRoot, 'recovery'); await fs.mkdir(directory, { recursive: true });
+  const file = path.join(directory, `${randomUUID()}.json`);
+  const bytes = Buffer.from(JSON.stringify(snapshot, null, 2) + '\n');
+  // Sync before publishing the public reference. Immutable files preserve earlier crash boundaries.
+  const handle = await fs.open(file, 'wx');
+  try { await handle.writeFile(bytes); await handle.sync(); } finally { await handle.close(); }
+  const reference = { path: path.relative(ROOT, file).split(path.sep).join('/'), sha256: digest(bytes), bytes: bytes.length };
+  await writeAtomic(path.join(directory, 'latest.json'), reference);
+  return reference;
+}
 
 function parseJournal(text) {
   // TRACE appends whole lines; an unterminated tail is a write still in progress, not evidence.
@@ -103,6 +120,20 @@ function reviewCovers(input, measurements) {
   return input?.pass === true && frames.length > 0 && Array.isArray(input.reviewedFrames) && frames.every(frame => input.reviewedFrames.some(entry =>
     entry?.sha256 === frame.sha256 && typeof entry.observed === 'string' && entry.observed.trim().length >= 10 && entry.observed.length <= 2000));
 }
+function sourceReviewCovers(input, review) {
+  const action = input?.observedAction, result = input?.observedResult;
+  return !!review && reviewCovers(input, { source: review }) && input.reviewedEntireSegment === true
+    && /^[a-f0-9]{64}$/.test(review.sourceSha256 ?? '') && review.sourceEnd - review.sourceStart === flow.RECIPE.duration
+    && Math.abs(review.segment?.duration - flow.RECIPE.duration) <= 0.15
+    && input.sourceSha256 === review.sourceSha256 && input.sourceStart === review.sourceStart && input.sourceEnd === review.sourceEnd
+    && /^[a-f0-9]{64}$/.test(review.segment?.sha256 ?? '') && input.segmentSha256 === review.segment.sha256
+    && typeof action?.description === 'string' && action.description.trim().length >= 10 && action.description.length <= 2000
+    && Number.isFinite(action.from) && Number.isFinite(action.to) && action.from >= 0 && action.to > action.from && action.to <= flow.RECIPE.duration
+    && result?.text === flow.DEMONSTRATION.text && result.count === flow.DEMONSTRATION.increments
+    && review.frames.every(frame => Number.isFinite(frame.segmentSeconds) && frame.segmentSeconds >= 0 && frame.segmentSeconds <= flow.RECIPE.duration
+      && frame.requestedSourceSeconds === review.sourceStart + frame.segmentSeconds)
+    && review.frames.some(frame => frame.sha256 === result.frameSha256 && frame.segmentSeconds >= action.to);
+}
 function validCommand(value, lastId) {
   return value?.schemaVersion === 1 && value.id === lastId + 1 && (flow.STAGES.includes(value.stage) || value.stage === 'abort')
     && (value.input === undefined || (value.input !== null && typeof value.input === 'object' && !Array.isArray(value.input)));
@@ -125,8 +156,11 @@ async function runLoop({ directory, workflow, record, pollMs = 200, idleMs = 30 
     const reconciliation = reason === 'completed' ? undefined : await workflow.reconcile().catch(() => []);
     const cleanup = await workflow.cleanup(), state = workflow.state();
     const changed = state.requests.some(request => request.state !== 'not_dispatched') || state.completed.length > 1;
-    const status = reason === 'completed' && state.status === 'awaiting_runtime_evidence_audit' ? state.status
-      : !cleanup.confirmed || !changed ? 'blocked' : 'fail';
+    const unresolved = state.requests.some(request => ['pending', 'unknown'].includes(request.state)
+      || request.reconciliation?.outcome === 'unresolved');
+    const status = unresolved || !cleanup.confirmed ? 'blocked'
+      : reason === 'completed' && state.status === 'awaiting_runtime_evidence_audit' ? state.status
+      : !changed ? 'blocked' : 'fail';
     return record({ status, terminalReason: reason, ...(error ? { error } : {}), ...(reconciliation ? { reconciliation } : {}),
       state, completedAt: new Date().toISOString() });
   };
@@ -278,7 +312,7 @@ function createDeps({ privateRoot, replayRoot = REPLAY_ROOT, journalRoot = defau
         need(!exited(child), 'replay_fixture_exited');
         const value = await readJson(statePath); need(value?.runId === runId, 'replay_fixture_state_missing'); return value;
       };
-      return { child, runId };
+      return { child, runId, statePath };
     },
     async fixtureIdentity(handle) {
       need(Number.isInteger(handle.child.pid), 'replay_fixture_not_ready');
@@ -325,7 +359,46 @@ function createDeps({ privateRoot, replayRoot = REPLAY_ROOT, journalRoot = defau
       need(digest(await fs.readFile(target)) === digest(await fs.readFile(source)), 'replay_playback_copy_changed'); return target;
     },
     sourceDigest: async file => digest(await fs.readFile(file)),
-    verifySavedRecipe: async (current, _recipe, assetId) => flow.recipeMatches(current, assetId),
+    readRequestReceipt: (app, requestId) => readRequestReceipt(app.info.libraryPath, requestId),
+    verifySavedRecipe: async (current, recipe, assetId) => flow.recipeMatches(current, assetId, recipe),
+    async prepareSourceReview(capture, recipe) {
+      need(digest(await fs.readFile(capture.sourcePath)) === capture.sourceSha256, 'replay_source_changed');
+      const meta = await probe(capture.sourcePath), container = Number(meta.format?.duration);
+      const duration = flow.packetDuration(meta.format?.duration, Number.isFinite(container) && container > 0 ? [] : await packets(capture.sourcePath));
+      need(recipe.sourceEnd <= duration.seconds + 0.05, 'replay_source_window_outside_capture');
+      const name = 'fixture-source-segment.mp4', output = path.join(privateRoot, 'review', name);
+      await fs.mkdir(path.dirname(output), { recursive: true });
+      // Accurate input seek uses source-media seconds. This review derivative has no effects/audio;
+      // at most one black pixel is padded per dimension for portable H.264 playback.
+      await tool(ffmpeg, ['-v', 'error', '-nostdin', '-n', '-ss', String(recipe.sourceStart), '-i', capture.sourcePath,
+        '-t', String(flow.RECIPE.duration), '-map', '0:v:0', '-an', '-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2,setpts=PTS-STARTPTS',
+        '-c:v', 'libx264', '-pix_fmt', 'yuv420p', output]);
+      const segmentMeta = await probe(output), segmentDuration = Number(segmentMeta.format?.duration);
+      need(Math.abs(segmentDuration - flow.RECIPE.duration) <= 0.15, 'replay_source_segment_incomplete');
+      const frames = [];
+      for (const [index, seconds] of [0.25, 1.5, 3, 4.5, 5.75].entries()) {
+        frames.push({ ...await still(capture.sourcePath, recipe.sourceStart + seconds, `fixture-source-review-${index}.png`),
+          segmentSeconds: seconds, requestedSourceSeconds: recipe.sourceStart + seconds });
+      }
+      need(digest(await fs.readFile(capture.sourcePath)) === capture.sourceSha256, 'replay_source_changed');
+      return { sourceSha256: capture.sourceSha256, sourceStart: recipe.sourceStart, sourceEnd: recipe.sourceEnd,
+        sourceDuration: duration.seconds, durationSource: duration.source,
+        segment: { name, sha256: digest(await fs.readFile(output)), duration: segmentDuration }, frames,
+        verification: 'root-review-required-no-wall-clock-mapping',
+        limits: ['Frame times are requested source-media sample times, not measured capture-to-wall-clock correspondence.',
+          'Root must review the entire retained segment; sampled frames alone cannot prove the useful action.'] };
+    },
+    async verifySourceReview(input, review, capture) {
+      if (!sourceReviewCovers(input, review)) return false;
+      need(digest(await fs.readFile(capture.sourcePath)) === review.sourceSha256, 'replay_source_changed');
+      for (const artifact of [review.segment, ...review.frames]) {
+        const file = path.join(privateRoot, 'review', artifact.name);
+        need(flow.inside(path.join(privateRoot, 'review'), file) && digest(await fs.readFile(file)) === artifact.sha256, 'replay_source_review_changed');
+      }
+      await note('sourceContentReview', { ...structuredClone(input), reviewedAt: new Date().toISOString(),
+        verification: 'root-reviewed-hash-bound-source-segment-not-journal-clock-inference' });
+      return true;
+    },
     async independentMediaVerification(kind, exported, recipe, capture) {
       const bytes = await fs.readFile(exported.output), meta = await probe(exported.output);
       const streams = type => (meta.streams ?? []).filter(stream => stream.codec_type === type), video = streams('video')[0];
@@ -403,7 +476,11 @@ async function serve(options, { replayRoot = REPLAY_ROOT, journalRoot = defaultJ
   const privateRoot = path.join(ROOT, '.runtime', 'replay-workflow', randomUUID());
   let workflow, interrupted = false, record;
   const deps = createDeps({ privateRoot, replayRoot, journalRoot, common,
-    note: (key, value) => record({ [key]: structuredClone(value) }), checkpoint: () => record({ state: workflow.state() }) });
+    note: (key, value) => record({ [key]: structuredClone(value) }),
+    checkpoint: async () => {
+      const recoveryCheckpoint = await persistRecovery(privateRoot, workflow.recovery());
+      await record({ state: workflow.state(), recoveryCheckpoint });
+    } });
   const pins = await deps.verifyPins();
   need(Object.keys(flow.PIN).every(key => pins[key] === flow.PIN[key]), 'replay_source_changed');
   const source = await testedSource(replayRoot);
@@ -445,5 +522,5 @@ async function main(args) {
   need(options.mode === 'live', 'replay_arguments_invalid');
   return serve(options);
 }
-module.exports = { FRAME, AUDIO, MINIMUM_ACTIONS, parseJournal, verifyJournal, cropRgb, rms, reviewCovers, validCommand,
-  runLoop, advance, createDeps, serve, main };
+module.exports = { FRAME, AUDIO, MINIMUM_ACTIONS, parseJournal, verifyJournal, cropRgb, rms, reviewCovers, sourceReviewCovers, validCommand,
+  runLoop, advance, createDeps, persistRecovery, readRequestReceipt, serve, main };
