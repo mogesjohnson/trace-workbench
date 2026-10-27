@@ -1,0 +1,30 @@
+{
+  "id": 1,
+  "ok": true,
+  "state": {
+    "status": "prepared_or_running",
+    "next": "fixture-ready",
+    "completed": [
+      "provision"
+    ],
+    "requests": [],
+    "sourceContentVerified": false,
+    "identityChecks": [
+      {
+        "label": "editor",
+        "matches": true,
+        "mismatchedFields": []
+      },
+      {
+        "label": "recorder",
+        "matches": true,
+        "mismatchedFields": []
+      }
+    ],
+    "limits": [
+      "Live execution needs an explicit owner go-ahead and a fresh directory; preparing the adapter ran nothing live.",
+      "TRACE evidence is bound to the local TRACE journal, fixture state and REPLAY state; it cannot prove semantic intent.",
+      "No complete APP-01 claim until a live run, root visual review, confirmed cleanup and Codex review."
+    ]
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A4-REPLAY",
+  "requirement": "APP-01",
+  "planContract": 1,
+  "attempt": 3,
+  "ownerDecision": {
+    "ref": "evidence/live-acceptance-continuation/owner-finish-decision.json",
+    "sha256": "b4f11d92fe995b3be54e35f02bc2cd9cce56d778a5b0502b3c454c375cfb1327"
+  },
+  "status": "blocked",
+  "startedAt": "2026-10-23T19:13:33.751Z",
+  "paidRequests": 0,
+  "lastCommandId": 1,
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "testedSource": {
+    "traceCommit": "0a0e0afb8f67bec56d22be60a327f6fdf4b4ff99",
+    "traceWorkingTreeClean": false,
+    "replayCommit": "221502e8c0af25fb1929ff8f200c4774659b7b87",
+    "files": {
+      "scripts/accept-replay-workflow.cjs": "964a03edbcf82c29ee901bebaee803485252e16f9ac57d058e8db168bccac656",
+      "scripts/replay-workflow-runtime.cjs": "d17f0e0cc06d6c75ddd1ab074860d17f4d818b637ac8841c24964abfdd79bbea",
+      "scripts/replacement-acceptance-common.cjs": "b62ca0d06d5c2b657d2373698776c44ff4ec7ae5993b2e183fa7bd3aab274b8b",
+      "scripts/accept-finish-gate.cjs": "5ca821657d1cc68d3c29efe5993652bea7ad5a5f8099f99c119fec36e3ae9ad4",
+      "scripts/finish-acceptance-amendment.cjs": "2223a7b7fa61c7c7b8d3fb05d6564f10b8bc521b116ac118d50b95998dc718d6",
+      "scripts/continuation-adapter.cjs": "31a6f6f8afeb4e8c102d5ed623608ee9b3fe34c3a28e4a1f140e930e56204a81",
+      "src/computer/controller.cjs": "4ece8dcb0d938266db8b773dac0f724e32feb723ebda78be8f6399404cd21166",
+      "package-lock.json": "e6a7b9932ff2169daa29da61bec38f1439bf95d3a19ea728041d523f69630dda"
+    },
+    "replayHarnessSha256": "02b988192d44b020e6b30a2bb15785e9c8d1f8ebec68aa0c405dfda37baffeaa"
+  },
+  "amendment": 3,
+  "contract": "finish-approved-v1",
+  "historicalAttemptsUsed": 2,
+  "decisionId": "owner-finish-amendments-2026-10-23",
+  "proposal": {
+    "ref": "docs/GAP_CLOSURE_FINISH_PLAN.md",
+    "sha256": "d98fddf5359c31021ebf7d28108cf949a219d939c3e5d8046a0a05277388835b"
+  },
+  "history": [
+    {
+      "ref": "evidence/computer-use-method/replay-workflow/attempt-1/receipt.json",
+      "sha256": "b2aba9fa7a2113ef50ad2b5538106c94147973ce785f8681cdf9f815b9c70bec"
+    },
+    {
+      "ref": "evidence/computer-use-method/replay-workflow/attempt-2/receipt.json",
+      "sha256": "98614c9392bbb6ed72dcb33862652160586b182855252df1c9c70656208d7537"
+    }
+  ],
+  "continuationAttempt": 1,
+  "lifetimeAttemptOrdinal": 3,
+  "claimId": "5a0c88ff-2801-4784-b958-09e536574e8e",
+  "claimedAt": "2026-10-23T19:13:33.746Z",
+  "state": {
+    "status": "blocked",
+    "next": "provision",
+    "completed": [],
+    "requests": [],
+    "cleanup": {
+      "confirmed": true,
+      "instances": [
+        {
+          "label": "editor",
+          "transportClosed": true,
+          "grantRevoked": true,
+          "processExited": true
+        }
+      ]
+    },
+    "sourceContentVerified": false,
+    "identityChecks": [
+      {
+        "label": "editor",
+        "matches": false,
+        "mismatchedFields": [
+          "pid",
+          "processCreationTime"
+        ]
+      }
+    ],
+    "limits": [
+      "Live execution needs an explicit owner go-ahead and a fresh directory; preparing the adapter ran nothing live.",
+      "TRACE evidence is bound to the local TRACE journal, fixture state and REPLAY state; it cannot prove semantic intent.",
+      "No complete APP-01 claim until a live run, root visual review, confirmed cleanup and Codex review."
+    ]
+  },
+  "recoveryCheckpoint": {
+    "path": ".runtime/replay-workflow/6891ef9a-549c-41a5-affe-102d2459d829/recovery/b12ab0dc-102f-4dc3-9c94-e8eedf4a3eb9.json",
+    "sha256": "efcb2b50cb084df8f13b8e48e59dab8ba678d0510db4ba8315f3542f8b15fc01",
+    "bytes": 2018
+  },
+  "terminalReason": "stage_failed",
+  "error": {
+    "stage": "provision",
+    "code": "replay_identity_changed"
+  },
+  "reconciliation": [
+    {
+      "label": "editor",
+      "connected": false
+    }
+  ],
+  "completedAt": "2026-10-23T19:13:52.465Z"
+}

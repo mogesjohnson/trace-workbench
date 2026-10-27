@@ -24,12 +24,13 @@ const isAccess = code => /^(?:input_busy|desktop_busy|display_mismatch|input_des
 function plan(options = {}) {
   const selected = options.caseName || 'mouse';
   if (!CASES.includes(selected)) throw new Error('Select mouse, keyboard or injected.');
-  return { schemaVersion: 1, caseId: `A32-STOP-${selected.toUpperCase()}`, caseName: selected, attempt: options.attempt ?? 1,
+  return { schemaVersion: 1, caseId: `A32-STOP-${selected.toUpperCase()}`, caseName: selected, attempt: options.finishClaim?.lifetimeAttemptOrdinal ?? options.attempt ?? 1,
     declaredBeforeUiLaunch: true,
     ...(options.prior ? { prior: path.relative(ROOT, path.resolve(options.prior)).replaceAll(path.sep, '/'), changedPrecondition: options.change } : {}),
     display: options.pinnedDisplay ?? 'Actual single-monitor device/bounds/DPI pinned at live preflight.',
     target: 'Fresh exact owned synthetic WinForms fixture; public focus identity independently checked',
     physicalRequired: selected !== 'injected', preparationWaitSeconds: 60, physicalObservationWaitSeconds: 60,
+    ...(options.audiblePrompt ? { physicalPrompt: 'Two short local tones, only after independent held-input proof; owner presses physical Escape after the second tone.' } : {}),
     inputOperationDeadlineMs: 15000, input: selected === 'keyboard' ? 'Source-owned type-hold abc; final C held, no Ctrl/Alt/Shift+Escape OS shortcut' : selected === 'mouse' ? 'Source-owned left-button hold at a measured empty fixture point' : 'Pinned engine press_key ESCAPE',
     phases: selected === 'injected' ? ['Focus owned edit', 'Send one ordinary MCP ESCAPE through the pinned engine', 'Verify completed result, no physical stop, balanced input and exactly one usable counter follow-up']
       : ['Prepare owned fixture/session/focus; publish private PREPARED start/ready paths before any held input',
@@ -92,7 +93,7 @@ async function run(options = {}) {
   options = { mode: 'plan', caseName: 'mouse', attempt: 1, ...options };
   if (options.mode === 'plan') return plan(options);
   const display = validateDisplay(await command(['display'])), declared = plan({ ...options, pinnedDisplay: display });
-  if (options.attempt === 2) {
+  if (options.attempt === 2 && !options.finishClaim) {
     const previous = JSON.parse(await fs.readFile(path.join(path.resolve(options.prior), 'receipt.json'), 'utf8'));
     assert.equal(previous.caseId, declared.caseId); assert.equal(previous.attempt, 1); assert.ok(['fail', 'blocked'].includes(previous.status));
   }
@@ -104,10 +105,12 @@ async function run(options = {}) {
   let fixture, connection, abort, controlled, pendingOutcome;
   try {
     const files = await supervisorSourceHashes();
-    for (const name of ['scripts/accept-supervisor-stop.cjs', 'scripts/accept-supervisor-quarantine.cjs', 'tests/fixtures/supervised-mcp.cjs', 'src/computer/supervisor.cjs', 'src/computer/controller.cjs', 'src/computer/server.cjs', 'src/computer/winapp-backend.cjs']) files[name] = sha256(await fs.readFile(path.join(ROOT, name)));
+    if (options.finishClaim) Object.assign(receipt, await require('./finish-acceptance-amendment.cjs').claim(options.finishClaim));
+    for (const name of ['scripts/accept-supervisor-stop.cjs', 'scripts/accept-finish-gate.cjs', 'scripts/finish-acceptance-amendment.cjs', 'scripts/accept-supervisor-quarantine.cjs', 'tests/fixtures/supervised-mcp.cjs', 'src/computer/supervisor.cjs', 'src/computer/controller.cjs', 'src/computer/server.cjs', 'src/computer/winapp-backend.cjs']) files[name] = sha256(await fs.readFile(path.join(ROOT, name)));
     receipt.testedSource = { baseCommit: (await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, windowsHide: true })).stdout.trim(), workingTreeModified: true, files };
     assert.equal((await command(['status'])).recoveryRequired, false);
-    const executable = await buildFixture(), runId = `stop-${randomUUID()}`, statePath = path.join(directory, 'fixture.json');
+    const executable = options.finishClaim ? (await require('./continuation-adapter.cjs').preparedFixture()).executable : await buildFixture();
+    const runId = `stop-${randomUUID()}`, statePath = path.join(directory, 'fixture.json');
     receipt.fixtureSha256 = sha256(await fs.readFile(executable));
     compareDisplay(await command(['display']), display);
     const child = spawn(executable, ['--run-id', runId, '--receipt', statePath, '--commands', path.join(directory, 'fixture-commands.json')], { windowsHide: false, stdio: 'ignore' });
@@ -156,6 +159,13 @@ async function run(options = {}) {
         instruction: 'Press physical Escape now once.', heldOperationDeadlineMs: 15000, observationWaitSeconds: 60, inputChildPid: controlled.pid };
       await writeJson(readyPath, ready); receipt.ready = { ...ready, readyFilePublished: true }; await persist();
       process.stdout.write(JSON.stringify(ready) + '\n');
+      if (options.audiblePrompt) {
+        receipt.ready.audibleCueStartedAt = new Date().toISOString();
+        await execFileAsync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
+          '[Console]::Beep(1200,120); [System.Threading.Thread]::Sleep(150); [Console]::Beep(1600,120)'],
+          { windowsHide: true, timeout: 3000, maxBuffer: 4096 });
+        receipt.ready.audibleCueCompletedAt = new Date().toISOString(); await persist();
+      }
       const physical = await waitFor(connection.journal, value => {
         if (value.events.some(event => event.type === 'native-stopped' && event.code === 'physical_escape')) return true;
         if (value.events.some(event => event.type === 'controlled-finished' && event.code === 'native_timeout'))

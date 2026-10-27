@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A32-STOP-KEYBOARD",
+  "history": [
+    {
+      "ref": "evidence/0.1.0-alpha.3.2/stop-physical-keyboard/receipt.json",
+      "sha256": "ec25c300333c8a4a7d7420daa5363ac433b663cc2ee018052eeb16eebdbb3699"
+    },
+    {
+      "ref": "evidence/0.1.0-alpha.3.2/stop-physical-keyboard-attempt-2/receipt.json",
+      "sha256": "4f029fb5ff23c4e6ff62eaf7c7367b9722c59fec639d4c9ad6db79cc6a1742aa"
+    }
+  ],
+  "claims": [
+    {
+      "caseId": "A32-STOP-KEYBOARD",
+      "amendment": 3,
+      "contract": "finish-approved-v1",
+      "historicalAttemptsUsed": 2,
+      "decisionId": "owner-finish-amendments-2026-10-23",
+      "ownerDecision": {
+        "ref": "evidence/live-acceptance-continuation/owner-finish-decision.json",
+        "sha256": "b4f11d92fe995b3be54e35f02bc2cd9cce56d778a5b0502b3c454c375cfb1327"
+      },
+      "proposal": {
+        "ref": "docs/GAP_CLOSURE_FINISH_PLAN.md",
+        "sha256": "d98fddf5359c31021ebf7d28108cf949a219d939c3e5d8046a0a05277388835b"
+      },
+      "history": [
+        {
+          "ref": "evidence/0.1.0-alpha.3.2/stop-physical-keyboard/receipt.json",
+          "sha256": "ec25c300333c8a4a7d7420daa5363ac433b663cc2ee018052eeb16eebdbb3699"
+        },
+        {
+          "ref": "evidence/0.1.0-alpha.3.2/stop-physical-keyboard-attempt-2/receipt.json",
+          "sha256": "4f029fb5ff23c4e6ff62eaf7c7367b9722c59fec639d4c9ad6db79cc6a1742aa"
+        }
+      ],
+      "continuationAttempt": 1,
+      "lifetimeAttemptOrdinal": 3,
+      "claimId": "b6691450-5af8-4498-81ea-1a54af0dc248",
+      "claimedAt": "2026-10-23T19:08:58.882Z",
+      "attempt": 3
+    }
+  ],
+  "finishAmendment": {
+    "ownerDecision": {
+      "ref": "evidence/live-acceptance-continuation/owner-finish-decision.json",
+      "sha256": "b4f11d92fe995b3be54e35f02bc2cd9cce56d778a5b0502b3c454c375cfb1327"
+    },
+    "proposal": {
+      "ref": "docs/GAP_CLOSURE_FINISH_PLAN.md",
+      "sha256": "d98fddf5359c31021ebf7d28108cf949a219d939c3e5d8046a0a05277388835b"
+    },
+    "history": [
+      {
+        "ref": "evidence/0.1.0-alpha.3.2/stop-physical-keyboard/receipt.json",
+        "sha256": "ec25c300333c8a4a7d7420daa5363ac433b663cc2ee018052eeb16eebdbb3699"
+      },
+      {
+        "ref": "evidence/0.1.0-alpha.3.2/stop-physical-keyboard-attempt-2/receipt.json",
+        "sha256": "4f029fb5ff23c4e6ff62eaf7c7367b9722c59fec639d4c9ad6db79cc6a1742aa"
+      }
+    ]
+  }
+}

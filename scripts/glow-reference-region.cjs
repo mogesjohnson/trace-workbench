@@ -89,7 +89,8 @@ function validateCheckpoint(checkpoint, checkedAt) {
   return true;
 }
 
-function assertReferenceRegion({ checkpoint, proof, finalFixture, finalInput, checkedAt } = {}) {
+function assertReferenceRegion({ checkpoint, proof, finalFixture, finalInput, checkedAt, settlementMaximumMs = 0 } = {}) {
+  need(settlementMaximumMs === 0 || settlementMaximumMs === 1000);
   validateCheckpoint(checkpoint, checkedAt);
   const now = time(checkedAt), start = time(checkpoint.startedAt);
   need(proof && proof.source === 'external-sky-accessibility' && proof.executor === checkpoint.executor
@@ -106,21 +107,24 @@ function assertReferenceRegion({ checkpoint, proof, finalFixture, finalInput, ch
     .every(sample => toolStart - time(sample.sampledAt) <= MAX_CHECKPOINT_MS));
   const sampledAt = fixture(finalFixture, checkpoint, now, 1, true);
   need(sampledAt >= toolEnd);
+  if (settlementMaximumMs) need(proof.toolStartedAt === proof.startedAt && proof.toolResolvedAt === proof.completedAt && sampledAt - toolEnd <= settlementMaximumMs);
+  const eventEnd = settlementMaximumMs ? sampledAt : toolEnd;
   const events = ['lastMouseDown', 'lastMouseUp', 'lastMouseClick'].map(key => finalFixture[key]);
   for (const event of events) {
     need(event && event.button === 'Left' && event.clicks === 1 && event.coordinateSpace === 'physical-screen');
     const at = time(event.atUtc);
-    need(at >= toolStart && at <= toolEnd && at <= sampledAt);
+    need(at >= toolStart && at <= eventEnd && at <= sampledAt);
     need(contains(checkpoint.display.bounds, { x: event.screenX, y: event.screenY }));
   }
   need(time(events[0].atUtc) <= time(events[1].atUtc) && time(events[0].atUtc) <= time(events[2].atUtc));
   const activation = finalFixture.lastActivation;
-  need(activation && time(activation.atUtc) >= time(events[0].atUtc) && time(activation.atUtc) <= toolEnd);
+  need(activation && time(activation.atUtc) >= time(events[0].atUtc) && time(activation.atUtc) <= eventEnd);
   const point = { x: events[2].screenX, y: events[2].screenY };
   need(contains(checkpoint.button, point) && contains(checkpoint.glow.bounds, point));
   allUp(finalInput, checkpoint, now, true);
   need(time(finalInput.sampledAt) >= sampledAt);
   return { accepted: true, executor: 'Sky', tool: 'sky.click', point, rectangleConvention: 'physical-screen-half-open',
+    ...(settlementMaximumMs ? { timingContract: 'owner-approved-settlement-v2', toolStartedAt: proof.startedAt, toolResolvedAt: proof.completedAt, settlementObservedAt: finalFixture.sampledAt, settlementMaximumMs } : {}),
     counters: Object.fromEntries(COUNTERS.map(key => [key, 1])),
     scope: 'Supplied-evidence validation only; caller must independently inspect the actual Sky tool receipt and retained owned child liveness. No live action or case completion is established.' };
 }

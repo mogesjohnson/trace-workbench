@@ -48,6 +48,7 @@ function selected(caseId, contract) {
 }
 function plan(caseId, contract = REGISTRY[caseId]?.contract, amendment) {
   const entry = selected(caseId, contract);
+  if (amendment === 3 && caseId === 'R31-GLOW-NATIVE') return { ...require('./finish-acceptance-amendment.cjs').plan(caseId), originals: entry.originals.map(value => ({ ...value })) };
   if (amendment !== undefined) {
     if (amendment !== 2) throw fail('Only explicit amendment 2 is supported.');
     return { caseId, contract, amendment: 2, proposal: true, claimsAttempt: false, acceptancePlan: AMENDMENT_2.proposal.ref,

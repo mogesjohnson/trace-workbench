@@ -86,7 +86,9 @@ test('explicit amendment parsing selects lifetime 5 or 6 only for glow and Codex
     assert.equal(first.lifetimeAttemptOrdinal, 5); assert.equal(first.historicalAttemptsUsed, 4);
     const second = adapter.parse(['--plan', '--amendment', '2', '--continuation', '2', '--continuation-prior', 'evidence/terminal5.json', '--change', 'Actual correction'], caseId);
     assert.equal(second.lifetimeAttemptOrdinal, 6);
-    assert.throws(() => adapter.parse(['--amendment', '3', '--continuation', '1'], caseId));
+    if (caseId === 'R31-GLOW-NATIVE') assert.equal(adapter.parse(['--amendment', '3', '--continuation', '1'], caseId).lifetimeAttemptOrdinal, 7);
+    else assert.throws(() => adapter.parse(['--amendment', '3', '--continuation', '1'], caseId));
+    assert.throws(() => adapter.parse(['--amendment', '4', '--continuation', '1'], caseId));
   }
   for (const caseId of [CASE, 'CLAUDE-TRACE-SKILL-NATIVE', 'METHOD-CLIPBOARD-UNICODE-PASTE']) {
     assert.throws(() => adapter.parse(['--amendment', '2', '--continuation', '1'], caseId));

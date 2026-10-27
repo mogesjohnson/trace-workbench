@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "caseId": "R31-GLOW-NATIVE",
+  "attempt": 8,
+  "status": "fail",
+  "receipt": {
+    "ref": "evidence/live-acceptance-continuation/glow-finish-2/receipt.json",
+    "sha256": "5a87c5a2eac19d45256ea8cc62245566dd2e7ab489fe3ac526cff7689672c3c5"
+  },
+  "reference": {
+    "accepted": true,
+    "executor": "Sky",
+    "tool": "sky.click",
+    "point": {
+      "x": 5,
+      "y": 900
+    },
+    "rectangleConvention": "physical-screen-half-open",
+    "timingContract": "owner-approved-settlement-v2",
+    "toolStartedAt": "2026-10-23T18:56:40.138Z",
+    "toolResolvedAt": "2026-10-23T18:56:40.425Z",
+    "settlementObservedAt": "2026-10-23T18:56:40.452Z",
+    "settlementMaximumMs": 1000,
+    "counters": {
+      "count": 1,
+      "activationCount": 1,
+      "mouseDownCount": 1,
+      "mouseUpCount": 1,
+      "mouseClickCount": 1
+    },
+    "scope": "Supplied-evidence validation only; caller must independently inspect the actual Sky tool receipt and retained owned child liveness. No live action or case completion is established.",
+    "toolReceiptRef": "actual-tool-call:sky-glow-finish-corrective-20261023",
+    "completedAt": "2026-10-23T18:56:40.425Z",
+    "actualCounts": {
+      "count": 1,
+      "mouseClickCount": 1,
+      "activationCount": 1,
+      "mouseDownCount": 1,
+      "mouseUpCount": 1
+    }
+  },
+  "trace": {
+    "requestedPhysicalPoint": {
+      "x": 7,
+      "y": 900
+    },
+    "actualPhysicalPoint": {
+      "x": 6,
+      "y": 900
+    },
+    "button": {
+      "x": 1,
+      "y": 856,
+      "width": 12,
+      "height": 88
+    },
+    "counters": {
+      "count": 2,
+      "activationCount": 2,
+      "mouseDownCount": 2,
+      "mouseUpCount": 2,
+      "mouseClickCount": 2
+    },
+    "lastMouseDown": {
+      "button": "Left",
+      "clicks": 1,
+      "controlX": 5,
+      "controlY": 44,
+      "screenX": 6,
+      "screenY": 900,
+      "atUtc": "2026-10-23T18:56:46.4195492+00:00",
+      "elapsedMs": 56937,
+      "input": {
+        "leftButtonDown": true,
+        "rightButtonDown": false,
+        "middleButtonDown": false,
+        "controlDown": false,
+        "spaceDown": false,
+        "shiftDown": false,
+        "altDown": false
+      }
+    },
+    "lastMouseUp": {
+      "button": "Left",
+      "clicks": 1,
+      "controlX": 5,
+      "controlY": 44,
+      "screenX": 6,
+      "screenY": 900,
+      "atUtc": "2026-10-23T18:56:46.9349251+00:00",
+      "elapsedMs": 57452,
+      "input": {
+        "leftButtonDown": false,
+        "rightButtonDown": false,
+        "middleButtonDown": false,
+        "controlDown": false,
+        "spaceDown": false,
+        "shiftDown": false,
+        "altDown": false
+      }
+    },
+    "lastMouseClick": {
+      "button": "Left",
+      "clicks": 1,
+      "controlX": 5,
+      "controlY": 44,
+      "screenX": 6,
+      "screenY": 900,
+      "atUtc": "2026-10-23T18:56:46.9338034+00:00",
+      "elapsedMs": 57451,
+      "input": {
+        "leftButtonDown": false,
+        "rightButtonDown": false,
+        "middleButtonDown": false,
+        "controlDown": false,
+        "spaceDown": false,
+        "shiftDown": false,
+        "altDown": false
+      }
+    },
+    "exactCenterAssertionPassed": false
+  },
+  "finding": "The actual reference click passed the prospective settlement oracle. The TRACE MCP action completed and all five independent counters reached 2, but the recorded physical X was 6 instead of requested exact-center X 7. The strict assertion failed; ordinary-close and parent-loss acceptance stages did not run. The precise cause of the one-pixel difference is not established by these observations.",
+  "cleanup": {
+    "connectionClosed": true,
+    "ownedHelpersExited": true,
+    "keysDown": [],
+    "fixture": {
+      "exited": true,
+      "forced": false
+    },
+    "recovery": {
+      "recoveryRequired": false,
+      "ready": true,
+      "code": null
+    },
+    "outputManifestsVerified": true
+  },
+  "budget": {
+    "lifetimeAttemptsUsed": 8,
+    "approvedExtensionExhausted": true,
+    "automaticFurtherRunAllowed": false
+  },
+  "privateFinalStateSha256": "f27280404b2e1b377db8d1375776b71133ee19d25fc6886669142544483a8a23"
+}

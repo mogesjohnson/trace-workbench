@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "planContract": 1,
+  "caseId": "R31-GLOW-NATIVE",
+  "replaces": [
+    "A31-GLOW",
+    "GLOW-LIVE"
+  ],
+  "historicalStatus": "exhausted fail; regression kept separate",
+  "attempt": 7,
+  "ownerDecision": null,
+  "referenceExecutor": "Sky",
+  "historicalAttemptsUsed": 6,
+  "continuationAttempt": 1,
+  "amendment": 3,
+  "proposalDocument": {
+    "ref": "docs/GAP_CLOSURE_FINISH_PLAN.md",
+    "sha256": "d98fddf5359c31021ebf7d28108cf949a219d939c3e5d8046a0a05277388835b"
+  },
+  "referenceTiming": {
+    "contract": "owner-approved-settlement-v2",
+    "maximumAfterToolResolutionMs": 1000,
+    "preserveActualToolResolution": true
+  },
+  "lifetimeAttemptOrdinal": 7,
+  "contract": "glow-sky-physical-point-v1",
+  "decisionRef": "evidence/live-acceptance-continuation/owner-finish-decision.json",
+  "referenceProof": "Actual Sky accessibility physical MouseClick point must be inside fresh button and actual measured glow; TRACE remains exact fresh center.",
+  "executionRequiresExplicitOwnerDecision": true,
+  "declaredBeforeUiLaunch": true,
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "target": "Fresh exact owned full-screen non-topmost synthetic glow fixture",
+  "initial": {
+    "count": 0,
+    "mouseClickCount": 0,
+    "activationCount": 0,
+    "mouseDownCount": 0,
+    "mouseUpCount": 0,
+    "keysDown": []
+  },
+  "actions": [
+    "Open actual MCP session; verify Node→detached native supervisor→marker and unchanged focus",
+    "Verify actual safe desktop pixels show glow; after actual Sky observation, take a new safe reference frame before validating the click checkpoint",
+    "One EXTERNAL reference-executor left edge click gives count1",
+    "One fresh observed TRACE MCP coordinate edge click gives count2",
+    "Ordinary session close: owner/marker exit within5s, absent glow, clear recovery and free lease",
+    "Second session: visible glow and unchanged focus; private owned Node self-termination; exact Node/native/marker exit within5s, absent glow and lease handoff"
+  ],
+  "bounds": {
+    "referenceWaitMs": 60000,
+    "helperExitMs": 5000,
+    "captureAttemptsPerFrame": 3,
+    "referenceClicks": 1,
+    "traceClicks": 1
+  },
+  "cleanup": "Close any remaining owner/MCP; verify exact helper exit and independent all-up while fixture remains; close fixture; persist terminal receipt.",
+  "budget": "One attempt plus one matching corrective attempt with changed precondition, no input replay or historical promotion.",
+  "limits": [
+    "Selected single-monitor mode only",
+    "Private host mode none supplies ordinary production backend/native ownership; no controlled input replacement",
+    "Two TRACE clicks, UIA invocation or synthetic fixture activation cannot replace the external reference click",
+    "No model-host/release acceptance"
+  ]
+}

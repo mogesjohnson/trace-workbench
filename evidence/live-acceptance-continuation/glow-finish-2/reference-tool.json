@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "source": "actual-root-Sky-tool-calls",
+  "observation": {
+    "startedAt": "2026-10-23T18:56:05.350Z",
+    "completedAt": "2026-10-23T18:56:05.716Z",
+    "windowId": "60754768",
+    "elementIndex": 1,
+    "elementId": "traceGlowEdgeButton",
+    "screenshotGeometry": {
+      "width": 1920,
+      "height": 1200,
+      "originX": 0,
+      "originY": 0
+    },
+    "coordinateScope": "Sky logical capture geometry; fixture physical display is separately pinned at 2880 by 1800 and 144 DPI"
+  },
+  "click": {
+    "tool": "sky.click",
+    "toolReceiptRef": "actual-tool-call:sky-glow-finish-corrective-20261023",
+    "startedAt": "2026-10-23T18:56:40.138Z",
+    "toolResolvedAt": "2026-10-23T18:56:40.425Z",
+    "elementIndex": 1,
+    "source": "external-sky-accessibility",
+    "mechanism": "accessibility-mouse",
+    "completed": true,
+    "synthetic": false
+  },
+  "privateOriginalProofSha256": "dc240809c445a6f0ff078c3c433af0f43799cad92d673bee69a63a6dfc48f3fd",
+  "scope": "Sanitized actual tool metadata. Original proof timestamp retained without extending resolution."
+}

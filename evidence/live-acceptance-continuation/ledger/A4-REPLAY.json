@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A4-REPLAY",
+  "history": [
+    {
+      "ref": "evidence/computer-use-method/replay-workflow/attempt-1/receipt.json",
+      "sha256": "b2aba9fa7a2113ef50ad2b5538106c94147973ce785f8681cdf9f815b9c70bec"
+    },
+    {
+      "ref": "evidence/computer-use-method/replay-workflow/attempt-2/receipt.json",
+      "sha256": "98614c9392bbb6ed72dcb33862652160586b182855252df1c9c70656208d7537"
+    }
+  ],
+  "claims": [
+    {
+      "caseId": "A4-REPLAY",
+      "amendment": 3,
+      "contract": "finish-approved-v1",
+      "historicalAttemptsUsed": 2,
+      "decisionId": "owner-finish-amendments-2026-10-23",
+      "ownerDecision": {
+        "ref": "evidence/live-acceptance-continuation/owner-finish-decision.json",
+        "sha256": "b4f11d92fe995b3be54e35f02bc2cd9cce56d778a5b0502b3c454c375cfb1327"
+      },
+      "proposal": {
+        "ref": "docs/GAP_CLOSURE_FINISH_PLAN.md",
+        "sha256": "d98fddf5359c31021ebf7d28108cf949a219d939c3e5d8046a0a05277388835b"
+      },
+      "history": [
+        {
+          "ref": "evidence/computer-use-method/replay-workflow/attempt-1/receipt.json",
+          "sha256": "b2aba9fa7a2113ef50ad2b5538106c94147973ce785f8681cdf9f815b9c70bec"
+        },
+        {
+          "ref": "evidence/computer-use-method/replay-workflow/attempt-2/receipt.json",
+          "sha256": "98614c9392bbb6ed72dcb33862652160586b182855252df1c9c70656208d7537"
+        }
+      ],
+      "continuationAttempt": 1,
+      "lifetimeAttemptOrdinal": 3,
+      "claimId": "5a0c88ff-2801-4784-b958-09e536574e8e",
+      "claimedAt": "2026-10-23T19:13:33.746Z",
+      "attempt": 3
+    },
+    {
+      "caseId": "A4-REPLAY",
+      "amendment": 3,
+      "contract": "finish-approved-v1",
+      "historicalAttemptsUsed": 2,
+      "decisionId": "owner-finish-amendments-2026-10-23",
+      "ownerDecision": {
+        "ref": "evidence/live-acceptance-continuation/owner-finish-decision.json",
+        "sha256": "b4f11d92fe995b3be54e35f02bc2cd9cce56d778a5b0502b3c454c375cfb1327"
+      },
+      "proposal": {
+        "ref": "docs/GAP_CLOSURE_FINISH_PLAN.md",
+        "sha256": "d98fddf5359c31021ebf7d28108cf949a219d939c3e5d8046a0a05277388835b"
+      },
+      "history": [
+        {
+          "ref": "evidence/computer-use-method/replay-workflow/attempt-1/receipt.json",
+          "sha256": "b2aba9fa7a2113ef50ad2b5538106c94147973ce785f8681cdf9f815b9c70bec"
+        },
+        {
+          "ref": "evidence/computer-use-method/replay-workflow/attempt-2/receipt.json",
+          "sha256": "98614c9392bbb6ed72dcb33862652160586b182855252df1c9c70656208d7537"
+        }
+      ],
+      "continuationAttempt": 2,
+      "lifetimeAttemptOrdinal": 4,
+      "prior": {
+        "ref": "evidence/live-acceptance-continuation/replay-finish-1/receipt.json",
+        "sha256": "8995ad43648ba6d94a90a0372a7e408c8b9eb2c842dd4044487f695c1215b422"
+      },
+      "changedPreconditionSha256": "0ab413c5eafb2c497632b4982fbd5c8d67bc226b12c4a60130dbb54f991875ce",
+      "claimId": "87dd96d5-728c-4052-9831-0e436b295713",
+      "claimedAt": "2026-10-23T19:20:05.139Z",
+      "attempt": 4
+    }
+  ],
+  "finishAmendment": {
+    "ownerDecision": {
+      "ref": "evidence/live-acceptance-continuation/owner-finish-decision.json",
+      "sha256": "b4f11d92fe995b3be54e35f02bc2cd9cce56d778a5b0502b3c454c375cfb1327"
+    },
+    "proposal": {
+      "ref": "docs/GAP_CLOSURE_FINISH_PLAN.md",
+      "sha256": "d98fddf5359c31021ebf7d28108cf949a219d939c3e5d8046a0a05277388835b"
+    },
+    "history": [
+      {
+        "ref": "evidence/computer-use-method/replay-workflow/attempt-1/receipt.json",
+        "sha256": "b2aba9fa7a2113ef50ad2b5538106c94147973ce785f8681cdf9f815b9c70bec"
+      },
+      {
+        "ref": "evidence/computer-use-method/replay-workflow/attempt-2/receipt.json",
+        "sha256": "98614c9392bbb6ed72dcb33862652160586b182855252df1c9c70656208d7537"
+      }
+    ]
+  }
+}
