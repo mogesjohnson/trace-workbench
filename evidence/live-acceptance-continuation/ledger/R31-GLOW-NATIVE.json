@@ -273,6 +273,25 @@
       "claimId": "84b1106e-17e4-4150-9f21-26211c55ffa8",
       "claimedAt": "2026-10-23T18:55:49.366Z",
       "attempt": 8
+    },
+    {
+      "caseId": "R31-GLOW-NATIVE",
+      "attempt": 9,
+      "lifetimeAttemptOrdinal": 9,
+      "continuationAttempt": 1,
+      "scope": "lifecycle-only",
+      "maximumAttempts": 1,
+      "previousLedgerSha256": "2cfac756b8198919ae53899e6684c83c60f67ae8674f91ee65db74a242b59861",
+      "ownerDecision": {
+        "ref": "evidence/live-acceptance-continuation/owner-narrow-finish-decision.json",
+        "sha256": "5a274a0f4189e23b12a59c649a30c1ce3a610b946333a6c9bcf8b64c2d5e9bcb"
+      },
+      "proposal": {
+        "ref": "docs/NARROW_DESKTOP_FINISH.md",
+        "sha256": "6fe719488b1c634611b07beb1d1a16757e85af8a72fd578dd14c417b51016c56"
+      },
+      "claimId": "10e41cee-252c-48eb-bedc-4877bf703e64",
+      "claimedAt": "2026-10-27T21:01:58.838Z"
     }
   ],
   "amendments": [
