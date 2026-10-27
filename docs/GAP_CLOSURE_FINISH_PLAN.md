@@ -1,0 +1,73 @@
+# Finish the Computer Use gap
+
+Prepared 23 October 2026 after the shutdown checkpoint. The goal is active again. This plan preserves the full scope and all earlier results. It creates no approval, claim, extra retry or passing result.
+
+The checkpoint remains **15 of 22 verified (68% of the declared checklist)**. This is not an estimate of remaining time, cost or feature parity. [The dashboard](GAP_CLOSURE_PROGRESS.html) and [SPEC.md](../SPEC.md) retain the authoritative scope.
+
+## Work that stays finished
+
+Reuse compatible passing evidence: complete Codex host workflow, Unicode clipboard paste/restoration, typing quarantine, mouse/chord recovery, window targeting, installed bundles, browser adapter and the other verified dashboard rows. Do not repeat them because the chat, machine or MCP server restarted. A readiness diagnostic after restart is not another acceptance run.
+
+No feature expansion, new agents, broad suite reruns, additional test framework or repeated paid Claude session is planned. Run only checks needed by a demonstrated fix or an unfinished explicit gate. Preserve exact original receipts and their source/display limits.
+
+## Remaining work and the next concrete action
+
+| Gate | Evidence still missing | Next action and stop condition |
+| --- | --- | --- |
+| Glow, row 13 | One complete reference/TRACE edge-click and lifecycle case. Lifetime 6 reached all five counters 1, then failed the strict event-time boundary. | Seek the prospective amendment below. Keep the actual tool-resolution timestamp. Measure a separate bounded target-settlement interval; never restamp the original proof or promote the failed receipt. |
+| Physical stop, row 15 | Physical and injected Escape against the current supervisor source. Earlier passes used an unavailable earlier Session.cs. | Seek the bounded current-source amendment below. Owner must be present for two real Escape taps. Other recovery cells stay verified. |
+| Claude, row 17 | Full actual host workflow with preserved user settings after the forwarding correction. | Investigate a disposable CLI configuration directory before spending the remaining corrective supplement. Keep the original settings comparison strict; do not exempt caches or restore over concurrent user changes. |
+| REPLAY, row 19 | Provisioning diagnosis, actual editing/control, both exports, independent media review and cleanup. | Seek the bounded amendment below. Retain both process/window identities before the equality assertion. Do not weaken equality or guess the previous mismatch. |
+| Distribution, row 20 | Exact final archive installed on a fresh Windows runner, including configuration preservation and rollback. | Reuse existing-host preparation. Run the existing portable verifier against the final source archive once CI can start. Do not substitute another existing-host run for the clean-runner gate. |
+| Final reconciliation, row 21 | Final requirement-to-evidence audit, documentation, review and release packaging. | Complete after live results settle. Update README last. Keep any missing gate explicit; a draft PR or archive is not a release. |
+| Hosted CI, row 22 | A successful required Windows job. | Owner must resolve GitHub billing/spending restrictions. Latest checked run 39910599102, job 120272450126, failed with zero steps and the same explicit account annotation. Do not retry until that condition changes. |
+
+## Proposed bounded amendment: glow
+
+This needs a direct owner decision because [SPEC.md](../SPEC.md) says **“A second failure ends that case.”** All six earlier lifetime attempts remain unchanged. Proposed extension: existing `R31-GLOW-NATIVE`, lifetime **7**, plus at most one corrective lifetime **8** after a recorded concrete change.
+
+Prospective timing change: preserve `toolStartedAt` and the real `toolResolvedAt` independently. After exactly one reference click, permit at most **1,000 ms after actual tool resolution** for the independently read owned fixture to settle. Record a separate `settlementObservedAt`; require each retained physical down/up/click event to fall between actual tool start and that observation, and require settlement within the bound. This is an explicit change to the old promise-resolution oracle, not an interpretation of its failed result. It proves the declared click and target effect; it does not prove that the executor resolves only after mouse-up.
+
+All other requirements remain: fresh real pixels and samples within 60 seconds at dispatch; exact target/display; unchanged foreground/focus; measured visible glow; five counters 0 initially, 1 after exactly one actual reference accessibility click, 2 after exactly one fresh TRACE coordinate click; physical coordinates inside the declared button and glow; no extra input; normal close/EOF and owned-parent-loss cleanup; independently confirmed helper exits and all-up/clear recovery. Retain both timing boundaries and the raw actual tool record.
+
+Before any claim, implement only the affected timing validation and use focused boundary checks to reject late settlement or extra counters. A missing reference executor or privacy-safe capture remains blocking. A second failure ends the case again.
+
+## Proposed bounded amendment: current-source Escape
+
+Preserve the passing historical receipts and the keyboard's earlier foreground block. Extend the same three case histories for current-source relevance only:
+
+| Existing case | Historical lifetime ordinals | Proposed new ordinals |
+| --- | --- | --- |
+| `A32-STOP-MOUSE` | 1, passed | 2; corrective 3 only after a concrete change |
+| `A32-STOP-KEYBOARD` | 1 blocked, 2 passed | 3; corrective 4 only after a concrete change |
+| `A32-STOP-INJECTED` | 1, passed | 2; corrective 3 only after a concrete change |
+
+Pin the current supervisor source/output and actual display. Reuse the existing source-owned stop driver. Preserve its 15-second operation deadline, physical hook classification, stop admission within one second, verified child exit and balanced input, stopped-session rejection and exactly one different follow-up in a new session. Mouse and keyboard require actual non-injected owner Escape events; injected Escape remains a separate ordinary action. No synthetic event may pass a physical case.
+
+Publish readiness before input. Owner responds first, then foregrounds the exact newly owned fixture and leaves input idle. Announce each physical phase; never start held input from an old readiness message. A late tap or timeout stops that case; do not re-hold automatically. No other recovery matrix rerun is included.
+
+## Proposed bounded amendment: REPLAY
+
+Preserve both blocked full-run attempts and cleanup reconciliation. Extend existing `A4-REPLAY` to lifetime **3**, plus at most one corrective lifetime **4** after a recorded concrete diagnosis/change. A provision failure consumes the attempt, even if no TRACE input or grant was made.
+
+Before a new claim, save both independently queried candidate identities before comparison: launched PID, process creation time and session; window PID, process creation time, session and HWND. Keep the exact values in the private recovery checkpoint and publish only sanitized identities or mismatched field names. Continue to reject any mismatch before grants, recording or TRACE input. The last failed run discarded its window candidate; its precise cause remains unproved.
+
+If identities match, continue the same attempt through all stages of [REPLAY_LIVE_RUN.md](REPLAY_LIVE_RUN.md). Require the actual fixture recording, reviewed six-second source segment, trim/callout/blur, offline audio placement, actual TRACE editor controls and completed-file playback, `fixture-demo.mp4`, `editor-walkthrough.mp4`, independent decode/visual/audio checks, grant revocation and exact owned exits. Keep the real library untouched and make no paid provider calls. No third attempt under a new folder or case name may bypass this decision.
+
+## Claude preservation route: investigate before a paid run
+
+Official [environment-variable documentation](https://code.claude.com/docs/en/env-vars) supports `CLAUDE_CONFIG_DIR` for separate CLI state. Its [authentication documentation](https://code.claude.com/docs/en/authentication#credential-management) places Windows credentials under that directory too. Source inspection found `hostEnvironment()` in `scripts/accept-claude-host.cjs` explicitly strips that variable, and the version/auth probes also use that environment.
+
+This is a candidate fix, not proof of isolation. Investigate the exact installed binary and effective paths first. If supported, use one private, writable, disposable directory for version/auth probes and the host; explicitly supply the installed TRACE and REA guidance with matching hashes. Retain the strict comparisons of real user/client/managed settings and installed bundles before and after. Treat any fallback write to the real home as failure. Do not change Windows profiles, global environment, account settings or the frozen preservation oracle.
+
+Use the existing authenticated account only through a supported local authentication route. Do not copy histories, publish credentials, print credential contents or assume a copied token can be refreshed independently. If isolated authentication needs owner sign-in, report that prerequisite before consuming a live attempt. Remove any task-owned private credential material after verified host exit; preserve unrelated files.
+
+Only after isolation, authentication and actual skill discovery are demonstrated should the existing **one remaining corrective supplemental attempt** run. Its original Unicode, stale rejection, fresh counter, cleanup and preservation requirements stay unchanged. A default-home pass cannot be claimed from an isolated run; state its exact environment in the receipt. If the frozen installed-skill/auth contract cannot be preserved, obtain a concrete prospective decision before changing that contract.
+
+## Owner action and execution order
+
+1. Decide the three bounded amendments above: glow timing/budget, current-source Escape and REPLAY budget. They are proposals until directly approved. Approval does not imply current desktop readiness.
+2. Resolve GitHub billing or spending restrictions when convenient; no agent account or payment change is authorized.
+3. At an announced desktop phase, foreground the exact owned fixture after replying, leave input idle and provide the two physical Escape taps when announced. Claude apps must be fully closed for its preservation window; another sign-in may be needed if isolation cannot reuse authentication safely.
+
+Work order after approval: finish the minimal affected preparation, then glow and current-source stop in one announced owner-present block; complete Claude only after its preservation prerequisite; complete REPLAY and its media review; run final archive/fresh-runner CI; reconcile documentation and the full completion audit. A failure remains visible and stops its case when the new cap is exhausted. No merge, release or full gap-closure claim is made by this plan.

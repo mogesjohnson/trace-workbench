@@ -1,0 +1,24 @@
+{
+  "source": "actual-connected-codex",
+  "step": "stale-rejected",
+  "tools": [
+    {
+      "name": "mcp__trace_computer__trace_computer_act",
+      "arguments": {
+        "sessionId": "1a69a9db-332b-4d3a-96a0-7c0ed3871d1c",
+        "observationId": "9ea13528-177e-4d5e-a524-4c4f152a5bf9",
+        "action": {
+          "type": "invoke",
+          "elementId": "traceIncrement"
+        }
+      },
+      "result": {
+        "error": {
+          "code": "stale_observation",
+          "message": "Use the latest observationId. Every action consumes it."
+        },
+        "outcome": "not_dispatched"
+      }
+    }
+  ]
+}

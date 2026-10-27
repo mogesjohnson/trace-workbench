@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "caseId": "METHOD-CLIPBOARD-UNICODE-PASTE",
+  "source": "independent-native-cleanup",
+  "verifiedAt": "2026-10-23T06:14:16.704Z",
+  "anchor": {
+    "id": "2623040",
+    "pid": 49416,
+    "processCreationTime": "134372093018464301",
+    "sessionId": 1
+  },
+  "nativeRequestsSettled": true,
+  "downstreamStarted": true,
+  "ownedProcesses": [
+    {
+      "pid": 46228,
+      "created": "2026-10-23T06:13:34.6168020Z",
+      "sessionId": 1
+    },
+    {
+      "pid": 40832,
+      "created": "2026-10-23T06:13:36.7045540Z",
+      "sessionId": 1
+    },
+    {
+      "pid": 28904,
+      "created": "2026-10-23T06:13:36.8779850Z",
+      "sessionId": 1
+    }
+  ],
+  "evidenceRef": "evidence/live-acceptance-continuation/clipboard-supplemental-2/receipt.json",
+  "scope": "Production MCP exact-generation exits, fixture exit, all-up input, clear recovery and supported-byte restoration verified by completed corrective receipt; anchor wrapper independently rechecks before closing."
+}

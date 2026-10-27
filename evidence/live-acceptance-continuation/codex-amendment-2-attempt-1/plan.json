@@ -1,0 +1,76 @@
+{
+  "caseId": "CODEX-TRACE-SKILL-NATIVE",
+  "contract": "codex-utf8-host-v1",
+  "amendment": 2,
+  "proposal": true,
+  "claimsAttempt": false,
+  "acceptancePlan": "docs/LIVE_ACCEPTANCE_AMENDMENT_2.md",
+  "proposalDocument": {
+    "ref": "docs/LIVE_ACCEPTANCE_AMENDMENT_2.md",
+    "sha256": "84a4d9df1d91ff28f257b35d0a09d4ce9fc22a159b9a75feaa6480d35061ef90"
+  },
+  "historicalAttemptsUsed": 4,
+  "continuationMaximum": 2,
+  "lifetimeAttemptOrdinals": [
+    5,
+    6
+  ],
+  "originals": [
+    {
+      "ref": "evidence/computer-use-method/codex-host-attempt-1/receipt.json",
+      "sha256": "b7d53fbabff03d480b9f1d5f0b6430ad30948cff2f814dd0000b47daaf5f0a61"
+    },
+    {
+      "ref": "evidence/computer-use-method/codex-host-attempt-2/receipt.json",
+      "sha256": "15d564c1a2673bba35e90fb70cc17d8993429f2e169701214640bc54196882a1"
+    }
+  ],
+  "history": [
+    {
+      "ref": "evidence/computer-use-method/codex-host-attempt-1/receipt.json",
+      "sha256": "b7d53fbabff03d480b9f1d5f0b6430ad30948cff2f814dd0000b47daaf5f0a61"
+    },
+    {
+      "ref": "evidence/computer-use-method/codex-host-attempt-2/receipt.json",
+      "sha256": "15d564c1a2673bba35e90fb70cc17d8993429f2e169701214640bc54196882a1"
+    },
+    {
+      "ref": "evidence/live-acceptance-continuation/codex/attempt-1/receipt.json",
+      "sha256": "e7a23461b1e07fd5e4cbb4292c4c55c870fb45dc8339a571551b8249f6c6e982"
+    },
+    {
+      "ref": "evidence/live-acceptance-continuation/codex/attempt-2/receipt.json",
+      "sha256": "154834ccec67dc7656fba762284f15831165f5427f85c61a583a484f866b6bac"
+    }
+  ],
+  "continuationAttempt": 1,
+  "lifetimeAttemptOrdinal": 5,
+  "ownerDecision": "evidence/live-acceptance-continuation/owner-amendment-2.json",
+  "host": "Actual connected Codex conversation",
+  "payload": "TRACE Codex verified café 日本語",
+  "initial": {
+    "text": "",
+    "count": 0
+  },
+  "actions": [
+    "discovery",
+    "opened",
+    "focused",
+    "typed",
+    "stale-rejected",
+    "fresh-counter",
+    "closed"
+  ],
+  "expected": {
+    "text": "TRACE Codex verified café 日本語",
+    "count": 1
+  },
+  "cleanup": "Close actual MCP session; independently verify supervisor and marker exit, attached host Node generation remains alive, all-up input and clear recovery while fixture is alive; close retained fixture.",
+  "evidence": "Each ordered checkpoint uses an evidence-relative JSON envelope: source actual-connected-codex, step, tools [{name, arguments, result}], images [{ref, sha256}], modelInspection. discovery includes skillReads; opened includes chain. Before focus/type, --refresh records one actual observe without advancing the semantic step; its envelope has step refresh and nextStep focused or typed. An inline actual observe before the action is also supported. No command dispatches tools or extends server freshness.",
+  "notProven": [
+    "Other hosts",
+    "REA analysis",
+    "REPLAY",
+    "Release readiness"
+  ]
+}

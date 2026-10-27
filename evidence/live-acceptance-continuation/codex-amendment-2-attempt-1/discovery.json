@@ -1,0 +1,49 @@
+{
+  "source": "actual-connected-codex",
+  "step": "discovery",
+  "tools": [
+    {
+      "name": "mcp__trace_computer__trace_computer_doctor",
+      "arguments": {},
+      "result": {
+        "ready": true,
+        "engine": "winapp",
+        "version": "0.7.1",
+        "platform": "win32",
+        "architecture": "x64",
+        "transport": "public-cli",
+        "integrity": "verified",
+        "bridge": {
+          "version": 1,
+          "runtime": ".NET 9",
+          "method": "public-win32-dwm"
+        },
+        "activityIndicator": {
+          "available": true,
+          "integrity": "verified",
+          "protocol": 1
+        },
+        "supervision": {
+          "recoveryRequired": false,
+          "ready": true,
+          "code": null
+        },
+        "limitations": [
+          "Windows x64",
+          "minimized observations restore the selected window",
+          "unlocked interactive desktop for input",
+          "horizontal scroll unsupported",
+          "no secure desktop or elevation bypass"
+        ]
+      }
+    }
+  ],
+  "skillReads": {
+    "trace": true,
+    "rea": true,
+    "references": [
+      "operation-and-recovery.md",
+      "readiness-routing.md"
+    ]
+  }
+}
