@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A32-PROBE",
+  "attempt": 2,
+  "correctiveChanges": [
+    "Native lease pipe allows unlimited instances like libuv, so Node reports desktop_busy",
+    "Parent-death watcher is spawned detached; attached behavior is recorded as a finding"
+  ],
+  "priorAttempt": "evidence/0.1.0-alpha.3.2/feasibility/receipt.json",
+  "observedAt": "2026-10-20T14:31:04.669Z",
+  "runtime": {
+    "node": "v26.2.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "supervisorSha256": "e023de22015a2dd6a2f362b4284a5fbbfd8924c245c5617aba0d8ab3a8df1f23",
+  "testedSource": {
+    "baseCommit": "ef4c4ac66f02258ed96315323d903a0bfaef4051",
+    "workingTreeModified": true,
+    "files": {
+      "native/TraceSupervisor/TraceSupervisor.csproj": "7e505fbbf4febf564d0e1b329c125ca625bc3bbd275762c47ba1754a7b53e0ea",
+      "native/TraceSupervisor/Program.cs": "c37bb0bb3745776af3b6cbd99f4e82d8cd7b033a4dea10d6649be788b3b5ba43",
+      "native/TraceSupervisor/Native.cs": "4b85b1eded9aed2f902ed0cc905890526367780c836a1d58078daca450e1d30f",
+      "native/TraceSupervisor/InputState.cs": "32fe225ac1dafecb21f54d9c8f1b1b278457989ba9d46c960f77b8697af88b27",
+      "native/TraceSupervisor/Probe.cs": "4de3edd982e6da2b35447fbf51973752fe6a7321620bb3763f024e5a35789db7",
+      "scripts/probe-supervision.cjs": "4d5bc84b0a042848541a35a8817cf3dd421873688e8e1aa7fda8b4a2e57ce881",
+      "src/computer/lease.cjs": "3600fa756bda99e15aa695731bc0e5a8f6a0893e1f7e333db4d6742ae561389b",
+      "tests/fixtures/computer-app/Program.cs": "2a41cccaf50920cfe29b3078d20887d9271e33c2fd543c95f7897b59187cfd3f"
+    }
+  },
+  "cases": {
+    "P-JOB-MOUSE": {
+      "status": "pass",
+      "actual": {
+        "pass": true,
+        "job": {
+          "assigned": true,
+          "breakawayDenied": true,
+          "childInJob": true,
+          "providerReport": "{\"provider\":\"controlled-test\",\"mode\":\"hold-mouse\",\"held\":[1],\"pid\":42972}"
+        },
+        "heldIndependently": {
+          "1": true
+        },
+        "childExitAfterOwnerKill": {
+          "exited": true,
+          "afterMs": 0
+        },
+        "stillDownAfterKill": {
+          "1": true
+        },
+        "release": {
+          "attempted": [
+            1
+          ],
+          "remainingDown": [],
+          "released": true
+        },
+        "releasedIndependently": {
+          "1": false
+        },
+        "fixtureForeground": true
+      },
+      "durationMs": 1128
+    },
+    "P-JOB-CHORD": {
+      "status": "pass",
+      "actual": {
+        "pass": true,
+        "job": {
+          "assigned": true,
+          "breakawayDenied": true,
+          "childInJob": true,
+          "providerReport": "{\"provider\":\"controlled-test\",\"mode\":\"hold-keys\",\"held\":[160,162],\"pid\":41952}"
+        },
+        "heldIndependently": {
+          "160": true,
+          "162": true
+        },
+        "childExitAfterOwnerKill": {
+          "exited": true,
+          "afterMs": 0
+        },
+        "stillDownAfterKill": {
+          "160": true,
+          "162": true
+        },
+        "release": {
+          "attempted": [
+            160,
+            162
+          ],
+          "remainingDown": [],
+          "released": true
+        },
+        "releasedIndependently": {
+          "160": false,
+          "162": false
+        },
+        "fixtureForeground": true
+      },
+      "durationMs": 963
+    },
+    "P-JOB-TYPING": {
+      "status": "fail",
+      "actual": {
+        "pass": false,
+        "job": {
+          "assigned": true,
+          "breakawayDenied": true,
+          "childInJob": true,
+          "providerReport": "{\"provider\":\"controlled-test\",\"mode\":\"type-hold\",\"held\":[67],\"pid\":45116}"
+        },
+        "heldIndependently": {
+          "67": true
+        },
+        "childExitAfterOwnerKill": {
+          "exited": true,
+          "afterMs": 0
+        },
+        "stillDownAfterKill": {
+          "67": true
+        },
+        "release": {
+          "attempted": [
+            67
+          ],
+          "remainingDown": [],
+          "released": true
+        },
+        "releasedIndependently": {
+          "67": false
+        },
+        "fixtureForeground": true,
+        "fixtureTextAdded": ""
+      },
+      "durationMs": 1306
+    },
+    "P-LEASE-EXCLUSION": {
+      "status": "pass",
+      "actual": {
+        "pass": true,
+        "pipe": "\\\\.\\pipe\\trace-computer-8073519d38ae76b76ec33d60b2992663",
+        "nodeWhileNative": "desktop_busy",
+        "nodeAfterNativeDeath": "acquired",
+        "nativeWhileNode": "busy",
+        "nativeAfterNode": "held"
+      },
+      "durationMs": 443
+    },
+    "P-PARENT-DEATH": {
+      "status": "pass",
+      "actual": {
+        "pass": true,
+        "attached": {
+          "recorded": false,
+          "watcherExit": {
+            "exited": true,
+            "afterMs": 0
+          }
+        },
+        "detached": {
+          "recorded": true,
+          "parentExitDetectedMs": 6,
+          "stdinEofDetectedMs": 3,
+          "watcherExit": {
+            "exited": true,
+            "afterMs": 1
+          }
+        },
+        "finding": "An attached child is killed with its Node parent; the supervisor must be spawned detached."
+      },
+      "durationMs": 3876
+    },
+    "P-ESCAPE-INJECTED": {
+      "status": "pass",
+      "actual": {
+        "pass": true,
+        "events": [
+          {
+            "Down": true,
+            "Injected": true,
+            "ms": 3
+          },
+          {
+            "Down": false,
+            "Injected": true,
+            "ms": 4
+          }
+        ],
+        "physicalEscape": false
+      },
+      "durationMs": 2434
+    },
+    "P-ESCAPE-PHYSICAL": {
+      "status": "not_run",
+      "reason": "Needs the owner to press the physical key; run --physical-escape separately"
+    }
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ],
+    "pinned": {
+      "monitors": 1,
+      "width": 2880,
+      "height": 1800,
+      "dpi": 144,
+      "match": true
+    }
+  },
+  "fixture": {
+    "activation": {
+      "foreground": true
+    },
+    "point": "empty lower-right client area"
+  },
+  "fixtureExit": {
+    "exited": true,
+    "afterMs": 1
+  },
+  "finalKeysDown": [],
+  "result": "fail",
+  "completedAt": "2026-10-20T14:31:19.432Z"
+}
