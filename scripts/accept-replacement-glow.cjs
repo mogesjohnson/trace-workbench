@@ -194,11 +194,12 @@ function captureMetadata(value, expected) {
 }
 async function launchFixture(directory) {
   await fixtureTools.verify();
+  const sha256 = common.digest(await fs.readFile(fixtureTools.BINARY));
   const child = spawn(fixtureTools.BINARY, ['--directory', directory, '--parent-pid', String(process.pid), '--lifetime-ms', '300000'], { shell: false, windowsHide: false, stdio: 'ignore' });
   let spawnError;
   child.once('error', error => { spawnError = error; });
   const state = () => readFixtureState(directory, child, () => spawnError);
-  return { pid: child.pid, sha256: common.digest(await fs.readFile(fixtureTools.BINARY)), state,
+  return { pid: child.pid, sha256, state,
     focus: async () => (await fixtureTools.command({ directory, command: 'focus' })).lastCommand.after,
     async capture(filename, indicatorPid) {
       const status = await fixtureTools.command({ directory, command: 'capture-desktop', file: filename, indicatorPid });
@@ -438,5 +439,5 @@ async function run(input = {}, injected = {}) {
 }
 if (require.main === module) run(parseArgs(process.argv.slice(2))).then(value => { process.stdout.write(JSON.stringify(value, null, 2) + '\n'); if (value.status && value.status !== 'pass') process.exitCode = 1; })
   .catch(error => { process.stderr.write(common.publicError(error).message + '\n'); process.exitCode = 1; });
-module.exports = { CASE, plan, parseArgs, assertFocus, assertOwnershipSession, assertCounts, assertClick, assertTargetHit, referencePoint, assertReferenceProof, waitReference,
+module.exports = { lifecycleDependencies: defaults, CASE, plan, parseArgs, assertFocus, assertOwnershipSession, assertCounts, assertClick, assertTargetHit, referencePoint, assertReferenceProof, waitReference,
   regionDisplay, regionFixture, measureGlowRegion, waitRegionReference, readFixtureState, captureMetadata, run };
