@@ -126,7 +126,8 @@ async function ownedWindowsChildren(pid) {
   const { stdout } = await execFileAsync("powershell.exe", [
     "-NoProfile", "-NonInteractive", "-Command",
     `Get-CimInstance Win32_Process -Filter 'ParentProcessId = ${pid}' | Select-Object ProcessId, Name | ConvertTo-Json -Compress`,
-  ], { windowsHide: true, timeout: 5_000, maxBuffer: 64 * 1024 });
+  // Allow PowerShell/CIM cold start within the existing 90-second run watchdog.
+  ], { windowsHide: true, timeout: 15_000, maxBuffer: 64 * 1024 });
   const parsed = stdout.trim() ? JSON.parse(stdout) : [];
   const children = Array.isArray(parsed) ? parsed : [parsed];
   assert.ok(children.every((child) => Number.isSafeInteger(child.ProcessId)));
@@ -339,6 +340,7 @@ async function main() {
 if (require.main === module) {
   main().catch((error) => {
     process.stderr.write(`MCP acceptance failed: ${error.message}\n`);
+    process.stderr.write(`${JSON.stringify({ code: error.code ?? null, signal: error.signal ?? null, killed: error.killed === true })}\n`);
     process.exitCode = 1;
   });
 }

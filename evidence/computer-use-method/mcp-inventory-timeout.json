@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "scope": "Windows analysis MCP smoke inventory timing; no desktop control or model invocation",
+  "observedAt": "2026-10-27T18:03:22.229Z",
+  "priorFailure": {
+    "run": "https://github.com/mogesjohnson/trace-workbench/actions/runs/40555864672",
+    "head": "4b57976c68120b7ffec8aaef39073c0c0a6143d9",
+    "step": "npm run test:mcp",
+    "operation": "PowerShell Get-CimInstance direct-child inventory",
+    "diagnosis": "Timing is consistent with the previous five-second timeout; the original log lacks killed/signal details, so the precise cause remains unconfirmed."
+  },
+  "change": {
+    "inventoryTimeoutMs": 15000,
+    "overallRunWatchdogMs": 90000,
+    "automaticInventoryRetries": 0,
+    "desktopInputDeadlineChanged": false
+  },
+  "localVerification": {
+    "status": "pass",
+    "toolCount": 207,
+    "targetUnchanged": true,
+    "ownedWrapperExited": true,
+    "ownedChildrenExited": true,
+    "paidCalls": 0,
+    "executedTargetCode": false,
+    "summarySha256": "c24c61320a2572e7b8d32021efe693255eb3b1d16fb999ee82883ef63c2987d7",
+    "scriptSha256": "4497c5e16baa00545ecd962bb934e376b8f5d53edcf2c212a470d8904ca549f5"
+  },
+  "limits": [
+    "This local pass does not establish a hosted-run result or prove the original timeout diagnosis.",
+    "No native source or previously completed live acceptance changed."
+  ]
+}

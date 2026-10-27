@@ -1,5 +1,11 @@
 # Agent handoff
 
+## Background CI inventory follow-up — 27 October 2026
+
+Documentation PR 26 at `4b57976` passed source checks and the required suite, then CI run 40555864672 failed in the analysis MCP smoke's PowerShell/CIM child inventory. Desktop and archive steps were skipped. Timing suggests the five-second query cap; the original log lacks timeout details, so the precise cause is unconfirmed. Earlier final-head CI success remains valid for its original source/archive.
+
+Branch `codex/mcp-inventory-timeout` depends on PR 26. The inventory now permits 15 seconds within the unchanged 90-second smoke watchdog; terminal errors expose code/signal/killed metadata. One affected local analysis MCP smoke passed with 207 tools, unchanged inert fixture and confirmed wrapper/child exits. [Scoped receipt](evidence/computer-use-method/mcp-inventory-timeout.json). No full local suite, live desktop, model call or native source change. Next: inspect the follow-up's required hosted result once; keep the original failure. Desktop readiness remains withdrawn and the two live gaps remain open.
+
 ## Background evidence reconciliation — 27 October 2026
 
 Desktop readiness was withdrawn before UI launch; no session, capture, input or live attempt started. Continue background work only until a fresh desktop window is available. The two missing live effects remain glow ordinary-close/owner-loss cleanup and causal REPLAY pause; completed mouse, Escape, host, clipboard, recording and export cases stay verified at compatible scope.
