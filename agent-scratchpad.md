@@ -1,5 +1,13 @@
 # Agent handoff
 
+## Both narrow workers prepared — 27 October 2026
+
+PR 30 at `d344fdb` supplies the explicit production pause CLI, root PNG review, real journal binding and ordered cleanup. Required CI 40577819231 passed, including archive installation/rollback. PR 29 at `1d679b7` also passed CI 40566252882; PR 28 at `a7e67d6` passed CI 40559238356. Runtime preparation is not live acceptance. No app, capture, native input, media subprocess or actual claim ran locally. Existing production source tests are reused; selected offline checks covered only changed contracts and new failure boundaries.
+
+The owner's earlier "lets begin" plus subsequent readiness acknowledgement already authorized the missing-effect scope after the assistant stated one attempt each/no automatic retries. [The frozen record](evidence/live-acceptance-continuation/owner-narrow-finish-decision.json) transparently preserves that basis and the later withdrawal of the 20-minute window. It covers existing glow lifetime 9 and REPLAY lifetime 5 once each; no second approval is needed for that scope. Fresh desktop readiness is still missing. Both real canonical ledgers remain unchanged. Do not edit the frozen proposal or decision bytes.
+
+Branch `codex/budget-history-fixture` depends on PR 30. Its unit fixture now reconstructs and hash-verifies the immutable historical prefix after later live claims, rather than depending on an unchanging live ledger. Two affected checks passed after correcting a local fixture-variable typo; production code is unchanged. The dashboard now shows prepared workers waiting on readiness, still 18/22 (82%). Next: await the pending five-minute glow-only readiness reply, run only that case, retain actual frames/cleanup and assess before requesting a separate pause slot. No repeat of compatible mouse, Escape, host, clipboard or export checks. Final release gates remain open; no merge/version bump/release is authorized by this preparation. Root remains High.
+
 ## Narrow live preparation — 27 October 2026
 
 PR 28 at `a7e67d6` prepared the zero-input glow lifecycle harness and fixed-history one-attempt guard; required CI 40559238356 passed including archive installation/rollback. No real ledger changed and no UI or live attempt ran. [The narrow proposal](docs/NARROW_DESKTOP_FINISH.md) remains unapproved for its exact caps: existing glow lifetime 9 and REPLAY lifetime 5, one attempt each, no retry. Desktop readiness remains withdrawn.
