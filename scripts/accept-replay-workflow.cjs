@@ -218,8 +218,8 @@ function createWorkflow(deps, locations) {
       try { if (app.client) { await deps.closeTransport(app.client); outcome.transportClosed = true; } } catch {}
       try { if (app.grantId) { await deps.revokeGrant(app); outcome.grantRevoked = await deps.grantRevoked(app); } } catch {}
       try {
-        await deps.stopApp(app.handle, app.page);
-        const child = app.handle.process();
+        await deps.stopApp(app.handle, app.page, app.child);
+        const child = app.child;
         outcome.processExited = (child.exitCode !== null && child.exitCode !== undefined || child.signalCode !== null && child.signalCode !== undefined)
           && !!app.identity && await deps.waitIdentityExit(app.identity) === true;
       } catch {}
@@ -244,9 +244,10 @@ function createWorkflow(deps, locations) {
       for (const label of ['editor', 'recorder']) {
         const root = path.join(locations.privateRoot, label);
         const handle = await deps.launchApp({ label, args: [`--smoke-test=${prepared.bootstrapVideo}`, `--smoke-output=${root}`] });
-        const app = { label, handle, root, launchedPid: handle.process().pid }; owned.push(app); // Retain before ANY readiness or identity query.
+        const child = handle.process();
+        const app = { label, handle, child, root, launchedPid: child.pid }; owned.push(app); // Retain before ANY readiness or identity query.
         await checkpoint();
-        app.identity = identity(await deps.processIdentity(handle.process().pid));
+        app.identity = identity(await deps.processIdentity(child.pid));
         await checkpoint();
         const ready = await deps.readyApp(handle); app.page = ready.page; app.info = ready.info;
         await checkpoint();

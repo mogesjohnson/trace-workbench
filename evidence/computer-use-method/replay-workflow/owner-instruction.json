@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "source": "direct-owner-goal-continuation",
+  "status": "recorded",
+  "caseId": "A4-REPLAY",
+  "instruction": "Continue working toward the active close-the-gap goal, preserving its full scope and completed evidence.",
+  "scopeReference": "docs/V0.1-PLAN.md",
+  "executionReference": "docs/REPLAY_LIVE_RUN.md",
+  "scope": "Initial full synthetic REPLAY workflow: two isolated pinned instances, owned fixture, real TRACE controls, offline audio, two exports, independent media review and owned cleanup.",
+  "budget": {
+    "initialAttempt": 1,
+    "maximumCorrectiveAttempts": 1,
+    "automaticReplay": false
+  },
+  "limits": [
+    "No paid provider requests or personal library changes.",
+    "Reuse the already verified two-instance feasibility case; do not rerun it.",
+    "This records existing owner authorization and creates no new cap extension."
+  ]
+}

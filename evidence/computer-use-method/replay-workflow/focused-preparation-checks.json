@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "recordedAt": "2026-10-23T05:46:44.876Z",
+  "scope": "Four affected offline clipboard workflow cases only. No live desktop, paste, REPLAY acceptance or full suite claim.",
+  "command": "node --test --test-name-pattern='live workflow pastes once|rich clipboard blocks|pending recovery never|incorrect native focus' tests/accept-clipboard.test.cjs",
+  "run": 4,
+  "passed": 4,
+  "failed": 0,
+  "files": {
+    "scripts/accept-clipboard.cjs": "fbe54be07c9ad247e89423ec746e65c41113c077516d57818181c9814a7f6486",
+    "tests/accept-clipboard.test.cjs": "5d05dec33d5b03d878a6fd0a92486290412b8065af4c436383556d392d3ab3c1"
+  },
+  "behavior": "Snapshot/preflight still precede fixture launch. Synthetic write and defer now follow independently verified focus; wrong focus causes no write/defer/paste. Pending recovery starts no UI; uncertain write never pastes and retains guarded cleanup."
+}

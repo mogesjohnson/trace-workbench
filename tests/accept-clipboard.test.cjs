@@ -41,7 +41,10 @@ function harness(options = {}) {
       if (name === 'observe') return { observationId: 'before-click', elements: [{ id: 'edit-id', name: 'TRACE text input', enabled: true }] };
       if (name === 'act' && args.action.type === 'click') {
         assert.equal(args.observationId, 'before-click'); assert.equal(args.action.elementId, 'edit-id');
-        return { outcome: 'completed', observation: { observationId: 'after-click', focused: { hasFocus: true, elementId: options.wrongFocus ? 'other' : 'edit-id' } } };
+        const currentId = options.changedSelectorAfterFocus ? 'fresh-edit-id' : 'edit-id';
+        return { outcome: 'completed', observation: { observationId: 'after-click',
+          elements: [{ id: currentId, name: 'TRACE text input', enabled: true }],
+          focused: { hasFocus: true, elementId: options.wrongFocus ? 'other' : currentId } } };
       }
       if (name === 'act') {
         assert.deepEqual(args.action, { type: 'press_key', key: 'CTRL+V' }); assert.equal(args.observationId, 'after-click');
@@ -89,7 +92,8 @@ test('live workflow pastes once, verifies both guards/effect, restores before cl
   assert.ok(h.events.indexOf('restore') < h.events.indexOf('clipboard-close'));
   assert.ok(h.events.indexOf('input-check') < h.events.indexOf('restore'));
   assert.ok(h.events.indexOf('fixture-close') < h.events.indexOf('restore'));
-  assert.ok(h.events.indexOf('defer') < h.events.indexOf('fixture-launch'));
+  assert.ok(h.events.indexOf('mcp-act-click') < h.events.indexOf('write'));
+  assert.ok(h.events.indexOf('defer') < h.events.indexOf('mcp-act-press_key'));
   assert.ok(h.events.indexOf('clipboard-close') < h.events.indexOf('verifier-snapshot'));
   assert.ok(h.events.indexOf('mcp-close') < h.events.indexOf('fixture-close'));
   const persistedAttempt = h.saved.find(item => item.paste.attempted);
@@ -105,19 +109,25 @@ test('rich clipboard blocks before mutation or fixture launch and never resets/a
   for (const event of ['write', 'fixture-launch', 'restore', 'mcp-act-press_key']) assert.equal(h.events.includes(event), false);
 });
 
-test('pending recovery and failed write never launch UI or replay; write uncertainty still attempts guarded restore', async () => {
+test('pending recovery never launches UI; failed write after focus never pastes and still attempts guarded restore', async () => {
   for (const options of [{ pending: true }, { writeLost: true }]) {
     const h = harness(options), receipt = await h.run();
-    assert.equal(receipt.status, 'blocked'); assert.equal(h.events.includes('fixture-launch'), false);
+    assert.equal(receipt.status, 'blocked'); assert.equal(h.events.includes('fixture-launch'), !options.pending);
+    assert.equal(h.events.includes('mcp-act-press_key'), false);
     assert.equal(h.events.filter(item => item === 'write').length, options.pending ? 0 : 1);
     assert.equal(h.events.includes('restore'), !options.pending);
   }
 });
 
-test('incorrect native focus rejects the only paste before dispatch', async () => {
+test('incorrect native focus rejects clipboard mutation and the only paste before dispatch', async () => {
   const h = harness({ wrongFocus: true }), receipt = await h.run();
   assert.equal(receipt.status, 'fail'); assert.equal(receipt.error.code, 'fixture_focus_mismatch');
   assert.equal(receipt.paste.attempted, false); assert.equal(h.events.includes('restore'), true);
+  assert.equal(h.events.includes('write'), false); assert.equal(h.events.includes('defer'), false);
+  assert.deepEqual(receipt.focus, { publicHasFocus: true, publicMatchesObservedEdit: false, independentMatches: true, textEmpty: true });
+  const fresh = harness({ changedSelectorAfterFocus: true }), current = await fresh.run();
+  assert.equal(current.status, 'pass'); assert.equal(current.focus.publicMatchesObservedEdit, true);
+  assert.equal(fresh.events.filter(item => item === 'mcp-act-press_key').length, 1);
 });
 
 test('lost paste receipt still gets independent fixture inspection and cannot replay', async () => {

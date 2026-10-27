@@ -288,14 +288,14 @@ function createDeps({ privateRoot, replayRoot = REPLAY_ROOT, journalRoot = defau
     },
     async editorWindowIdentity(handle) {
       // Fixed read-only lookup, as in the passing feasibility driver; no content-supplied code.
-      const found = await handle.evaluate(({ BrowserWindow }) => {
+      const found = await poll(() => handle.evaluate(({ BrowserWindow }) => {
         const visible = BrowserWindow.getAllWindows().filter(window => !window.isDestroyed() && window.isVisible());
         if (visible.length !== 1) return null;
         const bytes = visible[0].getNativeWindowHandle(); let id = 0n;
         for (let i = 0; i < bytes.length; i++) id += BigInt(bytes[i]) << BigInt(i * 8);
         return { pid: process.pid, windowId: id.toString() };
-      });
-      need(found, 'replay_editor_window_ambiguous'); return nativeWindow(found.windowId, found.pid);
+      }), Boolean, 10000, 'replay_editor_window_ambiguous');
+      return nativeWindow(found.windowId, found.pid);
     },
     createGrant: (page, name) => harness.createGrant(page, name),
     connectMcp: entry => harness.connectMcp(entry),
@@ -442,9 +442,9 @@ function createDeps({ privateRoot, replayRoot = REPLAY_ROOT, journalRoot = defau
       const entry = (access?.grants ?? []).find(grant => grant.id === app.grantId);
       return typeof entry?.revokedAt === 'string' && Number.isFinite(Date.parse(entry.revokedAt));
     },
-    async stopApp(handle, page) {
+    async stopApp(handle, page, child = handle.process()) {
       await harness.stopApp(handle, page);
-      await poll(async () => exited(handle.process()), Boolean, 10000, 'replay_app_exit_unconfirmed').catch(() => {});
+      await poll(async () => exited(child), Boolean, 10000, 'replay_app_exit_unconfirmed').catch(() => {});
     },
     async closeFixture(handle) {
       if (!exited(handle.child)) handle.child.kill();

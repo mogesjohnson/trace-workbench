@@ -120,13 +120,6 @@ async function runCase({ clipboard, preparedSnapshot, freshClipboard, connect, l
     receipt.snapshot.supported = true;
     await save();
     checkAbort();
-    mutationAttempted = true;
-    const written = await clipboard.writeText({ token: original.token, text: PAYLOAD });
-    requireThat(written.verified === true, 'clipboard_readback_mismatch');
-    requireThat((await clipboard.readback({ token: original.token })).matches === true, 'clipboard_readback_mismatch');
-    requireThat((await clipboard.deferAutomaticRestore({ token: original.token })).automaticRestoreDeferred === true, 'clipboard_defer_unverified');
-    receipt.syntheticWrite = { attempted: true, verified: true, automaticRestoreDeferred: true, mode: 'text-only' };
-    checkAbort();
     fixture = await launchTarget();
     const before = await fixture.state();
     requireThat(before?.text === '' && before.count === 0, 'fixture_initial_mismatch');
@@ -146,9 +139,20 @@ async function runCase({ clipboard, preparedSnapshot, freshClipboard, connect, l
     requireThat(focused.outcome === 'completed', focused.error?.code || 'fixture_focus_uncertain');
     frame = focused.observation;
     const state = await fixture.state();
-    requireThat(frame?.focused?.hasFocus === true && frame.focused.elementId === edits[0].id
-      && state?.focusedControl === 'traceTextInput' && state.text === '', 'fixture_focus_mismatch');
-    receipt.focus = { publicMatchesObservedEdit: true, independentMatches: true };
+    // Element IDs belong to their observation. Resolve the intended edit again after focus.
+    const currentEdits = frame?.elements?.filter(item => item.name === 'TRACE text input' && item.enabled) || [];
+    receipt.focus = { publicHasFocus: frame?.focused?.hasFocus === true,
+      publicMatchesObservedEdit: currentEdits.length === 1 && frame?.focused?.elementId === currentEdits[0].id,
+      independentMatches: state?.focusedControl === 'traceTextInput', textEmpty: state?.text === '' };
+    requireThat(Object.values(receipt.focus).every(value => value === true), 'fixture_focus_mismatch');
+    checkAbort();
+    // Failed target preparation must not dirty the clipboard or arm deferred recovery.
+    mutationAttempted = true;
+    const written = await clipboard.writeText({ token: original.token, text: PAYLOAD });
+    requireThat(written.verified === true, 'clipboard_readback_mismatch');
+    requireThat((await clipboard.readback({ token: original.token })).matches === true, 'clipboard_readback_mismatch');
+    requireThat((await clipboard.deferAutomaticRestore({ token: original.token })).automaticRestoreDeferred === true, 'clipboard_defer_unverified');
+    receipt.syntheticWrite = { attempted: true, verified: true, automaticRestoreDeferred: true, mode: 'text-only' };
     checkAbort();
     requireThat((await clipboard.readback({ token: original.token })).matches === true, 'clipboard_changed');
     // Persist the attempted boundary before dispatch: an exception/lost reply never permits replay.

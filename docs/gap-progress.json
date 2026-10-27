@@ -2,7 +2,7 @@
   "updated": "2026-10-23",
   "title": "TRACE — close the Computer Use gap",
   "goalStatus": "active",
-  "current": "Typing quarantine acknowledgement passed with exact text, durable recovery and one follow-up; its ordinary anchor is closed. Passed checks are reused. Glow amended budget is exhausted after a reference click timing-proof failure; no TRACE click/lifecycle pass. Claude discovered both skills and typed correctly; forwarding fix is checked, client-state preservation remains unresolved. Clipboard failed before paste; native cleanup reconciled, changed contents preserved and protected recovery pending. Archive verifier is uploaded as draft PR 17. Full goal remains active.",
+  "current": "Typing recovery remains verified. Clipboard recovery was archived by owner decision without changing current contents; paste remains unfinished. REPLAY used both provision attempts and is blocked before recording/input. Focus preparation now precedes clipboard mutation. Passing checks are reused; full goal remains active.",
   "measurement": "Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row.",
   "checkpoints": [
     {
@@ -130,7 +130,7 @@
       "phase": "Demonstrate",
       "title": "Complete real Codex workflow",
       "status": "active",
-      "detail": "Exact Unicode already passed live. Stale-outcome correction is checked; amendment 2 is approved. Complete workflow still needs proof through the actual connected server loaded from corrected source.",
+      "detail": "Exact Unicode already passed. Amendment 2 approved and unclaimed. Three MCP process candidates include one older than corrected source; reconnect and prove the connected process loaded corrected files before the complete workflow.",
       "evidence": "../evidence/live-acceptance-continuation/owner-amendment-2.json"
     },
     {
@@ -146,16 +146,16 @@
       "phase": "Demonstrate",
       "title": "Unicode clipboard paste and restoration",
       "status": "blocked",
-      "detail": "Supported snapshot and synthetic write verified; focus mismatch stopped before paste. Native cleanup reconciled; guarded restoration refused changed clipboard contents. Protected recovery awaits owner archive/retain choice.",
-      "evidence": "../evidence/live-acceptance-continuation/clipboard-supplemental-1/recovery.json"
+      "detail": "Recovery archived by explicit owner decision; current contents preserved and no pending recovery. Paste remains failed before dispatch. Preparation now verifies focus before synthetic write; four affected offline cases pass. One corrective supplement remains, pending focus resolution.",
+      "evidence": "../evidence/live-acceptance-continuation/clipboard-supplemental-1/archive-recovery.json"
     },
     {
       "id": "19",
       "phase": "Demonstrate",
       "title": "Full REPLAY editing and two exports",
-      "status": "active",
-      "detail": "Reviewed runtime preserves unknown outcomes as blocked, immutable private recovery context and request-bound reconciliation. 35 focused checks pass. Actual TRACE controls and both edited/audio exports still need live proof.",
-      "evidence": "../scripts/replay-workflow-runtime.cjs"
+      "status": "blocked",
+      "detail": "Both full-run attempts stopped during provision before grants, recording, fixture creation or TRACE input. Visibility wait and retained-handle cleanup corrected; second run confirms cleanup but rejects process/window identity equality. Exact mismatch cause unproved; no further run authorized.",
+      "evidence": "REPLAY_LIVE_RUN.md"
     },
     {
       "id": "20",
@@ -178,8 +178,8 @@
       "phase": "Deliver",
       "title": "Draft PR and required hosted CI",
       "status": "blocked",
-      "detail": "Draft PRs 14–17 uploaded; next live-results draft is being prepared. Retained CI annotation reports account billing/spending restrictions before job startup.",
-      "evidence": "../evidence/computer-use-method/ci-pr15-current.json"
+      "detail": "Draft PRs 14–18 uploaded. PR 18 CI failed before steps due to account payments/spending restrictions. No new CI retry until that external condition changes.",
+      "evidence": "GAP_CLOSURE_STATUS.md"
     }
   ]
 }

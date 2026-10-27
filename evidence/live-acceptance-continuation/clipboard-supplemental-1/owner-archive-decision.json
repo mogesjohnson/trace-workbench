@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "source": "direct-owner",
+  "status": "approved",
+  "caseId": "METHOD-CLIPBOARD-UNICODE-PASTE",
+  "questionItemId": "[\"request_user_input_async\",\"call_b7348cf852094589b67f32fee282673b\",0]",
+  "answer": "Keep current; archive recovery",
+  "scope": "Preserve current clipboard contents and archive the protected recovery record. Retain archived original bytes; do not overwrite current contents. This does not pass the failed paste case or authorize another attempt."
+}
