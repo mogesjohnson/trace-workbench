@@ -20,14 +20,14 @@
   "assets": [
     {
       "name": "acceptance-manifest.json",
-      "bytes": 5395,
-      "digest": "sha256:0321082121583631cf9b479787919fc1740bc172cce73220207cad11b711a3f3",
+      "bytes": 6126,
+      "digest": "sha256:ed0c20bdc5161ad1d3bc0577d8c7d4bc116c6a72900b0f6b1c30b3e4c469e0c1",
       "url": "https://github.com/mogesjohnson/trace-workbench/releases/download/v0.1.0/acceptance-manifest.json"
     },
     {
       "name": "distribution-receipt.json",
-      "bytes": 3215,
-      "digest": "sha256:4b1d82f8100476c560773f61aec8e01213be389db7de2eff872c48ff3ed4c36f",
+      "bytes": 3800,
+      "digest": "sha256:48b10efb1b1b4cadd69f9981cb202d4130b5df20ffe4b0aaa8fd408ed1d41bad",
       "url": "https://github.com/mogesjohnson/trace-workbench/releases/download/v0.1.0/distribution-receipt.json"
     },
     {
@@ -39,7 +39,7 @@
     {
       "name": "SHA256SUMS.txt",
       "bytes": 365,
-      "digest": "sha256:bf373ad3adf075e6165576b1b12d64af6021267012d5ec487350fcf7dae24b24",
+      "digest": "sha256:9deb8fd965024947bf801092f5ab53412d71bb0a306afd72425e320b0793f2c4",
       "url": "https://github.com/mogesjohnson/trace-workbench/releases/download/v0.1.0/SHA256SUMS.txt"
     },
     {
@@ -60,5 +60,17 @@
     "REL01": "pass",
     "prepublicationManifestRetained": true
   },
-  "limits": "Declared Windows normal-desktop scope; mixed compatible recovery sources; three legacy owner-exit metadata gaps; sampled media review; deferred display/optional-provider/host/background-GUI coverage."
+  "limits": "Declared Windows normal-desktop scope; mixed compatible recovery sources; three legacy owner-exit metadata gaps; sampled media review; deferred display/optional-provider/host/background-GUI coverage.",
+  "manifestCorrection": {
+    "correctedAt": "2026-10-27T23:50:07.235Z",
+    "reason": "The original digest included a checkout CRLF at the final newline; Git stored LF. The companion manifest now pins exact source-archive bytes.",
+    "corrections": [
+      {
+        "ref": "docs/FINISH_GATE_REVIEW.md",
+        "originalCheckoutSha256": "0854fb2d09b16432b631cc5faaa2c44b6eb623392e44786e7676b3cbf976d5e7",
+        "gitBlobSha256": "3e2c814dbeb59fcb68f623c78c5f66eca7a85c15811e5c849e0ba3a99d67bb50"
+      }
+    ],
+    "sourceArchiveAndTagUnchanged": true
+  }
 }
