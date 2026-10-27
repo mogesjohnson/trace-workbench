@@ -1,35 +1,24 @@
-# Finish gate review
+# Final evidence and delivery gate review
 
-Updated 23 October 2026. **18 of 22 checkpoints verified (82%).** This is the concrete remaining work, not a new retry authorization. Previous failures and frozen approvals remain unchanged.
+Reviewed 27 October 2026 after the two authorized missing-effect supplements. This review combines retained evidence at compatible scopes; original failed and partial results remain unchanged.
 
-**Background-only resume:** [The current finish plan](BACKGROUND_FINISH_PLAN.md) records six focused offline checks and a completed tool-free Claude source review. [Pinned target-hit verification](../evidence/live-acceptance-continuation/glow-target-hit-verification.json) passes that subproof while preserving the original failed receipt. The prospective assertion does not change the frozen live driver or its budgets. REPLAY now rejects automatic end-of-media as a pause result; causal pause proof is still missing. No desktop control ran.
+## Functional acceptance
 
-**Owner decision recorded:** The owner chose option 1: accept the correct intended-target hit rather than exact requested-center pixel placement. [The exact reply](../evidence/live-acceptance-continuation/owner-glow-target-hit-decision.json) preserves the original failed result. This settles the criterion preference; it grants no additional live attempts and does not establish missing lifecycle or REPLAY pause evidence.
+- **Glow:** the owner-accepted [target hit](../evidence/live-acceptance-continuation/glow-target-hit-verification.json) and authorized [lifetime 9 lifecycle](../evidence/live-acceptance-continuation/glow-lifecycle-9/receipt.json) resolve the declared glow scope. Exact core/native hashes and display match. Actual glow absence plus helper exit measured 748 ms after ordinary close and 1,422 ms after owner loss, within five seconds. Focus stayed unchanged; no input was sent and all counters stayed zero. Root inspected all five captured frames. Lifetime 8 remains failed historically.
+- **REPLAY:** the retained [lifetime 4 audit](../evidence/live-acceptance-continuation/replay-finish-2/verification.json) supplies recording, edits, two exports and media verification. Authorized [lifetime 5](../evidence/live-acceptance-continuation/replay-pause-5/receipt.json) supplies the missing causal pause: one actual native click, advancing preview followed by stable pause at 34.283217 of 180.066667 seconds, fresh root-inspected images and TRACE journal binding. The original audit remains partial; the approved combination supports APP-01.
+- **Ownership/recovery:** [eight invariant rows](PRODUCTION_OWNER_RECONCILIATION.md), the [15-cell effective map](../evidence/computer-use-method/effective-recovery-map.json), separate quarantine acknowledgements and [current-source stop audit](../evidence/live-acceptance-continuation/finish-stop-verification.json) retain scoped support. Three older cells lack the later separate native-owner-exit field. This is not a uniform current-source recovery run.
+- **Hosts and clipboard:** existing Codex, Claude, Unicode paste, window-targeting and physical-stop passes remain verified at compatible scopes. None was repeated. No new paid model session is needed.
 
-## Delivered now
+The [requirement map](REQUIREMENT_EVIDENCE_REVIEW.md) accounts for all nine product requirements and named milestone gates. Functional support is limited to Windows x64, normal integrity, accessible UIA targeting and the declared single-monitor modes. Broader monitor/DPI, secure/elevated desktop and optional host/provider acceptance remain outside this release scope. Sampled walkthrough review is not an exhaustive semantic review.
 
-- Current-source physical Escape during held mouse and keyboard input, plus ordinary injected Escape: [audited live passes](../evidence/live-acceptance-continuation/finish-stop-verification.json). No further human keystrokes or repeated tests are needed for these cases.
-- REPLAY launcher ownership fixed: Playwright on Windows retains `cmd.exe`. Electron main is now bound through the launch-owned connection, independent executable/parent/generation/session checks and native HWND equality. Cleanup confirms both generations exit. Four affected injected checks passed, including separate shell/main cleanup.
-- Approved REPLAY lifetime 4 completed all 17 runtime stages. Both artifacts are available: [six-second edited fixture](../evidence/live-acceptance-continuation/replay-finish-2/artifacts/fixture-demo.mp4), [189.9-second editor walkthrough](../evidence/live-acceptance-continuation/replay-finish-2/artifacts/editor-walkthrough.mp4). Independent decode verified source preservation, timed callout/blur and the one-second offline tone. No paid provider requests. [Full scoped audit](../evidence/live-acceptance-continuation/replay-finish-2/verification.json).
-- Exact app, grant, transport, fixture, anchor and reference-helper cleanup completed. No desktop-control helper remains running.
+## Cleanup and publication
 
-## Two acceptance dispositions remain
+Both narrow runs completed exact owned cleanup; an independent snapshot found all 12 owned PIDs absent. Desktop control is finished. Four unchanged synthetic PNGs total 1,253,725 bytes, within the owner's explicit 1.5 MiB shared budget, and are uploaded in draft PRs 32–33. No raw private logs or credentials are published.
 
-| Case | Actual evidence | Remaining issue | Next work |
-| --- | --- | --- | --- |
-| Glow | Reference click passed; TRACE completed; all five counters reached 2; exact cleanup passed. Owner chose correct target hit. | Original exact-center failure stays preserved; ordinary-close/parent-loss stages were not reached. Approved lifetime 8 is exhausted. | Apply the chosen target-hit criterion prospectively; audit compatibility of existing lifecycle evidence before proposing only the still-missing live work. |
-| REPLAY | Exact targeting, captured source review, edits, two exports, actual native editor clicks and completed-file playback passed. | Playback reached its end before the second toggle click. The runtime correctly found a paused position, but that does not prove a user-caused pause. Lifetime 4 is consumed. | Decide whether the stated APP-01 real-app result accepts this scoped demonstration, or require a bounded pause-specific supplement with a timing plan that accommodates observation latency. Do not repeat the full workflow. |
+## Remaining delivery gates
 
-The public REPLAY receipt remains `awaiting_runtime_evidence_audit`; its audit is `partial`. Full APP-01 and full glow acceptance are not promoted by this document.
+1. Reconcile final README, specification, version and release notes with the completed evidence. Keep frozen proposals and historical receipts unchanged.
+2. Prepare the final versioned source/setup archive, acceptance manifest and SHA-256 checksums. Required hosted CI must verify that exact archive and installation/rollback. Existing successful run [40580446444](https://github.com/mogesjohnson/trace-workbench/actions/runs/40580446444) remains valid for `d981e06`, not a different final artifact.
+3. Present the concrete candidate for owner approval, then integrate reviewed PRs in dependency order and publish only after the merged source/artifact gates pass. No merge, tag or release has occurred.
 
-## Coordinate lead, not a binary fix
-
-The inspected [winappCli v0.7.1 MouseInput source](https://github.com/microsoft/winappCli/blob/v0.7.1/src/winapp-CLI/WinApp.UIAutomation/Input/MouseInput.cs) normalizes absolute drag coordinates using `round(x * 65535 / (width - 1))`. TRACE uses a same-point drag for coordinate clicks. At width 2880, requested X 7 normalizes to 159; mapping that absolute bucket back with `floor(159 * 2880 / 65536)` gives 6. This is consistent with the retained event, not proof of binary/source equivalence or an exercised fix. The source's selector click path uses `SetCursorPos`, while its CLI click requires a selector; replacing the coordinate route blindly is not supported.
-
-## Final delivery order
-
-1. Preserve the current results and finish the focused draft PR; inspect its required hosted CI. Existing green CI stays valid at its recorded head.
-2. Resolve only the two dispositions above. Existing Codex, Claude, clipboard, typing recovery, window targeting and physical-stop passes stay verified at compatible scope.
-3. Build and verify the final exact archive once the implementation is final; publish its checksum and complete the requirement-to-evidence review. The earlier archive does not transfer its pass to a different artifact.
-
-No new Claude model session, broad local test suite or extra desktop attempt is required just to review this checkpoint. Any further exhausted-case execution needs an explicit bounded owner decision under SPEC.md.
+No additional desktop, host, Escape, clipboard, recording or export test is needed for this review. Remaining work runs in the background.
