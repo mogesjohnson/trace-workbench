@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "caseId": "R31-GLOW-NATIVE",
+  "attempt": 9,
+  "status": "pass",
+  "scope": "Missing lifecycle supplement; reuse accepted target hit without repeating input",
+  "startedAt": "2026-10-27T21:01:57.933Z",
+  "completedAt": "2026-10-27T21:02:17.845Z",
+  "readiness": {
+    "source": "direct-owner",
+    "initialReply": "Ready — five minutes idle",
+    "extensionReply": "do the 20 min",
+    "scope": "Both missing effects; desktop released immediately after verified cleanup"
+  },
+  "ownerDecision": {
+    "ref": "evidence/live-acceptance-continuation/owner-narrow-finish-decision.json",
+    "sha256": "5a274a0f4189e23b12a59c649a30c1ce3a610b946333a6c9bcf8b64c2d5e9bcb"
+  },
+  "claimId": "10e41cee-252c-48eb-bedc-4877bf703e64",
+  "rawReceiptSha256": "0313d349c65f9c91e298d7ab3b76247d13757eb721bb876ae45040b0b9e57647",
+  "source": {
+    "commit": "d981e064122d38fc0a4a40f4e539f0bf6536cc3e",
+    "snapshotSha256": "ccb720b3274cd734d75b4a9806b4a9f743aeb0eee1b4fe184dfc99cd946de074",
+    "hashEncoding": "UTF-8 JSON.stringify",
+    "nativeSessionSha256": "d3f7ad4a1d147c593f75912ae5f26d19d7f4de1fb397ef084c64994050e78ca1"
+  },
+  "display": {
+    "monitors": 1,
+    "displays": [
+      {
+        "device": "\\\\.\\DISPLAY1",
+        "primary": true,
+        "dpi": 144,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2880,
+          "height": 1800
+        }
+      }
+    ]
+  },
+  "target": {
+    "windowId": "26283714",
+    "pid": 3064,
+    "processCreationTime": "134376085188807569",
+    "sessionId": 1
+  },
+  "inputActions": 0,
+  "phases": [
+    {
+      "label": "ordinary-close",
+      "status": "pass",
+      "helperAndMeasuredAbsenceMs": 748.3536999999997,
+      "deadlineMs": 5000,
+      "focusUnchanged": true,
+      "ownership": {
+        "node": {
+          "pid": 40552,
+          "created": "2026-10-27T21:02:00.4310870Z",
+          "sessionId": 1
+        },
+        "supervisor": {
+          "pid": 49520,
+          "created": "2026-10-27T21:02:03.4179580Z",
+          "sessionId": 1
+        },
+        "marker": {
+          "pid": 4120,
+          "created": "2026-10-27T21:02:03.7041430Z",
+          "sessionId": 1
+        }
+      },
+      "activeFrame": "active",
+      "absentFrame": "absent"
+    },
+    {
+      "label": "owned-parent-loss",
+      "status": "pass",
+      "helperAndMeasuredAbsenceMs": 1422.4735,
+      "deadlineMs": 5000,
+      "focusUnchanged": true,
+      "ownership": {
+        "node": {
+          "pid": 71656,
+          "created": "2026-10-27T21:02:07.5052690Z",
+          "sessionId": 1
+        },
+        "supervisor": {
+          "pid": 69240,
+          "created": "2026-10-27T21:02:10.7987700Z",
+          "sessionId": 1
+        },
+        "marker": {
+          "pid": 60508,
+          "created": "2026-10-27T21:02:11.0456830Z",
+          "sessionId": 1
+        }
+      },
+      "activeFrame": "active",
+      "absentFrame": "absent"
+    }
+  ],
+  "finalFixture": {
+    "sha256": "8a211bf1565cda696c134f5085530654f9a35ab5671779080e6b5d9f6cb60d8b",
+    "counters": {
+      "count": 0,
+      "activationCount": 0,
+      "mouseDownCount": 0,
+      "mouseUpCount": 0,
+      "mouseClickCount": 0
+    },
+    "input": {
+      "leftButtonDown": false,
+      "rightButtonDown": false,
+      "middleButtonDown": false,
+      "controlDown": false,
+      "spaceDown": false,
+      "shiftDown": false,
+      "altDown": false
+    }
+  },
+  "frames": {
+    "active": {
+      "file": "active.png",
+      "sha256": "cba972b341c8eac906ca0b31a99a50ef446db2398b009cd33ffe9844fe6c509b",
+      "bands": {
+        "width": 2880,
+        "height": 1800,
+        "sampleRow": 450,
+        "sampleColumn": 1440,
+        "tintedLeft": 11,
+        "tintedTop": 11,
+        "backgroundLeft": 7,
+        "backgroundTop": 7
+      }
+    },
+    "absent": {
+      "file": "absent.png",
+      "sha256": "ee71bb13d0ebd28d4014afb84fc53a52226c87f5415888baaf17fdb8d863ec17",
+      "bands": {
+        "width": 2880,
+        "height": 1800,
+        "sampleRow": 450,
+        "sampleColumn": 1440,
+        "tintedLeft": 0,
+        "tintedTop": 0,
+        "backgroundLeft": 24,
+        "backgroundTop": 24
+      }
+    }
+  },
+  "visualReview": {
+    "reviewer": "Codex root",
+    "allFiveCapturedFramesInspected": true,
+    "observation": "Cyan-violet edges appear in both active captures; baseline and both post-cleanup captures have no edge glow."
+  },
+  "cleanup": {
+    "inputReleased": true,
+    "fixture": {
+      "exited": true,
+      "forced": false
+    },
+    "recoveryClear": true,
+    "leaseFree": true,
+    "sourcesUnchanged": true
+  },
+  "independentExit": {
+    "checkedAt": "2026-10-27T21:12:45.311Z",
+    "ownedProcessCount": 12,
+    "allAbsent": true
+  },
+  "retainedProof": {
+    "ref": "../glow-target-hit-verification.json",
+    "sha256": "8a4ad2d0f44cd56487c93117f57c88a5192b36f5e048485f1bc03889bbd673e7",
+    "originalFailurePreserved": true,
+    "compatibleCoreSource": true,
+    "sameDisplay": true
+  },
+  "disposition": "Glow target-hit and lifecycle requirements resolved by the authorized combination. Original failures remain unchanged.",
+  "baselineFrame": "absent",
+  "imagePublicationBudget": {
+    "source": "direct-owner",
+    "reply": "Approve — up to 1.5 MiB",
+    "maximumTotalBytes": 1572864,
+    "sharedActualBytes": 1253725
+  }
+}
