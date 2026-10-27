@@ -1,0 +1,192 @@
+{
+  "schemaVersion": 1,
+  "runId": "targeting-a5a46a8d-ee94-420f-b5e4-06f980e3588f",
+  "plan": {
+    "path": "plan.json",
+    "sha256": "6be12698ca2704ee69b25d87526d1cd5d22fc4ec2d29a567361e6174061c0689"
+  },
+  "testedSource": {
+    "baseCommit": "7f30743257e0ea75a2d991f6a181a2cad12b3ee0",
+    "workingTreeModified": true,
+    "files": {
+      "bin/trace.cjs": "2006b9f1554076fe89711067566c882702c66fe5f50677270ed83f88d9d5ee60",
+      "src/computer/server.cjs": "6f418871cf41f97711ac0146ad8781d1302924f2335d221d5bb53b565e568e09",
+      "src/computer/controller.cjs": "e5a5a069719bbb7044479bc0e5938930b795ff081b6a824f3670b1cbf1778ff8",
+      "src/computer/lease.cjs": "3600fa756bda99e15aa695731bc0e5a8f6a0893e1f7e333db4d6742ae561389b",
+      "src/computer/winapp-backend.cjs": "8667fc7c83374b34430c49c6695b741389781f7393f91dc6c5c5de30d26ff26f",
+      "src/computer/activity-indicator.cjs": "42de964cb8fca0f5c30a6c30f1a40173df5f072224339fef6f006ed4ffe2093b",
+      "native/TraceActivityIndicator/Program.cs": "262b2c70d7f1f271c45d2e66bb1faf6a8d299df87274b12a57540df425645459",
+      "native/TraceWindowBridge/Program.cs": "b7b22f680d37aabb26cf2aa660aadc89d1ec0a70c3e919ddc9aa7a5103da85b6",
+      "tests/fixtures/computer-app/Program.cs": "064a750a8cba970510b45d8ea3a1102fcc2102c0882afde0a017a12e9cafbaf4",
+      "scripts/accept-targeting.cjs": "a122988e40e1584dedbdc17554d282ae73b0373d1dc9d70a196d0ac739e00425",
+      "scripts/smoke-computer-live.cjs": "6327ec795cd0a9fba6e34fd0834653c0e200578dcb8873e3eb75fbaf35330f56",
+      "package.json": "2383986545da18f71adb2186fa57733e3347bc373fb6bf8063b9eebb1e2ab9ca",
+      "package-lock.json": "382cb88e6f2040de4f61af724d82478c948ac8ef786265682e148dfd7f838116"
+    }
+  },
+  "runtime": {
+    "node": "v26.2.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "cases": {
+    "A3-WINDOW": {
+      "status": "fail",
+      "error": {
+        "code": "window_moved",
+        "message": "The restored window did not settle; observe again."
+      },
+      "fixtureBefore": {
+        "count": 0,
+        "deepCount": 0,
+        "deepEnabled": true,
+        "deepPresent": true,
+        "text": "",
+        "scrollY": 0,
+        "dialogOpen": false,
+        "dialogConfirmed": false,
+        "parentEnabled": true,
+        "minimized": false,
+        "focusedControl": "traceTextInput",
+        "leftButtonDown": false,
+        "modifiers": "None"
+      },
+      "fixtureAfter": {
+        "count": 1,
+        "deepCount": 0,
+        "deepEnabled": true,
+        "deepPresent": true,
+        "text": "",
+        "scrollY": 0,
+        "dialogOpen": false,
+        "dialogConfirmed": false,
+        "parentEnabled": true,
+        "minimized": true,
+        "focusedControl": "traceIncrement",
+        "leftButtonDown": false,
+        "modifiers": "None"
+      }
+    }
+  },
+  "actions": [
+    {
+      "label": "stale after move",
+      "type": "invoke",
+      "outcome": "not_dispatched",
+      "error": "window_moved",
+      "preparation": []
+    },
+    {
+      "label": "counter after move",
+      "type": "invoke",
+      "outcome": "completed",
+      "error": null,
+      "preparation": null
+    },
+    {
+      "label": "stale after minimize",
+      "type": "invoke",
+      "outcome": "not_dispatched",
+      "error": "window_moved",
+      "preparation": []
+    }
+  ],
+  "frames": [
+    {
+      "path": "frames/frame-001.png",
+      "sha256": "1d5d7c0e1fe47afd63577f2800d678a62d50a948909bafcb4daa2e8b3c2720fd",
+      "label": "session parent",
+      "observationId": "2e36a633-d2f1-4b5d-a91a-75c199b05637",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-002.png",
+      "sha256": "2cf7d818087b89cb2979344e160d01bf7edb195738a1ec3aa8558759bb7323d7",
+      "label": "before move",
+      "observationId": "261d7a60-bd08-4a4e-b49f-bedb653f5119",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-003.png",
+      "sha256": "f619f45204edaa9c73388f7345860c3ce869744da766084e5d6618cf16b77658",
+      "label": "fresh after move",
+      "observationId": "8502cd8e-ac21-4e1e-b779-97539df660f9",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-004.png",
+      "sha256": "d3d96ed5b21b15b01eb213742b1edb42e372ac3662285ccea6647d0656a3ddbc",
+      "label": "after counter after move",
+      "observationId": "b1355ee1-d96b-4da3-b507-0bc703885395",
+      "depth": 8,
+      "truncated": true
+    },
+    {
+      "path": "frames/frame-005.png",
+      "sha256": "d3d96ed5b21b15b01eb213742b1edb42e372ac3662285ccea6647d0656a3ddbc",
+      "label": "before minimize",
+      "observationId": "0e10a762-186d-4805-8862-a39eedb08e3b",
+      "depth": 8,
+      "truncated": true
+    }
+  ],
+  "cleanup": {
+    "server": {
+      "pid": 30664,
+      "exited": true,
+      "verification": "ESRCH after transport teardown"
+    },
+    "fixtureExited": true,
+    "finalState": {
+      "count": 1,
+      "deepCount": 0,
+      "deepEnabled": true,
+      "deepPresent": true,
+      "text": "",
+      "scrollY": 0,
+      "dialogOpen": false,
+      "dialogConfirmed": false,
+      "parentEnabled": true,
+      "minimized": true,
+      "focusedControl": "traceIncrement",
+      "leftButtonDown": false,
+      "modifiers": "None"
+    }
+  },
+  "fixtureExecutableSha256": "91a349eff621f7dab598d7073c32693d76d689e501acaedc22f5cf7f57074795",
+  "display": {
+    "monitors": 1,
+    "width": 2880,
+    "height": 1800,
+    "dpi": 144,
+    "pinned": {
+      "monitors": 1,
+      "width": 2880,
+      "height": 1800,
+      "dpi": 144
+    },
+    "match": true
+  },
+  "protocol": {
+    "transport": "stdio",
+    "server": {
+      "name": "trace-computer",
+      "version": "0.1.0-alpha.3.1"
+    },
+    "toolCount": 6,
+    "toolNames": [
+      "trace_computer_act",
+      "trace_computer_close_session",
+      "trace_computer_doctor",
+      "trace_computer_list_windows",
+      "trace_computer_observe",
+      "trace_computer_open_session"
+    ]
+  },
+  "sourcesUnchangedDuringRun": true,
+  "result": "fail",
+  "observedAt": "2026-10-20T14:42:27.663Z"
+}

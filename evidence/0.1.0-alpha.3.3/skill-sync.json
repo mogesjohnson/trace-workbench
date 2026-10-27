@@ -1,0 +1,68 @@
+{
+  "caseId": "A33-SKILL-SYNC",
+  "requirement": "CFG-01",
+  "status": "pass",
+  "observedAt": "2026-10-20T14:44:46.013Z",
+  "scope": "Keeps installed TRACE skill copies aligned with the alpha.3.3 instructions; same procedure as A31-SKILL. Client settings verified, not written.",
+  "command": "node scripts/sync-computer-skill.cjs --apply",
+  "sourceSha256": "e7d12ba7fd504aafdb80a9f3578dd87f7fc70ab4487d68612fd0e3557639e1c1",
+  "copies": [
+    {
+      "path": "~/.agents/skills/trace-computer-use/SKILL.md",
+      "priorSha256": "e5ce35431c048cd453c11ef171404fc0cf1bd645c276c3ec6f1060e28b57492d",
+      "installedSha256": "e7d12ba7fd504aafdb80a9f3578dd87f7fc70ab4487d68612fd0e3557639e1c1",
+      "backup": "~/.agents/skills/trace-computer-use/SKILL.md.trace.backup.2026-10-20T14-44-45-993Z-28564079-ac19-4fa0-8003-8330bd1198a2",
+      "exactBackupVerified": true
+    },
+    {
+      "path": "~/.claude/skills/trace-computer-use/SKILL.md",
+      "priorSha256": "e5ce35431c048cd453c11ef171404fc0cf1bd645c276c3ec6f1060e28b57492d",
+      "installedSha256": "e7d12ba7fd504aafdb80a9f3578dd87f7fc70ab4487d68612fd0e3557639e1c1",
+      "backup": "~/.claude/skills/trace-computer-use/SKILL.md.trace.backup.2026-10-20T14-44-46-001Z-fe63ca92-e016-4954-bde7-dc8797fb5155",
+      "exactBackupVerified": true
+    },
+    {
+      "path": "~/.grok/skills/trace-computer-use/SKILL.md",
+      "priorSha256": "e5ce35431c048cd453c11ef171404fc0cf1bd645c276c3ec6f1060e28b57492d",
+      "installedSha256": "e7d12ba7fd504aafdb80a9f3578dd87f7fc70ab4487d68612fd0e3557639e1c1",
+      "backup": "~/.grok/skills/trace-computer-use/SKILL.md.trace.backup.2026-10-20T14-44-46-005Z-a44718e1-d054-416e-873c-f82b3c05b562",
+      "exactBackupVerified": true
+    }
+  ],
+  "discovery": {
+    "serverEntries": [
+      {
+        "client": "codex",
+        "action": "unchanged"
+      },
+      {
+        "client": "claude_code",
+        "action": "unchanged"
+      },
+      {
+        "client": "grok_build",
+        "action": "unchanged"
+      },
+      {
+        "client": "gemini_cli",
+        "action": "unchanged"
+      }
+    ],
+    "skillEntries": [
+      {
+        "path": "~/.agents/skills/trace-computer-use",
+        "action": "unchanged"
+      },
+      {
+        "path": "~/.claude/skills/trace-computer-use",
+        "action": "unchanged"
+      },
+      {
+        "path": "~/.grok/skills/trace-computer-use",
+        "action": "unchanged"
+      }
+    ],
+    "skillSha256": "e7d12ba7fd504aafdb80a9f3578dd87f7fc70ab4487d68612fd0e3557639e1c1"
+  },
+  "priorReceipt": "evidence/0.1.0-alpha.3.1/skill-sync-2.json (e5ce3543)"
+}

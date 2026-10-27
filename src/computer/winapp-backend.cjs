@@ -292,12 +292,27 @@ class WinappBackend {
     if (typeof result.hasFocus !== 'boolean') fail('invalid_native_response', 'Invalid focused-element envelope.');
     return result.hasFocus ? { available: true, hasFocus: true, elementId: result.element?.selector || null, name: result.element?.name || '', controlType: result.element?.type || 'Unknown' } : { available: true, hasFocus: false };
   }
-  async observe({ window, screenshotPath, signal }) {
+  // A restored window animates from its minimized state; capture only after two equal geometry reads.
+  async settledBounds(window, signal, { attempts = 15, intervalMs = 100 } = {}) {
+    let previous = await this.bridge('bounds', window, signal);
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, intervalMs));
+      const next = await this.bridge('bounds', window, signal);
+      if (!next.minimized && !previous.minimized && sameBounds(next.frameBounds, previous.frameBounds) && sameBounds(next.windowBounds, previous.windowBounds)) return next;
+      previous = next;
+    }
+    fail('window_moved', 'The restored window did not settle; observe again.');
+  }
+  async observe({ window, screenshotPath, signal, depth = 8 }) {
     if (typeof screenshotPath !== 'string' || !path.isAbsolute(screenshotPath) || path.extname(screenshotPath).toLowerCase() !== '.png') fail('invalid_screenshot_path', 'An absolute PNG output path is required.');
     await this.identity(window, signal);
     let geometry = await this.bridge('bounds', window, signal);
-    if (geometry.minimized) geometry = await this.bridge('activate', window, signal);
-    const state = await this.inspect(window, signal);
+    const restored = geometry.minimized === true;
+    if (restored) {
+      await this.bridge('activate', window, signal);
+      geometry = await this.settledBounds(window, signal);
+    }
+    const state = await this.inspect(window, signal, depth);
     geometry = await this.bridge('bounds', window, signal);
     const captured = captureBounds(bounds(geometry.frameBounds), state.bounds);
     await this.identity(window, signal);
@@ -315,14 +330,26 @@ class WinappBackend {
     let focused;
     try { focused = await this.focused(window, signal); }
     catch (error) { if (signal?.aborted) throw error; focused = { available: false, code: error.code || 'focus_query_failed' }; }
-    return { ...state, window: { ...current, bounds: captured }, bounds: captured, uiaBounds: state.bounds, nativeWindowBounds: bounds(geometry.windowBounds), frameBounds: bounds(geometry.frameBounds), focused, captureMethod: 'window-capture-dwm-bounds', actionCoordinateSpace: 'window-local-pixels', screenshot: { path: screenshotPath, mimeType: 'image/png', ...size } };
+    return { ...state, window: { ...current, bounds: captured }, bounds: captured, uiaBounds: state.bounds, nativeWindowBounds: bounds(geometry.windowBounds), frameBounds: bounds(geometry.frameBounds), focused, restoredFromMinimized: restored, captureMethod: 'window-capture-dwm-bounds', actionCoordinateSpace: 'window-local-pixels', screenshot: { path: screenshotPath, mimeType: 'image/png', ...size } };
   }
-  async act({ window, observation, action, signal }) {
+  // Any rejection before the requested primary mutation begins is provably not dispatched. Once it
+  // may have begun, the outcome stays unknown even if an error code was raised before input.
+  async act(request) {
+    const progress = { primary: false, preparation: [] };
+    try { return await this.dispatch(request, progress); }
+    catch (error) {
+      const failure = error instanceof BackendError ? error : new BackendError(error?.code || 'backend_error', String(error?.message || 'Native action failed.'));
+      failure.details = { ...failure.details, outcome: progress.primary ? 'unknown' : 'not_dispatched', preparation: progress.preparation };
+      throw failure;
+    }
+  }
+  async dispatch({ window, observation, action, signal }, progress) {
     if (this.inputRecoveryRequired) fail('input_recovery_required', 'Input is quarantined after incomplete mouse recovery. Check the owned input process and button state before restarting TRACE.', { outcome: 'not_dispatched', cause: this.inputRecoveryRequired });
     if (!object(observation) || !sameBounds(bounds(observation.bounds), bounds(observation.window?.bounds)) || observation.window.id !== window.id || observation.window.pid !== window.pid) fail('invalid_observation', 'Action requires an observation of this exact window.');
     if (!object(action) || typeof action.type !== 'string') fail('invalid_action', 'A typed action is required.');
     await this.identity(window, signal);
-    const fresh = await this.inspect(window, signal, 8);
+    // Reinspect at the server-retained observation depth so deeply observed controls remain targetable.
+    const fresh = await this.inspect(window, signal, observation.depth ?? 8);
     const geometry = await this.bridge('bounds', window, signal);
     if (geometry.enabled === false) fail('window_blocked', 'The selected window is disabled. Select its enabled dialog explicitly before input.', { outcome: 'not_dispatched' });
     const captured = captureBounds(bounds(geometry.frameBounds), fresh.bounds);
@@ -336,8 +363,10 @@ class WinappBackend {
     let verb, positional = [], options = [], transport;
     switch (action.type) {
       case 'activate': {
+        // Activation is the primary mutation of an activate action.
+        progress.primary = true;
         const activated = await this.bridge('activate', window, signal);
-        if (activated.enabled === false) fail('window_blocked', 'The selected window became disabled during activation.', { outcome: 'not_dispatched' });
+        if (activated.enabled === false) fail('window_blocked', 'The selected window became disabled during activation.');
         if (!activated.foreground) fail('foreground_not_target', 'Windows did not activate the selected window.');
         return { performed: true, type: action.type, engine: 'public-win32-dwm', version: 1, native: activated };
       }
@@ -376,7 +405,11 @@ class WinappBackend {
     // HWND/PID during its native foreground/input operation; the discovery check alone is not relied on.
     await this.identity(window, signal);
     if (verb !== 'set-value') {
+      // Preparatory activation changes the foreground but is not the requested input.
+      const step = { step: 'activation', status: 'started' };
+      progress.preparation.push(step);
       const activated = await this.bridge('activate', window, signal);
+      step.status = activated.foreground ? 'foreground' : 'not_foreground';
       if (activated.enabled === false) fail('window_blocked', 'The selected window became disabled before input.', { outcome: 'not_dispatched' });
     }
     else {
@@ -389,11 +422,10 @@ class WinappBackend {
       if (!focused.hasFocus) fail('focus_not_acquired', 'Keyboard focus could not be verified inside the exact selected window.');
       if (observation.focused?.hasFocus && observation.focused.elementId !== focused.elementId) fail('focus_changed', 'Focused control changed since observation. Observe again.');
     }
-    let result;
-    try { result = await this.command(verb, ['-w', window.id, ...options, '--', ...positional], signal); }
-    catch (error) { if (error instanceof BackendError) error.details = { ...error.details, outcome: 'unknown' }; throw error; }
+    progress.primary = true;
+    const result = await this.command(verb, ['-w', window.id, ...options, '--', ...positional], signal);
     if (result.hwnd !== undefined && String(result.hwnd) !== window.id) fail('window_identity_changed', 'Native action receipt targets another window.', { outcome: 'unknown' });
-    return { performed: true, type: action.type, engine: 'winapp', version: pin.version, ...(transport ? { transport } : {}), native: result };
+    return { performed: true, type: action.type, engine: 'winapp', version: pin.version, ...(transport ? { transport } : {}), preparation: progress.preparation, native: result };
   }
 }
 

@@ -116,7 +116,7 @@ async function main() {
       const action = type === 'click' ? { type, x: Math.round(element.bounds.x + element.bounds.width / 2 - observation.bounds.x), y: Math.round(element.bounds.y + element.bounds.height / 2 - observation.bounds.y) }
         : { type, elementId: element.id, ...(type === 'set_value' ? { value: 'must not be written' } : {}) };
       const result = await controller.act({ sessionId: session.sessionId, observationId: observation.observationId, action });
-      assert.equal(result.outcome, 'unknown');
+      assert.equal(result.outcome, 'not_dispatched');
       assert.equal(result.error?.code, 'window_blocked');
       summary.requests.push({ type, outcome: result.outcome, error: result.error.code });
       const after = await state();

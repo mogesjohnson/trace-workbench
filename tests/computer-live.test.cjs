@@ -85,12 +85,13 @@ test('a checkpoint remains running even if its completed cases passed; only fina
 
 test('modal safety accepts only known pre-input guards, regardless of descendant UIA enabled flags', async () => {
   for (const code of ['window_blocked', 'foreground_not_target', 'stale_element']) {
-    assert.equal(await rejectedModalParentAction(async () => ({ outcome: 'unknown', error: { code } })), code);
+    assert.equal(await rejectedModalParentAction(async () => ({ outcome: 'not_dispatched', error: { code } })), code);
   }
   assert.equal(await rejectedModalParentAction(async () => { throw Object.assign(new Error('disabled'), { code: 'unknown_element' }); }), 'unknown_element');
   await assert.rejects(rejectedModalParentAction(async () => ({ outcome: 'completed' })));
-  await assert.rejects(rejectedModalParentAction(async () => ({ outcome: 'unknown', error: { code: 'cancelled' } })));
-  await assert.rejects(rejectedModalParentAction(async () => ({ outcome: 'unknown', error: { code: 'foreground_not_target', inputRecoveryRequired: true } })));
+  await assert.rejects(rejectedModalParentAction(async () => ({ outcome: 'not_dispatched', error: { code: 'cancelled' } })));
+  await assert.rejects(rejectedModalParentAction(async () => ({ outcome: 'unknown', error: { code: 'window_blocked' } })));
+  await assert.rejects(rejectedModalParentAction(async () => ({ outcome: 'not_dispatched', error: { code: 'foreground_not_target', inputRecoveryRequired: true } })));
   const badIdentity = Object.assign(new Error('wrong fixture PID'), { code: 'ERR_ASSERTION' });
   await assert.rejects(rejectedModalParentAction(async () => { throw badIdentity; }), (error) => error === badIdentity);
 });
