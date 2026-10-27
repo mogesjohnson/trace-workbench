@@ -1,0 +1,100 @@
+{
+  "expectedCount": 0,
+  "actual": {
+    "version": 1,
+    "ready": true,
+    "pid": 3252,
+    "windowId": "1379932",
+    "monitor": {
+      "x": 0,
+      "y": 0,
+      "width": 1920,
+      "height": 1080
+    },
+    "dpi": 144,
+    "count": 5,
+    "button": {
+      "x": 1,
+      "y": 496,
+      "width": 12,
+      "height": 88
+    },
+    "focus": {
+      "foregroundWindowId": "1379932",
+      "foregroundPid": 3252,
+      "focusedWindowId": "462470",
+      "fixtureForeground": true
+    },
+    "lastCommand": {
+      "id": "fe386b5f-95e1-490b-97a6-c9e41601a64e",
+      "type": "capture-desktop",
+      "status": "pass",
+      "before": {
+        "foregroundWindowId": "1379932",
+        "foregroundPid": 3252,
+        "focusedWindowId": "462470",
+        "fixtureForeground": true
+      },
+      "after": {
+        "foregroundWindowId": "1379932",
+        "foregroundPid": 3252,
+        "focusedWindowId": "462470",
+        "fixtureForeground": true
+      },
+      "capture": {
+        "file": "glow-active.png",
+        "sha256": "5c83bd2767f54bb959ef12987455d0993c2725224e3d7caf9a9546fa3b2e2439",
+        "width": 1920,
+        "height": 1080,
+        "method": "public-win32-bitblt-captureblt",
+        "layeredWindows": true,
+        "sanitizedInteriorRgb": "GBwo"
+      }
+    }
+  },
+  "baseline": {
+    "version": 1,
+    "ready": true,
+    "pid": 3252,
+    "windowId": "1379932",
+    "monitor": {
+      "x": 0,
+      "y": 0,
+      "width": 1920,
+      "height": 1080
+    },
+    "dpi": 144,
+    "count": 3,
+    "button": {
+      "x": 1,
+      "y": 496,
+      "width": 12,
+      "height": 88
+    },
+    "focus": {
+      "foregroundWindowId": "1379932",
+      "foregroundPid": 3252,
+      "focusedWindowId": "462470",
+      "fixtureForeground": true
+    },
+    "lastCommand": {
+      "id": "721f4f8f-9486-453d-8dc5-7eee28ea53b9",
+      "type": "focus",
+      "status": "pass",
+      "before": {
+        "foregroundWindowId": "1379932",
+        "foregroundPid": 3252,
+        "focusedWindowId": "462470",
+        "fixtureForeground": true
+      },
+      "after": {
+        "foregroundWindowId": "1379932",
+        "foregroundPid": 3252,
+        "focusedWindowId": "462470",
+        "fixtureForeground": true
+      },
+      "capture": null
+    }
+  },
+  "note": "No planned physical clicks dispatched; unexpected target change makes the count case fail."
+}

@@ -1,0 +1,23 @@
+{
+  "observedAt": "2026-10-19T19:44:44.061Z",
+  "scope": "Reviewed TRACE-owned skill replacement only; no client settings changed",
+  "sourceSha256": "88063b170f3aefca79d86fa3adb531da300fd083a43564c237a736bd925f355f",
+  "priorSha256": "b7cdc232aa01c5e7974d9b77f03f3a58447a49867fb697d285952444d01bdbbd",
+  "copies": [
+    {
+      "location": ".agents/skills/trace-computer-use",
+      "exactBackupVerified": true,
+      "installedSha256": "88063b170f3aefca79d86fa3adb531da300fd083a43564c237a736bd925f355f"
+    },
+    {
+      "location": ".claude/skills/trace-computer-use",
+      "exactBackupVerified": true,
+      "installedSha256": "88063b170f3aefca79d86fa3adb531da300fd083a43564c237a736bd925f355f"
+    },
+    {
+      "location": ".grok/skills/trace-computer-use",
+      "exactBackupVerified": true,
+      "installedSha256": "88063b170f3aefca79d86fa3adb531da300fd083a43564c237a736bd925f355f"
+    }
+  ]
+}

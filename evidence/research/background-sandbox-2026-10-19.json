@@ -1,0 +1,22 @@
+{
+  "observedDate": "2026-10-19",
+  "scope": "Read-only local account/CLI inspection and primary-source research; no native UI test or provisioning",
+  "localFindings": {
+    "accountsPresentAndEnabled": ["muse-sbx-r1", "muse-sbx-u1"],
+    "museVersion": "1.4.4-R5419.1",
+    "checkCommand": "muse sandbox windows check",
+    "reportedStatus": {"backend": "windows_elevated", "status": "ready", "runner_trusted": true, "runner_version_matches": true, "sandbox_users_ready": true, "capabilities_ready": true, "restricted_network_required": true, "wfp_ready": true},
+    "interpretation": "Installed CLI self-report and account presence; not an independent security audit or background-GUI proof"
+  },
+  "findings": [
+    {"claim": "Muse's documented OS sandbox contains shell filesystem/network operations; account roles and background Windows GUI guarantees remain unspecified in reviewed primary docs", "source": "https://dev.meta.ai/docs/muse-code/permissions"},
+    {"claim": "Configured MCP servers do not inherit shell containment; SDK page examples identify Muse1.3.0", "source": "https://meta-models.github.io/muse-code-sdk/next/guides/extend/mcp-servers/"},
+    {"claim": "Meta computer-use protocol requires caller-owned environment/driver/capture", "source": "https://dev.meta.ai/docs/computer-use"},
+    {"claim": "Windows Child Sessions are a supported loopback-session mechanism", "source": "https://learn.microsoft.com/en-us/windows/win32/termserv/child-sessions"},
+    {"claim": "Power Automate PiP child session demonstrates concurrent main-desktop use and physical automation; Home explicitly unsupported. Its virtual desktop mode excludes physical input/screenshots", "source": "https://learn.microsoft.com/en-us/power-automate/desktop-flows/run-desktop-flows-pip"}
+  ],
+  "correction": "A second profile is possible and useful for command isolation. It does not alone provide full background TRACE Computer Use. Same-PC GUI operation has additional session/VM approaches worth evaluating.",
+  "changesToAccountsOrPermissions": 0,
+  "desktopInputActions": 0,
+  "paidModelRequests": 0
+}

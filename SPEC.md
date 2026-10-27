@@ -1,8 +1,8 @@
 # TRACE specification
 
-Status reviewed 20 October 2026. This is the acceptance baseline for the first usable release; the package on this documentation branch identifies the implementation as `0.1.0-alpha.3`, while draft PR #9 contains an unfinished `alpha.3.1` checkpoint. Versions do not mark milestone cases complete.
+Status reviewed 20 October 2026. This is the acceptance baseline for the first usable release; the package identifies the implementation as `0.1.0-alpha.3.1`, an unfinished glow checkpoint. Versions do not mark milestone cases complete.
 
-Before continuing implementation or acceptance, read the [owner-approved normal-desktop v0.1 plan](docs/V0.1-PLAN.md) and [agent handoff](agent-scratchpad.md). Implementation is currently on hold. The owner selected the current account, a synthetic REPLAY demo, and the tested single-monitor configuration; broader display acceptance is deferred beyond v0.1 without changing historical evidence.
+Before continuing implementation or acceptance, read the [owner-approved normal-desktop v0.1 plan](docs/V0.1-PLAN.md) and [agent handoff](agent-scratchpad.md). On 20 October 2026 the owner resumed implementation through `0.1.0-alpha.3.3` with the [Claude handoff](docs/CLAUDE-HANDOFF.md); alpha.4 and releases remain out of scope. The owner selected the current account, a synthetic REPLAY demo, and the tested single-monitor configuration; broader display acceptance is deferred beyond v0.1 without changing historical evidence.
 
 ## Product and scope
 
@@ -49,8 +49,13 @@ The reviewed preview keeps original evidence and both failed complete-case attem
 - **A3-WINDOW / CU-01, CU-02:** move, minimize and restore the target between observation and action. Stale geometry must reject input; a fresh capture must restore valid bounds and hit the intended control once.
 - **A3-DISPLAY / CU-01 — deferred beyond v0.1 by the owner on 19 October 2026:** test two DPI scales and a monitor transition before claiming broader display support. Record scale/topology, PNG dimensions and physical bounds; verify coordinate hits after each transition. Historical blocked results remain intact. The v0.1 gate covers the actual single-monitor configuration named in its acceptance receipts.
 
-### `0.1.0-alpha.3.1` — glow completion (pending)
+### `0.1.0-alpha.3.1` — visible desktop ownership and glow completion (incomplete)
 
+Status 20 October 2026 ([case status](evidence/0.1.0-alpha.3.1/case-status.json)): **A31-GLOW failed** for the second time, so its retry budget is exhausted. The attempt-2 continuation found the marker never entered the topmost band, so an activated full-screen target hid the glow ([diagnosis](evidence/0.1.0-alpha.3.1/glow-continuation/topmost-diagnosis.json)). Start, focus and close/EOF checks passed; the reference and TRACE edge clicks were not run. A replacement glow case needs an owner decision after the fix. **A31-SKILL passed** ([receipt](evidence/0.1.0-alpha.3.1/skill-sync-2.json)).
+
+- **GLOW-LIFECYCLE / CU-04:** acquire the desktop lease before starting the marker; publish a session only after native readiness. Show a nonactivating, click-through glow on every attached monitor until input/recovery and session cleanup finish. Marker startup failure rejects the session; marker loss stops further input and cancels in-flight work.
+- **GLOW-LIVE / CU-01, CU-04:** declare an owned synthetic target, expected edge click count and exact cleanup. Verify visible edges on available monitors, unchanged native foreground/focus on marker start, physical clicks through the edge, and process/overlay removal after EOF and owned parent termination. Retain source hashes, independent target state and sanitized screen evidence. Missing topology changes remain blocked.
+- **GLOW-DIAGNOSTICS / CFG-01:** diagnostics verify helper source/output hashes and the .NET 9 Desktop runtime without showing UI; discovery excludes the helper. Existing acceptance remains at its recorded scope.
 - **A31-GLOW / CU-04:** preserve both existing attempts. Under the recorded continuation plan, require count 0 initially, 1 after one reference edge click and 2 after one TRACE edge click. Prove visible click-through glow, unchanged focus, ordinary close/EOF cleanup and abrupt owned-parent-loss cleanup, with helper exit verified separately. If the separate Codex/reference executor is unavailable, prepare the continuation and retain that subcase as blocked; a second TRACE click or synthetic substitute cannot pass it.
 - **A31-SKILL / CFG-01:** back up existing installations, synchronize the repository Computer Use instructions to the canonical and selected client copies, and retain matching hashes plus discovery checks. Preserve earlier synchronization receipts; later repository edits are not already installed.
 
@@ -85,14 +90,14 @@ The reviewed preview keeps original evidence and both failed complete-case attem
 
 ## Current operating limits
 
-- Windows x64, a supported Node.js runtime, .NET 9 SDK for building the bridge, and .NET 9 runtime for executing it.
+- Windows x64, a supported Node.js runtime, .NET 9 SDK with Windows Desktop reference pack for local helpers, and .NET 9 Desktop runtime for the activity marker.
 - Physical input uses an unlocked interactive desktop. Secure/elevated desktop automation is outside the initial release scope.
 - Screenshots must match exact DWM/window geometry and remain within the 6 MiB image limit. Accessibility inspection currently has a bounded tree depth.
 - Vertical wheel input uses 120-unit notches at an observed element's center; horizontal wheel input is unsupported.
 - The desktop lease coordinates TRACE processes for one OS user. It cannot prevent human input or unrelated automation from interfering; target/focus checks remain necessary.
 - Current code has no verified physical Escape stop. The historical Escape-interrupted glow case stopped the reference executor; `A32-STOP` defines the future TRACE guarantee.
 - Journals record action metadata and artifact references. They do not implement durable task resume or undo external service changes.
-- Local input uses the active interactive desktop; another user account or Task View desktop is not a verified background mode. An isolated VM/remote worker remains proposed and needs proof that host input/focus remain untouched.
+- Local input uses the active interactive desktop; another account alone or Task View does not establish background Computer Use. [Restricted-account, hidden-desktop, Child Session and VM/remote worker research](docs/BACKGROUND_WORKER.md) separates command containment from independent GUI operation; no background backend is verified.
 
 ## Future skills
 
