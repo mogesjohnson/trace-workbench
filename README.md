@@ -4,7 +4,7 @@
 
 Shared tools that give agents abilities beyond written instructions.
 
-**Version:** `0.1.0-alpha.3.3` · **Status:** Windows preview; functional evidence reconciled, release pending
+**Prepared version:** `0.1.0` · **Status:** Windows preview; functional evidence reconciled, release pending
 
 **27 October checkpoint:** 20 of 22 declared checkpoints are verified (91%, not an effort estimate). The two missing live effects passed: glow lifecycle and causal REPLAY pause. Follow the [progress plan](docs/GAP_CLOSURE_PLAN.md), [visual dashboard](docs/GAP_CLOSURE_PROGRESS.html) and [requirement checklist](docs/REQUIREMENT_EVIDENCE_REVIEW.md). Final versioned distribution and reviewed release remain open.
 
@@ -52,7 +52,7 @@ Review each plan before applying it. Setup pins the Windows engine locally; conf
 - **Unverified:** Grok/Gemini live behavior.
 - **Deferred:** display transitions.
 
-See [SPEC.md](SPEC.md). No release is published.
+See [SPEC.md](SPEC.md) and the [prepared release notes](docs/RELEASE_0.1.0.md). No release is published.
 
 ```powershell
 npm test
