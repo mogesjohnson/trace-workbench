@@ -1,5 +1,9 @@
 # Agent handoff
 
+## Latest: v0.1.0 published — 27 October 2026
+
+The approved 29-PR stack is merged. Release source `190a06abfc7bc3b87e67e6b4ee070d4ea70b3308` passed [final hosted CI](https://github.com/mogesjohnson/trace-workbench/actions/runs/40603566212) including exact-archive installation/rollback. [GitHub v0.1.0](https://github.com/mogesjohnson/trace-workbench/releases/tag/v0.1.0) publishes five verified assets; independent downloads matched SHA-256. [Publication receipt](evidence/release-0.1.0/publication.json) records source, archive and assets. All 22 checkpoints are complete at their stated scope. Desktop work remains finished; no accepted live test was repeated. Original failures, mixed recovery scopes, legacy metadata and sampled-review limits stay explicit. The old prepared/blocked notes below are history.
+
 ## Latest: both missing effects passed — 27 October 2026
 
 Resume here, ahead of older prepared/blocked notes. [Glow lifetime 9](evidence/live-acceptance-continuation/glow-lifecycle-9/receipt.json) passed zero-input ordinary-close and owned-parent-loss measurements (748 ms / 1,422 ms), visible absence, unchanged focus and exact cleanup. Compatible source/display allows the approved combination with the retained owner-accepted hit; lifetime 8 remains failed. [REPLAY lifetime 5](evidence/live-acceptance-continuation/replay-pause-5/receipt.json) passed one journal-bound native Pause click with stable position 34.283217 before the 180.066667-second end. Root inspected actual frames. Original recording/edit/export audit stays partial historically; its missing pause is now supplied.

@@ -6,7 +6,7 @@ const ROOT = path.resolve(__dirname, '..');
 const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 (async () => {
   const folder = path.join(ROOT, 'docs'), data = JSON.parse(await fs.readFile(path.join(folder, 'gap-progress.json'), 'utf8'));
-  const goalStatus = ['paused', 'blocked'].includes(data.goalStatus) ? data.goalStatus : 'active';
+  const goalStatus = ['paused', 'blocked', 'complete'].includes(data.goalStatus) ? data.goalStatus : 'active';
   const rows = data.checkpoints, labels = { verified: 'Verified at stated scope', active: 'In progress', pending: 'To do', blocked: 'Blocked' };
   const counts = Object.fromEntries(Object.keys(labels).map(status => [status, rows.filter(row => row.status === status).length]));
   if (new Set(rows.map(row => row.id)).size !== rows.length) throw Error('duplicate_progress_checkpoint');

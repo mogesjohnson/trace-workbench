@@ -1,16 +1,16 @@
 # TRACE gap-closure plan and progress
 
-Updated 2026-10-27. **Goal active. 20/22 checkpoints verified (91% of this checklist).**
+Updated 2026-10-27. **Goal complete. 22/22 checkpoints verified (100% of this checklist).**
 
 [Open the visual dashboard](GAP_CLOSURE_PROGRESS.html) · [Detailed status](GAP_CLOSURE_STATUS.md) · [Acceptance specification](../SPEC.md)
 
 Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row. This percentage is not a completion claim for the full goal.
 
-**Current work:** Both missing live effects passed on 27 October: glow ordinary-close/owner-loss cleanup and a causal REPLAY pause. Receipts and four approved proof PNGs are uploaded in PRs 32–33. Desktop work is finished. Final documentation and exact versioned distribution remain; 20/22 checkpoints verified (91%).
+**Current work:** TRACE 0.1.0 is published. All 29 prepared PRs are merged; final main-source CI and exact-archive installation/rollback passed. Published assets and checksums were independently downloaded and verified. All 22 checkpoints are complete at their declared scopes.
 
 | Verified at stated scope | In progress | To do | Blocked |
 | --- | --- | --- | --- |
-| 20 | 1 | 1 | 0 |
+| 22 | 0 | 0 | 0 |
 
 ## Plan
 
@@ -35,15 +35,14 @@ Each row is one declared checkpoint. Counts measure completed checkpoints, not t
 | 17. Complete real Claude workflow | Demonstrate | Verified at stated scope | Corrective lifetime 4 passed on Claude 2.1.309 with explicitly isolated state: both Skills, five received PNGs, exact text/count 1, stale not_dispatched, fresh recovery, all real-settings intervals preserved, installed bundles/source unchanged and exact cleanup. Temporary sign-in removed. Guarded isolated-host scope; no semantic-image or REA-analysis claim. | [Open](../evidence/live-acceptance-continuation/claude-supplemental-2/receipt.json) |
 | 18. Unicode clipboard paste and restoration | Demonstrate | Verified at stated scope | Approved corrective supplement passed: public/independent fresh focus, one completed Unicode paste, exact target text and unchanged count, guarded restoration plus fresh supported-byte comparison, exact native/fixture exits and private-artifact cleanup. Ordinary anchor explicitly closed. | [Open](../evidence/live-acceptance-continuation/clipboard-supplemental-2/receipt.json) |
 | 19. Full REPLAY editing and two exports | Demonstrate | Verified at stated scope | Retained recording, edits and two exports plus authorized lifetime 5 causal pause: exactly one native click, stable paused position 34.283217 of 180.066667 seconds, fresh images/journal and verified cleanup. Original partial audit stays unchanged. | [Open](../evidence/live-acceptance-continuation/replay-pause-5/receipt.json) |
-| 20. Clean archive installation and rollback | Deliver | In progress | Current-source d981e06 passed Windows CI and exact-archive installation/rollback. A final versioned release archive and checksum remain separate gates. | [Open](ARCHIVE_INSTALL.md) |
-| 21. Final documentation and reviewable commits | Deliver | To do | All requirements and eight owner invariants are mapped. Final documentation, reviewed integration and versioned delivery are being reconciled against the completed live results. | [Open](../VERSION_CONTROL.md) |
-| 22. Draft PR and required hosted CI | Deliver | Verified at stated scope | PR 31 head d981e06 passed required CI run 40580446444, including both MCP paths and exact-archive installation/rollback. Final release source still needs its own required gate. | [Open](../evidence/computer-use-method/public-ci-parallel-fixes.json) |
+| 20. Clean archive installation and rollback | Deliver | Verified at stated scope | Final main source 190a06a passed hosted Windows installation/rollback from the exact published ZIP. Uploaded assets were downloaded and hash-verified; see the publication receipt. | [Open](../evidence/release-0.1.0/publication.json) |
+| 21. Final documentation and reviewable commits | Deliver | Verified at stated scope | Reviewed stack merged, requirements and release guidance reconciled, version 0.1.0 published with source ZIP, acceptance manifest, distribution receipt, release notes and checksums. | [Open](../evidence/release-0.1.0/publication.json) |
+| 22. Draft PR and required hosted CI | Deliver | Verified at stated scope | Final main-source hosted CI passed with source checks, required suite, both MCP paths and exact-archive installation/rollback. The publication receipt binds the actual source and CI URL. | [Open](../evidence/computer-use-method/public-ci-parallel-fixes.json) |
 
 ## Next
 
-1. Complete final requirement disposition and user guidance using the published glow and pause receipts. Preserve original failures and mixed-scope recovery limits.
-2. Prepare the final versioned source/setup archive, acceptance manifest and checksums; verify its exact bytes through required hosted CI.
-3. Present the concrete integration/release candidate for final owner approval. No merge, tag or publication is authorized yet.
+1. Use the published v0.1.0 source/setup archive and verify SHA-256 before installation.
+2. Keep the recorded operating limits; broader display/DPI, optional hosts/providers and background GUI operation remain future work.
 
 Public hosted CI and clean-runner archive verification passed at the recorded checkpoint; final-source and final-archive gates remain explicit. Approval is separate from desktop readiness and does not change earlier evidence.
 
