@@ -9,6 +9,17 @@ const budget = require('../scripts/narrow-finish-budget.cjs');
 const hash = value => createHash('sha256').update(value).digest('hex');
 const repo = path.resolve(__dirname, '..');
 
+function priorBytes(ledger, attempt) {
+  const copy = structuredClone(ledger), index = copy.claims.findIndex(value => value.lifetimeAttemptOrdinal === attempt);
+  if (index !== -1) copy.claims = copy.claims.slice(0, index);
+  return Buffer.from(JSON.stringify(copy, null, 2) + '\n');
+}
+async function removeFixture(root) {
+  const resolved = await fs.realpath(root);
+  assert.equal(path.dirname(resolved), await fs.realpath(os.tmpdir()));
+  await fs.rm(resolved, { recursive: true, force: true });
+}
+
 // Decision schema: schemaVersion 1, approved direct-owner source and directReply,
 // a hash-bound proposal, and one exact case entry with maximumAttempts 1.
 async function fixture(caseId) {
@@ -17,7 +28,10 @@ async function fixture(caseId) {
   for (const dir of ['docs', 'evidence/live-acceptance-continuation/ledger', 'evidence/decisions']) {
     await fs.mkdir(path.join(root, dir), { recursive: true });
   }
-  await fs.copyFile(path.join(repo, selected.ledger), path.join(root, selected.ledger));
+  const retained = JSON.parse(await fs.readFile(path.join(repo, selected.ledger), 'utf8'));
+  const original = priorBytes(retained, selected.attempt);
+  assert.equal(hash(original), selected.previousLedgerSha256, 'Historical prefix must remain exact');
+  await fs.writeFile(path.join(root, selected.ledger), original);
   const proposal = Buffer.from('synthetic proposal\n');
   await fs.writeFile(path.join(root, budget.DOC), proposal);
   const ref = 'evidence/decisions/owner.json';
@@ -35,7 +49,7 @@ async function fixture(caseId) {
 test('one approved claim per canonical ledger and no automatic retry', async t => {
   for (const caseId of ['R31-GLOW-NATIVE', 'A4-REPLAY']) {
     const f = await fixture(caseId);
-    t.after(() => fs.rm(f.root, { recursive: true, force: true }));
+    t.after(() => removeFixture(f.root));
     const filename = path.join(f.root, f.selected.ledger);
     const before = await fs.readFile(filename);
     assert.equal(hash(before), f.selected.previousLedgerSha256);
@@ -48,6 +62,7 @@ test('one approved claim per canonical ledger and no automatic retry', async t =
     assert.deepEqual(ledger.claims.slice(0, -1), prior.claims);
     assert.equal(ledger.claims.length, prior.claims.length + 1);
     assert.equal(ledger.claims.at(-1).previousLedgerSha256, hash(before));
+    assert.deepEqual(priorBytes(ledger, f.selected.attempt), before, 'A later real claim must not change this test fixture');
     await assert.rejects(budget.claim(input, { root: f.root }));
     assert.deepEqual(await fs.readFile(filename), after);
   }
@@ -55,7 +70,7 @@ test('one approved claim per canonical ledger and no automatic retry', async t =
 
 test('missing, unapproved, incorrect and stale inputs never mutate the ledger', async t => {
   const f = await fixture('A4-REPLAY');
-  t.after(() => fs.rm(f.root, { recursive: true, force: true }));
+  t.after(() => removeFixture(f.root));
   const filename = path.join(f.root, f.selected.ledger);
   const before = await fs.readFile(filename);
   await assert.rejects(budget.claim({ caseId: f.selected.caseId }, { root: f.root }));
