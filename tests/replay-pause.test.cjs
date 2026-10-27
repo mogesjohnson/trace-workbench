@@ -37,10 +37,10 @@ function fixture(scenario) {
   return { deps, calls, cleanup };
 }
 
-test('plan is inert and marks runtime unavailable', () => {
+test('plan is inert and requires injected dependencies', () => {
   const result = flow.plan();
   assert.equal(result.claimsAttempt, false);
-  assert.equal(result.productionRuntimeAvailable, false);
+  assert.equal(result.execution, 'injected');
   assert.equal(result.attempt, 5);
   assert.equal(flow.reviewMatches({ observationId, screenshotSha256: hash, point: { x: 1.5, y: 2 }, reviewedAt: at },
     { id: observationId, sha256: hash, at: base, width: 100, height: 100 }, base), false);
@@ -63,4 +63,43 @@ test('cleanup continues after native close failure', async () => {
   const result = await flow.runInjected(f.deps);
   assert.equal(result.status, 'fail');
   assert.deepEqual(f.cleanup, ['nativeSession', 'trace', 'replay', 'grant', 'app']);
+});
+
+test('runtime cancellation refuses preflight and review before any provider work', async () => {
+  const runtime = require('../scripts/replay-pause-runtime.cjs');
+  assert.equal(runtime.plan().execution, 'production-cli');
+  const context = runtime.createRuntime({ directory: __dirname, decision: undefined });
+  context.cancel();
+  await assert.rejects(context.preflight(), /cancelled/);
+  await assert.rejects(context.waitReview(45000), /cancelled/);
+  assert.deepEqual(context.state.acquisitions, {});
+});
+
+test('transport still closes when owned inventory fails and quiescence remains unproved', async () => {
+  const { closeTrace } = require('../scripts/replay-pause-support.cjs');
+  const calls = [], node = { pid: 123, created: 'synthetic' };
+  const trace = { nodeIdentity: node, close: async () => { calls.push('close'); } };
+  await assert.rejects(closeTrace(trace, null, {
+    readOwned: async () => { calls.push('inventory'); throw Error('inventory unavailable'); },
+    waitIdentityExit: async identity => { assert.deepEqual(identity, node); calls.push('exit'); return true; },
+    command: async ([name]) => { calls.push(name); return name === 'keystate' ? { down: [] } : { recoveryRequired: false }; },
+    leaseFree: async () => { calls.push('lease'); return true; }
+  }), /inventory unavailable/);
+  assert.deepEqual(calls, ['inventory', 'close', 'exit', 'keystate', 'status', 'lease']);
+});
+
+test('PNG retention binds the full process generation before writing an artifact', async t => {
+  const fs = require('node:fs/promises'), os = require('node:os'), path = require('node:path');
+  const { frame } = require('../scripts/replay-pause-support.cjs');
+  const common = require('../scripts/replacement-acceptance-common.cjs');
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'trace-pause-frame-'));
+  t.after(async () => { assert.equal(path.dirname(await fs.realpath(root)), await fs.realpath(os.tmpdir())); await fs.rm(root, { recursive: true, force: true }); });
+  const bytes = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jA1EAAAAASUVORK5CYII=', 'base64');
+  const identity = { windowId: '12', pid: 1, processCreationTime: '100', sessionId: 1 };
+  const value = { sessionId: id, observationId, observedAt: at, window: { ...identity, id: '12' }, bounds: { width: 1, height: 1 },
+    screenshot: { data: bytes.toString('base64'), sha256: common.digest(bytes), mimeType: 'image/png', width: 1, height: 1 } };
+  await assert.rejects(frame(root, { sessionId: id }, { ...identity, processCreationTime: '101' }, value, 'wrong'));
+  assert.deepEqual(await fs.readdir(root), []);
+  const result = await frame(root, { sessionId: id }, identity, value, 'actual');
+  assert.equal(result.sha256, common.digest(await fs.readFile(path.join(root, result.filename))));
 });

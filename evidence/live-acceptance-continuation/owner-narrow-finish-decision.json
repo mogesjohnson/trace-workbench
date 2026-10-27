@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "status": "approved",
+  "source": "direct-owner",
+  "directReply": "lets begin.",
+  "observedAt": "2026-10-27T19:18:39.257Z",
+  "proposal": {
+    "ref": "docs/NARROW_DESKTOP_FINISH.md",
+    "sha256": "6fe719488b1c634611b07beb1d1a16757e85af8a72fd578dd14c417b51016c56"
+  },
+  "basis": "The owner quoted the two missing glow lifecycle and REPLAY pause supplements and said lets begin. The assistant stated one attempt each with no automatic retries; the owner then confirmed readiness. This records that existing task authorization, not a new owner reply.",
+  "boundedScopeStatement": "One narrow glow attempt and one pause attempt. No automatic retries.",
+  "cases": [
+    {
+      "caseId": "R31-GLOW-NATIVE",
+      "attempt": 9,
+      "scope": "lifecycle-only",
+      "maximumAttempts": 1
+    },
+    {
+      "caseId": "A4-REPLAY",
+      "attempt": 5,
+      "scope": "pause-only",
+      "maximumAttempts": 1
+    }
+  ],
+  "readiness": {
+    "status": "withdrawn",
+    "directReply": "sorry dont have 20 min",
+    "effect": "No UI until fresh desktop readiness. No live attempt has been claimed."
+  },
+  "limits": [
+    "Reuse completed target-hit, host, clipboard, Escape and REPLAY media evidence.",
+    "Preserve original failures and partial results; no merge, version bump or release."
+  ]
+}
