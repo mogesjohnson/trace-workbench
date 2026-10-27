@@ -1,5 +1,7 @@
 # Source archive installation verification
 
+**Latest preparation result, 27 October 2026:** [Run 40580446444](https://github.com/mogesjohnson/trace-workbench/actions/runs/40580446444) passed source `d981e06`, including both MCP paths and exact-archive installation/rollback. This supplements the older results below. A changed final versioned archive needs its own exact-byte gate; no desktop test is implied.
+
 **Fresh hosted Windows result, 23 October 2026:** [Run 39999545940](https://github.com/mogesjohnson/trace-workbench/actions/runs/39999545940) passed the verifier against PR merge commit `08d69844c606ae3aa19c3dcd8b09b2635e0242c1`, containing implementation head `701a35c`. Exact archive SHA-256: `ab9bb9b4839a7aafb8dbddb3a0af1e8cc070c7ec3bf99a7d04fda93efa8a4c46` (11,039,254 bytes). Reproducibility, clean extraction, locked setup, provider readiness, both MCP paths, configuration preservation and rollback passed. [Sanitized receipt](../evidence/computer-use-method/public-ci-parallel-fixes.json) records the full checked scope. This closes the missing fresh-runner observation for that archive; final release archive verification and publication remain open. Earlier preparation-only statements below are historical.
 
 `npm run verify:archive` verifies an exact committed source archive in a new private directory. It resolves HEAD once, creates two byte-identical Git archives, extracts one without Git metadata or dependencies, installs locked dependencies, and builds the pinned Windows engine and four helpers. The existing checkout remains available.
