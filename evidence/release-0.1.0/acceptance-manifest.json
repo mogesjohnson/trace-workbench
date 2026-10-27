@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "product": "TRACE Workbench",
+  "preparedVersion": "0.1.0",
+  "reviewedAt": "2026-10-27",
+  "publicationStatus": "not_published",
+  "functionalSourceCommit": "d981e064122d38fc0a4a40f4e539f0bf6536cc3e",
+  "requirementChecklist": "docs/REQUIREMENT_EVIDENCE_REVIEW.md",
+  "scope": "Windows x64; normal integrity; unlocked interactive desktop; declared single-monitor modes; accessible UIA targets",
+  "requirements": [
+    {
+      "id": "ANA-01",
+      "status": "pass_at_declared_scope",
+      "ref": "docs/VERIFICATION.md",
+      "sha256": "c6165246bf7de99b333b40b28d5b05e7c24f3f9352d31175a456f0ae14c4bbe0",
+      "boundary": "Built-in static analysis; optional native providers unverified."
+    },
+    {
+      "id": "CFG-01",
+      "status": "pass_at_declared_scope",
+      "ref": "evidence/0.1.0-alpha.2/installation.json",
+      "sha256": "8700bb5ec4029e3b43c077a479596839b3e62a36ab2d4852988378e94029abf5",
+      "boundary": "Four preserved registrations; latest guidance sync and exact final archive remain separately identified."
+    },
+    {
+      "id": "CU-01",
+      "status": "pass_at_declared_scope",
+      "ref": "evidence/replacement-acceptance/r3-window-coordinates/attempt-1/receipt.json",
+      "sha256": "2cea6f86b5ff2fdb135fea5e7c5e3d347ce676fdf402c885a69a0210637ba2e8",
+      "boundary": "Exact targets and declared single-monitor modes; display transitions deferred."
+    },
+    {
+      "id": "CU-02",
+      "status": "pass_at_declared_scope",
+      "ref": "evidence/0.1.0-alpha.3.3/case-status.json",
+      "sha256": "029db6563c6c22d306f7294add82349cee1b843375658b28c2794e566ceaf25e",
+      "boundary": "Depth, observation reuse rejection and honest outcomes; required host recovery retained."
+    },
+    {
+      "id": "CU-03",
+      "status": "pass_at_declared_scope",
+      "ref": "evidence/0.1.0-alpha.3/review-checks.json",
+      "sha256": "a7dba6910651865a7720941cd437ccf6427405f7b1dc323c00643258935573aa",
+      "boundary": "Retained input primitive outcomes plus separate Unicode clipboard supplement."
+    },
+    {
+      "id": "CU-04",
+      "status": "pass_at_declared_scope",
+      "ref": "docs/PRODUCTION_OWNER_RECONCILIATION.md",
+      "sha256": "3bfe697d7e6fa7665f503316e958dfdfe5f82ed902875cb02d6c73620ad119dd",
+      "boundary": "Eight invariants, mixed-scope 15-cell recovery map, separate stop/quarantine and accepted glow supplement; three legacy metadata gaps retained."
+    },
+    {
+      "id": "HOST-01",
+      "status": "pass_at_declared_scope",
+      "ref": "evidence/live-acceptance-continuation/claude-supplemental-2/receipt.json",
+      "sha256": "44c8789761035599605c502218df53c1adaf4e4be37be3af2f74b54b47fe4ce4",
+      "boundary": "Required Codex and isolated Claude workflows; semantic-image and optional host acceptance not claimed."
+    },
+    {
+      "id": "APP-01",
+      "status": "pass_at_declared_scope",
+      "ref": "evidence/live-acceptance-continuation/replay-pause-5/receipt.json",
+      "sha256": "c3afe637ebbc14d4e9ea0407c701bba2527353f2c50a589b5f58f742c8078776",
+      "boundary": "Authorized pause supplement combines with retained workflow and sampled media audit; original partial result unchanged."
+    },
+    {
+      "id": "REL-01",
+      "status": "pending",
+      "ref": "docs/FINISH_GATE_REVIEW.md",
+      "sha256": "0854fb2d09b16432b631cc5faaa2c44b6eb623392e44786e7676b3cbf976d5e7",
+      "boundary": "Pending final exact archive, hosted gate, reviewed integration and approved publication."
+    }
+  ],
+  "supportingEvidence": [
+    {
+      "ref": "evidence/computer-use-method/skill-sync-clipboard.json",
+      "sha256": "8104d1bedb417051a1c990e171263a0db373739d745f88968e27119b5b0ca473"
+    },
+    {
+      "ref": "evidence/computer-use-method/effective-recovery-map.json",
+      "sha256": "e762e950d8b4f9079742c8f80c0ce3cafb821ab7d04f73c63ca65e94be936586"
+    },
+    {
+      "ref": "evidence/live-acceptance-continuation/finish-stop-verification.json",
+      "sha256": "715e474502561501c9d1a9f104218e4b6e1a7ffd25335a2699b281eddb7f97cb"
+    },
+    {
+      "ref": "evidence/live-acceptance-continuation/glow-lifecycle-9/receipt.json",
+      "sha256": "b553459d16a933f3cf3ef93f80d92a377e9c23978e33cb4bb1f370e2512523fb"
+    },
+    {
+      "ref": "evidence/live-acceptance-continuation/glow-target-hit-verification.json",
+      "sha256": "8a4ad2d0f44cd56487c93117f57c88a5192b36f5e048485f1bc03889bbd673e7"
+    },
+    {
+      "ref": "evidence/live-acceptance-continuation/replay-finish-2/verification.json",
+      "sha256": "28b6b3e9427e18c3a6219aa02c4efb4472f3948e95f2bd421b767a1c4a08d2f5"
+    },
+    {
+      "ref": "evidence/live-acceptance-continuation/codex-amendment-2-attempt-1/receipt.json",
+      "sha256": "d1c02a35887fab959fcb3e7f0febcd8575c72b88eb52c26c9375b500780b56d3"
+    },
+    {
+      "ref": "evidence/live-acceptance-continuation/clipboard-supplemental-2/receipt.json",
+      "sha256": "5ada790164fc69f1b9419a8ff49d04e9ffb093f9a60f5afb9d5f72262ce7ccc3"
+    }
+  ],
+  "distribution": {
+    "sourceCommit": "Bind externally to the exact tested Git archive commit.",
+    "archiveSha256": "Record from the completed hosted exact-archive receipt before publishing.",
+    "releaseTag": "v0.1.0",
+    "npmPublication": false
+  },
+  "history": "Original failures, partial audits, frozen decisions and proposals remain unchanged; this manifest is a scoped reconciliation, not a new live run."
+}
