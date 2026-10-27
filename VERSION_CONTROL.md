@@ -12,7 +12,7 @@ Keep one implementation commit, one verification commit, and one documentation c
 
 ## Versions and releases
 
-The current preview is `0.1.0-alpha.3.3`. Native supervision and recovery are implemented; the owner-approved production-owner replacement resolves the obsolete failed probe prerequisite at its documented scope. Functional acceptance is reconciled in [the requirement map](docs/REQUIREMENT_EVIDENCE_REVIEW.md); final versioned distribution and reviewed release remain open. TRACE versions are independent of upstream package and skill versions. Keep package, lockfile and release notes consistent when preparing a candidate; a version bump alone is not release publication.
+The prepared candidate is `0.1.0`, following preview `0.1.0-alpha.3.3`. [Release notes](docs/RELEASE_0.1.0.md) describe its supported scope; it is not published. Native supervision and recovery are implemented; the owner-approved production-owner replacement resolves the obsolete failed probe prerequisite at its documented scope. Functional acceptance is reconciled in [the requirement map](docs/REQUIREMENT_EVIDENCE_REVIEW.md); final versioned distribution and reviewed release remain open. TRACE versions are independent of upstream package and skill versions. Keep package, lockfile and release notes consistent when preparing a candidate; a version bump alone is not release publication.
 
 Use `v<package-version>` tags for published releases. A merged PR is not a release. Publish only after the version, artifacts, required checks, and known limits are recorded. Report CI account or billing failures as release blockers, with the run linked.
 
