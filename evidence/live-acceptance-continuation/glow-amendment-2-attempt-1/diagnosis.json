@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "caseId": "R31-GLOW-NATIVE",
+  "receipt": {
+    "ref": "evidence/live-acceptance-continuation/glow-amendment-2-attempt-1/receipt.json",
+    "sha256": "46718e46d5c37541eaf0d6faac3f647ab9a1b3f9596accb9dad947b05aa8cc38"
+  },
+  "status": "blocked",
+  "finding": "All three capture-only measurements refused a foreign overlay before any reference or TRACE click.",
+  "observedAfterFailure": {
+    "process": "codex-computer-use",
+    "pid": 14116,
+    "createdFileTime": "134372049944734777",
+    "windows": [
+      {
+        "id": "3346400",
+        "title": "Codex Computer Use Cursor Overlay"
+      },
+      {
+        "id": "11668124",
+        "title": "ChatGPT is using your computer. Esc to cancel"
+      }
+    ],
+    "scope": "Observed after refusal, not a retained enumeration from the failing instant; exact refusal attribution remains inferred."
+  },
+  "changedPrecondition": "Normal Node REPL reset released the owned Sky helper. The corrective orchestration will release that helper before every safe-screen capture, retain real observation/click evidence privately, and publish each handshake only after helper exit. Fresh Sky observation precedes its one click. No capture allowlist or guard is weakened.",
+  "cleanup": {
+    "fixtureExited": true,
+    "forced": false,
+    "helpersExited": true,
+    "keysDown": [],
+    "recoveryRequired": false
+  },
+  "recordedAt": "2026-10-23T05:06:14.959Z"
+}

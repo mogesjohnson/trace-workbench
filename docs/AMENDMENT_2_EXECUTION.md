@@ -1,6 +1,6 @@
 # Second amendment execution preparation
 
-This is prepared code and a schema guide, **not owner approval**. The [proposal](LIVE_ACCEPTANCE_AMENDMENT_2.md) remains frozen at SHA-256 `84a4d9df1d91ff28f257b35d0a09d4ce9fc22a159b9a75feaa6480d35061ef90`. It names only glow and Codex, at most one new attempt plus one corrective retry each. No new decision or real claim was created while preparing this implementation.
+This implementation was prepared before approval. The owner has since [approved both cases](../evidence/live-acceptance-continuation/owner-amendment-2.json). The [proposal](LIVE_ACCEPTANCE_AMENDMENT_2.md) remains frozen at SHA-256 `84a4d9df1d91ff28f257b35d0a09d4ce9fc22a159b9a75feaa6480d35061ef90`. It names only glow and Codex, at most one new attempt plus one corrective retry each. No decision or claim was created while preparing the implementation. As of 23 October 2026 UTC, both amended glow attempts are consumed; Codex has no amended claim. [Current results](GAP_CLOSURE_STATUS.md) govern live readiness.
 
 Only explicit `--amendment 2 --continuation 1` or `2` can select lifetime 5 or 6. The previous five-case defaults retain lifetime 3–4 and their original caps. Claude, typing and clipboard cannot opt into this amendment. An amendment plan with no decision reference shows no approval; a Codex start without the actual new reference fails before preparation or UI.
 

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "caseId": "CLAUDE-TRACE-SKILL-NATIVE",
+  "status": "blocked",
+  "originalReceipt": {
+    "ref": "evidence/live-acceptance-continuation/claude-supplemental-1/receipt.json",
+    "sha256": "b55ef3f05ce3d70411300431b27c777f757831a6b4d8f94450faa0323ce9cdf6"
+  },
+  "finding": "Acceptance forwarding discarded the production MCP top-level not_dispatched proof while constructing its own error. The second MCP boundary therefore returned unknown; the host stopped without incrementing the counter.",
+  "correction": {
+    "sourceCommit": "f82319acc9fd616a811bed07745bb6abd86ffca5",
+    "files": {
+      "scripts/accept-claude-host.cjs": "184613a9f690c171048227357d9489b72d5861a6544c9ee5dbaa40b9e1d6973e",
+      "tests/claude-guard-mcp.test.cjs": "9cf29d67ae94ef519397c501099ad5c51f4917dcba73ef899d98550878a268ab"
+    },
+    "verification": {
+      "command": "node --test tests/claude-guard-mcp.test.cjs",
+      "tests": 1,
+      "passed": 1,
+      "failed": 0,
+      "scope": "Two actual SDK/MCP boundaries with controller-proven rejection and unproved rejection. No desktop, host, clipboard or model request."
+    }
+  },
+  "settings": "Host-window client-state changes remain blocking; no exemption or settings restoration was applied.",
+  "newLiveAttempt": false,
+  "recordedAt": "2026-10-23T05:23:39.693Z"
+}

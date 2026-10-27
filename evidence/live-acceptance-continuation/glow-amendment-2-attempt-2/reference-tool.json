@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "source": "actual-root-Sky-tool-calls",
+  "observation": {
+    "startedAt": "2026-10-23T05:06:36.719Z",
+    "completedAt": "2026-10-23T05:06:36.959Z",
+    "element": "\t\t1 button TRACE edge click counter ID: traceGlowEdgeButton",
+    "windowId": "10881112"
+  },
+  "click": {
+    "source": "external-sky-accessibility",
+    "executor": "Sky",
+    "tool": "sky.click",
+    "operation": "click",
+    "mechanism": "accessibility-mouse",
+    "completed": true,
+    "synthetic": false,
+    "noInvoke": true,
+    "checkpointId": "3460e102-b280-46d3-a9c0-9b76a48133bf",
+    "elementId": "traceGlowEdgeButton",
+    "elementIndex": 1,
+    "toolReceiptRef": "actual-tool-call:sky-glow-amendment2-corrective-20261023",
+    "target": {
+      "windowId": "10881112",
+      "pid": 7480,
+      "processCreationTime": "134372055814618035",
+      "windowsSessionId": 1
+    },
+    "display": {
+      "monitors": 1,
+      "primary": true,
+      "device": "\\\\.\\DISPLAY1",
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 2880,
+        "height": 1800
+      },
+      "dpiX": 144,
+      "dpiY": 144,
+      "captureWidth": 2880,
+      "captureHeight": 1800
+    },
+    "startedAt": "2026-10-23T05:07:05.479Z",
+    "completedAt": "2026-10-23T05:07:05.740Z"
+  },
+  "scope": "Actual tool metadata; click end timestamp is the timestamp retained immediately after sky.click resolved. It is not extended after observing later fixture events."
+}

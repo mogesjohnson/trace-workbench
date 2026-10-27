@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "source": "direct-owner",
+  "caseId": "METHOD-CLIPBOARD-UNICODE-PASTE",
+  "ready": true,
+  "confirmedAt": "2026-10-23T05:12:29.6894046+00:00",
+  "anchorOwnership": "run-owned-child",
+  "anchor": {
+    "id": "2885008",
+    "pid": 31508,
+    "processCreationTime": "134372058993423840",
+    "sessionId": 1
+  }
+}
