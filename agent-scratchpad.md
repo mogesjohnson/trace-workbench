@@ -1,5 +1,11 @@
 # Agent handoff
 
+## Narrow live preparation — 27 October 2026
+
+PR 28 at `a7e67d6` prepared the zero-input glow lifecycle harness and fixed-history one-attempt guard; required CI 40559238356 passed including archive installation/rollback. No real ledger changed and no UI or live attempt ran. [The narrow proposal](docs/NARROW_DESKTOP_FINISH.md) remains unapproved for its exact caps: existing glow lifetime 9 and REPLAY lifetime 5, one attempt each, no retry. Desktop readiness remains withdrawn.
+
+Branch `codex/replay-pause-preparation` adds an injected causal-pause workflow and inert fixed-media preparation. Three focused injected checks passed after actual post-action observation binding, pending native/API records, revision checks and media-before-launch ordering were corrected. No live CLI is supplied by this increment; production acquisition, root image review, journal and cleanup wiring still need completion. Native sources, retained exports and real histories are unchanged. The internal MCP connection now exposes its own journal root for later binding. Root stays High; full goal remains 18/22 and no merge/release is authorized.
+
 ## Background CI inventory follow-up — 27 October 2026
 
 Documentation PR 26 at `4b57976` passed source checks and the required suite, then CI run 40555864672 failed in the analysis MCP smoke's PowerShell/CIM child inventory. Desktop and archive steps were skipped. Timing suggests the five-second query cap; the original log lacks timeout details, so the precise cause is unconfirmed. Earlier final-head CI success remains valid for its original source/archive.
