@@ -157,7 +157,10 @@ async function amendmentSetup(t, caseId = CASE) {
   await copy(book.AMENDMENT_2.proposal.ref);
   for (const item of history.slice(2)) await copy(item.ref);
   const ledgerRef = `evidence/live-acceptance-continuation/ledger/${caseId}.json`;
-  await copy(ledgerRef);
+  // The canonical ledger now also holds the actual amendment claims; rebuild its first-round state.
+  const canonical = JSON.parse(await fs.readFile(path.join(SOURCE, ledgerRef), 'utf8'));
+  delete canonical.amendments;
+  await state.write(ledgerRef, { ...canonical, claims: canonical.claims.slice(0, 2) });
   const existing = await ledger(state); await copy(existing.selection.ownerDecision.ref);
   const amendmentDecision = { schemaVersion: 1, status: 'approved', source: 'direct-owner', decisionId: 'synthetic-amendment-two-test-only',
     amendment: 2, proposal: { ...book.AMENDMENT_2.proposal },

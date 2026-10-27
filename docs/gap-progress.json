@@ -1,8 +1,8 @@
 {
   "updated": "2026-10-23",
   "title": "TRACE — close the Computer Use gap",
-  "goalStatus": "blocked",
-  "current": "Goal blocked after repeated pending amendment decisions and confirmed GitHub billing restrictions. All independent preparation is saved. Codex, Claude, clipboard and other compatible passes stand at 16/22; six checkpoints remain. Owner decisions and CI access must change before remaining execution. No desktop test is running; fresh readiness will be requested before any new one.",
+  "goalStatus": "active",
+  "current": "Resumed 23 October. Public Windows CI passed for implementation head 701a35c (PR merge 08d6984): 516 checks passed, five skipped, zero failed, both MCP paths and exact-archive install/rollback passed. Progress is 17/22 scoped checkpoints (77%); five remain. Glow, current-source Escape and REPLAY amendments await direct owner decisions. Final-archive verification and final review remain open. No desktop test is running.",
   "measurement": "Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row.",
   "checkpoints": [
     {
@@ -161,8 +161,8 @@
       "id": "20",
       "phase": "Deliver",
       "title": "Clean archive installation and rollback",
-      "status": "blocked",
-      "detail": "Existing-host exact archive setup and configuration rollback passed. Portable verifier and CI wiring uploaded in draft PR 17; final archive/fresh Windows runner remain blocked by hosted CI access and final acceptance.",
+      "status": "active",
+      "detail": "Fresh hosted Windows runner passed exact archive 08d6984: locked setup, provider/MCP checks, four client configurations, exact backups, preservation, idempotence, conflicts and rollback. Final release archive and checksum publication remain open; a different archive does not inherit this pass.",
       "evidence": "ARCHIVE_INSTALL.md"
     },
     {
@@ -177,9 +177,9 @@
       "id": "22",
       "phase": "Deliver",
       "title": "Draft PR and required hosted CI",
-      "status": "blocked",
-      "detail": "Draft PRs through 22 uploaded. Run 39992877886 at the REPLAY diagnostic checkpoint failed with zero steps; exact annotation confirms account payments/spending restrictions. No manual retry until that condition changes.",
-      "evidence": "../evidence/computer-use-method/ci-replay-diagnostic-head.json"
+      "status": "verified",
+      "detail": "Draft PR 23 implementation head 701a35c passed required Windows CI run 39999545940 on PR merge 08d6984: 516 passed, five skipped, zero failed; both MCP paths and archive install passed. Public runner executes. Final source needs its own required CI; no merge or release claim.",
+      "evidence": "../evidence/computer-use-method/public-ci-parallel-fixes.json"
     }
   ]
 }

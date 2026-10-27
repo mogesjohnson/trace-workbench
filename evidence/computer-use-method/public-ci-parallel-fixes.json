@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "observedDate": "2026-10-23",
+  "scope": "Fixes for the first executable public Windows CI result; no desktop input or live acceptance rerun",
+  "priorRun": {
+    "id": 39993325524,
+    "attempt": 2,
+    "headSha": "57a6d60ae0aabefde781c5a79498ffff23a1757d",
+    "tests": 521,
+    "passed": 502,
+    "failed": 14,
+    "skipped": 5
+  },
+  "delegation": {
+    "authorizedBy": "Owner asked about parallel work using Claude Code Opus 5.5",
+    "modelRequested": "claude-opus-5-5",
+    "actualModels": [
+      "claude-opus-5-5"
+    ],
+    "effort": "medium",
+    "durationMs": 63229,
+    "estimatedApiEquivalentCostUsd": 0.4501886,
+    "costScope": "CLI estimate, not an actual subscription invoice or charge",
+    "requestedTurnLimit": 15,
+    "reportedNumTurns": 19,
+    "estimatedSpendCapUsd": 3,
+    "filesEdited": [
+      "evidence/computer-use-method/claude-settings-attribution/table.json",
+      "tests/live-acceptance-continuation.test.cjs"
+    ],
+    "testsRunByWorker": false,
+    "verification": "Parent reviewed the diff and ran the affected checks after integration",
+    "workerExited": true,
+    "separateWorktreeRemovedAfterCommitAndIntegration": true
+  },
+  "parentDiagnosis": {
+    "shortTempAlias": {
+      "selectedChecks": 2,
+      "passed": 0,
+      "installedSkillUnsafe": true,
+      "ledgerFailure": true
+    },
+    "canonicalTempControlBeforeFixtureFix": {
+      "selectedChecks": 2,
+      "passed": 1,
+      "installedSkillUnsafe": false,
+      "ledgerFailure": true
+    },
+    "ownedDiagnosticDirectoryRemoved": true,
+    "meaning": "Temp alias independently reproduced the path failure; ledger initialization remained a separate failure"
+  },
+  "fixes": [
+    "CI resolves TEMP/TMP to a canonical path before isolated checks; strict production identity guards remain",
+    "The 2.1.309 attribution entry uses the existing structured review schema without exemptions",
+    "Amendment unit fixtures reconstruct their initial first-round ledger in the synthetic root; real ledgers and production keeper remain unchanged"
+  ],
+  "affectedVerification": {
+    "command": "node --test --test-name-pattern=\"review limits|amendment\" tests/claude-settings-attribution.test.cjs tests/live-acceptance-continuation.test.cjs",
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0
+  },
+  "testedImplementationHead": "3d18a84ac83d7a1613036228cde89ca027614edb",
+  "newHostedRun": {
+    "id": 39998946329,
+    "url": "https://github.com/mogesjohnson/trace-workbench/actions/runs/39998946329",
+    "statusAtPreparation": "in_progress"
+  },
+  "notProvenAtPreparation": [
+    "Hosted full-suite result",
+    "Fresh Windows archive installation",
+    "Any missing desktop acceptance case"
+  ],
+  "liveBudgetsChanged": false,
+  "nativeExecutorChanged": false,
+  "completion": {
+    "observedDate": "2026-10-23",
+    "status": "pass",
+    "repositoryVisibility": "public",
+    "implementationHead": "701a35c2ea329e4788d7eec7330dcc61d80e55d0",
+    "testedCheckout": "08d69844c606ae3aa19c3dcd8b09b2635e0242c1",
+    "checkoutScope": "GitHub pull-request merge commit; verified parents are base 57a6d60ae0aabefde781c5a79498ffff23a1757d and implementation head 701a35c2ea329e4788d7eec7330dcc61d80e55d0",
+    "run": {
+      "id": 39999545940,
+      "attempt": 1,
+      "jobId": 120571766821,
+      "status": "completed",
+      "conclusion": "success",
+      "event": "pull_request",
+      "startedAt": "2026-10-23T17:59:06Z",
+      "completedAt": "2026-10-23T18:01:51Z",
+      "url": "https://github.com/mogesjohnson/trace-workbench/actions/runs/39999545940"
+    },
+    "steps": {
+      "sourceChecks": "pass",
+      "unitTests": {
+        "total": 521,
+        "passed": 516,
+        "failed": 0,
+        "skipped": 5
+      },
+      "reaMcp": "pass",
+      "computerMcp": "pass",
+      "archiveInstall": "pass"
+    },
+    "temporaryPathAliasResolved": true,
+    "nativeTempVerification": {
+      "scope": "Windows short-alias metadata plus two affected checks with the actual corrected CI normalization",
+      "shortAliasDiffers": true,
+      "nonnativeKeptAlias": true,
+      "nativeMatchesAsynchronous": true,
+      "nativeExpandedAlias": true,
+      "exitCode": 0,
+      "passed": 2,
+      "ownedTemporaryDirectoryRemoved": true
+    },
+    "archive": {
+      "schemaVersion": 1,
+      "caseId": "SOURCE-ARCHIVE-INSTALL",
+      "status": "pass",
+      "commit": "08d69844c606ae3aa19c3dcd8b09b2635e0242c1",
+      "archiveSha256": "ab9bb9b4839a7aafb8dbddb3a0af1e8cc070c7ec3bf99a7d04fda93efa8a4c46",
+      "archiveBytes": 11039254,
+      "checks": {
+        "reproducibleArchives": true,
+        "extractedInitiallyClean": true,
+        "lockedDependenciesInstalled": true,
+        "pinnedEngineAndHelpersVerified": true,
+        "providerReady": true,
+        "archivedSourceUnchanged": true,
+        "computerMcpTools": 6,
+        "reaMcpTools": 207,
+        "configuration": {
+          "clients": 4,
+          "skillDestinations": 3,
+          "managedFilesPerBundle": 5,
+          "exactOriginalBackups": true,
+          "unrelatedSettingsPreserved": true,
+          "idempotent": true,
+          "exactConfigRollback": true,
+          "ownedSkillFilesRemoved": true,
+          "unrelatedSkillFilePreserved": true,
+          "conflictingServerPreserved": true,
+          "conflictProducedNoWrites": true,
+          "personalSettingsModified": false
+        }
+      },
+      "desktopActions": 0,
+      "modelRequests": 0,
+      "clipboardContentsRead": false,
+      "clipboardContentsChanged": false,
+      "personalSettingsModified": false,
+      "recoveryApplied": false,
+      "limits": [
+        "Clean extraction on this host; not by itself complete RC-INSTALL or final release acceptance.",
+        "No desktop actions, model requests, clipboard contents access, personal client settings changes or recovery apply.",
+        "Native provider diagnostics and synthetic static MCP analysis are separate from live host/application acceptance."
+      ]
+    },
+    "retrievedLogSha256": "b7a9d19bf7be54cb7d90d8aaaf1f8d4ce74d776a301a09f6308ef4c5072c8cf6",
+    "limits": [
+      "This is the recorded PR source/merge checkpoint, not a future final-source CI result.",
+      "Fresh hosted Windows installation and rollback passed for the exact recorded archive; no final release archive is claimed.",
+      "All earlier failures and skipped checks remain preserved. No desktop acceptance rerun or retry-budget change occurred.",
+      "Preparation snapshots above describe their earlier observation time and are superseded only by this completion section."
+    ]
+  }
+}

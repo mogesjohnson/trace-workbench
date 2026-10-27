@@ -1,8 +1,8 @@
 # Finish the Computer Use gap
 
-Prepared 23 October 2026 after the shutdown checkpoint. The goal is now **blocked** pending the three amendment decisions below and restored hosted CI access; independent preparation is complete. This plan preserves the full scope and all earlier results. It creates no approval, claim, extra retry or passing result.
+Prepared 23 October 2026 after the shutdown checkpoint. The goal is **active after the owner resumed on 23 October**. Hosted public Windows CI now passes at the recorded source checkpoint; the three desktop amendment decisions below remain pending. This plan preserves the full scope and all earlier results. It creates no approval, claim, extra retry or passing result.
 
-The checkpoint is now **16 of 22 verified (73% of the declared checklist)** after the approved Claude corrective passed. This is not an estimate of remaining time, cost or feature parity. [The dashboard](GAP_CLOSURE_PROGRESS.html) and [SPEC.md](../SPEC.md) retain the authoritative scope. The amendment proposals below remain unapproved.
+The checkpoint is now **17 of 22 verified (77% of the declared checklist)** after hosted CI passed, building on the approved Claude corrective pass. This is not an estimate of remaining time, cost or feature parity. [The dashboard](GAP_CLOSURE_PROGRESS.html) and [SPEC.md](../SPEC.md) retain the authoritative scope. The amendment proposals below remain unapproved.
 
 ## Work that stays finished
 
@@ -18,9 +18,9 @@ No feature expansion, new agents, broad suite reruns, additional test framework 
 | Physical stop, row 15 | Physical and injected Escape against the current supervisor source. Earlier passes used an unavailable earlier Session.cs. | Seek the bounded current-source amendment below. Owner must be present for two real Escape taps. Other recovery cells stay verified. |
 | Claude, row 17, now passed | [Corrective lifetime 4](../evidence/live-acceptance-continuation/claude-supplemental-2/receipt.json) completed the declared actual guarded/isolated workflow and strict real-settings preservation. | Reuse this result. Exact owned host/native/fixture cleanup and [isolated credential/log removal](../evidence/computer-use-method/claude-isolation-cleanup.json) are confirmed; no further Claude run is needed. |
 | REPLAY, row 19 | Provisioning diagnosis, actual editing/control, both exports, independent media review and cleanup. | Seek the bounded amendment below. Retain both process/window identities before the equality assertion. Do not weaken equality or guess the previous mismatch. |
-| Distribution, row 20 | Exact final archive installed on a fresh Windows runner, including configuration preservation and rollback. | Reuse existing-host preparation. Run the existing portable verifier against the final source archive once CI can start. Do not substitute another existing-host run for the clean-runner gate. |
+| Distribution, row 20 | Exact final archive installed on a fresh Windows runner, including configuration preservation and rollback. | Reuse existing-host preparation. Fresh Windows CI passed the portable verifier for exact PR merge archive `08d6984` (SHA-256 in the public CI receipt). Verify the final archive after remaining source/acceptance work; the current pass does not transfer to a different archive. Do not substitute another existing-host run for the clean-runner gate. |
 | Final reconciliation, row 21 | Final requirement-to-evidence audit, documentation, review and release packaging. | Complete after live results settle. Update README last. Keep any missing gate explicit; a draft PR or archive is not a release. |
-| Hosted CI, row 22 | A successful required Windows job. | Owner must resolve GitHub billing/spending restrictions. Latest checked run 39910599102, job 120272450126, failed with zero steps and the same explicit account annotation. Do not retry until that condition changes. |
+| Hosted CI, row 22 | Required Windows CI now passes at the recorded checkpoint; final source remains a release gate. | Reuse successful run 39999545940 for implementation head `701a35c` / merge checkout `08d6984`. No manual rerun of this passing checkpoint is needed. Earlier zero-step billing failures remain history. |
 
 ## Proposed bounded amendment: glow
 
@@ -75,7 +75,7 @@ Only after isolation preparation, authentication and installed skill path/hash c
 ## Owner action and execution order
 
 1. Decide the three bounded amendments above: glow timing/budget, current-source Escape and REPLAY budget. They are proposals until directly approved. Approval does not imply current desktop readiness.
-2. Resolve GitHub billing or spending restrictions when convenient; no agent account or payment change is authorized.
+2. No billing action is needed for the observed public Windows runs. Reuse the passing CI checkpoint; require final-source CI after remaining changes.
 3. At an announced desktop phase, foreground the exact owned fixture after replying, leave input idle and provide the two physical Escape taps when announced. Claude's declared workflow is complete and needs no additional sign-in or paid run.
 
 Work order after approval: finish the minimal affected preparation, then glow and current-source stop in one announced owner-present block; complete REPLAY and its media review; run final archive/fresh-runner CI; reconcile documentation and the full completion audit. Reuse the completed Claude result. A failure remains visible and stops its case when the new cap is exhausted. No merge, release or full gap-closure claim is made by this plan.

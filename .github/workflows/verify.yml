@@ -25,6 +25,10 @@ jobs:
         with:
           node-version: '26'
           cache: npm
+      - name: Canonicalize Windows temporary paths
+        shell: pwsh
+        run: |
+          node -e "const fs=require('node:fs'),os=require('node:os');const before=os.tmpdir(),canonical=fs.realpathSync.native(before);fs.appendFileSync(process.env.GITHUB_ENV,'TEMP='+canonical+'\nTMP='+canonical+'\n');console.log(JSON.stringify({temporaryPathAliasResolved:before.toLowerCase()!==canonical.toLowerCase()}));"
       - run: npm ci
       - run: npm run check
       - run: npm test
