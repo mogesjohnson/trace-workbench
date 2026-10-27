@@ -119,6 +119,9 @@ internal sealed class EdgeWindow : Form
         ShowInTaskbar = false;
         StartPosition = FormStartPosition.Manual;
         Bounds = bounds;
+        // WinForms keeps a TopMost=false form out of the topmost band even after SetWindowPos(HWND_TOPMOST),
+        // so an activated target would cover the glow. Creating it topmost needs no activation.
+        TopMost = true;
         AccessibleName = "TRACE computer session active";
         Text = "TRACE activity indicator";
     }

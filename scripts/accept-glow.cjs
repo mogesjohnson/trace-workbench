@@ -32,6 +32,7 @@ const RUNS = {
   independent: ['A31-GLOW-START', 'A31-GLOW-VISIBLE', 'A31-GLOW-EOF', 'A31-GLOW-PARENT-LOSS'],
   coordinated: ['A31-GLOW-START', 'A31-GLOW-VISIBLE', 'A31-GLOW-REFERENCE-CLICK', 'A31-GLOW-TRACE-CLICK', 'A31-GLOW-EOF'],
   selfcheck: [],
+  regression: ['A31-GLOW-START', 'A31-GLOW-VISIBLE', 'A31-GLOW-EOF', 'A31-GLOW-PARENT-LOSS'],
 };
 const SOURCE_FILES = [
   'bin/trace.cjs', 'src/computer/server.cjs', 'src/computer/controller.cjs', 'src/computer/lease.cjs',
@@ -46,7 +47,7 @@ function parseArgs(args) {
   const options = { mode: null, evidence: null, expectedWidth: 2880, expectedHeight: 1800, expectedDpi: 144, referenceWaitMs: 180000 };
   for (let index = 0; index < args.length; index++) {
     const key = args[index];
-    if (['--plan', '--selfcheck', '--independent', '--coordinated'].includes(key)) options.mode = key.slice(2);
+    if (['--plan', '--selfcheck', '--independent', '--coordinated', '--regression'].includes(key)) options.mode = key.slice(2);
     else if (key === '--evidence') options.evidence = args[++index];
     else if (key === '--expect-mode') {
       const match = /^(\d+)x(\d+)@(\d+)$/.exec(args[++index] || '');
@@ -213,14 +214,14 @@ async function startServer(runtimeDirectory, stderrPath) {
 function planDocument(options) {
   const runs = RUNS[options.mode] ?? RUNS.independent;
   return {
-    schemaVersion: 1, caseId: 'A31-GLOW', legacyCaseId: 'GLOW-LIVE', attempt: 2, continuation: options.mode,
+    schemaVersion: 1, caseId: options.mode === 'regression' ? 'A31-GLOW-REGRESSION' : 'A31-GLOW', legacyCaseId: 'GLOW-LIVE', attempt: options.mode === 'regression' ? null : 2, continuation: options.mode,
     declaredBeforeUiLaunch: true,
     priorResults: [
       { path: 'evidence/0.1.0-alpha.3.1/glow-attempt-1/receipt.json', status: 'fail' },
       { path: 'evidence/0.1.0-alpha.3.1/glow-retry-plan.json', status: 'declared corrective retry' },
       { path: 'evidence/0.1.0-alpha.3.1/glow-interrupted.json', status: 'blocked by the reference executor physical Escape stop before planned input' },
     ],
-    failureBudget: 'Attempt 1 failed. This continues attempt 2, the one corrective retry. A failed subcase ends A31-GLOW as fail; a blocked subcase keeps it pending. A self-check is harness preparation, not an attempt.',
+    failureBudget: options.mode === 'regression' ? 'Focused regression after the topmost fix. It cannot pass or retry A31-GLOW, which keeps its failed result.' : 'Attempt 1 failed. This continues attempt 2, the one corrective retry. A failed subcase ends A31-GLOW as fail; a blocked subcase keeps it pending. A self-check is harness preparation, not an attempt.',
     display: { pinned: { monitors: 1, width: options.expectedWidth, height: options.expectedHeight, dpi: options.expectedDpi }, mismatch: 'blocks every live subcase in this run' },
     target: 'New owned full-screen synthetic primary-monitor fixture; exact returned HWND and PID',
     initialState: { count: 0, mouseClickCount: 0, activationCount: 0, leftButtonDown: false, privateApplicationContent: false },
@@ -259,8 +260,8 @@ async function run(options) {
   await fs.writeFile(path.join(options.evidence, 'plan.json'), planBytes);
   const source = await testedSource();
   const receipt = {
-    schemaVersion: 1, caseId: options.mode === 'selfcheck' ? 'A31-GLOW-HARNESS-SELFCHECK' : 'A31-GLOW', legacyCaseId: 'GLOW-LIVE',
-    attempt: options.mode === 'selfcheck' ? null : 2, continuation: options.mode, runId,
+    schemaVersion: 1, caseId: { selfcheck: 'A31-GLOW-HARNESS-SELFCHECK', regression: 'A31-GLOW-REGRESSION' }[options.mode] ?? 'A31-GLOW', legacyCaseId: 'GLOW-LIVE',
+    attempt: ['selfcheck', 'regression'].includes(options.mode) ? null : 2, continuation: options.mode, runId,
     plan: { path: 'plan.json', sha256: sha256(planBytes) }, testedSource: source,
     runtime: { node: process.version, platform: process.platform, arch: process.arch },
     lifecycle: 'running', subcases: {}, artifacts: [], cleanup: {},
@@ -380,7 +381,7 @@ async function run(options) {
     server = undefined;
     await setCase('A31-GLOW-EOF', markerExit.exited && glowAbsent(closed.bands) ? 'pass' : 'fail', { markerExit, bands: closed.bands, captureAttempts: closed.attempts, serverExit: serverExitA });
 
-    if (options.mode === 'independent') {
+    if (options.mode === 'independent' || options.mode === 'regression') {
       // Lifecycle B: abrupt owner loss with a live session and no session close.
       current = 'A31-GLOW-PARENT-LOSS';
       const status = await fixtureStatus();
@@ -403,8 +404,13 @@ async function run(options) {
       finally { if (leaseFree) await lease.release('glow-parent-loss-check'); }
       const pass = start.focusUnchanged && glowVisible(beforeLoss.bands) && serverExit.exited && markerLoss.exited && glowAbsent(afterLoss.bands) && leaseFree;
       await setCase('A31-GLOW-PARENT-LOSS', pass ? 'pass' : 'fail', { start, bandsBefore: beforeLoss.bands, serverExit, markerExit: markerLoss, bandsAfter: afterLoss.bands, leaseFree });
-      await setCase('A31-GLOW-REFERENCE-CLICK', 'blocked', null, 'Requires the separate Codex reference executor with Claude observing; run --coordinated in that session');
-      await setCase('A31-GLOW-TRACE-CLICK', 'blocked', null, 'Follows the reference click on the same fixture instance; run --coordinated in that session');
+      if (options.mode === 'regression') {
+        await setCase('A31-GLOW-REFERENCE-CLICK', 'not_run', null, 'Outside the focused regression');
+        await setCase('A31-GLOW-TRACE-CLICK', 'not_run', null, 'Outside the focused regression');
+      } else {
+        await setCase('A31-GLOW-REFERENCE-CLICK', 'blocked', null, 'Requires the separate Codex reference executor with Claude observing; run --coordinated in that session');
+        await setCase('A31-GLOW-TRACE-CLICK', 'blocked', null, 'Follows the reference click on the same fixture instance; run --coordinated in that session');
+      }
     } else {
       await setCase('A31-GLOW-PARENT-LOSS', 'not_run', null, 'Covered by the independent continuation receipt');
     }
