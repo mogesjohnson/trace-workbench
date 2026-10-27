@@ -76,6 +76,25 @@
       "claimId": "87dd96d5-728c-4052-9831-0e436b295713",
       "claimedAt": "2026-10-23T19:20:05.139Z",
       "attempt": 4
+    },
+    {
+      "caseId": "A4-REPLAY",
+      "attempt": 5,
+      "lifetimeAttemptOrdinal": 5,
+      "continuationAttempt": 1,
+      "scope": "pause-only",
+      "maximumAttempts": 1,
+      "previousLedgerSha256": "bf65b041542b94694fef3a34796691c6f99c0e9400d08a3388d5eff3398e13b9",
+      "ownerDecision": {
+        "ref": "evidence/live-acceptance-continuation/owner-narrow-finish-decision.json",
+        "sha256": "5a274a0f4189e23b12a59c649a30c1ce3a610b946333a6c9bcf8b64c2d5e9bcb"
+      },
+      "proposal": {
+        "ref": "docs/NARROW_DESKTOP_FINISH.md",
+        "sha256": "6fe719488b1c634611b07beb1d1a16757e85af8a72fd578dd14c417b51016c56"
+      },
+      "claimId": "39ffd3fb-55a8-4c87-8a17-c88ee39afd7b",
+      "claimedAt": "2026-10-27T21:03:13.824Z"
     }
   ],
   "finishAmendment": {

@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "caseId": "A4-REPLAY",
+  "attempt": 5,
+  "status": "pass",
+  "scope": "Only causal pause; reuse lifetime-4 recording, edits, exports and media audit",
+  "startedAt": "2026-10-27T21:03:10.770Z",
+  "completedAt": "2026-10-27T21:04:04.343Z",
+  "ownerDecision": {
+    "ref": "evidence/live-acceptance-continuation/owner-narrow-finish-decision.json",
+    "sha256": "5a274a0f4189e23b12a59c649a30c1ce3a610b946333a6c9bcf8b64c2d5e9bcb"
+  },
+  "claimId": "39ffd3fb-55a8-4c87-8a17-c88ee39afd7b",
+  "rawReceiptSha256": "be28762110ac0851f8a1cc57429be46d5392b684a25d6930f47ed1783de520bf",
+  "source": {
+    "commit": "d981e064122d38fc0a4a40f4e539f0bf6536cc3e",
+    "snapshotSha256": "b23d80f1366d6603b5b4e3479be5861df80e166db8a438586096a1e975aa0de5",
+    "hashEncoding": "UTF-8 JSON.stringify",
+    "nativeSessionSha256": "d3f7ad4a1d147c593f75912ae5f26d19d7f4de1fb397ef084c64994050e78ca1"
+  },
+  "replayPins": {
+    "replayCommit": "221502e8c0af25fb1929ff8f200c4774659b7b87",
+    "executableSha256": "22f35d67d22e00f156b57089e27031b1b033d888fdfd6223183c346f4fc167ec",
+    "asarSha256": "d74797f6a2b4cd9d9dbce1ecaff7dc655b0869b3455ac4da604e85403c36b7cc"
+  },
+  "target": {
+    "windowId": "4132288",
+    "pid": 28136,
+    "processCreationTime": "134376085943377933",
+    "sessionId": 1
+  },
+  "launcherIdentity": {
+    "pid": 32504,
+    "processCreationTime": "134376085942047459",
+    "sessionId": 1
+  },
+  "traceOwnership": {
+    "node": {
+      "pid": 53268,
+      "created": "2026-10-27T21:03:19.5994510Z",
+      "sessionId": 1
+    },
+    "supervisor": {
+      "pid": 66780,
+      "created": "2026-10-27T21:03:22.8074480Z",
+      "sessionId": 1
+    },
+    "marker": {
+      "pid": 6020,
+      "created": "2026-10-27T21:03:23.0572490Z",
+      "sessionId": 1
+    }
+  },
+  "sourceMedia": {
+    "sha256": "a99a66cbaf324c6dfd8523eca8c360ff891520ff21d331dd486ff7397ae6939b",
+    "duration": 180.066667,
+    "retainedSourceSha256": "f16b79a74950e666b97f865ce4e4949e7e3912f58ea6082379ab5d630f6bbc85"
+  },
+  "previews": {
+    "first": {
+      "playing": true,
+      "position": 0.005751,
+      "updatedAt": "2026-10-27T21:03:18.563Z"
+    },
+    "advancing": {
+      "playing": true,
+      "position": 1.006226,
+      "updatedAt": "2026-10-27T21:03:19.562Z"
+    },
+    "before": {
+      "playing": true,
+      "position": 31.605756,
+      "updatedAt": "2026-10-27T21:03:50.161Z"
+    },
+    "after": {
+      "playing": false,
+      "position": 34.283217,
+      "updatedAt": "2026-10-27T21:03:55.762Z"
+    },
+    "stable": {
+      "playing": false,
+      "position": 34.283217,
+      "updatedAt": "2026-10-27T21:03:56.764Z"
+    }
+  },
+  "nativeInput": {
+    "outcome": "completed",
+    "requestedWindowPoint": {
+      "x": 1191,
+      "y": 1128
+    },
+    "actualScreenPoint": {
+      "x": 1520,
+      "y": 1307
+    },
+    "engine": "winapp",
+    "version": "0.7.1",
+    "transport": "same-point-button-down-up",
+    "oneCompletedAction": true,
+    "button": "left"
+  },
+  "journal": {
+    "sessionId": "189e1ece-dac6-4c99-a803-64fcab7ce8dd",
+    "openedAt": "2026-10-27T21:03:23.298Z",
+    "actions": [
+      {
+        "actionId": "5ae4edc7-128c-4be8-8179-2f498d25ad63",
+        "actionType": "click",
+        "at": "2026-10-27T21:03:55.890Z"
+      }
+    ],
+    "finalObservation": {
+      "observationId": "8dc9f58c-e207-47f7-adca-a1a1e7c034e9",
+      "sha256": "06603db9581dddf38340625f58ee4c21198a0e593d64d35f00d1547c82404ae4"
+    }
+  },
+  "frames": [
+    {
+      "file": "before.png",
+      "sha256": "ee7e35c324e3971f3d18a964678b834608b8a760c83aa3fae81a6a6ecdc00e49",
+      "observationId": "782c3a8f-4b14-4dcd-b488-718c5beaf9b4"
+    },
+    {
+      "file": "after.png",
+      "sha256": "06603db9581dddf38340625f58ee4c21198a0e593d64d35f00d1547c82404ae4",
+      "observationId": "8dc9f58c-e207-47f7-adca-a1a1e7c034e9"
+    }
+  ],
+  "visualReview": {
+    "reviewer": "Codex root",
+    "reviewedAt": "2026-10-27T21:03:50.092Z",
+    "observation": "Before PNG shows Pause and advancing preview; after PNG shows Play at 00:34.2, before 03:00 end. No UI error shown."
+  },
+  "apiMutations": [
+    {
+      "command": "project.import",
+      "requestId": "trace-replay-7dbb269b-9b41-44ac-944f-d42e66405f54",
+      "state": "completed",
+      "expectedRevision": null
+    },
+    {
+      "command": "preview.open",
+      "requestId": "trace-replay-61cc32fc-1a0e-45e1-a8aa-b18c9aca3c0c",
+      "state": "completed",
+      "expectedRevision": 1
+    },
+    {
+      "command": "preview.play",
+      "requestId": "trace-replay-67ed4374-d3dd-44d7-a5ab-61a72cefe1ab",
+      "state": "completed",
+      "expectedRevision": 1
+    }
+  ],
+  "cleanup": {
+    "nativeSession": true,
+    "trace": true,
+    "replay": true,
+    "grant": true,
+    "app": true
+  },
+  "cleanupUnconfirmed": false,
+  "retainedProof": {
+    "ref": "../replay-finish-2/verification.json",
+    "sha256": "28b6b3e9427e18c3a6219aa02c4efb4472f3948e95f2bd421b767a1c4a08d2f5",
+    "originalPartialAuditPreserved": true
+  },
+  "disposition": "The authorized pause supplement resolves the prior causal-pause gap for APP-01. Original partial audit and sampled media-review limits remain unchanged.",
+  "previewContext": {
+    "duration": 180.066667,
+    "projectId": "efbdc382-2ed0-4e63-9500-f57aad461333",
+    "revision": 1,
+    "recipeHash": "881767672ec7bfb9e5b21ce998f3c078863b1cf0973fb2382ab65e02831f1b4c"
+  },
+  "readinessRef": "../glow-lifecycle-9/receipt.json#readiness",
+  "independentExitRef": "../glow-lifecycle-9/receipt.json#independentExit",
+  "imagePublicationBudgetRef": "../glow-lifecycle-9/receipt.json#imagePublicationBudget",
+  "capture": {
+    "bounds": {
+      "x": 329,
+      "y": 179,
+      "width": 2224,
+      "height": 1444
+    },
+    "coordinateSpace": "window-local-physical-pixels",
+    "displayManifestRef": "../glow-lifecycle-9/receipt.json#display",
+    "note": "Shared contiguous batch manifest; runtime independently compared its display immediately before dispatch."
+  }
+}
