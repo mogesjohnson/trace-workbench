@@ -142,7 +142,7 @@ async function connect(directory) {
     nodeIdentity = (await processList()).find(value => value.pid === transport.pid && value.parent === process.pid && /^node(?:\.exe)?$/i.test(value.name));
     if (!nodeIdentity) throw failure('owner_identity_changed', 'The exact owned MCP process could not be established.');
   } catch (error) { try { await close(); } catch { } throw error; }
-  return { client, transport, pid: transport.pid, nodeIdentity, close,
+  return { client, transport, pid: transport.pid, nodeIdentity, close, journalRoot: path.join(config.runtimeDirectory, 'sessions'),
     call: async (name, args = {}, options = {}) => stateOf(await client.callTool({ name: `trace_computer_${name}`, arguments: args }, { timeout: 30000, ...options })),
     async killAbruptly() {
       // The source-owned private host kills itself. No cached PID is used to terminate another process.

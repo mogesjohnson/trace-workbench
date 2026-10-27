@@ -21,7 +21,7 @@ No UI is launched by `node scripts/accept-glow-lifecycle.cjs --plan`. A future l
 
 ## REPLAY pause
 
-Prepare an isolated owned REPLAY instance pinned to the existing approved binary/source. Use a synthetic preview of at least 60 seconds and measure enough remaining time for actual TRACE observation/dispatch latency. Verify exact project and advancing playing state before one native pause action. Require completed native delivery, independent paused state stable across reads, finite position strictly before the end, unchanged recipe, and exact owned cleanup. Unknown delivery ends the attempt. Do not recreate or export the completed demonstration. The pause-specific runtime remains a separate preparation step; this guard alone cannot run it.
+Prepare an isolated owned REPLAY instance pinned to the existing approved binary/source. The [pause workflow](../scripts/accept-replay-pause.cjs) requires at least 120 seconds of synthetic media, 30 seconds remaining before input, advancing playing state, exactly one native click and independently stable paused state strictly before the end. It binds the new post-action observation to the real TRACE journal, preserves unknown delivery without replay and verifies an unchanged recipe. [File-only preparation](../scripts/replay-pause-assets.cjs) can create a private 180-second loop of the retained synthetic video; no completed recording or export is repeated. Production runtime wiring remains a separate preparation step; these injected contracts alone cannot run the case.
 
 ## Decision shape
 
