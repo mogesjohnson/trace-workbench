@@ -1,5 +1,13 @@
 # Agent handoff
 
+## Background evidence reconciliation — 27 October 2026
+
+Desktop readiness was withdrawn before UI launch; no session, capture, input or live attempt started. Continue background work only until a fresh desktop window is available. The two missing live effects remain glow ordinary-close/owner-loss cleanup and causal REPLAY pause; completed mouse, Escape, host, clipboard, recording and export cases stay verified at compatible scope.
+
+Branch `codex/owner-evidence-reconciliation` depends on PR 25 at `0d9a6a9`. [Eight-invariant review](docs/PRODUCTION_OWNER_RECONCILIATION.md) maps all owner rows; the later stop audit resolves the older map's sole blocked source concern at its recorded native scope. All original seven-row evidence hashes and later stop receipt hashes match; native sources remain unchanged. Keep the three legacy exit-metadata limits and original blocked map unchanged. A Terra 6.1 / medium read-only review supplied pointers; root independently checked retained hashes and the controller/server source diff. No tests or paid Claude session were repeated.
+
+README, APP-01 and the working requirement checklist now reflect completed host/clipboard/stop/media evidence and checkpoint CI run 40040530734's success. Checklist remains 18/22, not an effort estimate. Next: upload this documentation review, inspect its required CI once, and preserve the two narrow desktop gaps. No merge, version bump, release, new retry claim or native helper change is authorized by this background work.
+
 ## Background-only resume — 23 October 2026
 
 The owner resumed with “resume bacjgrounnd”; desktop control stays stopped. New branch `codex/background-finish-prep` depends on PR 24, which retains its four commits. [Background plan](docs/BACKGROUND_FINISH_PLAN.md) and [preparation receipt](evidence/background-finish-preparation/receipt.json) describe the scoped work. Six affected offline checks passed; the source/documentation check passed for 100 JavaScript files. No full local suite or live case was repeated.
