@@ -6,7 +6,7 @@ const budget = require('./narrow-finish-budget.cjs');
 const need = (condition, message) => { if (!condition) throw new Error(message); };
 
 function plan() {
-  return { ...budget.plan('A4-REPLAY'), mode: 'plan', claimsAttempt: false, productionRuntimeAvailable: false,
+  return { ...budget.plan('A4-REPLAY'), mode: 'plan', claimsAttempt: false, execution: 'injected',
     reviewDeadlineMs: 45000, minimumPreviewSeconds: 120, minimumRemainingSeconds: 30, nativeClicks: 1 };
 }
 function playing(state, project, recipe) {
@@ -60,9 +60,11 @@ async function runInjected(deps) {
   try {
     await deps.preflight();
     const media = await deps.prepareMedia();
+    result.media = media;
     await deps.claim();
     app = await deps.launch(media);
     const target = await deps.identify(app);
+    result.target = target;
     grant = await deps.grant(app);
     replay = await deps.connectReplay(grant);
     const imported = await deps.importMedia(media, grant);
@@ -79,6 +81,7 @@ async function runInjected(deps) {
     result.preview = { first, advancing }; result.savedRecipe = recipe;
     trace = await deps.connectTrace();
     session = await deps.openTrace(trace, target);
+    result.session = session;
     const observation = await deps.observe(trace, session);
     await deps.publishReview(observation);
     const review = await deps.waitReview(45000);
