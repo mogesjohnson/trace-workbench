@@ -7,6 +7,30 @@ const os = require('node:os');
 const driver = require('../scripts/accept-replacement-glow.cjs');
 const common = require('../scripts/replacement-acceptance-common.cjs');
 
+test('target-hit criterion accepts the retained one-pixel offset without changing the historical oracle', () => {
+  const state = { button: { x: 1, y: 856, width: 12, height: 88 }, input: { leftButtonDown: false },
+    lastMouseClick: { button: 'Left', clicks: 1, screenX: 6, screenY: 900, atUtc: '2026-10-23T18:56:46Z' } };
+  counts(state, 2);
+  assert.deepEqual(driver.assertTargetHit(state, 2, { x: 7, y: 900 }, '2026-10-23T18:56:40Z').actual, { x: 6, y: 900 });
+  assert.throws(() => driver.assertClick(state, 2, { x: 7, y: 900 }, '2026-10-23T18:56:40Z'));
+});
+
+test('target-hit criterion rejects outside, stale, extra, synthetic-only and unreleased clicks', () => {
+  const state = { button: { x: -10, y: 20, width: 12, height: 88 }, input: { leftButtonDown: false },
+    lastMouseClick: { button: 'Left', clicks: 1, screenX: -9, screenY: 40, atUtc: '2026-10-23T18:56:46Z' } };
+  counts(state, 2);
+  const point = { x: -4, y: 64 }, began = '2026-10-23T18:56:40Z';
+  driver.assertTargetHit(state, 2, point, began);
+  for (const change of [{ screenX: 2 }, { screenX: -11 }, { screenY: 108 }, { screenY: 19 }, { screenX: '-9' },
+    { button: 'Right' }, { clicks: 2 }, { atUtc: '2026-10-23T18:56:39Z' }])
+    assert.throws(() => driver.assertTargetHit({ ...state, lastMouseClick: { ...state.lastMouseClick, ...change } }, 2, point, began));
+  for (const change of [{ mouseClickCount: 1 }, { activationCount: 3 }, { input: { leftButtonDown: true } },
+    { button: { ...state.button, width: 0 } }, { lastMouseClick: undefined }])
+    assert.throws(() => driver.assertTargetHit({ ...state, ...change }, 2, point, began));
+  assert.throws(() => driver.assertTargetHit(state, 2, { x: 2, y: 40 }, began));
+  assert.throws(() => driver.assertTargetHit(state, 2, point, 'invalid'));
+});
+
 test('glow amendment CLI declares lifetime 5 or 6 and pins proposal/history without changing the oracle', () => {
   const first = driver.parseArgs(['--plan', '--amendment', '2', '--continuation', '1']);
   const declared = driver.plan(first);

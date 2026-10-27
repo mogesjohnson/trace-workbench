@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "decisionId": "owner-glow-target-hit-2026-10-23",
+  "decidedOn": "2026-10-23",
+  "source": "direct_user_question_reply",
+  "questionItemId": "[\"request_user_input_async\",\"call_921840d3cf1f440a8d90b7720b07327f\",0]",
+  "question": "Glow review: both recorded clicks hit the intended button exactly once, but TRACE landed 1 pixel from the requested center. Should acceptance require the correct target hit, or exact pixel placement? The original failed result will remain unchanged either way.",
+  "selectedOption": 1,
+  "selectedLabel": "Correct target hit (recommended for usability)",
+  "verbatimAnswer": "i chose 1, write this down and compact",
+  "criterion": "Judge the glow click by correctly hitting the intended target, rather than exact requested-center pixel placement.",
+  "preserveOriginalFailedResult": true,
+  "scope": "Acceptance criterion decision only. No additional live attempt budget is granted and no missing lifecycle or REPLAY pause evidence is supplied."
+}

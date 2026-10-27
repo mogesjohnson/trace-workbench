@@ -121,6 +121,25 @@ function referencePoint(state) {
   assert.ok(button && ['x', 'y', 'width', 'height'].every(key => Number.isInteger(button[key])) && button.width > 0 && button.height > 0);
   return { x: button.x + Math.floor(button.width / 2), y: button.y + Math.floor(button.height / 2) };
 }
+// Prospective target-hit criterion; historical drivers keep the exact-center assertClick.
+// This pure assertion grants no attempt and proves neither glow visibility nor lifecycle.
+function assertTargetHit(state, expected, point, began) {
+  assert.ok(Number.isSafeInteger(expected) && expected > 0);
+  assertCounts(state, expected);
+  const button = state.button, actual = state.lastMouseClick;
+  assert.ok(button && ['x', 'y', 'width', 'height'].every(key => Number.isSafeInteger(button[key]))
+    && button.width > 0 && button.height > 0
+    && Number.isSafeInteger(button.x + button.width) && Number.isSafeInteger(button.y + button.height), 'Fresh physical button bounds are required.');
+  const inside = value => Number.isSafeInteger(value?.x) && Number.isSafeInteger(value?.y)
+    && value.x >= button.x && value.x < button.x + button.width && value.y >= button.y && value.y < button.y + button.height;
+  assert.ok(inside(point), 'The requested physical point must target the intended button.');
+  assert.equal(actual?.button, 'Left'); assert.equal(actual?.clicks, 1);
+  const hit = { x: actual.screenX, y: actual.screenY };
+  assert.ok(inside(hit), 'The independent physical click must hit the intended button.');
+  assert.ok(Number.isFinite(Date.parse(began)) && Number.isFinite(Date.parse(actual.atUtc))
+    && Date.parse(actual.atUtc) >= Date.parse(began), 'An independent mouse event must follow this declared click checkpoint.');
+  return { requested: { ...point }, actual: hit, button: { ...button }, rectangleConvention: 'physical-screen-half-open' };
+}
 function assertReferenceProof(proof, pending) {
   if (!proof || proof.source !== 'reference-executor' || proof.executor !== pending.executor || traceExecutor(proof.executor) || proof.operation !== 'click'
     || proof.checkpointId !== pending.checkpointId || proof.windowId !== pending.target.id || proof.pid !== pending.target.pid
@@ -419,5 +438,5 @@ async function run(input = {}, injected = {}) {
 }
 if (require.main === module) run(parseArgs(process.argv.slice(2))).then(value => { process.stdout.write(JSON.stringify(value, null, 2) + '\n'); if (value.status && value.status !== 'pass') process.exitCode = 1; })
   .catch(error => { process.stderr.write(common.publicError(error).message + '\n'); process.exitCode = 1; });
-module.exports = { CASE, plan, parseArgs, assertFocus, assertOwnershipSession, assertCounts, assertClick, referencePoint, assertReferenceProof, waitReference,
+module.exports = { CASE, plan, parseArgs, assertFocus, assertOwnershipSession, assertCounts, assertClick, assertTargetHit, referencePoint, assertReferenceProof, waitReference,
   regionDisplay, regionFixture, measureGlowRegion, waitRegionReference, readFixtureState, captureMetadata, run };

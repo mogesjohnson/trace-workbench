@@ -72,7 +72,7 @@ function injectedRuntime(options = {}) {
       events.push(`trace-evidence:${kind}:${target.pid}:${window.since ? 'since' : 'none'}`);
       if (input?.actualTraceReceipt !== true) return false;
       // The injected TRACE effect stands in for root's actual editor actions.
-      if (kind === 'editor-controls') preview = { ...preview, position: preview.position + 1, playing: !!options.editorStillPlaying };
+      if (kind === 'editor-controls') preview = { ...preview, position: options.editorPausedPosition ?? preview.position + 1, playing: !!options.editorStillPlaying };
       if (kind === 'completed-file-playback') preview = { ...preview, position: preview.position + 1 };
       return true;
     },
@@ -352,6 +352,14 @@ test('editor controls require the independent preview to end paused past the ope
   const f = injectedRuntime({ editorStillPlaying: true }); await through(f, 'edit-fixture');
   await assert.rejects(f.workflow.advance('trace-editor-controls', evidence), { code: 'replay_editor_controls_unverified' });
   assert.equal(f.calls.some(call => call.name === 'export.start'), false); await f.workflow.cleanup();
+});
+
+test('automatic end-of-media cannot satisfy the TRACE pause checkpoint', async () => {
+  for (const position of [RECIPE.duration, RECIPE.duration + 1, Infinity, '3']) {
+    const f = injectedRuntime({ editorPausedPosition: position }); await through(f, 'edit-fixture');
+    await assert.rejects(f.workflow.advance('trace-editor-controls', evidence), { code: 'replay_editor_controls_unverified' });
+    assert.equal(f.calls.some(call => call.name === 'export.start'), false); await f.workflow.cleanup();
+  }
 });
 
 test('unknown mutation retains its request ID as unknown, typed rejection as failed, and neither permits retry or reconciliation writes', async () => {

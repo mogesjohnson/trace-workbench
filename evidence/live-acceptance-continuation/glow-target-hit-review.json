@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-10-23T19:47:21.336Z",
+  "scope": "Read-only criterion review of retained evidence. No desktop input, new attempt or original-result rewrite.",
+  "ownerDecision": {
+    "ref": "evidence/live-acceptance-continuation/owner-glow-target-hit-decision.json",
+    "sha256": "6c40fa480a51d798d0af218ec7859c7aab46cfdd28c17b0c296cac7fa0801b30"
+  },
+  "originalReceipt": {
+    "ref": "evidence/live-acceptance-continuation/glow-finish-2/receipt.json",
+    "sha256": "5a87c5a2eac19d45256ea8cc62245566dd2e7ab489fe3ac526cff7689672c3c5",
+    "status": "fail"
+  },
+  "diagnosis": {
+    "ref": "evidence/live-acceptance-continuation/glow-finish-2/diagnosis.json",
+    "sha256": "aad70d8a81925cd1ac0931bdca64bbb7ab45b7265601090b8ee82fda089be3e9"
+  },
+  "targetHit": {
+    "status": "pass",
+    "criterion": "Judge the glow click by correctly hitting the intended target, rather than exact requested-center pixel placement.",
+    "actual": {
+      "x": 6,
+      "y": 900
+    },
+    "button": {
+      "x": 1,
+      "y": 856,
+      "width": 12,
+      "height": 88
+    },
+    "counters": {
+      "count": 2,
+      "activationCount": 2,
+      "mouseDownCount": 2,
+      "mouseUpCount": 2,
+      "mouseClickCount": 2
+    }
+  },
+  "lifecycle": {
+    "status": "not_run",
+    "missing": [
+      "ordinary-close with absence measurement",
+      "owned-parent-loss with absence measurement"
+    ],
+    "earlierRegression": "evidence/0.1.0-alpha.3.1/glow-regression/receipt.json",
+    "compatibility": "The older regression predates native-supervisor ownership; its changed controller/server/indicator integration prevents transferring the complete lifecycle claim without further evidence.",
+    "changedIntegrationFiles": [
+      "src/computer/server.cjs",
+      "src/computer/controller.cjs",
+      "src/computer/winapp-backend.cjs"
+    ]
+  },
+  "fullGlowCase": "incomplete",
+  "newLiveAttemptAuthorized": false
+}

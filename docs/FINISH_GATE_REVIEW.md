@@ -2,6 +2,10 @@
 
 Updated 23 October 2026. **18 of 22 checkpoints verified (82%).** This is the concrete remaining work, not a new retry authorization. Previous failures and frozen approvals remain unchanged.
 
+**Background-only resume:** [The current finish plan](BACKGROUND_FINISH_PLAN.md) records six focused offline checks and a completed tool-free Claude source review. [Pinned target-hit verification](../evidence/live-acceptance-continuation/glow-target-hit-verification.json) passes that subproof while preserving the original failed receipt. The prospective assertion does not change the frozen live driver or its budgets. REPLAY now rejects automatic end-of-media as a pause result; causal pause proof is still missing. No desktop control ran.
+
+**Owner decision recorded:** The owner chose option 1: accept the correct intended-target hit rather than exact requested-center pixel placement. [The exact reply](../evidence/live-acceptance-continuation/owner-glow-target-hit-decision.json) preserves the original failed result. This settles the criterion preference; it grants no additional live attempts and does not establish missing lifecycle or REPLAY pause evidence.
+
 ## Delivered now
 
 - Current-source physical Escape during held mouse and keyboard input, plus ordinary injected Escape: [audited live passes](../evidence/live-acceptance-continuation/finish-stop-verification.json). No further human keystrokes or repeated tests are needed for these cases.
@@ -13,7 +17,7 @@ Updated 23 October 2026. **18 of 22 checkpoints verified (82%).** This is the co
 
 | Case | Actual evidence | Remaining issue | Next work |
 | --- | --- | --- | --- |
-| Glow | Reference click passed; TRACE completed; all five counters reached 2; exact cleanup passed. | Requested physical X 7 arrived at X 6 inside the same 12-pixel button. Exact-center check failed before ordinary-close/parent-loss stages. Approved lifetime 8 is exhausted. | Resolve coordinate precision or explicitly revise the exact-center criterion prospectively; audit compatibility of existing lifecycle evidence before proposing only the still-missing live work. |
+| Glow | Reference click passed; TRACE completed; all five counters reached 2; exact cleanup passed. Owner chose correct target hit. | Original exact-center failure stays preserved; ordinary-close/parent-loss stages were not reached. Approved lifetime 8 is exhausted. | Apply the chosen target-hit criterion prospectively; audit compatibility of existing lifecycle evidence before proposing only the still-missing live work. |
 | REPLAY | Exact targeting, captured source review, edits, two exports, actual native editor clicks and completed-file playback passed. | Playback reached its end before the second toggle click. The runtime correctly found a paused position, but that does not prove a user-caused pause. Lifetime 4 is consumed. | Decide whether the stated APP-01 real-app result accepts this scoped demonstration, or require a bounded pause-specific supplement with a timing plan that accommodates observation latency. Do not repeat the full workflow. |
 
 The public REPLAY receipt remains `awaiting_runtime_evidence_audit`; its audit is `partial`. Full APP-01 and full glow acceptance are not promoted by this document.
