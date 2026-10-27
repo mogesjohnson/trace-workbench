@@ -1,8 +1,8 @@
 {
   "updated": "2026-10-27",
   "title": "TRACE — close the Computer Use gap",
-  "goalStatus": "active",
-  "current": "Both missing live effects passed on 27 October: glow ordinary-close/owner-loss cleanup and a causal REPLAY pause. Receipts and four approved proof PNGs are uploaded in PRs 32–33. Desktop work is finished. Final documentation and exact versioned distribution remain; 20/22 checkpoints verified (91%).",
+  "goalStatus": "complete",
+  "current": "TRACE 0.1.0 is published. All 29 prepared PRs are merged; final main-source CI and exact-archive installation/rollback passed. Published assets and checksums were independently downloaded and verified. All 22 checkpoints are complete at their declared scopes.",
   "measurement": "Each row is one declared checkpoint. Counts measure completed checkpoints, not time, effort, feature parity or release readiness. A scoped pass covers only the behavior named in that row.",
   "checkpoints": [
     {
@@ -161,31 +161,30 @@
       "id": "20",
       "phase": "Deliver",
       "title": "Clean archive installation and rollback",
-      "status": "active",
-      "detail": "Current-source d981e06 passed Windows CI and exact-archive installation/rollback. A final versioned release archive and checksum remain separate gates.",
-      "evidence": "ARCHIVE_INSTALL.md"
+      "status": "verified",
+      "detail": "Final main source 190a06a passed hosted Windows installation/rollback from the exact published ZIP. Uploaded assets were downloaded and hash-verified; see the publication receipt.",
+      "evidence": "../evidence/release-0.1.0/publication.json"
     },
     {
       "id": "21",
       "phase": "Deliver",
       "title": "Final documentation and reviewable commits",
-      "status": "pending",
-      "detail": "All requirements and eight owner invariants are mapped. Final documentation, reviewed integration and versioned delivery are being reconciled against the completed live results.",
-      "evidence": "../VERSION_CONTROL.md"
+      "status": "verified",
+      "detail": "Reviewed stack merged, requirements and release guidance reconciled, version 0.1.0 published with source ZIP, acceptance manifest, distribution receipt, release notes and checksums.",
+      "evidence": "../evidence/release-0.1.0/publication.json"
     },
     {
       "id": "22",
       "phase": "Deliver",
       "title": "Draft PR and required hosted CI",
       "status": "verified",
-      "detail": "PR 31 head d981e06 passed required CI run 40580446444, including both MCP paths and exact-archive installation/rollback. Final release source still needs its own required gate.",
+      "detail": "Final main-source hosted CI passed with source checks, required suite, both MCP paths and exact-archive installation/rollback. The publication receipt binds the actual source and CI URL.",
       "evidence": "../evidence/computer-use-method/public-ci-parallel-fixes.json"
     }
   ],
   "next": [
-    "Complete final requirement disposition and user guidance using the published glow and pause receipts. Preserve original failures and mixed-scope recovery limits.",
-    "Prepare the final versioned source/setup archive, acceptance manifest and checksums; verify its exact bytes through required hosted CI.",
-    "Present the concrete integration/release candidate for final owner approval. No merge, tag or publication is authorized yet."
+    "Use the published v0.1.0 source/setup archive and verify SHA-256 before installation.",
+    "Keep the recorded operating limits; broader display/DPI, optional hosts/providers and background GUI operation remain future work."
   ],
-  "footer": "Desktop control is finished and all owned helpers are closed. Both narrow attempts were consumed and passed. No repeat of compatible passing live checks is needed. Final reviewed distribution remains open."
+  "footer": "Release v0.1.0 is published and its assets verified. No desktop control remains active. Original failures and scoped replacement history are preserved."
 }
