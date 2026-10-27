@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "version": "0.1.0",
+  "status": "published",
+  "releaseUrl": "https://github.com/mogesjohnson/trace-workbench/releases/tag/v0.1.0",
+  "publishedAt": "2026-10-27T23:44:53Z",
+  "tag": "v0.1.0",
+  "sourceCommit": "190a06abfc7bc3b87e67e6b4ee070d4ea70b3308",
+  "ci": {
+    "url": "https://github.com/mogesjohnson/trace-workbench/actions/runs/40603566212",
+    "conclusion": "success"
+  },
+  "archive": {
+    "file": "trace-workbench-0.1.0-source.zip",
+    "sha256": "e9659ee35b840babc045961206b0e88bec514eb56417a8c2c5a2cc2e04e2adbb",
+    "bytes": 23872813,
+    "reproductionTimezone": "UTC",
+    "localReproductionMatches": true
+  },
+  "assets": [
+    {
+      "name": "acceptance-manifest.json",
+      "bytes": 5395,
+      "digest": "sha256:0321082121583631cf9b479787919fc1740bc172cce73220207cad11b711a3f3",
+      "url": "https://github.com/mogesjohnson/trace-workbench/releases/download/v0.1.0/acceptance-manifest.json"
+    },
+    {
+      "name": "distribution-receipt.json",
+      "bytes": 3215,
+      "digest": "sha256:4b1d82f8100476c560773f61aec8e01213be389db7de2eff872c48ff3ed4c36f",
+      "url": "https://github.com/mogesjohnson/trace-workbench/releases/download/v0.1.0/distribution-receipt.json"
+    },
+    {
+      "name": "RELEASE_NOTES.md",
+      "bytes": 2783,
+      "digest": "sha256:136142c56dfd6e147987a6c497691f962da163c3376a3f41aa4881dedec336b8",
+      "url": "https://github.com/mogesjohnson/trace-workbench/releases/download/v0.1.0/RELEASE_NOTES.md"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 365,
+      "digest": "sha256:bf373ad3adf075e6165576b1b12d64af6021267012d5ec487350fcf7dae24b24",
+      "url": "https://github.com/mogesjohnson/trace-workbench/releases/download/v0.1.0/SHA256SUMS.txt"
+    },
+    {
+      "name": "trace-workbench-0.1.0-source.zip",
+      "bytes": 23872813,
+      "digest": "sha256:e9659ee35b840babc045961206b0e88bec514eb56417a8c2c5a2cc2e04e2adbb",
+      "url": "https://github.com/mogesjohnson/trace-workbench/releases/download/v0.1.0/trace-workbench-0.1.0-source.zip"
+    }
+  ],
+  "independentDownloadedHashesVerified": true,
+  "ownerApproval": {
+    "source": "direct-owner",
+    "reply": "yes go ahead",
+    "scope": "Merge documented stack; verify resulting main archive; publish GitHub v0.1.0"
+  },
+  "requirements": {
+    "functional": "pass_at_declared_scope",
+    "REL01": "pass",
+    "prepublicationManifestRetained": true
+  },
+  "limits": "Declared Windows normal-desktop scope; mixed compatible recovery sources; three legacy owner-exit metadata gaps; sampled media review; deferred display/optional-provider/host/background-GUI coverage."
+}

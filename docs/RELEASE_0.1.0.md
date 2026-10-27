@@ -1,6 +1,6 @@
-# TRACE Workbench 0.1.0 — prepared release notes
+# TRACE Workbench 0.1.0 — release notes
 
-Prepared 27 October 2026. This candidate is not merged, tagged or published. Final owner approval and exact-artifact gates remain required.
+Published 27 October 2026 with direct owner approval. [Download the release](https://github.com/mogesjohnson/trace-workbench/releases/tag/v0.1.0); [publication evidence](../evidence/release-0.1.0/publication.json) binds the tested source, exact archive, hosted result and independently verified assets.
 
 TRACE supplies shared local analysis and Windows computer-control tools for AI agents. The six Computer Use MCP tools support exact window selection, PNG/accessibility observation, fresh single-use actions, verified outcomes and desktop-session cleanup. The method library connects routing, effect checks and resumable checkpoints; it does not replace host reasoning or permission controls.
 
@@ -25,4 +25,4 @@ Broader display/DPI transitions, secure/elevated desktops, independent backgroun
 
 Use the [README setup commands](../README.md#computer-use-setup), [operation/recovery guide](COMPUTER_USE.md) and [archive verifier](ARCHIVE_INSTALL.md). Configuration plans preserve unrelated entries and exact backups. Reconnect existing MCP hosts after updating source.
 
-The delivery candidate must include a source/setup ZIP, acceptance manifest and SHA-256 checksums. Verify installation and rollback from those exact ZIP bytes on hosted Windows CI; a rebuilt or differently versioned archive does not inherit that acceptance. `npm` publication is not part of this release (`private: true`). After reviewed integration and explicit owner approval, the intended GitHub tag is `v0.1.0`.
+The release includes the source/setup ZIP, acceptance manifest, distribution receipt, release notes and SHA-256 checksums. Fresh hosted Windows CI verified installation/rollback from those exact ZIP bytes. The prepublication manifest is retained as a snapshot; the distribution/publication receipts close REL-01. `npm` publication remains outside scope (`private: true`). Tag `v0.1.0` identifies the reviewed tested source.
