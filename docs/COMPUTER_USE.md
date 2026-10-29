@@ -32,6 +32,14 @@ The configured command is the installed Node executable plus this checkout's abs
 5. Inspect the new observation before continuing. `not_dispatched` means the requested input was never sent (any preparatory activation is listed separately); `unknown` means it may have been. After either, observe again before deciding; never replay automatically.
 6. Close the session to release desktop ownership. The target application remains open.
 
+### Cleanup result contract (V1 development)
+
+A successful close returns `{ sessionId, closed: true, cleanup: 'confirmed' }`. Native confirmation and normal owner exit are both required. Process exit alone, a missing acknowledgment, or a transport/projection failure cannot confirm cleanup. Uncertain cleanup returns a tool error with `cleanup: 'unknown'`, `inputRecoveryRequired: true` and available bounded recovery details. Recovery codes and boolean fields are allowlisted; private native payloads are omitted.
+
+The method adapter requires explicit confirmation, including when connected to an older server. It retains uncertain close results across repeated calls and blocks further observations through that provider. Independently resolve recovery, then discard the failed provider and reconnect its server before starting a new session. Reconnection alone does not resolve recovery. Whole-controller shutdown also retains its original failed result across repeated calls.
+
+Cleanup confirmation concerns the owned session and input lifecycle. It does not prove the intended application effect or settle a deferred clipboard transaction. Existing observation freshness, input quarantine and clipboard obligations still apply. The six tools and supported Windows/display scope remain unchanged; these development changes do not publish a new release.
+
 The server supports activation, coordinate/element clicks, typing, allowed key chords, vertical wheel scrolling, dragging, accessibility invocation and editable values. Actual tested coverage and limitations are recorded in [verification](VERIFICATION.md) and [the specification](../SPEC.md).
 
 ## Storage and recovery
