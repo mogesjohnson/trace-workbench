@@ -6,7 +6,7 @@ const path = require('node:path');
 const { randomUUID, createHash } = require('node:crypto');
 const { DesktopLease } = require('./lease.cjs');
 const { ActivityIndicator } = require('./activity-indicator.cjs');
-const { validateAction } = require('./action-contract.cjs');
+const { validateAction, actionSupport } = require('./action-contract.cjs');
 
 const fail = (code, message) => Object.assign(new Error(message), { code });
 const identityMatches = (a, b) => a && b && a.id === b.id && a.pid === b.pid && a.processName === b.processName
@@ -156,7 +156,15 @@ function createComputerController(options = {}) {
   }
 
   return {
-    doctor(callOptions) { return queued(signal => backend.doctor({ signal }), callOptions); },
+    doctor(callOptions) {
+      return queued(async signal => {
+        const result = await backend.doctor({ signal });
+        return { ...result, support: actionSupport(observationTtlMs), readiness: {
+          native: { ready: result.ready === true, code: result.code || null, reason: result.reason || null },
+          target: { ready: null, reason: 'Exact target, geometry, patterns and focus are checked during observation and dispatch.' },
+        } };
+      }, callOptions);
+    },
     listWindows(callOptions) {
       return queued(async signal => {
         const windows = targetWindows(await backend.listWindows({ signal }));
