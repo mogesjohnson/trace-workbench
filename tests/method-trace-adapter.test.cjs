@@ -1,6 +1,7 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const { createHash } = require('node:crypto');
 const { Client, InMemoryTransport } = require('@modelcontextprotocol/client');
 const { createComputerServer } = require('../src/computer/server.cjs');
 const { createTraceProvider, ComputerMethod, TOOL_NAMES } = require('../src/method/index.cjs');
@@ -19,7 +20,7 @@ async function fixture(t) {
         accessibility:{depth:args.accessibilityDepth||8,truncated:false},
         focused:{available:true,hasFocus:true,elementId:'editor',name:'Report',controlType:'Edit',provenance:'winapp-get-focused'},
         targetState:{enabled:true,ownerWindowId:control.ownerOverride===undefined?lease.window.ownerWindowId:control.ownerOverride},
-        screenshot:{data:PNG,mimeType:'image/png',width:1,height:1,sha256:'a'.repeat(64)}};},
+        screenshot:{data:PNG,mimeType:'image/png',width:1,height:1,sha256:createHash('sha256').update(Buffer.from(PNG,'base64')).digest('hex')}};},
     async act(args){calls.push(['act',args]);return {outcome:control.outcome,error:control.error,
       preparation:[{step:'activation',status:'foreground'}]};},
     async closeSession(args){calls.push(['close',args]);lease=null;return {closed:true,cleanup:'confirmed'};},async close(){lease=null;}
