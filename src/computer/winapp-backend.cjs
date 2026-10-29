@@ -6,6 +6,7 @@ const crypto = require('node:crypto');
 const { spawn } = require('node:child_process');
 const { DEFAULT_INDICATOR, verifyIndicatorFiles } = require('./activity-indicator.cjs');
 const { parseAction, normalizeKey } = require('./action-contract.cjs');
+const { measure, count, providerRequest } = require('./observation-metrics.cjs');
 const pin = require('./winapp-pin.json');
 const ROOT = path.resolve(__dirname, '../..');
 const DEFAULT_BINARY = path.join(ROOT, '.runtime', 'winapp', `v${pin.version}`, 'bin', 'winapp.exe');
@@ -213,16 +214,17 @@ class WinappBackend {
   }
   async command(verb, args, signal) {
     const mutating = !['list-windows', 'status', 'inspect', 'get-focused', 'screenshot'].includes(verb);
+    if (verb === 'screenshot') count('captureRequests');
     if (this.supervisor) {
       if (this.supervisor.ready) {
-        const result = await this.supervisor.run('winapp', ['ui', verb, '--json', ...args], { signal, mutating });
+        const result = await providerRequest(true, () => this.supervisor.run('winapp', ['ui', verb, '--json', ...args], { signal, mutating }));
         return parseJson(result.stdout, result.stderr, result.exitCode);
       }
       if (mutating) fail('session_stopped', 'A ready native session is required before input.', { outcome: 'not_dispatched' });
     }
     const mouseGesture = verb === 'drag' || verb === 'click';
     let result;
-    try { result = await this.run(this.binaryPath, ['ui', verb, '--json', ...args], {
+    try { result = await providerRequest(false, () => this.run(this.binaryPath, ['ui', verb, '--json', ...args], {
       signal,
       ...(mouseGesture ? { drainMs: 250, interruptionRecovery: async () => {
         const released = await this.run(this.bridgePath, ['release-left'], { timeoutMs: 1500, maxOutputBytes: 1024 });
@@ -230,7 +232,7 @@ class WinappBackend {
         if (receipt.released !== true || receipt.button !== 'left') fail('input_recovery_failed', 'The bridge did not confirm a left-button release.');
         return { released: true, button: 'left', method: 'public-win32-sendinput' };
       } } : {})
-    }); } catch (error) {
+    })); } catch (error) {
       const recovery = error.details?.recovery;
       if (mouseGesture && recovery && ((recovery.attempted && recovery.released !== true) || recovery.reason === 'process_exit_unconfirmed')) {
         this.inputRecoveryRequired = recovery.code || recovery.reason || 'input_recovery_failed';
@@ -243,9 +245,9 @@ class WinappBackend {
     const args = verb === 'info' ? [verb] : [verb, id(window.id), String(window.pid)];
     const mutating = verb === 'activate';
     if (this.supervisor && mutating && !this.supervisor.ready) fail('session_stopped', 'A ready native session is required before activation.', { outcome: 'not_dispatched' });
-    const result = this.supervisor?.ready
-      ? await this.supervisor.run('bridge', args, { signal, timeoutMs: 10000, mutating })
-      : await this.run(this.bridgePath, args, { signal, timeoutMs: 10000 });
+    const result = await providerRequest(this.supervisor?.ready === true, () => this.supervisor?.ready
+      ? this.supervisor.run('bridge', args, { signal, timeoutMs: 10000, mutating })
+      : this.run(this.bridgePath, args, { signal, timeoutMs: 10000 }));
     const parsed = parseJson(result.stdout, result.stderr, result.exitCode);
     if (verb !== 'info' && (parsed.hwnd !== window.id || parsed.pid !== window.pid)) fail('window_identity_changed', 'Window bridge returned a different HWND/PID.');
     return parsed;
@@ -385,30 +387,32 @@ class WinappBackend {
   }
   async observe({ window, screenshotPath, signal, depth = 8 }) {
     if (typeof screenshotPath !== 'string' || !path.isAbsolute(screenshotPath) || path.extname(screenshotPath).toLowerCase() !== '.png') fail('invalid_screenshot_path', 'An absolute PNG output path is required.');
-    await this.identity(window, signal);
-    let geometry = await this.bridge('bounds', window, signal);
+    await measure('identity', () => this.identity(window, signal));
+    let geometry = await measure('geometry', () => this.bridge('bounds', window, signal));
     const restored = geometry.minimized === true;
     if (restored) {
-      await this.bridge('activate', window, signal);
-      geometry = await this.settledBounds(window, signal);
+      await measure('restore', () => this.bridge('activate', window, signal));
+      geometry = await measure('settle', () => this.settledBounds(window, signal));
     }
-    const state = await this.inspect(window, signal, depth);
-    geometry = await this.bridge('bounds', window, signal);
+    const state = await measure('uia', () => this.inspect(window, signal, depth));
+    geometry = await measure('geometry', () => this.bridge('bounds', window, signal));
     const captured = captureBounds(bounds(geometry.frameBounds), state.bounds);
-    await this.identity(window, signal);
+    await measure('identity', () => this.identity(window, signal));
     // DWM exposes the exact WGC source origin. Selecting the root crops to its intersection with that
     // frame. A PrintWindow fallback with different bounds is rejected by the exact dimension check.
-    const screenshot = await this.command('screenshot', ['-w', window.id, '--output', screenshotPath, '--', state.rootSelector], signal);
+    const screenshot = await measure('capture', () => this.command('screenshot', ['-w', window.id, '--output', screenshotPath, '--', state.rootSelector], signal));
     if (String(screenshot.hwnd) !== window.id || screenshot.processId !== window.pid || path.resolve(screenshot.filePath || '') !== path.resolve(screenshotPath) || screenshot.windows?.length > 1) fail('invalid_screenshot', 'Screenshot provenance does not match the selected window.');
-    const size = pngSize(await fs.readFile(screenshotPath));
+    const png = await measure('backendPngRead', () => fs.readFile(screenshotPath));
+    count('backendPngRead', png.length);
+    const size = measure('pngHeader', () => pngSize(png));
     if (size.width !== screenshot.width || size.height !== screenshot.height) fail('invalid_screenshot', 'PNG dimensions disagree with native capture metadata.');
     if (size.width !== captured.width || size.height !== captured.height) fail('coordinate_space', 'PNG dimensions do not match exact DWM capture bounds. No scaling is assumed.');
-    const current = await this.identity(window, signal);
-    const after = await this.inspect(window, signal, 1);
-    const afterGeometry = await this.bridge('bounds', window, signal);
+    const current = await measure('identity', () => this.identity(window, signal));
+    const after = await measure('uia', () => this.inspect(window, signal, 1));
+    const afterGeometry = await measure('geometry', () => this.bridge('bounds', window, signal));
     if (!sameBounds(state.bounds, after.bounds) || !sameBounds(bounds(geometry.frameBounds), bounds(afterGeometry.frameBounds)) || !sameBounds(bounds(geometry.windowBounds), bounds(afterGeometry.windowBounds))) fail('window_moved', 'Window moved during observation; request a fresh observation.');
     let focused;
-    try { focused = await this.focused(window, signal, state.elements); }
+    try { focused = await measure('focus', () => this.focused(window, signal, state.elements)); }
     catch (error) { if (signal?.aborted) throw error; focused = { available: false, code: error.code || 'focus_query_failed' }; }
     if (window.processCreationTime !== undefined && afterGeometry.processCreationTime !== window.processCreationTime) fail('window_identity_changed', 'The selected process was replaced.');
     return { ...state, window: { ...current, bounds: captured }, bounds: captured, uiaBounds: state.bounds, nativeWindowBounds: bounds(geometry.windowBounds), frameBounds: bounds(geometry.frameBounds), focused,

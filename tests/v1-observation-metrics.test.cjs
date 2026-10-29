@@ -70,3 +70,68 @@ test('controller publishes observation metrics for first and action refresh capt
   assert.equal(result.observation.metrics.sample, 'later-controller-attempt');
   assert.equal(result.observation.metrics.bytes.controllerPngRead, png.length);
 });
+
+test('backend observation records each synthetic provider call without leaking evidence', async t => {
+  const { WinappBackend } = require('../src/computer/winapp-backend.cjs');
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'trace-metrics-backend-'));
+  const screenshotPath = path.join(dir, 'private-frame.png');
+  t.after(async () => { await fs.unlink(screenshotPath).catch(() => {}); await fs.rmdir(dir); });
+  const calls = [];
+  const rect = window.bounds;
+  const root = { selector: 'private-root', name: 'private-title', type: 'Window', isEnabled: true, ...rect };
+  const json = value => ({ stdout: JSON.stringify(value), stderr: '', exitCode: 0 });
+  const backend = new WinappBackend({ platform: 'win32', arch: 'x64', run: async (_executable, args) => {
+    calls.push(args);
+    if (args[0] === 'bounds') return json({ hwnd: window.id, pid: window.pid, frameBounds: rect, windowBounds: rect, minimized: false });
+    if (args[1] === 'status') return json({ hwnd: Number(window.id), processId: window.pid, processName: window.processName, windowTitle: 'private-title', coordinateSpace: 'physical-screen-pixels' });
+    if (args[1] === 'inspect') return json({ windows: [{ hwnd: Number(window.id), coordinateSpace: 'physical-screen-pixels', elements: [root] }] });
+    if (args[1] === 'get-focused') return json({ hasFocus: false });
+    if (args[1] === 'screenshot') {
+      await fs.writeFile(screenshotPath, png);
+      return json({ hwnd: Number(window.id), processId: window.pid, filePath: screenshotPath, width: 1, height: 1 });
+    }
+    assert.fail('unexpected provider call');
+  } });
+  const metrics = createObservationMetrics({ sample: 'first-controller-attempt' });
+  await metrics.run(() => backend.observe({ window, screenshotPath }));
+  const snapshot = metrics.snapshot();
+  assert.equal(calls.length, 10);
+  assert.equal(snapshot.counts.providerRequests, calls.length);
+  assert.equal(snapshot.counts.directRequests, 10);
+  assert.equal(snapshot.counts.captureRequests, 1);
+  assert.equal(calls.filter(args => args[1] === 'screenshot').length, 1);
+  for (const [stage, count] of Object.entries({ provider: 10, identity: 3, uia: 2, geometry: 3, capture: 1, backendPngRead: 1, pngHeader: 1, focus: 1 })) {
+    assert.equal(snapshot.stages[stage].calls, count, stage);
+  }
+  assert.equal(snapshot.bytes.backendPngRead, png.length);
+  assert.doesNotMatch(JSON.stringify(snapshot), /private|secret|iVBOR/);
+});
+
+test('MCP projection reports serialized byte counts without duplicating the image', async t => {
+  const { Client, InMemoryTransport } = require('@modelcontextprotocol/client');
+  const { createComputerServer } = require('../src/computer/server.cjs');
+  let captures = 0;
+  const data = png.toString('base64');
+  const metrics = createObservationMetrics({ sample: 'first-controller-attempt' }).snapshot();
+  const observation = { sessionId: 's', observationId: 'o', window, bounds: window.bounds, elements: [],
+    screenshot: { data, mimeType: 'image/png', width: 1, height: 1 }, metrics };
+  const controller = Object.fromEntries(['doctor', 'listWindows', 'openSession', 'act', 'closeSession', 'close'].map(name => [name, async () => ({})]));
+  controller.observe = async () => { captures++; return observation; };
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  const server = createComputerServer({ controller }); await server.connect(serverTransport);
+  const client = new Client({ name: 'metrics-projection-test', version: '1.0.0' });
+  t.after(async () => { await client.close(); await server.close(); });
+  await client.connect(clientTransport);
+  const result = await client.callTool({ name: 'trace_computer_observe', arguments: { sessionId: 's' } });
+  const projection = result._meta['trace/projection'];
+  assert.equal(projection.version, 1); assert.equal(projection.clock, 'process-monotonic');
+  assert.ok(Number.isFinite(projection.durationMs) && projection.durationMs >= 0);
+  assert.equal(projection.jsonTextBytes, Buffer.byteLength(result.content[0].text));
+  assert.equal(projection.imageBase64Bytes, Buffer.byteLength(data)); assert.equal(projection.imageCount, 1);
+  assert.deepEqual(JSON.parse(result.content[0].text), result.structuredContent);
+  assert.equal(result.structuredContent.screenshot.contentIndex, 1);
+  assert.deepEqual(result.content[1], { type: 'image', data, mimeType: 'image/png' });
+  assert.deepEqual(result.structuredContent.metrics, metrics);
+  assert.equal(captures, 1); assert.equal(observation.screenshot.data, data);
+  assert.doesNotMatch(JSON.stringify(projection), /secret|iVBOR/);
+});
