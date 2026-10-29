@@ -22,7 +22,7 @@ function fakeIndicator(overrides = {}) {
     ...overrides,
   };
 }
-async function fixture(t, overrides = {}, indicatorOverrides = {}) {
+async function fixture(t, overrides = {}, indicatorOverrides = {}, expectedCloseError) {
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'trace-controller-test-'));
   const dispatched = [];
   const backend = {
@@ -39,7 +39,8 @@ async function fixture(t, overrides = {}, indicatorOverrides = {}) {
   const indicator = fakeIndicator(indicatorOverrides);
   const controller = createComputerController({ backend, indicator, runtimeDirectory: directory, lease: new DesktopLease(leaseDirectory) });
   t.after(async () => {
-    await controller.close();
+    if (expectedCloseError) await assert.rejects(controller.close(), expectedCloseError);
+    else await controller.close();
     const resolved = path.resolve(directory);
     assert.ok(resolved.startsWith(path.resolve(os.tmpdir()) + path.sep) && path.basename(resolved).startsWith('trace-controller-test-'));
     await fs.rm(resolved, { recursive: true, force: true });
@@ -392,7 +393,7 @@ test('whole-controller cleanup attempts backend, marker and lease even after err
   let stopFailures = 1;
   const { controller, backend, indicator, leaseDirectory } = await fixture(t, {}, {
     async stop() { this.stopCalls++; this.active = false; if (stopFailures-- > 0) throw Object.assign(new Error('Marker exit unconfirmed.'), { code: 'indicator_stop_unconfirmed' }); },
-  });
+  }, { code: 'backend_close_failed' });
   await open(controller);
   let backendClosed = 0;
   backend.close = async () => { backendClosed++; throw Object.assign(new Error('Backend close failed.'), { code: 'backend_close_failed' }); };

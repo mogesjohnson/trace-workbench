@@ -4,6 +4,7 @@ const { McpServer } = require("@modelcontextprotocol/server");
 const { StdioServerTransport } = require("@modelcontextprotocol/server/stdio");
 const { z } = require("zod");
 const { version } = require("../../package.json");
+const { safeError } = require("./controller.cjs");
 
 const id = z.string().min(1).max(256);
 const coordinate = z.number().int();
@@ -34,11 +35,16 @@ const actionSchema = z.union([
 const readOnly = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false };
 const sessionMutation = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false };
 
-function errorResult(error, { action = false, explicitOutcomeAllowed = false } = {}) {
+function errorResult(error, { action = false, explicitOutcomeAllowed = false, cleanupUnknown = false } = {}) {
   const message = error instanceof Error ? error.message : "Computer operation failed";
   const code = typeof error?.code === "string" ? error.code : "COMPUTER_ERROR";
-  const state = { error: { code, message } };
-  if (action) state.outcome = explicitOutcomeAllowed && error?.details?.outcome === "not_dispatched" ? "not_dispatched" : "unknown";
+  const projected = safeError({ ...error, code, message, details: error?.details });
+  if (cleanupUnknown) Object.assign(projected, { cleanup: "unknown", inputRecoveryRequired: true });
+  const state = { error: projected };
+  if (action) {
+    state.outcome = explicitOutcomeAllowed && error?.details?.outcome === "not_dispatched" ? "not_dispatched" : "unknown";
+    if (projected.outcome) projected.outcome = state.outcome;
+  }
   return { isError: true, content: [{ type: "text", text: JSON.stringify(state) }], structuredContent: state };
 }
 
@@ -109,7 +115,8 @@ function createComputerServer({ controller, onError = () => {} } = {}) {
       } catch (error) {
         // Projection can fail after successful input. Only a controller rejection
         // carrying explicit dispatch proof may label an act as not dispatched.
-        return errorResult(error, { action: method === "act", explicitOutcomeAllowed: !controllerReturned });
+        return errorResult(error, { action: method === "act", explicitOutcomeAllowed: !controllerReturned,
+          cleanupUnknown: method === "closeSession" || (method === "openSession" && controllerReturned) });
       }
     });
   }
