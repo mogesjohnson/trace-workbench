@@ -24,4 +24,31 @@ function postActionStatus(token) {
   catch { return null; }
 }
 
-module.exports = { createPostActionEvidence, readPostActionEvidence, postActionStatus };
+const fields = {
+  images: o => o.evidence?.contentIndexSpace === 'images' && o.evidence.images?.length === 1
+    && o.evidence.state?.screenshot?.contentIndex === 0,
+  elements: o => Array.isArray(o.evidence?.state?.elements) && o.evidence.state.accessibility?.truncated === false,
+  accessibility: o => Number.isInteger(o.evidence?.state?.accessibility?.depth)
+    && o.evidence.state.accessibility.depth >= 1 && o.evidence.state.accessibility.depth <= 32
+    && o.evidence.state.accessibility.truncated === false,
+  focus: o => o.evidence?.focus?.available === true && typeof o.evidence.focus.hasFocus === 'boolean'
+    && (!o.evidence.focus.hasFocus || typeof o.evidence.focus.elementId === 'string' && o.evidence.focus.elementId.length > 0),
+  targetState: o => ['enabled', 'minimized', 'foreground'].every(key => typeof o.evidence?.state?.targetState?.[key] === 'boolean')
+    && Object.hasOwn(o.evidence.state.targetState, 'ownerWindowId'),
+};
+
+function normalizeVerificationPolicies(policies) {
+  const { fail } = require('./shared.cjs');
+  if (!policies || typeof policies !== 'object' || Array.isArray(policies)) fail('invalid-config', 'Verification policies must be keyed by step checkId.');
+  return new Map(Object.entries(policies).map(([id, p]) => {
+    if (!p || !['immediate', 'settled'].includes(p.timing)
+      || Object.keys(p).some(key => !['timing', 'requiredFields', 'maxAgeMs'].includes(key))) fail('invalid-config', 'Declare immediate or settled verification with supported policy fields.');
+    if (p.timing === 'settled') return [id, { timing: 'settled' }];
+    if (!Number.isFinite(p.maxAgeMs) || p.maxAgeMs <= 0 || !Array.isArray(p.requiredFields) || !p.requiredFields.length
+      || !p.requiredFields.every(key => typeof key === 'string' && Object.hasOwn(fields, key))) fail('invalid-config', 'Immediate verification requires a positive maxAgeMs and known requiredFields.');
+    return [id, { timing: p.timing, maxAgeMs: p.maxAgeMs, requiredFields: [...new Set(p.requiredFields)] }];
+  }));
+}
+
+const hasRequiredEvidence = (observation, required) => required.every(key => fields[key](observation));
+module.exports = { createPostActionEvidence, readPostActionEvidence, postActionStatus, normalizeVerificationPolicies, hasRequiredEvidence };
