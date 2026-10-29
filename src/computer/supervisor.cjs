@@ -67,6 +67,7 @@ class NativeSupervisor {
     this.owner = null;
     this.ready = false;
     this.stopping = false;
+    this.releaseErrors = new Map();
     this.abort = new AbortController();
     this.signal = this.abort.signal;
   }
@@ -217,15 +218,35 @@ class NativeSupervisor {
     finally { clearTimeout(timer); }
   }
   async release(sessionId) {
+    if (this.releaseErrors.has(sessionId)) throw this.releaseErrors.get(sessionId);
     if (!this.child || this.owner !== sessionId) return;
     this.stopping = true;
+    this.ready = false;
+    let error;
     try {
-      if (!this.child.stdin.destroyed) await this.request('close', {}, { deadlineMs: 19000 });
-    } finally {
-      this.child.stdin.end();
-      await this.waitExit(19000);
+      if (this.child.stdin.destroyed) throw failure('supervisor_disconnected', 'Native close acknowledgment is unavailable.');
+      const result = await this.request('close', {}, { deadlineMs: 19000 });
+      if (result.closed !== true || result.cleanup !== 'confirmed') {
+        throw failure('input_recovery_required', 'Native close did not confirm input cleanup. Inspect recovery before further input.');
+      }
+    } catch (caught) { error = caught; }
+    // Always drain the owner, preserving a close failure even if exit succeeds.
+    try { this.child.stdin.end(); } catch (caught) { error ??= caught; }
+    try {
+      const exit = await this.waitExit(19000);
       this.child = null; this.owner = null; this.ready = false;
+      if (exit.code !== 0 || exit.signal) throw failure('supervisor_exit_unconfirmed', 'Native owner did not exit normally.');
+    } catch (exitError) {
+      if (error) error.cleanupCodes = [error.code || 'cleanup_failed', exitError.code || 'cleanup_failed'];
+      else error = exitError;
     }
+    if (error) {
+      error.details = { ...error.details, cleanup: 'unknown',
+        recovery: error.details?.recovery ?? { attempted: false, released: false, reason: 'input_release_unconfirmed' } };
+      this.releaseErrors.set(sessionId, error);
+      throw error;
+    }
+    return { cleanup: 'confirmed' };
   }
   indicator() {
     const native = this;
