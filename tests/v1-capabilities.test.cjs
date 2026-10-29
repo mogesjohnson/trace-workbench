@@ -77,3 +77,51 @@ test('actual MCP action schema rejects unsupported payloads before controller di
   }
   assert.equal(f.calls, before);
 });
+
+test('adapter reports support, legacy unknown and unsupported contracts separately', async t => {
+  const f = await fixture(t);
+  const provider = () => createTraceProvider({ client: f.client, app: 'fixture', windowId: 'parent' });
+  let p = provider(), result = await p.doctor();
+  assert.equal(result.ready, true); assert.deepEqual(result.support, actionSupport());
+  assert.deepEqual(p.constraints.nativeSupport, actionSupport());
+  assert.equal(result.readiness.configured.ready, true); assert.equal(result.readiness.target.ready, null);
+  f.setDoctor({ ready: true, support: actionSupport(12345) }); p = provider(); result = await p.doctor();
+  assert.equal(result.support.observation.ttlMs, 12345); assert.equal(p.constraints.observationTtlMs, 12345);
+  f.setDoctor({ ready: false, code: 'engine_missing', reason: 'missing', support: actionSupport() });
+  p = provider(); result = await p.doctor();
+  assert.equal(result.readiness.configured.ready, true); assert.equal(result.readiness.native.ready, false);
+  assert.equal(result.readiness.target.ready, null); assert.equal(p.available, false);
+  f.setDoctor({ ready: true }); p = provider(); result = await p.doctor();
+  assert.equal(result.ready, true); assert.equal(p.available, true);
+  assert.deepEqual(p.constraints.nativeSupport, { status: 'unknown', code: 'support-unavailable' });
+  for (const support of [{ ...actionSupport(), contractVersion: 2 }, { ...actionSupport(), engine: { name: 'other', version: '1' } },
+    { contractVersion: 1, engine: actionSupport().engine },
+    { ...actionSupport(), limits: { ...LIMITS, text: 100 } },
+    { ...actionSupport(), actions: { ...actionSupport().actions, scroll: { ...actionSupport().actions.scroll, step: 1 } } },
+    { ...actionSupport(), observation: { ...actionSupport().observation, ttlMs: -1 } }]) {
+    f.setDoctor({ ready: true, support }); p = provider(); result = await p.doctor();
+    assert.equal(result.code, 'support-unsupported'); assert.equal(result.ready, false); assert.equal(p.available, false);
+  }
+  f.setDoctor({ ready: true, support: { ...actionSupport(), extra: true } });
+  let failListing = false;
+  p = createTraceProvider({ client: f.client, app: 'fixture', windowId: 'parent',
+    listTools: async () => { if (failListing) throw new Error('unavailable'); return f.client.listTools(); } });
+  assert.equal((await p.doctor()).ready, true);
+  failListing = true; result = await p.doctor();
+  assert.equal(result.code, 'diagnostics-unavailable'); assert.equal(p.available, false);
+  assert.deepEqual(p.constraints.nativeSupport, { status: 'unknown', code: 'support-unavailable' });
+});
+
+test('method rejects unsupported wheel before consuming an attempt or capture', async t => {
+  const f = await fixture(t), p = createTraceProvider({ client: f.client, app: 'fixture', windowId: 'parent' });
+  await p.doctor();
+  const m = new ComputerMethod({ providers: [p], verifyStep: async () => 'confirmed', verifyEffect: async () => 'confirmed' });
+  m.start({ goalId: 'validation', effects: [{ id: 'effect', checkId: 'saved', steps: [{ id: 'input', checkId: 'input', capability: 'native-action',
+    target: { environment: 'local', app: 'fixture', kind: 'app', windowId: 'parent' } }] }] });
+  await m.discover('effect', 'input'); await m.observe('effect', 'input');
+  await assert.rejects(m.execute('effect', 'input', { type: 'scroll', x: 0, y: 0, deltaX: 0, deltaY: 1 }), { code: 'unsupported_action' });
+  assert.equal(m.status().effects[0].steps[0].attempts, 0); assert.equal(f.calls, 0);
+  await m.execute('effect', 'input', { type: 'activate' });
+  assert.equal(m.status().effects[0].steps[0].attempts, 1); assert.equal(f.calls, 1);
+  await m.close();
+});

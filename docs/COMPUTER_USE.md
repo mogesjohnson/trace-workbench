@@ -48,6 +48,12 @@ Literal text accepts 1–8192 UTF-16 code units; editable values accept 0–8192
 
 Wheel input requires `deltaX: 0` and a nonzero `deltaY` in 120-unit steps from -2400 to 2400; positive means down. The requested point selects the smallest enabled onscreen observed element containing it, and the wheel executes at that element's center. This is not exact point scrolling. Unsupported static requests fail before consuming the native observation or method attempt. Current geometry, element, modal and focus checks still run before dispatch; validation does not guarantee target readiness or application effect.
 
+`trace_computer_doctor.support` declares version 1 of TRACE's wrapper contract for pinned winapp 0.7.1: action forms, limits, key syntax, coordinate origin and observation requirements. It describes intended support, not installed provider identity or successful target control. The diagnostic's existing engine/version and `readiness.native` report the actual backend check; `readiness.target.ready: null` means the target has not been checked.
+
+The method adapter separately reports configured transport/schema compatibility, native runtime readiness and unchecked target readiness. Missing providers retain an unavailable reason. An older server without a support descriptor remains usable under local conservative validation, with support explicitly unknown. Incomplete, contradictory or unsupported descriptors disable the adapter; compatible descriptors expose only the known local contract. This does not install browser, application or artifact providers. JSON Schema string lengths count Unicode code points, so field descriptions declare UTF-16 units and the MCP handler enforces the shared runtime limit before reaching the controller.
+
+The adapter reports the accepted server's observation TTL; the native server enforces it. The method coordinator retains its separate freshness guard. Capability discovery does not certify that an individual capture is still fresh at dispatch.
+
 ## Storage and recovery
 
 Frames and a metadata journal are stored locally under the OS user's TRACE computer-data directory. `TRACE_COMPUTER_RUNTIME` can select another absolute artifact directory; this does not change the global per-user desktop lease. Journals omit typed text, editable values and screenshot bytes. Frames themselves can contain private content.
