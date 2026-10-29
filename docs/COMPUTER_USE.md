@@ -42,6 +42,12 @@ Cleanup confirmation concerns the owned session and input lifecycle. It does not
 
 The server supports activation, coordinate/element clicks, typing, allowed key chords, vertical wheel scrolling, dragging, accessibility invocation and editable values. Actual tested coverage and limitations are recorded in [verification](VERIFICATION.md) and [the specification](../SPEC.md).
 
+### Effective action limits (V1 development)
+
+Literal text accepts 1–8192 UTF-16 code units; editable values accept 0–8192. Neither accepts NUL. Element IDs accept 1–512 units. Keys accept case-insensitive Ctrl/Control, Alt and Shift chords with letters, digits, F1–F12 and the existing navigation/edit keys; Return maps to Enter. INSERT, Windows-key chords and multi-command key scripts are unsupported. The shared validator applies the same limits to the method adapter, controller and native backend before native helper work.
+
+Wheel input requires `deltaX: 0` and a nonzero `deltaY` in 120-unit steps from -2400 to 2400; positive means down. The requested point selects the smallest enabled onscreen observed element containing it, and the wheel executes at that element's center. This is not exact point scrolling. Unsupported static requests fail before consuming the native observation or method attempt. Current geometry, element, modal and focus checks still run before dispatch; validation does not guarantee target readiness or application effect.
+
 ## Storage and recovery
 
 Frames and a metadata journal are stored locally under the OS user's TRACE computer-data directory. `TRACE_COMPUTER_RUNTIME` can select another absolute artifact directory; this does not change the global per-user desktop lease. Journals omit typed text, editable values and screenshot bytes. Frames themselves can contain private content.
