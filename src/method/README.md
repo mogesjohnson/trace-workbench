@@ -50,11 +50,33 @@ The native adapter accepts a connected `client`, or injected `callTool` plus `li
 
 Native `observe()` validates one PNG against its original whole-MCP-content index, canonical bounded base64, PNG signature/IHDR dimensions and SHA-256. It checks exact session, discovered process lifetime (including Windows session metadata when present), owner and observation identity before installing a capture. A complete process creation time is required. Invalid refreshes and repeated IDs invalidate the adapter's previous capture; identical pixels under distinct new IDs remain valid.
 
-Returned `evidence.contentIndexSpace` is `images`: read the validated image as `evidence.images[evidence.state.screenshot.contentIndex]`. That index is remapped to 0; `screenshot.sourceContentIndex` preserves its original MCP position. Returned metadata and the adapter's private capture are separate copies. The internal validator can also accept a nested observation with its original content array; post-action evidence reuse is a separate future change. Header/hash consistency does not decode all pixels, authenticate a producer or prove capture freshness; native fresh-observation authority remains unchanged.
+Returned `evidence.contentIndexSpace` is `images`: read the validated image as `evidence.images[evidence.state.screenshot.contentIndex]`. That index is remapped to 0; `screenshot.sourceContentIndex` preserves its original MCP position. Returned metadata and the adapter's private capture are separate copies. The same validator accepts nested post-action observations with their original content array. Header/hash consistency does not decode all pixels, authenticate a producer or prove capture freshness; native fresh-observation authority remains unchanged.
 
 Native `act()` now retains a validated `resultingObservation` only from a non-error completed response declaring `verification: 'fresh_observation'`, a valid action ID and no cleanup uncertainty. It validates the nested observation against the original MCP image array and privately bound target/session. The result is marked `authority: 'verification-only'`; `resultingState` aliases its state for existing integrations. Invalid evidence is discarded without relabeling known delivered input as failed or retrying it. A contradictory MCP error with a completed outcome remains unknown.
 
 The optional `postActionEvidence` token refers to a private process-local snapshot, action/request IDs and original source `observedAt`. Its age is conservatively bounded by adapter-local monotonic elapsed time since the act request began, not time since receipt or a subtraction across clock domains. Lifecycle changes invalidate it; copying/serializing its opaque marker cannot recreate a registered token. It is not an authentication boundary against arbitrary in-process code or a dishonest producer. Post-action frames never install the adapter's private input capture: another mutation requires normal fresh observation. Coordinator reuse is opt-in and described below when enabled.
+
+### Opt-in immediate step verification
+
+By default `verifyStep` and `verifyEffect` capture fresh evidence. A trusted integration can opt a particular **step checkId** into immediate, read-only verification:
+
+```javascript
+const method = new ComputerMethod({ providers: [native],
+  verifyStep: inspectStep, verifyEffect: inspectFinalEffect,
+  verificationPolicies: {
+    'button-toggled': { timing: 'immediate', requiredFields: ['images', 'elements'], maxAgeMs: 1000 },
+    'export-finished': { timing: 'settled' }
+  }
+});
+```
+
+Known `requiredFields` are `images`, `elements`, `accessibility`, `focus` and `targetState`. UIA requirements reject truncated/unavailable data; focus must be available and bound when focused; target state needs explicit enabled/minimized/foreground/owner fields. Invalid policy declarations fail configuration. Omit a policy for delayed, asynchronous or unsupported checks.
+
+Only a clean delivered native action's registered token can supply cached evidence. The coordinator binds it to the exact provider object, target/process/owner, input observation, attempt and epoch. Its monotonic age must stay within the minimum of the declared limit, coordinator TTL and reported native TTL, both before and after awaiting the verifier. Lifecycle changes or checkpointing discard candidates; checkpoints contain no token or pixels. Tokens are one-use, in-memory handles, not input-authorizing observations.
+
+The callback and `verifyStep` result report `evidenceSource: 'post-action'` or `'fresh-observation'`. Cached `after` retains producer time as `sourceCapturedAt` and `evidence.state.observedAt`, with `consumed: true`. It deliberately has no fresh local `capturedAt`: existing checks relying on that local receipt-time field must remain on the default fresh path or adapt before opting in. Do not compare producer wall time to local monotonic time or reset age at receipt.
+
+Opted-in callbacks must be pure/read-only and safe to evaluate again. Only a still-eligible `confirmed` verdict can finish from the cached frame. Cached absence, unknown, exception or expiry forces a fresh capture and another independent check; cached absence alone never grants a retry. If reconciliation fails, the uncertain step stays unresolved. The snapshot proves its observed condition, not eventual completion of a delayed action. `verifyEffect` always captures freshly, and all subsequent input still needs normal fresh discovery/observation. Synthetic integration tests demonstrate one fewer capture for eligible confirmation; no wall-clock speedup or broader live acceptance is claimed.
 
 Optional provider `validateAction(request)` runs before consuming the attempt. The native adapter reuses TRACE's canonical action validator, so unknown fields, stale element IDs, and invalid coordinates fail before dispatch and do not become phantom uncertain inputs.
 
