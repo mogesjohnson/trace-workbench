@@ -5,6 +5,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { spawn } = require('node:child_process');
 const { DEFAULT_INDICATOR, verifyIndicatorFiles } = require('./activity-indicator.cjs');
+const { parseAction, normalizeKey } = require('./action-contract.cjs');
 const pin = require('./winapp-pin.json');
 const ROOT = path.resolve(__dirname, '../..');
 const DEFAULT_BINARY = path.join(ROOT, '.runtime', 'winapp', `v${pin.version}`, 'bin', 'winapp.exe');
@@ -429,7 +430,7 @@ class WinappBackend {
   async dispatch({ window, observation, action, signal }, progress) {
     if (this.inputRecoveryRequired) fail('input_recovery_required', 'Input is quarantined after incomplete mouse recovery. Check the owned input process and button state before restarting TRACE.', { outcome: 'not_dispatched', cause: this.inputRecoveryRequired });
     if (!object(observation) || !sameBounds(bounds(observation.bounds), bounds(observation.window?.bounds)) || observation.window.id !== window.id || observation.window.pid !== window.pid) fail('invalid_observation', 'Action requires an observation of this exact window.');
-    if (!object(action) || typeof action.type !== 'string') fail('invalid_action', 'A typed action is required.');
+    action = parseAction(action);
     await this.identity(window, signal);
     // Reinspect at the server-retained observation depth so deeply observed controls remain targetable.
     const fresh = await this.inspect(window, signal, observation.depth ?? 8);
@@ -462,17 +463,14 @@ class WinappBackend {
         }
         break;
       case 'type_text':
-        if (typeof action.text !== 'string' || action.text.length > 16000 || action.text.includes('\0')) fail('invalid_action', 'Text must contain at most 16000 characters and no NUL.');
         verb = 'send-keys'; positional = [action.text]; options = ['--via', 'send-input', '--verbatim']; break;
       case 'press_key': {
-        const key = typeof action.key === 'string' ? action.key.toLowerCase().split('+').map(token => token === 'control' ? 'ctrl' : token === 'return' ? 'enter' : token).join('+') : '';
-        if (!/^(?:(?:ctrl|alt|shift)\+)*(?:[a-z0-9]|f(?:[1-9]|1[0-2])|enter|tab|escape|esc|backspace|delete|space|up|down|left|right|home|end|pageup|pagedown|insert)$/.test(key)) fail('invalid_action', 'Expected one named key or modifier combination.');
+        const key = normalizeKey(action.key);
         verb = 'send-keys'; positional = [key]; options = ['--via', 'send-input']; break;
       }
       case 'drag': verb = 'drag'; positional = [point(action.fromX, action.fromY, captured), point(action.toX, action.toY, captured)]; break;
       case 'scroll': {
         point(action.x, action.y, captured);
-        if (action.deltaX !== 0 || !Number.isInteger(action.deltaY) || !action.deltaY || action.deltaY % 120 !== 0 || Math.abs(action.deltaY) > 12000) fail('unsupported_action', 'This engine supports vertical wheel delta in multiples of 120, positive down, at an observed element. Horizontal scroll is unavailable.');
         const physicalX = captured.x + action.x, physicalY = captured.y + action.y;
         const candidates = fresh.elements.filter(element => element.enabled && !element.offscreen && element.bounds && physicalX >= element.bounds.x && physicalY >= element.bounds.y && physicalX < element.bounds.x + element.bounds.width && physicalY < element.bounds.y + element.bounds.height).sort((a, b) => a.bounds.width * a.bounds.height - b.bounds.width * b.bounds.height);
         if (!candidates.length) fail('unsupported_action', 'No observed element is available under the wheel position.');
@@ -480,7 +478,6 @@ class WinappBackend {
       }
       case 'invoke': verb = 'invoke'; positional = [choose(action.elementId)]; break;
       case 'set_value':
-        if (typeof action.value !== 'string' || action.value.length > 16000 || action.value.includes('\0')) fail('invalid_action', 'Value must contain at most 16000 characters and no NUL.');
         verb = 'set-value'; positional = [choose(action.elementId), action.value]; break;
       default: fail('unsupported_action', `Unsupported action type: ${action.type}.`);
     }

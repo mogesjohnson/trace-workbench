@@ -6,6 +6,7 @@ const path = require('node:path');
 const { randomUUID, createHash } = require('node:crypto');
 const { DesktopLease } = require('./lease.cjs');
 const { ActivityIndicator } = require('./activity-indicator.cjs');
+const { validateAction } = require('./action-contract.cjs');
 
 const fail = (code, message) => Object.assign(new Error(message), { code });
 const identityMatches = (a, b) => a && b && a.id === b.id && a.pid === b.pid && a.processName === b.processName
@@ -49,47 +50,6 @@ function validateDepth(depth) {
   if (depth === undefined) return DEFAULT_DEPTH;
   if (!Number.isInteger(depth) || depth < 1 || depth > 32) throw fail('invalid_depth', 'accessibilityDepth must be an integer from 1 to 32.');
   return depth;
-}
-
-function validateAction(action, observation) {
-  if (!action || typeof action !== 'object' || Array.isArray(action)) throw fail('invalid_action', 'Provide an action object.');
-  const fields = {
-    activate: [], click: ['x', 'y', 'elementId'], type_text: ['text'], press_key: ['key'],
-    scroll: ['x', 'y', 'deltaX', 'deltaY'], drag: ['fromX', 'fromY', 'toX', 'toY'],
-    invoke: ['elementId'], set_value: ['elementId', 'value'],
-  }[action.type];
-  if (!fields || Object.keys(action).some(key => key !== 'type' && !fields.includes(key))) throw fail('invalid_action', 'Unknown action type or field.');
-  const text = (key, maximum = 8192) => {
-    if (typeof action[key] !== 'string' || action[key].length === 0 || action[key].length > maximum || action[key].includes('\0')) throw fail('invalid_action', `${key} must be a bounded nonempty string.`);
-  };
-  const point = (x, y) => {
-    if (!Number.isInteger(action[x]) || !Number.isInteger(action[y]) || action[x] < 0 || action[y] < 0 || action[x] >= observation.bounds.width || action[y] >= observation.bounds.height) throw fail('invalid_coordinates', 'Use integer coordinates inside the observed window.');
-  };
-  const element = () => {
-    text('elementId', 512);
-    if (!(observation.elements ?? []).some(item => item.id === action.elementId && item.enabled !== false)) throw fail('unknown_element', 'Choose an enabled element from the latest observation.');
-  };
-  switch (action.type) {
-    case 'click':
-      if (action.elementId !== undefined) {
-        if (action.x !== undefined || action.y !== undefined) throw fail('invalid_action', 'Choose elementId or coordinates, not both.');
-        element();
-      } else point('x', 'y');
-      break;
-    case 'type_text': text('text'); break;
-    case 'press_key':
-      text('key', 100);
-      if (!/^(?:(?:CTRL|CONTROL|ALT|SHIFT)\+)*(?:[A-Z0-9]|F(?:[1-9]|1[0-2])|ENTER|RETURN|TAB|ESC|ESCAPE|BACKSPACE|DELETE|HOME|END|PAGEUP|PAGEDOWN|LEFT|RIGHT|UP|DOWN|SPACE)$/i.test(action.key)) throw fail('invalid_key', 'Use a supported key or Ctrl/Alt/Shift chord.');
-      break;
-    case 'scroll':
-      point('x', 'y');
-      if (![action.deltaX, action.deltaY].every(value => Number.isInteger(value) && Math.abs(value) <= 2400) || (!action.deltaX && !action.deltaY)) throw fail('invalid_action', 'Scroll deltas must be nonzero bounded integers.');
-      break;
-    case 'drag': point('fromX', 'fromY'); point('toX', 'toY'); break;
-    case 'invoke': element(); break;
-    case 'set_value': element(); if (typeof action.value !== 'string' || action.value.length > 8192 || action.value.includes('\0')) throw fail('invalid_action', 'value must be a bounded string.'); break;
-  }
-  return { ...action };
 }
 
 function createComputerController(options = {}) {

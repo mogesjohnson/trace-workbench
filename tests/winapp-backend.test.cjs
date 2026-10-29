@@ -291,9 +291,9 @@ test('unobserved elements, bad coordinates, multi-key scripts and NUL text rejec
   for (const [action, code] of [
     [{ type: 'invoke', elementId: '--help' }, 'stale_element'],
     [{ type: 'click', x: 999, y: 270 }, 'invalid_coordinates'],
-    [{ type: 'press_key', key: 'ctrl+a enter' }, 'invalid_action'],
+    [{ type: 'press_key', key: 'ctrl+a enter' }, 'invalid_key'],
     [{ type: 'type_text', text: '\0' }, 'invalid_action'],
-    [{ type: 'launch_shell', command: 'cmd' }, 'unsupported_action']
+    [{ type: 'launch_shell', command: 'cmd' }, 'invalid_action']
   ]) await assert.rejects(backend.act({ window, observation: canonical(), action }), { code });
 });
 
