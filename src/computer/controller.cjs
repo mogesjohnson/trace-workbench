@@ -7,6 +7,7 @@ const { randomUUID, createHash } = require('node:crypto');
 const { DesktopLease } = require('./lease.cjs');
 const { ActivityIndicator } = require('./activity-indicator.cjs');
 const { validateAction, actionSupport } = require('./action-contract.cjs');
+const { createObservationMetrics, measure, count } = require('./observation-metrics.cjs');
 
 const fail = (code, message) => Object.assign(new Error(message), { code });
 const identityMatches = (a, b) => a && b && a.id === b.id && a.pid === b.pid && a.processName === b.processName
@@ -67,6 +68,7 @@ function createComputerController(options = {}) {
   let queue = Promise.resolve();
   let closed = false;
   let closePromise;
+  let observedBefore = false;
 
   function queued(work, callOptions = {}, allowClosed = false) {
     const signal = callOptions.signal ? AbortSignal.any([callOptions.signal, shutdown.signal]) : shutdown.signal;
@@ -118,26 +120,41 @@ function createComputerController(options = {}) {
     await fs.appendFile(path.join(session.directory, 'events.jsonl'), `${JSON.stringify({ at: new Date(now()).toISOString(), sessionId: session.id, ...event })}\n`);
   }
   async function observeInternal(session, signal, depth = DEFAULT_DEPTH) {
+    const metrics = createObservationMetrics({ clock: options.metricsClock,
+      sample: observedBefore ? 'later-controller-attempt' : 'first-controller-attempt' });
+    observedBefore = true;
+    return metrics.run(async () => {
+      const result = await measure('observation', () => observeMeasured(session, signal, depth));
+      result.metrics = metrics.snapshot();
+      return result;
+    });
+  }
+  async function observeMeasured(session, signal, depth) {
     signal = markedSignal(signal);
     await lease.assert(session.id);
-    await currentWindow(session, signal);
+    await measure('identity', () => currentWindow(session, signal));
     session.observation = null;
     const observationId = randomUUID();
     const screenshotPath = path.join(session.directory, `${observationId}.png`);
-    const snapshot = await backend.observe({ window: session.window, screenshotPath, signal, depth });
+    const snapshot = await measure('backend', () => backend.observe({ window: session.window, screenshotPath, signal, depth }));
     // The effective depth stays server-side with the observation; actions cannot replace it.
     snapshot.depth = Number.isInteger(snapshot.depth) ? snapshot.depth : depth;
     if (!identityMatches(snapshot.window, session.window)) throw fail('window_changed', 'Observation returned a different window identity.');
     const bounds = snapshot.bounds;
     if (!bounds || !['x', 'y', 'width', 'height'].every(key => Number.isFinite(bounds[key])) || bounds.width < 1 || bounds.height < 1) throw fail('invalid_observation', 'Backend returned invalid window bounds.');
     if (path.resolve(snapshot.screenshot?.path ?? '') !== screenshotPath) throw fail('invalid_capture', 'Backend returned a different screenshot path.');
-    const stat = await fs.stat(screenshotPath);
+    const stat = await measure('fileStat', () => fs.stat(screenshotPath));
     if (stat.size > 6 * 1024 * 1024) throw fail('capture_too_large', 'Capture exceeds the 6 MiB image limit.');
-    const bytes = await fs.readFile(screenshotPath);
+    const bytes = await measure('fileRead', () => fs.readFile(screenshotPath));
+    count('controllerPngRead', bytes.length);
+    count('elements', snapshot.elements?.length ?? 0);
     if (bytes.length < 24 || !bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) throw fail('invalid_capture', 'Backend capture must be a PNG image.');
     const width = bytes.readUInt32BE(16), height = bytes.readUInt32BE(20);
     if (width !== bounds.width || height !== bounds.height) throw fail('capture_mismatch', 'Screenshot dimensions differ from the observed window. Re-observe before input.');
     const observedAtMs = now();
+    const screenshot = measure('hashEncode', () => ({ data: bytes.toString('base64'), mimeType: 'image/png', width, height,
+      sha256: createHash('sha256').update(bytes).digest('hex') }));
+    count('base64', screenshot.data.length);
     const result = {
       sessionId: session.id, observationId, window: snapshot.window, bounds,
       elements: snapshot.elements ?? [], observedAt: new Date(observedAtMs).toISOString(),
@@ -146,10 +163,10 @@ function createComputerController(options = {}) {
       focused: snapshot.focused ? { ...snapshot.focused } : { available: false, code: 'focus_unavailable' },
       targetState: snapshot.targetState ?? { available: false },
       ...(snapshot.restoredFromMinimized === true ? { preparation: [{ step: 'restore', status: 'restored' }] } : {}),
-      screenshot: { data: bytes.toString('base64'), mimeType: 'image/png', width, height, sha256: createHash('sha256').update(bytes).digest('hex') },
+      screenshot,
     };
     session.observation = { id: observationId, observedAtMs, snapshot, result };
-    await record(session, { type: 'observation', observationId, screenshotSha256: result.screenshot.sha256 });
+    await measure('journal', () => record(session, { type: 'observation', observationId, screenshotSha256: result.screenshot.sha256 }));
     signal.throwIfAborted();
     indicator.assertActive();
     return result;
