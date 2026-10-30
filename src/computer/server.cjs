@@ -6,6 +6,7 @@ const { z } = require("zod");
 const { version } = require("../../package.json");
 const { safeError } = require("./controller.cjs");
 const { LIMITS, KEY_PATTERN, parseAction } = require("./action-contract.cjs");
+const { performance } = require("node:perf_hooks");
 
 const id = z.string().min(1).max(256);
 const coordinate = z.number().int().nonnegative();
@@ -55,6 +56,7 @@ function errorResult(error, { action = false, explicitOutcomeAllowed = false, cl
 // A screenshot is sent once, as MCP image content. Text and structured state keep
 // its dimensions and MIME type so hosts can bind pixels to their observation.
 function toolResult(value) {
+  const started = performance.now();
   const images = [];
   function project(item) {
     if (item === null || typeof item !== "object") return item;
@@ -81,7 +83,16 @@ function toolResult(value) {
   if (state === null || Array.isArray(state) || typeof state !== "object") {
     throw new Error("Controller returned an invalid structured result");
   }
-  return { content: [{ type: "text", text: JSON.stringify(state) }, ...images], structuredContent: state };
+  const jsonText = JSON.stringify(state);
+  const result = { content: [{ type: "text", text: jsonText }, ...images], structuredContent: state };
+  if (value.metrics || value.observation?.metrics) {
+    const jsonTextBytes = Buffer.byteLength(jsonText);
+    const imageBase64Bytes = images.reduce((sum, image) => sum + Buffer.byteLength(image.data), 0);
+    result._meta = { "trace/projection": { version: 1, clock: "process-monotonic",
+      durationMs: Math.round((performance.now() - started) * 1000) / 1000,
+      jsonTextBytes, imageBase64Bytes, imageCount: images.length } };
+  }
+  return result;
 }
 
 function createComputerServer({ controller, onError = () => {} } = {}) {
