@@ -26,7 +26,7 @@ function fixture(handler = () => {}) {
           queueMicrotask(() => {
             const response = handler(message, child);
             if (response === false) return;
-            const result = response ?? (message.method === 'configure' ? { ready: true, version: 1, monitors: 1 } : message.method === 'run' ? { stdout: '{}', stderr: '', exitCode: 0 } : { closed: true });
+            const result = response ?? (message.method === 'configure' ? { ready: true, version: 1, monitors: 1 } : message.method === 'run' ? { stdout: '{}', stderr: '', exitCode: 0 } : { closed: true, cleanup: 'confirmed' });
             child.stdout.write(JSON.stringify({ id: message.id, result }) + '\n');
             if (message.method === 'close') setImmediate(() => child.emit('close', 0, null));
           });

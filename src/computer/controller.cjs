@@ -12,8 +12,12 @@ const identityMatches = (a, b) => a && b && a.id === b.id && a.pid === b.pid && 
   && (b.processCreationTime === undefined || a.processCreationTime === b.processCreationTime)
   && (b.sessionId === undefined || a.sessionId === b.sessionId);
 function safeError(error) {
-  const result = { code: error.code ?? 'backend_error', message: String(error.message).slice(0, 1500) };
+  const result = { code: typeof error.code === 'string' && /^[a-zA-Z_][a-zA-Z0-9_-]{0,63}$/.test(error.code)
+    ? error.code : 'backend_error', message: String(error.message).slice(0, 1500) };
   if (['unknown', 'not_dispatched'].includes(error.details?.outcome)) result.outcome = error.details.outcome;
+  if (error.details?.cleanup === 'unknown') result.cleanup = 'unknown';
+  if (Array.isArray(error.cleanupCodes)) result.cleanupCodes = error.cleanupCodes
+    .filter(code => typeof code === 'string' && /^[a-z_]{1,64}$/.test(code)).slice(0, 8);
   const recovery = error.details?.recovery;
   if (recovery && typeof recovery.attempted === 'boolean') {
     result.recovery = { attempted: recovery.attempted };
@@ -26,9 +30,9 @@ function safeError(error) {
     if (typeof recovery.code === 'string' && /^[a-z_]{1,64}$/.test(recovery.code)) result.recovery.code = recovery.code;
   }
   if (Array.isArray(error.details?.preparation)) {
-    result.preparation = error.details.preparation.filter(item => item?.step === 'activation').map(item => ({ step: 'activation', status: ['started', 'foreground', 'not_foreground'].includes(item.status) ? item.status : 'unknown' }));
+    result.preparation = error.details.preparation.filter(item => item?.step === 'activation').slice(0, 8).map(item => ({ step: 'activation', status: ['started', 'foreground', 'not_foreground'].includes(item.status) ? item.status : 'unknown' }));
   }
-  if (result.code === 'input_recovery_required' || recovery?.released === false || recovery?.reason === 'process_exit_unconfirmed') result.inputRecoveryRequired = true;
+  if (error.details?.inputRecoveryRequired === true || result.cleanup === 'unknown' || result.code === 'input_recovery_required' || recovery?.released === false || recovery?.reason === 'process_exit_unconfirmed') result.inputRecoveryRequired = true;
   return result;
 }
 
@@ -102,6 +106,7 @@ function createComputerController(options = {}) {
   let discovered = new Map();
   let queue = Promise.resolve();
   let closed = false;
+  let closePromise;
 
   function queued(work, callOptions = {}, allowClosed = false) {
     const signal = callOptions.signal ? AbortSignal.any([callOptions.signal, shutdown.signal]) : shutdown.signal;
@@ -133,8 +138,10 @@ function createComputerController(options = {}) {
     try { await indicator.stop(); } catch (error) { errors.push(error); }
     try { await lease.release(session.id); sessions.delete(session.id); } catch (error) { errors.push(error); }
     if (errors.length) {
-      errors[0].cleanupCodes = errors.map(error => error.code || 'cleanup_failed');
-      throw errors[0];
+      const error = errors.find(item => item.details?.recovery || item.details?.inputRecoveryRequired || item.code === 'input_recovery_required') || errors[0];
+      error.details = { ...error.details, cleanup: 'unknown' };
+      error.cleanupCodes = errors.flatMap(item => item.cleanupCodes || [item.code || 'cleanup_failed']);
+      throw error;
     }
   }
   async function currentWindow(session, signal) {
@@ -222,7 +229,10 @@ function createComputerController(options = {}) {
           sessions.set(id, session);
           return { sessionId: id, window: current, activityIndicator };
         } catch (error) {
-          try { await cleanupSession({ id }); } catch (cleanup) { error.cleanupCodes = cleanup.cleanupCodes || [cleanup.code || 'cleanup_failed']; }
+          try { await cleanupSession({ id }); } catch (cleanup) {
+            error.cleanupCodes = cleanup.cleanupCodes || [cleanup.code || 'cleanup_failed'];
+            error.details = { ...error.details, cleanup: 'unknown', recovery: cleanup.details?.recovery ?? error.details?.recovery };
+          }
           throw error;
         }
       }, callOptions);
@@ -280,14 +290,14 @@ function createComputerController(options = {}) {
         const session = getSession(sessionId);
         session.observation = null;
         await cleanupSession(session);
-        return { sessionId, closed: true };
+        return { sessionId, closed: true, cleanup: 'confirmed' };
       }, callOptions);
     },
     close() {
-      if (closed) return queue;
+      if (closePromise) return closePromise;
       closed = true;
       shutdown.abort();
-      return queued(async () => {
+      closePromise = queued(async () => {
         const errors = [];
         try { await backend.close?.(); } catch (error) { errors.push(error); }
         if (!sessions.size) {
@@ -297,12 +307,15 @@ function createComputerController(options = {}) {
           try { await cleanupSession(session); } catch (error) { errors.push(error); }
         }
         if (errors.length) {
-          errors[0].cleanupCodes = errors.flatMap(error => error.cleanupCodes || [error.code || 'cleanup_failed']);
-          throw errors[0];
+          const error = errors.find(item => item.details?.recovery || item.details?.inputRecoveryRequired || item.code === 'input_recovery_required') || errors[0];
+          error.details = { ...error.details, cleanup: 'unknown' };
+          error.cleanupCodes = errors.flatMap(item => item.cleanupCodes || [item.code || 'cleanup_failed']);
+          throw error;
         }
       }, {}, true);
+      return closePromise;
     },
   };
 }
 
-module.exports = { createComputerController, defaultRuntimeDirectory, validateAction, validateDepth };
+module.exports = { createComputerController, defaultRuntimeDirectory, validateAction, validateDepth, safeError };
