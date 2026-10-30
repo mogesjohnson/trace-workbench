@@ -52,6 +52,10 @@ function validateDepth(depth) {
   if (!Number.isInteger(depth) || depth < 1 || depth > 32) throw fail('invalid_depth', 'accessibilityDepth must be an integer from 1 to 32.');
   return depth;
 }
+function validateObservationMode(mode = 'full') {
+  if (!['full', 'accessibility', 'screenshot'].includes(mode)) throw fail('invalid_observation_mode', 'mode must be full, accessibility or screenshot.');
+  return mode;
+}
 
 function createComputerController(options = {}) {
   const backend = options.backend ?? new (require('./winapp-backend.cjs').WinappBackend)();
@@ -119,42 +123,50 @@ function createComputerController(options = {}) {
     // No typed text, values, screenshots, or full window inventory in the journal.
     await fs.appendFile(path.join(session.directory, 'events.jsonl'), `${JSON.stringify({ at: new Date(now()).toISOString(), sessionId: session.id, ...event })}\n`);
   }
-  async function observeInternal(session, signal, depth = DEFAULT_DEPTH) {
+  async function observeInternal(session, signal, depth = DEFAULT_DEPTH, mode = 'full') {
+    // A valid selective read revokes input authority even if readiness/capture fails.
+    if (mode !== 'full') session.observation = null;
     const metrics = createObservationMetrics({ clock: options.metricsClock,
       sample: observedBefore ? 'later-controller-attempt' : 'first-controller-attempt' });
     observedBefore = true;
     return metrics.run(async () => {
-      const result = await measure('observation', () => observeMeasured(session, signal, depth));
+      const result = await measure('observation', () => observeMeasured(session, signal, depth, mode));
       result.metrics = metrics.snapshot();
       return result;
     });
   }
-  async function observeMeasured(session, signal, depth) {
+  async function observeMeasured(session, signal, depth, mode) {
     signal = markedSignal(signal);
     await lease.assert(session.id);
     await measure('identity', () => currentWindow(session, signal));
     session.observation = null;
     const observationId = randomUUID();
-    const screenshotPath = path.join(session.directory, `${observationId}.png`);
-    const snapshot = await measure('backend', () => backend.observe({ window: session.window, screenshotPath, signal, depth }));
+    const screenshotPath = mode === 'accessibility' ? undefined : path.join(session.directory, `${observationId}.png`);
+    const snapshot = await measure('backend', () => backend.observe({ window: session.window, screenshotPath, signal, depth,
+      ...(mode === 'accessibility' ? { includeScreenshot: false } : {}) }));
     // The effective depth stays server-side with the observation; actions cannot replace it.
     snapshot.depth = Number.isInteger(snapshot.depth) ? snapshot.depth : depth;
     if (!identityMatches(snapshot.window, session.window)) throw fail('window_changed', 'Observation returned a different window identity.');
     const bounds = snapshot.bounds;
     if (!bounds || !['x', 'y', 'width', 'height'].every(key => Number.isFinite(bounds[key])) || bounds.width < 1 || bounds.height < 1) throw fail('invalid_observation', 'Backend returned invalid window bounds.');
-    if (path.resolve(snapshot.screenshot?.path ?? '') !== screenshotPath) throw fail('invalid_capture', 'Backend returned a different screenshot path.');
-    const stat = await measure('fileStat', () => fs.stat(screenshotPath));
-    if (stat.size > 6 * 1024 * 1024) throw fail('capture_too_large', 'Capture exceeds the 6 MiB image limit.');
-    const bytes = await measure('fileRead', () => fs.readFile(screenshotPath));
-    count('controllerPngRead', bytes.length);
+    let bytes, screenshot, width, height;
+    if (mode !== 'accessibility') {
+      if (path.resolve(snapshot.screenshot?.path ?? '') !== screenshotPath) throw fail('invalid_capture', 'Backend returned a different screenshot path.');
+      const stat = await measure('fileStat', () => fs.stat(screenshotPath));
+      if (stat.size > 6 * 1024 * 1024) throw fail('capture_too_large', 'Capture exceeds the 6 MiB image limit.');
+      bytes = await measure('fileRead', () => fs.readFile(screenshotPath));
+      count('controllerPngRead', bytes.length);
+      if (bytes.length < 24 || !bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) throw fail('invalid_capture', 'Backend capture must be a PNG image.');
+      width = bytes.readUInt32BE(16); height = bytes.readUInt32BE(20);
+      if (width !== bounds.width || height !== bounds.height) throw fail('capture_mismatch', 'Screenshot dimensions differ from the observed window. Re-observe before input.');
+    }
     count('elements', snapshot.elements?.length ?? 0);
-    if (bytes.length < 24 || !bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) throw fail('invalid_capture', 'Backend capture must be a PNG image.');
-    const width = bytes.readUInt32BE(16), height = bytes.readUInt32BE(20);
-    if (width !== bounds.width || height !== bounds.height) throw fail('capture_mismatch', 'Screenshot dimensions differ from the observed window. Re-observe before input.');
     const observedAtMs = now();
-    const screenshot = measure('hashEncode', () => ({ data: bytes.toString('base64'), mimeType: 'image/png', width, height,
-      sha256: createHash('sha256').update(bytes).digest('hex') }));
-    count('base64', screenshot.data.length);
+    if (bytes) {
+      screenshot = measure('hashEncode', () => ({ data: bytes.toString('base64'), mimeType: 'image/png', width, height,
+        sha256: createHash('sha256').update(bytes).digest('hex') }));
+      count('base64', screenshot.data.length);
+    }
     const result = {
       sessionId: session.id, observationId, window: snapshot.window, bounds,
       elements: snapshot.elements ?? [], observedAt: new Date(observedAtMs).toISOString(),
@@ -165,8 +177,14 @@ function createComputerController(options = {}) {
       ...(snapshot.restoredFromMinimized === true ? { preparation: [{ step: 'restore', status: 'restored' }] } : {}),
       screenshot,
     };
-    session.observation = { id: observationId, observedAtMs, snapshot, result };
-    await measure('journal', () => record(session, { type: 'observation', observationId, screenshotSha256: result.screenshot.sha256 }));
+    if (mode === 'full') session.observation = { id: observationId, observedAtMs, snapshot, result };
+    else {
+      Object.assign(result, { mode, actionable: false });
+      if (mode === 'screenshot') { delete result.elements; delete result.accessibility; }
+      else { delete result.screenshot; delete result.captureMethod; delete result.coordinateSpace; }
+    }
+    await measure('journal', () => record(session, { type: 'observation', observationId,
+      ...(mode !== 'full' ? { mode } : {}), ...(screenshot ? { screenshotSha256: screenshot.sha256 } : {}) }));
     signal.throwIfAborted();
     indicator.assertActive();
     return result;
@@ -176,7 +194,8 @@ function createComputerController(options = {}) {
     doctor(callOptions) {
       return queued(async signal => {
         const result = await backend.doctor({ signal });
-        return { ...result, support: actionSupport(observationTtlMs), readiness: {
+        return { ...result, support: actionSupport(observationTtlMs),
+          observationModes: { default: 'full', actionable: ['full'], evidenceOnly: ['accessibility', 'screenshot'] }, readiness: {
           native: { ready: result.ready === true, code: result.code || null, reason: result.reason || null },
           target: { ready: null, reason: 'Exact target, geometry, patterns and focus are checked during observation and dispatch.' },
         } };
@@ -222,8 +241,8 @@ function createComputerController(options = {}) {
         }
       }, callOptions);
     },
-    observe({ sessionId, accessibilityDepth }, callOptions) {
-      return queued(signal => observeInternal(getSession(sessionId), signal, validateDepth(accessibilityDepth)), callOptions);
+    observe({ sessionId, accessibilityDepth, mode }, callOptions) {
+      return queued(signal => observeInternal(getSession(sessionId), signal, validateDepth(accessibilityDepth), validateObservationMode(mode)), callOptions);
     },
     act({ sessionId, observationId, action }, callOptions) {
       return queued(async signal => {
