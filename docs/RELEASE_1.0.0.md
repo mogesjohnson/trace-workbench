@@ -28,6 +28,6 @@ Configuration verification uses a scratch home: four client registrations, three
 
 ## Distribution and limits
 
-The intended GitHub release contains the exact source/setup ZIP, acceptance manifest, sanitized distribution receipt, release notes and SHA-256 checksums. Reproduce the ZIP with `git archive --format=zip --output=<archive> <full-source-sha>` in UTC; use the [verifier](ARCHIVE_INSTALL.md) to test those committed bytes. Package, lockfile and `v1.0.0` tag must agree. npm publication remains outside scope (`private: true`).
+The intended GitHub release contains the exact source/setup ZIP, acceptance manifest, sanitized distribution receipt, release notes and SHA-256 checksums. Reproduce the ZIP with `git archive --format=zip --prefix=trace-workbench/ --output=<archive> <full-source-sha>` in UTC, then compare its SHA-256 with the verified receipt; cross-environment byte identity must be checked. Use the [verifier](ARCHIVE_INSTALL.md) to test those committed bytes. Package, lockfile and `v1.0.0` tag must agree. npm publication remains outside scope (`private: true`).
 
 Windows x64, unlocked normal interactive desktop, supported Node.js and .NET 9 remain required. Readable UIA, image/geometry bounds and recovery guards still apply. Background GUI isolation, broader display transitions, optional live hosts/providers and new gestures remain deferred. Future roadmap labels do not automatically change the package major version.
