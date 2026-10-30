@@ -145,8 +145,8 @@ function createComputerServer({ controller, onError = () => {} } = {}) {
     z.strictObject({}), "listWindows", readOnly);
   register("trace_computer_open_session", "Claim the desktop input lease for one returned window ID. A session does not authorize acting on another window.",
     z.strictObject({ windowId: id }), "openSession", sessionMutation);
-  register("trace_computer_observe", "Capture the session window, accessibility elements and fresh PNG. Capture may restore and focus the selected window. accessibilityDepth (1-32, default 8) sets how deep the accessibility tree is read; the action reuses it. Inspect this observation before one action.",
-    z.strictObject({ sessionId: id, accessibilityDepth: z.number().int().min(1).max(32).optional() }), "observe", sessionMutation);
+  register("trace_computer_observe", "Observe the exact session window. Default mode full returns controls plus PNG and authorizes one action; accessibility and screenshot modes return only the selected evidence and revoke input authority. Selective IDs cannot authorize any action; observe full before input. All modes may restore and focus the window and require a readable UIA root. accessibilityDepth (1-32, default 8) controls internal inspection, including screenshot mode.",
+    z.strictObject({ sessionId: id, accessibilityDepth: z.number().int().min(1).max(32).optional(), mode: z.enum(['full', 'accessibility', 'screenshot']).optional() }), "observe", sessionMutation);
   register("trace_computer_act", "Perform one action grounded in the latest observation, then return fresh state. Coordinates are window-relative. not_dispatched means the requested input was never sent; unknown means it may have been. Observe before deciding what to do next; do not retry blindly.",
     z.strictObject({ sessionId: id, observationId: id, action: actionSchema }), "act",
     { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true });
