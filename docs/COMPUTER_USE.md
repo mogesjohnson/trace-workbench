@@ -32,17 +32,17 @@ The configured command is the installed Node executable plus this checkout's abs
 5. Inspect the new observation before continuing. `not_dispatched` means the requested input was never sent (any preparatory activation is listed separately); `unknown` means it may have been. After either, observe again before deciding; never replay automatically.
 6. Close the session to release desktop ownership. The target application remains open.
 
-### Cleanup result contract (V1 development)
+### Cleanup result contract (V1)
 
 A successful close returns `{ sessionId, closed: true, cleanup: 'confirmed' }`. Native confirmation and normal owner exit are both required. Process exit alone, a missing acknowledgment, or a transport/projection failure cannot confirm cleanup. Uncertain cleanup returns a tool error with `cleanup: 'unknown'`, `inputRecoveryRequired: true` and available bounded recovery details. Recovery codes and boolean fields are allowlisted; private native payloads are omitted.
 
 The method adapter requires explicit confirmation, including when connected to an older server. It retains uncertain close results across repeated calls and blocks further observations through that provider. Independently resolve recovery, then discard the failed provider and reconnect its server before starting a new session. Reconnection alone does not resolve recovery. Whole-controller shutdown also retains its original failed result across repeated calls.
 
-Cleanup confirmation concerns the owned session and input lifecycle. It does not prove the intended application effect or settle a deferred clipboard transaction. Existing observation freshness, input quarantine and clipboard obligations still apply. The six tools and supported Windows/display scope remain unchanged; these development changes do not publish a new release.
+Cleanup confirmation concerns the owned session and input lifecycle. It does not prove the intended application effect or settle a deferred clipboard transaction. Existing observation freshness, input quarantine and clipboard obligations still apply. The six tools and supported Windows/display scope remain unchanged; the [V1 release notes](RELEASE_1.0.0.md) distinguish candidate readiness from publication.
 
 The server supports activation, coordinate/element clicks, typing, allowed key chords, vertical wheel scrolling, dragging, accessibility invocation and editable values. Actual tested coverage and limitations are recorded in [verification](VERIFICATION.md) and [the specification](../SPEC.md).
 
-### Effective action limits (V1 development)
+### Effective action limits (V1)
 
 Literal text accepts 1–8192 UTF-16 code units; editable values accept 0–8192. Neither accepts NUL. Element IDs accept 1–512 units. Keys accept case-insensitive Ctrl/Control, Alt and Shift chords with letters, digits, F1–F12 and the existing navigation/edit keys; Return maps to Enter. INSERT, Windows-key chords and multi-command key scripts are unsupported. The shared validator applies the same limits to the method adapter, controller and native backend before native helper work.
 
@@ -53,6 +53,20 @@ Wheel input requires `deltaX: 0` and a nonzero `deltaY` in 120-unit steps from -
 The method adapter separately reports configured transport/schema compatibility, native runtime readiness and unchecked target readiness. Missing providers retain an unavailable reason. An older server without a support descriptor remains usable under local conservative validation, with support explicitly unknown. Incomplete, contradictory or unsupported descriptors disable the adapter; compatible descriptors expose only the known local contract. This does not install browser, application or artifact providers. JSON Schema string lengths count Unicode code points, so field descriptions declare UTF-16 units and the MCP handler enforces the shared runtime limit before reaching the controller.
 
 The adapter reports the accepted server's observation TTL; the native server enforces it. The method coordinator retains its separate freshness guard. Capability discovery does not certify that an individual capture is still fresh at dispatch.
+
+## V1 compatibility boundary
+
+The V1 stable wrapper contract covers these six public tool names and their advertised strict input schemas: `trace_computer_doctor`, `trace_computer_list_windows`, `trace_computer_open_session`, `trace_computer_observe`, `trace_computer_act` and `trace_computer_close_session`. Inspect the connected server's schemas; unsupported fields are rejected. The supported action forms, units and limits above are part of that contract.
+
+Results carry matching JSON text and `structuredContent`. Screenshot metadata indexes a PNG block in the original complete MCP `content` array; filtering consumers must explicitly remap that index. The method adapter validates image metadata/hash, observation/session and process lifetime before exposing its remapped image array. This checks association, not producer authenticity, full PNG decoding or semantic image understanding. No formal MCP output JSON schemas are advertised.
+
+`completed` reports action delivery; `not_dispatched` requires proof that primary input never began; `unknown` preserves possible delivery. Preparation, cleanup and independently verified application effects remain separate. Errors may include bounded recovery fields; missing cleanup confirmation or an unreadable response must not become proof of safe cleanup. Unknown outcomes never authorize automatic replay.
+
+Native observations authorize one action within the server TTL (default 60 seconds), with target/geometry/focus checks at dispatch. Opt-in immediate read-only method verification can use validated post-action evidence within its stricter age/field/lifecycle policy; it cannot authorize future input. Settled checks, uncertain results and final effect verification require fresh observations. See [the method API](../src/method/README.md) for callback and checkpoint obligations.
+
+Package `1.x` preserves these documented forms and meanings. Additive optional diagnostic/result fields are compatible; clients should tolerate unknown result metadata while requiring known authority and cleanup proof. Removing accepted inputs/tools or changing units, authority, outcome or cleanup meanings requires a new major package version and migration notes. Reject unsupported action/support versions rather than guessing. Schema string lengths count code points; shared runtime UTF-16 validation remains authoritative.
+
+`support.contractVersion: 1` identifies the declared TRACE action-support descriptor, separately from the package version, MCP protocol version and pinned engine version. Unknown legacy support remains explicitly unknown; contradictory descriptors disable the method route. Internal helpers, transient evidence tokens and native implementation files are not a serialized compatibility surface. Skill guidance is shipped as a manifest-owned bundle; source changes alone do not prove personal installed copies were updated.
 
 ## Storage and recovery
 
