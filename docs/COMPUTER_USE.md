@@ -68,6 +68,16 @@ Package `1.x` preserves these documented forms and meanings. Additive optional d
 
 `support.contractVersion: 1` identifies the declared TRACE action-support descriptor, separately from the package version, MCP protocol version and pinned engine version. Unknown legacy support remains explicitly unknown; contradictory descriptors disable the method route. Internal helpers, transient evidence tokens and native implementation files are not a serialized compatibility surface. Skill guidance is shipped as a manifest-owned bundle; source changes alone do not prove personal installed copies were updated.
 
+## Selective observations (V2 development)
+
+`trace_computer_observe` accepts optional `mode: 'full' | 'accessibility' | 'screenshot'`. Omission or `full` preserves the existing combined PNG/controls response and single-use input authority. Both selective modes return a fresh evidence ID with `mode` and `actionable: false`; they revoke the prior full observation and cannot authorize any action, including activation, keys or element actions. Request and inspect a fresh full observation before input. Failed selective capture also leaves prior authority revoked; invalid mode/depth rejected before observation does not consume it.
+
+`accessibility` returns controls/depth, focus, target state and physical bounds without screenshot, capture-method or pixel-coordinate provenance. The backend skips the screenshot command; no PNG file, stat/read, hash/base64 or MCP image is produced. `screenshot` returns PNG evidence plus window/focus/target metadata, omitting public `elements` and `accessibility`. Its internal UIA inspection still uses `accessibilityDepth` (default 8, range 1–32); it saves output payload, not UIA work.
+
+All modes retain readable UIA root, identity, ownership, geometry and focus checks. Observation can restore/focus the target; evidence-only does not mean free of desktop side effects. This does not support apps without readable UIA roots, which remains a separate roadmap item. Action refresh stays full at the retained depth; the existing method adapter continues requesting full and keeps strict image validation. Discover the live `mode` schema and additive `doctor.observationModes` metadata before using selective modes; older servers reject the new input. The V1 action-support descriptor and published v1.0.0 archive are unchanged.
+
+Synthetic tests verify omitted native capture/PNG work, authority invalidation, retained guards and MCP image projection. No live latency improvement, new native acceptance or V2 release is claimed.
+
 ## Storage and recovery
 
 Frames and a metadata journal are stored locally under the OS user's TRACE computer-data directory. `TRACE_COMPUTER_RUNTIME` can select another absolute artifact directory; this does not change the global per-user desktop lease. Journals omit typed text, editable values and screenshot bytes. Frames themselves can contain private content.
