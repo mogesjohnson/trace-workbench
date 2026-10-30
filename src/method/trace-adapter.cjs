@@ -2,6 +2,7 @@
 const { digest, fail, text } = require('./shared.cjs');
 const { validateAction: validateNativeAction, safeError } = require('../computer/controller.cjs');
 const { actionSupport, compatibleSupport } = require('../computer/action-contract.cjs');
+const { validateObservationImages, windowIdentity: identity } = require('./observation-images.cjs');
 const TOOL_NAMES = ['doctor', 'list_windows', 'open_session', 'observe', 'act', 'close_session'].map(s => `trace_computer_${s}`);
 function state(result) {
   if (result?.structuredContent && typeof result.structuredContent === 'object') return result.structuredContent;
@@ -16,12 +17,13 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
     fail('adapter-config', 'Bind a transport, exact environment/app/window and depth 1-32.');
   }
   let sessionId = null, capture = null, binding = null, supportsDepth = false;
+  let boundWindow = null;
+  const seenObservations = new Set();
   let closeFailure = null;
-  const identity = w => [w.id || w.windowId, w.pid ?? w.processId, w.processName, w.processCreationTime ?? null];
   const reference = w => ({ environment, app, windowId, ownership: 'attached',
     ownerWindowId: w.ownerWindowId ?? w.targetState?.ownerWindowId ?? null,
     identity: { pid: w.pid ?? w.processId, processName: w.processName,
-      generation: w.processCreationTime ?? null } });
+      generation: w.processCreationTime ?? null, sessionId: w.sessionId ?? null } });
   const call = async (index, args) => callTool({ name: TOOL_NAMES[index], arguments: args });
   const unknownSupport = () => ({ status: 'unknown', code: 'support-unavailable' });
   function diagnostics(ready, code = null, reason = null, support = unknownSupport(), { configured = false, native = null } = {}) {
@@ -71,13 +73,17 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
       if (matches.length !== 1) return [];
       const key = digest(identity(matches[0]));
       if (binding && key !== binding) fail('target-changed', 'This window now belongs to another process lifetime.');
-      binding = key; return matches.map(reference);
+      binding = key; boundWindow = structuredClone(matches[0]); return matches.map(reference);
     },
     async observe({ target }) {
       capture = null;
       if (closeFailure) fail('input_recovery_required', 'Resolve the uncertain close and create a new provider before observing.');
       if (!provider.available || !binding || target.environment !== environment || target.app !== app
         || target.windowId !== windowId) fail('target-mismatch', 'Observe the exact discovered app/window.');
+      if (digest(identity({ id: windowId, ...target.identity, processCreationTime: target.identity?.generation })) !== binding
+        || reference(boundWindow).ownerWindowId !== (target.ownerWindowId ?? null)) {
+        fail('target-mismatch', 'The supplied target differs from the privately discovered process and owner.');
+      }
       if (!sessionId) {
         let result, value;
         try {
@@ -95,21 +101,18 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
         if (result.isError || !text(value.sessionId)) fail(value.error?.code || 'session-failed', 'TRACE session could not be opened.');
         sessionId = value.sessionId;
         if (digest(identity(value.window || {})) !== binding) fail('target-changed', 'Opened process lifetime differs; release the owned session.');
+        seenObservations.clear();
       }
       const result = await call(3, { sessionId, ...(supportsDepth ? { accessibilityDepth } : {}) }), value = state(result);
       if (result.isError) fail(value.error?.code || 'observe-failed', 'TRACE capture failed.');
-      if (!text(value.observationId) || value.sessionId !== sessionId || digest(identity(value.window || {})) !== binding) {
-        fail('target-mismatch', 'Observed process/session identity differs from discovery.');
-      }
-      const observedOwner = (Object.hasOwn(value.targetState || {}, 'ownerWindowId')
-        ? value.targetState.ownerWindowId : value.window?.ownerWindowId) ?? null;
-      if (String(observedOwner) !== String(target.ownerWindowId ?? null)) {
-        fail('ownership-changed', 'Current dialog ownership differs from the discovered parent relation.');
-      }
-      capture = value;
-      return { id: value.observationId, target: { ...target, ownerWindowId: observedOwner },
+      const evidence = validateObservationImages(value, result.content, { sessionId, window: boundWindow,
+        ownerWindowId: reference(boundWindow).ownerWindowId });
+      if (seenObservations.has(value.observationId)) fail('duplicate-observation', 'A reused observation ID cannot refresh native evidence.');
+      seenObservations.add(value.observationId);
+      capture = structuredClone(evidence.state);
+      return { id: value.observationId, target: { ...target },
         evidenceKey: digest([value.screenshot?.sha256, value.elements || [], value.focused || null, value.targetState || null]),
-        evidence: { state: value, images: result.content?.filter(c => c.type === 'image') || [],
+        evidence: { ...evidence,
           focus: value.focused || { available: false, reason: 'Executor did not expose intended-control focus.' } },
         preparation: value.preparation || [] };
     },

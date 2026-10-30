@@ -48,6 +48,10 @@ UI providers implement asynchronous `discover(target)`, `observe({target})`, `ac
 
 The native adapter accepts a connected `client`, or injected `callTool` plus `listTools`, or an explicit tool schema snapshot `tools`. `doctor()` checks all six advertised tools and executor readiness. Requested depth is passed only to observation when its live schema advertises `accessibilityDepth`; unsupported custom depth fails visibly. Native actions retain the executor's primary outcome, preparation and recovery independently. Public focus is surfaced with provenance or an unavailable reason. Full native dispatch validation remains in TRACE's executor.
 
+Native `observe()` validates one PNG against its original whole-MCP-content index, canonical bounded base64, PNG signature/IHDR dimensions and SHA-256. It checks exact session, discovered process lifetime (including Windows session metadata when present), owner and observation identity before installing a capture. A complete process creation time is required. Invalid refreshes and repeated IDs invalidate the adapter's previous capture; identical pixels under distinct new IDs remain valid.
+
+Returned `evidence.contentIndexSpace` is `images`: read the validated image as `evidence.images[evidence.state.screenshot.contentIndex]`. That index is remapped to 0; `screenshot.sourceContentIndex` preserves its original MCP position. Returned metadata and the adapter's private capture are separate copies. The internal validator can also accept a nested observation with its original content array; post-action evidence reuse is a separate future change. Header/hash consistency does not decode all pixels, authenticate a producer or prove capture freshness; native fresh-observation authority remains unchanged.
+
 Optional provider `validateAction(request)` runs before consuming the attempt. The native adapter reuses TRACE's canonical action validator, so unknown fields, stale element IDs, and invalid coordinates fail before dispatch and do not become phantom uncertain inputs.
 
 ## Real structured browser adapter
