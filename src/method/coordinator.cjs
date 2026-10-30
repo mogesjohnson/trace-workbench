@@ -1,11 +1,13 @@
 'use strict';
 const { ProviderRegistry, CHANNELS } = require('./capabilities.cjs');
 const { fail, text, digest, targetKey } = require('./shared.cjs');
+const { readPostActionEvidence, postActionStatus, normalizeVerificationPolicies, hasRequiredEvidence } = require('./post-action-evidence.cjs');
+const evidenceTargetKey = target => JSON.stringify([targetKey(target), target.identity?.sessionId ?? null]);
 const STEP_STATES = ['pending', 'observed', 'needs-verification', 'unknown', 'retryable', 'target-blocked', 'verified'];
 const stepKey = spec => digest(spec);
 
 class ComputerMethod {
-  constructor({ providers = [], registry, verifyStep, verifyEffect, clock = Date.now, ttlMs = 5000 } = {}) {
+  constructor({ providers = [], registry, verifyStep, verifyEffect, clock = Date.now, ttlMs = 5000, verificationPolicies = {} } = {}) {
     if (typeof verifyStep !== 'function' || typeof verifyEffect !== 'function' || !Number.isFinite(ttlMs) || ttlMs <= 0) {
       fail('invalid-config', 'Independent step/effect verifiers and a positive observation TTL are required.');
     }
@@ -13,6 +15,7 @@ class ComputerMethod {
     this.checkStep = verifyStep; this.checkEffect = verifyEffect; this.clock = clock; this.ttlMs = ttlMs;
     this.effects = new Map(); this.started = false; this.closed = false; this.busy = false;
     this.epoch = 0; this.seen = new Set();
+    this.verificationPolicies = normalizeVerificationPolicies(verificationPolicies);
   }
   start({ goalId, effects }) {
     if (this.started || !text(goalId) || !Array.isArray(effects) || !effects.length) fail('invalid-goal', 'Start once with a goal and effects.');
@@ -56,7 +59,7 @@ class ComputerMethod {
     effect.steps.set(step.id, { spec, status: 'pending', attempts: 0, retryUsed: false,
       uncertain: false, quarantine: false, needsRevalidation: false, providerId: null,
       providerDigest: null, targetDigest: null, ref: null, observation: null, before: null,
-      retryEvidence: null, discoveryEpoch: -1, leaseActive: false, lastReceipt: null });
+      retryEvidence: null, discoveryEpoch: -1, leaseActive: false, lastReceipt: null, postAction: null });
   }
   appendStep(effectId, step) {
     if (this.busy) fail('busy', 'Wait for the current operation.');
@@ -70,6 +73,30 @@ class ComputerMethod {
   }
   _step(e, id) { const step = e.steps.get(id); if (!step) fail('unknown-step', 'Step is not part of this effect.'); return step; }
   _all() { return [...this.effects.values()].flatMap(effect => [...effect.steps.values()].map(step => ({ effect, step }))); }
+  _invalidatePostActions() { for (const { step } of this._all()) step.postAction = null; }
+  _rememberPostAction(step, provider, receipt) {
+    if (step.lastReceipt.delivery !== 'delivered' || step.quarantine || provider.channel !== 'desktop'
+      || step.spec.capability !== 'native-action') return;
+    const data = readPostActionEvidence(receipt?.postActionEvidence), observation = data?.observation;
+    if (!observation || observation.authority !== 'verification-only' || data.beforeObservationId !== step.before.id
+      || !this._matches(step, observation.target) || evidenceTargetKey(observation.target) !== evidenceTargetKey(step.ref)) return;
+    const key = digest([provider.id, observation.id]);
+    if (this.seen.has(key)) return;
+    this.seen.add(key);
+    step.postAction = { token: receipt.postActionEvidence, data, provider, epoch: this.epoch, attempt: step.attempts,
+      target: evidenceTargetKey(step.ref), beforeId: step.before.id };
+  }
+  _postActionEligible(step, record, policy) {
+    if (!record || policy?.timing !== 'immediate' || step.status !== 'needs-verification'
+      || step.uncertain || step.quarantine || step.needsRevalidation || !step.leaseActive
+      || record.epoch !== this.epoch || step.discoveryEpoch !== this.epoch || record.attempt !== step.attempts
+      || record.beforeId !== step.before?.id || record.provider !== this.registry.get(step.providerId)
+      || record.provider.available !== true || record.target !== evidenceTargetKey(step.ref)) return false;
+    const status = postActionStatus(record.token);
+    const limit = Math.min(policy.maxAgeMs, this.ttlMs, record.provider.constraints?.observationTtlMs ?? this.ttlMs);
+    return status?.current === true && Number.isFinite(status.ageMs) && status.ageMs >= 0 && status.ageMs <= limit
+      && hasRequiredEvidence(record.data.observation, policy.requiredFields);
+  }
   async _exclusive(fn) {
     if (this.busy) fail('busy', 'Another operation is in flight; do not duplicate it.');
     this.busy = true; try { return await fn(); } finally { this.busy = false; }
@@ -123,6 +150,7 @@ class ComputerMethod {
     return this._exclusive(async () => {
       const effect = this._effect(effectId), step = this._step(effect, stepId);
       step.observation = null; step.discoveryEpoch = -1;
+      this._invalidatePostActions();
       const { provider, reason } = this._route(step);
       this._guard(effect, step, provider, true);
       const refs = await provider.discover({ ...step.spec.target, capability: step.spec.capability });
@@ -147,6 +175,7 @@ class ComputerMethod {
     });
   }
   async _capture(step) {
+    this._invalidatePostActions();
     step.observation = null; // Every refresh attempt invalidates older evidence, even readiness rejection.
     if (!step.ref || step.discoveryEpoch !== this.epoch) fail('discover-required', 'Target transitions require fresh discovery.');
     const provider = this.registry.get(step.providerId);
@@ -197,6 +226,7 @@ class ComputerMethod {
       if (this.clock() < observation.capturedAt || this.clock() - observation.capturedAt > this.ttlMs) {
         fail('stale-observation', 'Observation expired during action validation.');
       }
+      this._invalidatePostActions();
       observation.consumed = true; step.before = observation;
       if (step.attempts) step.retryUsed = true; step.attempts++; step.status = 'needs-verification';
       let receipt;
@@ -206,6 +236,7 @@ class ComputerMethod {
       step.uncertain = delivery === 'unknown';
       step.quarantine ||= receipt?.cleanup === 'unknown' || receipt?.cleanup === 'blocked';
       step.lastReceipt = { delivery, preparation: receipt?.preparation || [], errorCode: receipt?.errorCode || null };
+      try { this._rememberPostAction(step, provider, receipt); } catch { step.postAction = null; }
       if (step.uncertain) step.status = 'unknown';
       else if (delivery === 'not-delivered') {
         step.status = receipt?.blocked ? 'target-blocked' : 'retryable';
@@ -220,16 +251,27 @@ class ComputerMethod {
       const effect = this._effect(effectId), step = this._step(effect, stepId);
       if (!step.attempts && !step.needsRevalidation) fail('no-attempt', 'No dispatched or restored step requires verification.');
       if (step.quarantine) fail('quarantined', 'Verify physical recovery before completing this step.');
-      const after = await this._capture(step);
-      let verdict;
-      try { verdict = await this.checkStep({ effectId, stepId, checkId: step.spec.checkId,
-        before: step.before, after, receipt: step.lastReceipt }); } catch { verdict = 'unknown'; }
+      const post = step.postAction, policy = this.verificationPolicies.get(step.spec.checkId);
+      step.postAction = null;
+      let after, verdict, evidenceSource = 'fresh-observation';
+      if (this._postActionEligible(step, post, policy)) {
+        after = { ...structuredClone(post.data.observation), sourceCapturedAt: post.data.sourceCapturedAt, epoch: post.epoch, consumed: true };
+        try { verdict = await this.checkStep({ effectId, stepId, checkId: step.spec.checkId,
+          before: step.before, after, receipt: step.lastReceipt, evidenceSource: 'post-action' }); } catch { verdict = 'unknown'; }
+        if (verdict === 'confirmed' && this._postActionEligible(step, post, policy)) evidenceSource = 'post-action';
+        else { step.uncertain = true; step.status = 'unknown'; }
+      }
+      if (evidenceSource !== 'post-action') {
+        after = await this._capture(step);
+        try { verdict = await this.checkStep({ effectId, stepId, checkId: step.spec.checkId,
+          before: step.before, after, receipt: step.lastReceipt, evidenceSource }); } catch { verdict = 'unknown'; }
+      }
       if (verdict === 'confirmed') { step.status = 'verified'; step.uncertain = false; step.needsRevalidation = false; }
       else if (verdict === 'absent') {
         step.status = step.attempts ? 'retryable' : 'observed'; step.uncertain = false;
         step.needsRevalidation = false; step.retryEvidence = after.evidenceKey;
       } else { verdict = 'unknown'; step.status = 'unknown'; step.uncertain = true; }
-      return { verdict, status: step.status, effectComplete: effect.status === 'verified' };
+      return { verdict, status: step.status, effectComplete: effect.status === 'verified', evidenceSource };
     });
   }
   async verifyEffect(effectId, { stepId } = {}) {
@@ -253,6 +295,7 @@ class ComputerMethod {
   }
   async recover(effectId, stepId) {
     return this._exclusive(async () => {
+      this._invalidatePostActions();
       const step = this._step(this._effect(effectId), stepId), provider = this.registry.get(step.providerId);
       if (!step.ref || typeof provider?.recover !== 'function') fail('recovery-unavailable', 'This adapter has no verified physical recovery operation.');
       const proof = await provider.recover({ target: step.ref });
@@ -277,6 +320,7 @@ class ComputerMethod {
   }
   checkpoint() {
     if (!this.started || this.busy) fail('checkpoint-unavailable', 'Checkpoint only an idle started goal.');
+    this._invalidatePostActions();
     return { version: 1, goalKey: digest(this.goalId), effects: [...this.effects.values()].map(e => ({
       effectKey: digest([e.id, e.checkId, e.dependsOn]), status: e.status, steps: [...e.steps.values()].map(s => ({
         stepKey: stepKey(s.spec), status: s.status, attempts: s.attempts, retryUsed: s.retryUsed,
@@ -312,6 +356,7 @@ class ComputerMethod {
   }
   async close() {
     return this._exclusive(async () => {
+      this._invalidatePostActions();
       const receipts = new Map();
       for (const { step } of this._all()) {
         if (!step.ref) continue;
