@@ -409,8 +409,10 @@ class WinappBackend {
     }
     fail('window_moved', 'The restored window did not settle; observe again.');
   }
-  async observe({ window, screenshotPath, signal, depth = 8 }) {
-    if (typeof screenshotPath !== 'string' || !path.isAbsolute(screenshotPath) || path.extname(screenshotPath).toLowerCase() !== '.png') fail('invalid_screenshot_path', 'An absolute PNG output path is required.');
+  async observe({ window, screenshotPath, signal, depth = 8, includeScreenshot = true }) {
+    if (typeof includeScreenshot !== 'boolean') fail('invalid_observation', 'includeScreenshot must be a boolean.');
+    if (includeScreenshot && (typeof screenshotPath !== 'string' || !path.isAbsolute(screenshotPath) || path.extname(screenshotPath).toLowerCase() !== '.png')) fail('invalid_screenshot_path', 'An absolute PNG output path is required.');
+    if (!includeScreenshot && screenshotPath !== undefined) fail('invalid_screenshot_path', 'A screenshot path is not allowed when capture is omitted.');
     let initialBounds;
     const readInitialBounds = () => {
       if (initialBounds === undefined) {
@@ -435,13 +437,16 @@ class WinappBackend {
     await measure('identity', () => this.identity(window, signal, geometry));
     // DWM exposes the exact WGC source origin. Selecting the root crops to its intersection with that
     // frame. A PrintWindow fallback with different bounds is rejected by the exact dimension check.
-    const screenshot = await measure('capture', () => this.command('screenshot', ['-w', window.id, '--output', screenshotPath, '--', state.rootSelector], signal));
-    if (String(screenshot.hwnd) !== window.id || screenshot.processId !== window.pid || path.resolve(screenshot.filePath || '') !== path.resolve(screenshotPath) || screenshot.windows?.length > 1) fail('invalid_screenshot', 'Screenshot provenance does not match the selected window.');
-    const png = await measure('backendPngRead', () => readPngHeader(screenshotPath));
-    count('backendPngRead', png.length);
-    const size = measure('pngHeader', () => pngSize(png));
-    if (size.width !== screenshot.width || size.height !== screenshot.height) fail('invalid_screenshot', 'PNG dimensions disagree with native capture metadata.');
-    if (size.width !== captured.width || size.height !== captured.height) fail('coordinate_space', 'PNG dimensions do not match exact DWM capture bounds. No scaling is assumed.');
+    let size;
+    if (includeScreenshot) {
+      const screenshot = await measure('capture', () => this.command('screenshot', ['-w', window.id, '--output', screenshotPath, '--', state.rootSelector], signal));
+      if (String(screenshot.hwnd) !== window.id || screenshot.processId !== window.pid || path.resolve(screenshot.filePath || '') !== path.resolve(screenshotPath) || screenshot.windows?.length > 1) fail('invalid_screenshot', 'Screenshot provenance does not match the selected window.');
+      const png = await measure('backendPngRead', () => readPngHeader(screenshotPath));
+      count('backendPngRead', png.length);
+      size = measure('pngHeader', () => pngSize(png));
+      if (size.width !== screenshot.width || size.height !== screenshot.height) fail('invalid_screenshot', 'PNG dimensions disagree with native capture metadata.');
+      if (size.width !== captured.width || size.height !== captured.height) fail('coordinate_space', 'PNG dimensions do not match exact DWM capture bounds. No scaling is assumed.');
+    }
     const current = await measure('identity', () => this.identity(window, signal));
     const after = await measure('uia', () => this.inspect(window, signal, 1));
     const afterGeometry = await measure('geometry', () => this.bridge('bounds', window, signal));
@@ -452,7 +457,7 @@ class WinappBackend {
     if (window.processCreationTime !== undefined && afterGeometry.processCreationTime !== window.processCreationTime) fail('window_identity_changed', 'The selected process was replaced.');
     return { ...state, window: { ...current, bounds: captured }, bounds: captured, uiaBounds: state.bounds, nativeWindowBounds: bounds(geometry.windowBounds), frameBounds: bounds(geometry.frameBounds), focused,
       targetState: { enabled: afterGeometry.enabled, minimized: afterGeometry.minimized, foreground: afterGeometry.foreground, ownerWindowId: afterGeometry.ownerWindowId ?? null, provenance: 'public-win32-dwm' },
-      restoredFromMinimized: restored, captureMethod: 'window-capture-dwm-bounds', actionCoordinateSpace: 'window-local-pixels', screenshot: { path: screenshotPath, mimeType: 'image/png', ...size } };
+      restoredFromMinimized: restored, ...(includeScreenshot ? { captureMethod: 'window-capture-dwm-bounds', actionCoordinateSpace: 'window-local-pixels', screenshot: { path: screenshotPath, mimeType: 'image/png', ...size } } : {}) };
   }
   // Any rejection before the requested primary mutation begins is provably not dispatched. Once it
   // may have begun, the outcome stays unknown even if an error code was raised before input.
