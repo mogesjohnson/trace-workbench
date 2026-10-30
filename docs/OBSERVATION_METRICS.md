@@ -45,6 +45,12 @@ const sample = {
 
 The caller measurement includes client processing and transport; it cannot isolate either. It does not include model thinking unless the caller explicitly measures that separately. No comparative latency result is claimed by this instrumentation change.
 
+## Summarize existing numeric samples
+
+Save an array of the `sample` objects above for one pinned source/runtime/display/depth/mode group, then run `node scripts/observation-profile.cjs samples.json > profile.json`. This offline command does not connect to a server, capture pixels or control the desktop. Keep the source manifest separately; the report cannot verify that samples came from equivalent environments or real captures.
+
+The report separates first/later attempts and gives per-metric sample count, minimum, median and maximum. Missing stages stay absent, never measured zero; failed samples are counted and excluded from aggregates. Observation and supplied projection metadata must declare version 1 and `process-monotonic` clock. Version/clock mismatches, invalid numeric fields and invalid timing samples reject the input. Only fixed numeric stage/count/byte/caller/projection fields are emitted; arbitrary fields and labels are ignored, and CLI errors omit input contents and paths. Caller round trip remains separate from nested stage timings, which must not be summed. Output is diagnostic aggregation, not a benchmark result or evidence of optimization, provider startup, cold caches or model speed.
+
 ## Adjacent identity consolidation (V2 development)
 
 Initial observation validates engine status first, then obtains bounds and checks the pinned process lifetime/session from that same native receipt. The backend also reuses the immediately preceding bounds receipt at the pre-capture identity check. The independent native identity read after capture and all status/UIA/geometry/focus/restore checks remain. A malformed or mismatched pinned receipt rejects without retrying another identity request or publishing a capture. This is transient receipt reuse within one observation, not an identity cache across captures.
