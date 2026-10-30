@@ -329,10 +329,12 @@ class WinappBackend {
     const current = await this.command('status', ['-w', id(window.id)], signal);
     if (id(current.hwnd) !== window.id || current.processId !== window.pid || current.processName !== window.processName) fail('window_identity_changed', 'Window no longer belongs to the selected process.');
     if (current.coordinateSpace !== 'physical-screen-pixels') fail('coordinate_space', 'Engine coordinate space is not physical-screen-pixels.');
+    // Initial observation supplies a lazy bounds read so status is validated first.
+    const supplied = typeof adjacentBounds === 'function' ? await adjacentBounds() : adjacentBounds;
+    if (adjacentBounds !== undefined && !object(supplied)) fail('invalid_native_response', 'Expected the observation bounds receipt.');
     if (window.processCreationTime !== undefined) {
-      // Only observe supplies its immediately preceding, validated bounds receipt.
-      // Keep status/name checks and independent identities on either side of capture.
-      const native = adjacentBounds ?? await this.bridge('identity', window, signal);
+      // Only observe supplies bounds; other identity checks always read independently.
+      const native = adjacentBounds === undefined ? await this.bridge('identity', window, signal) : supplied;
       if (native.hwnd !== window.id || native.pid !== window.pid || native.processCreationTime !== window.processCreationTime || native.sessionId !== window.sessionId) fail('window_identity_changed', 'The selected process identity changed.');
     }
     return { ...window, title: current.windowTitle || '' };
@@ -389,8 +391,19 @@ class WinappBackend {
   }
   async observe({ window, screenshotPath, signal, depth = 8 }) {
     if (typeof screenshotPath !== 'string' || !path.isAbsolute(screenshotPath) || path.extname(screenshotPath).toLowerCase() !== '.png') fail('invalid_screenshot_path', 'An absolute PNG output path is required.');
-    await measure('identity', () => this.identity(window, signal));
-    let geometry = await measure('geometry', () => this.bridge('bounds', window, signal));
+    let initialBounds;
+    const readInitialBounds = () => {
+      if (initialBounds === undefined) {
+        initialBounds = Promise.resolve(measure('geometry', () => this.bridge('bounds', window, signal)));
+        // An injected identity override can start this read and then throw first.
+        // Observe rejection now; normal flow still awaits the original promise.
+        void initialBounds.catch(() => {});
+      }
+      return initialBounds;
+    };
+    await measure('identity', () => this.identity(window, signal, readInitialBounds));
+    // Injected identity implementations may ignore the supplier; still read once.
+    let geometry = await (initialBounds ?? readInitialBounds());
     const restored = geometry.minimized === true;
     if (restored) {
       await measure('restore', () => this.bridge('activate', window, signal));
