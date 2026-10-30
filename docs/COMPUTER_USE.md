@@ -77,6 +77,8 @@ To recover configuration, close the affected host, restore its matching backup, 
 
 ## Verify
 
+[Observation metrics and the fixed measurement recipe](OBSERVATION_METRICS.md) describe numeric cost diagnostics. Preparing instrumentation does not establish a latency improvement or start a desktop benchmark.
+
 ```powershell
 npm run check
 npm test
