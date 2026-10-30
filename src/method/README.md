@@ -169,6 +169,8 @@ Each capture expires (default 5 seconds), authorizes one action, and is invalida
 
 `recover(effectId,stepId)` exists only when the provider implements a real recovery operation. It must affirm `{verified:true,inputReleased:true,ownedProcessExited:true}`. This trusted executor proof clears cleanup quarantine for the same bound target; it leaves unknown effects unresolved and forces rediscovery. The six-tool native adapter fabricates no physical proof; a host may inject a verified `recover` callback from its actual supervisor/recovery interface. In-memory method state does not establish durable OS crash recovery.
 
+A desktop observation exception after the provider call begins conservatively quarantines cleanup, since session acquisition may have succeeded before the response was lost. This survives checkpoints even with zero action attempts and pins the provider and process lifetime until verified recovery. A readiness rejection before the call does not quarantine. Recovery of a zero-attempt failure requires fresh discovery/observation before input, but creates no fictional action or effect to reconcile.
+
 `mapPoint` converts declared full-frame preview/normalized coordinates. Its default output is TRACE's window-local physical pixels. Screen coordinates require explicit `output:'physical-screen-pixels'`. Current capture identity, dimensions and origin are mandatory. Cropping, CSS pixels and DPI are never inferred.
 
 ## Checkpoints and artifacts

@@ -102,8 +102,8 @@ class ComputerMethod {
     this.busy = true; try { return await fn(); } finally { this.busy = false; }
   }
   _route(step) {
-    return this.registry.select({ ...step.spec, pinnedId: step.attempts ? step.providerId : null,
-      providerDigest: step.attempts ? step.providerDigest : null, digest });
+    return this.registry.select({ ...step.spec, pinnedId: step.attempts || step.quarantine ? step.providerId : null,
+      providerDigest: step.attempts || step.quarantine ? step.providerDigest : null, digest });
   }
   route(effectId, stepId) {
     const step = this._step(this._effect(effectId), stepId), selected = this._route(step);
@@ -158,7 +158,7 @@ class ComputerMethod {
         step.observation = null; step.discoveryEpoch = -1; fail('ambiguous-target', 'Exactly one matching discovered target is required.');
       }
       const ref = refs[0];
-      if (step.attempts && step.targetDigest && digest(targetKey(ref)) !== step.targetDigest) {
+      if ((step.attempts || step.quarantine) && step.targetDigest && digest(targetKey(ref)) !== step.targetDigest) {
         step.discoveryEpoch = -1; fail('target-changed', 'The attempted target process/resource identity changed.');
       }
       if (step.spec.target.parentStepId) {
@@ -180,8 +180,16 @@ class ComputerMethod {
     if (!step.ref || step.discoveryEpoch !== this.epoch) fail('discover-required', 'Target transitions require fresh discovery.');
     const provider = this.registry.get(step.providerId);
     if (provider?.available !== true) fail('provider-unavailable', 'Observed provider is no longer ready.');
-    if (provider.usesDesktop ?? provider.channel === 'desktop') step.leaseActive = true;
-    const observation = await provider.observe({ target: step.ref });
+    if (step.quarantine) fail('quarantined', 'Verify physical recovery before observing again.');
+    const usesDesktop = provider.usesDesktop ?? provider.channel === 'desktop';
+    if (usesDesktop) step.leaseActive = true;
+    let observation;
+    try { observation = await provider.observe({ target: step.ref }); }
+    catch (error) {
+      // The provider may have acquired a lease before an interrupted open or capture.
+      if (usesDesktop) step.quarantine = true;
+      throw error;
+    }
     if (!observation || !this._matches(step, observation.target) || targetKey(observation.target) !== targetKey(step.ref)) {
       step.discoveryEpoch = -1; fail('stale-target', 'The capture belongs to another target identity.');
     }
@@ -348,7 +356,7 @@ class ComputerMethod {
         }
         Object.assign(s, { attempts: v.attempts, retryUsed: v.retryUsed, quarantine: v.quarantine,
           uncertain: v.uncertain || v.status === 'needs-verification' || v.status === 'unknown',
-          providerDigest: v.providerKey, targetDigest: v.targetKey, needsRevalidation: true });
+          providerDigest: v.providerKey, targetDigest: v.targetKey, needsRevalidation: !(v.quarantine && !v.attempts) });
         s.providerId = method.registry.values().find(p => digest(p.id) === v.providerKey)?.id || null;
         s.status = s.uncertain ? 'unknown' : 'pending';
       });
