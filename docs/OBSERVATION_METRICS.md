@@ -58,3 +58,7 @@ The initial identity timing now includes the nested geometry/provider timing. Th
 The backend now reads at most 33 bytes from each regular capture file for its existing signature/IHDR/dimension checks, handling short reads and closing the descriptor before continuing. `backendPngRead` keeps its stage/byte labels but reports the bytes actually returned, rather than the entire PNG size. Provider requests remain 11 on the normal pinned path. The controller still independently stats and reads the full file, checks its signature/dimensions and size limit, hashes it and encodes it; neither layer claims complete PNG decoding or integrity validation.
 
 No native, input, geometry, recovery or retention behavior changes. The optimization does not make the two reads atomic, preserve errors in unread trailing data, or establish a wall-clock speedup. Special files and concurrent external mutation are outside the regular capture-file claim.
+
+## Internal selective capture (V2 development)
+
+The backend's internal `includeScreenshot:false` option omits screenshot capture, PNG reads and pixel-provenance fields, retaining initial/adjacent bounds identity checks, independent final identity, UIA, geometry, restore and focus checks. Full capture remains the default and uses the bounded header read above. Public selective modes and their evidence-only authority contract are a separate dependent change; this internal option alone does not expose them through MCP or permit image-free input.
