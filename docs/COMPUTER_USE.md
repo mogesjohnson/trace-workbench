@@ -56,6 +56,9 @@ The adapter reports the accepted server's observation TTL; the native server enf
 
 ## V1 compatibility boundary
 
+For the development branch's opt-in current-session capture policy, see
+[capture retention](CAPTURE_RETENTION.md). The published V1 archive is unchanged.
+
 The V1 stable wrapper contract covers these six public tool names and their advertised strict input schemas: `trace_computer_doctor`, `trace_computer_list_windows`, `trace_computer_open_session`, `trace_computer_observe`, `trace_computer_act` and `trace_computer_close_session`. Inspect the connected server's schemas; unsupported fields are rejected. The supported action forms, units and limits above are part of that contract.
 
 Results carry matching JSON text and `structuredContent`. Screenshot metadata indexes a PNG block in the original complete MCP `content` array; filtering consumers must explicitly remap that index. The method adapter validates image metadata/hash, observation/session and process lifetime before exposing its remapped image array. This checks association, not producer authenticity, full PNG decoding or semantic image understanding. No formal MCP output JSON schemas are advertised.

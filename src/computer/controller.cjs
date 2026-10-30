@@ -8,6 +8,7 @@ const { DesktopLease } = require('./lease.cjs');
 const { ActivityIndicator } = require('./activity-indicator.cjs');
 const { validateAction, actionSupport } = require('./action-contract.cjs');
 const { createObservationMetrics, measure, count } = require('./observation-metrics.cjs');
+const { parseCaptureKeepLast, createCaptureRetention } = require('./capture-retention.cjs');
 
 const fail = (code, message) => Object.assign(new Error(message), { code });
 const identityMatches = (a, b) => a && b && a.id === b.id && a.pid === b.pid && a.processName === b.processName
@@ -58,6 +59,7 @@ function validateObservationMode(mode = 'full') {
 }
 
 function createComputerController(options = {}) {
+  const captureKeepLast = parseCaptureKeepLast(options.captureKeepLast === undefined ? process.env.TRACE_CAPTURE_KEEP_LAST : options.captureKeepLast);
   const backend = options.backend ?? new (require('./winapp-backend.cjs').WinappBackend)();
   const runtimeDirectory = path.resolve(options.runtimeDirectory ?? defaultRuntimeDirectory());
   // Artifact directories may differ between hosts. Desktop ownership must not.
@@ -98,7 +100,7 @@ function createComputerController(options = {}) {
     combined.throwIfAborted();
     return combined;
   }
-  async function cleanupSession(session) {
+  async function cleanupSession(session, allowStorageCleanup = true) {
     const errors = [];
     // The operation queue has already drained native input/recovery before this runs.
     try { await indicator.stop(); } catch (error) { errors.push(error); }
@@ -109,6 +111,7 @@ function createComputerController(options = {}) {
       error.cleanupCodes = errors.flatMap(item => item.cleanupCodes || [item.code || 'cleanup_failed']);
       throw error;
     }
+    if (allowStorageCleanup && session.captureRetention) return session.captureRetention.close();
   }
   async function currentWindow(session, signal) {
     const current = backend.currentWindow ? await backend.currentWindow(session.window, { signal })
@@ -190,12 +193,29 @@ function createComputerController(options = {}) {
     return result;
   }
 
+  async function retainCapture(session, result, signal) {
+    if (!session.captureRetention || !result.screenshot) return result;
+    const file = path.join(session.directory, `${result.observationId}.png`);
+    signal.throwIfAborted(); indicator.assertActive();
+    try {
+      result.captureRetention = await session.captureRetention.remember(file, session.observation?.snapshot.screenshot?.path);
+      signal.throwIfAborted(); indicator.assertActive();
+    } catch (error) {
+      session.captureRetention.forget(file);
+      if (session.observation?.id === result.observationId) session.observation = null;
+      throw error;
+    }
+    return result;
+  }
+
   return {
     doctor(callOptions) {
       return queued(async signal => {
         const result = await backend.doctor({ signal });
         return { ...result, support: actionSupport(observationTtlMs),
-          observationModes: { default: 'full', actionable: ['full'], evidenceOnly: ['accessibility', 'screenshot'] }, readiness: {
+          observationModes: { default: 'full', actionable: ['full'], evidenceOnly: ['accessibility', 'screenshot'] },
+          captureRetention: { mode: captureKeepLast ? 'keep-last' : 'preserve', keepLast: captureKeepLast,
+            scope: 'validated-current-session-captures', onClose: captureKeepLast ? 'remove-tracked' : 'preserve' }, readiness: {
           native: { ready: result.ready === true, code: result.code || null, reason: result.reason || null },
           target: { ready: null, reason: 'Exact target, geometry, patterns and focus are checked during observation and dispatch.' },
         } };
@@ -226,7 +246,8 @@ function createComputerController(options = {}) {
           const activityIndicator = await indicator.start({ signal });
           signal.throwIfAborted();
           indicator.assertActive();
-          const session = { id, window: current, directory, observation: null };
+          const session = { id, window: current, directory, observation: null,
+            ...(captureKeepLast ? { captureRetention: createCaptureRetention(directory, captureKeepLast) } : {}) };
           await record(session, { type: 'session_open', windowId, pid: current.pid });
           signal.throwIfAborted();
           indicator.assertActive();
@@ -242,7 +263,11 @@ function createComputerController(options = {}) {
       }, callOptions);
     },
     observe({ sessionId, accessibilityDepth, mode }, callOptions) {
-      return queued(signal => observeInternal(getSession(sessionId), signal, validateDepth(accessibilityDepth), validateObservationMode(mode)), callOptions);
+      return queued(async signal => {
+        const session = getSession(sessionId);
+        const result = await observeInternal(session, signal, validateDepth(accessibilityDepth), validateObservationMode(mode));
+        return retainCapture(session, result, signal);
+      }, callOptions);
     },
     act({ sessionId, observationId, action }, callOptions) {
       return queued(async signal => {
@@ -271,6 +296,7 @@ function createComputerController(options = {}) {
           nativeCompleted = true;
           const fresh = await observeInternal(session, signal, observation.snapshot.depth);
           await record(session, { type: 'action_completed', actionId, observationId: fresh.observationId });
+          await retainCapture(session, fresh, signal);
           return { actionId, outcome: 'completed', verification: 'fresh_observation', nativeResult, observation: fresh };
         } catch (error) {
           session.observation = null;
@@ -293,8 +319,8 @@ function createComputerController(options = {}) {
       return queued(async () => {
         const session = getSession(sessionId);
         session.observation = null;
-        await cleanupSession(session);
-        return { sessionId, closed: true, cleanup: 'confirmed' };
+        const captureRetention = await cleanupSession(session);
+        return { sessionId, closed: true, cleanup: 'confirmed', ...(captureRetention ? { captureRetention } : {}) };
       }, callOptions);
     },
     close() {
@@ -303,12 +329,14 @@ function createComputerController(options = {}) {
       shutdown.abort();
       closePromise = queued(async () => {
         const errors = [];
+        const retention = [];
         try { await backend.close?.(); } catch (error) { errors.push(error); }
         if (!sessions.size) {
           try { await indicator.stop(); } catch (error) { errors.push(error); }
         }
         for (const session of [...sessions.values()]) {
-          try { await cleanupSession(session); } catch (error) { errors.push(error); }
+          try { const result = await cleanupSession(session, errors.length === 0); if (result) retention.push(result); }
+          catch (error) { errors.push(error); }
         }
         if (errors.length) {
           const error = errors.find(item => item.details?.recovery || item.details?.inputRecoveryRequired || item.code === 'input_recovery_required') || errors[0];
@@ -316,6 +344,7 @@ function createComputerController(options = {}) {
           error.cleanupCodes = errors.flatMap(item => item.cleanupCodes || [item.code || 'cleanup_failed']);
           throw error;
         }
+        if (captureKeepLast) return { captureRetention: retention };
       }, {}, true);
       return closePromise;
     },
