@@ -1,6 +1,6 @@
 'use strict';
 const { digest, fail, text } = require('./shared.cjs');
-const { validateAction: validateNativeAction } = require('../computer/controller.cjs');
+const { validateAction: validateNativeAction, safeError } = require('../computer/controller.cjs');
 const TOOL_NAMES = ['doctor', 'list_windows', 'open_session', 'observe', 'act', 'close_session'].map(s => `trace_computer_${s}`);
 function state(result) {
   if (result?.structuredContent && typeof result.structuredContent === 'object') return result.structuredContent;
@@ -15,6 +15,7 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
     fail('adapter-config', 'Bind a transport, exact environment/app/window and depth 1-32.');
   }
   let sessionId = null, capture = null, binding = null, supportsDepth = false;
+  let closeFailure = null;
   const identity = w => [w.id || w.windowId, w.pid ?? w.processId, w.processName, w.processCreationTime ?? null];
   const reference = w => ({ environment, app, windowId, ownership: 'attached',
     ownerWindowId: w.ownerWindowId ?? w.targetState?.ownerWindowId ?? null,
@@ -56,11 +57,24 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
     },
     async observe({ target }) {
       capture = null;
+      if (closeFailure) fail('input_recovery_required', 'Resolve the uncertain close and create a new provider before observing.');
       if (!provider.available || !binding || target.environment !== environment || target.app !== app
         || target.windowId !== windowId) fail('target-mismatch', 'Observe the exact discovered app/window.');
       if (!sessionId) {
-        const result = await call(2, { windowId }), value = state(result);
-        if (result.isError || !value.sessionId) fail(value.error?.code || 'session-failed', 'TRACE session could not be opened.');
+        let result, value;
+        try {
+          result = await call(2, { windowId }); value = state(result);
+          if (!value || typeof value !== 'object' || Array.isArray(value)) fail('invalid-response', 'TRACE returned an invalid session response.');
+        }
+        catch (error) { closeFailure = { cleanup: 'unknown', applicationClosed: false, inputRecoveryRequired: true }; throw error; }
+        if (value.error?.cleanup === 'unknown' || value.error?.inputRecoveryRequired === true) {
+          const error = safeError({ ...value.error, details: value.error });
+          closeFailure = { cleanup: 'unknown', applicationClosed: false, inputRecoveryRequired: true,
+            recovery: error.recovery || null, errorCode: error.code };
+        }
+        if (!result.isError && !text(value.sessionId)) closeFailure = { cleanup: 'unknown', applicationClosed: false, inputRecoveryRequired: true };
+        if (closeFailure) fail('input_recovery_required', 'Session cleanup is uncertain; inspect recovery before opening again.');
+        if (result.isError || !text(value.sessionId)) fail(value.error?.code || 'session-failed', 'TRACE session could not be opened.');
         sessionId = value.sessionId;
         if (digest(identity(value.window || {})) !== binding) fail('target-changed', 'Opened process lifetime differs; release the owned session.');
       }
@@ -105,12 +119,22 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
     async close({ target }) {
       if (target.environment !== environment || target.app !== app || target.windowId !== windowId) fail('target-mismatch', 'Do not close unrelated resources.');
       capture = null;
+      if (closeFailure) return { ...closeFailure };
       if (!sessionId) return { cleanup: 'confirmed', applicationClosed: false };
       try {
         const result = await call(5, { sessionId }), value = state(result);
-        if (result.isError || value.closed !== true) return { cleanup: 'unknown', applicationClosed: false };
+        if (result.isError || value.closed !== true || value.cleanup !== 'confirmed') {
+          const details = value.error || value;
+          const error = safeError({ ...details, details });
+          closeFailure = { cleanup: 'unknown', applicationClosed: false,
+            recovery: error.recovery || null, errorCode: error.code, inputRecoveryRequired: true };
+          return { ...closeFailure };
+        }
         sessionId = null; return { cleanup: 'confirmed', applicationClosed: false };
-      } catch { return { cleanup: 'unknown', applicationClosed: false }; }
+      } catch {
+        closeFailure = { cleanup: 'unknown', applicationClosed: false, inputRecoveryRequired: true };
+        return { ...closeFailure };
+      }
     },
     ...(typeof recover === 'function' ? { recover: request => recover(request) } : {})
   };

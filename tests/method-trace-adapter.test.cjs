@@ -22,7 +22,7 @@ async function fixture(t) {
         screenshot:{data:PNG,mimeType:'image/png',width:1,height:1,sha256:'a'.repeat(64)}};},
     async act(args){calls.push(['act',args]);return {outcome:control.outcome,error:control.error,
       preparation:[{step:'activation',status:'foreground'}]};},
-    async closeSession(args){calls.push(['close',args]);lease=null;return {closed:true};},async close(){lease=null;}
+    async closeSession(args){calls.push(['close',args]);lease=null;return {closed:true,cleanup:'confirmed'};},async close(){lease=null;}
   };
   const [a,b]=InMemoryTransport.createLinkedPair(),server=createComputerServer({controller});await server.connect(b);
   const client=new Client({name:'method-adapter-test',version:'1'});await client.connect(a);
