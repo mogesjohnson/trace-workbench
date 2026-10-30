@@ -103,7 +103,8 @@ test('backend observation records each synthetic provider call without leaking e
   for (const [stage, count] of Object.entries({ provider: 10, identity: 3, uia: 2, geometry: 3, capture: 1, backendPngRead: 1, pngHeader: 1, focus: 1 })) {
     assert.equal(snapshot.stages[stage].calls, count, stage);
   }
-  assert.equal(snapshot.bytes.backendPngRead, png.length);
+  assert.ok(png.length > 33);
+  assert.equal(snapshot.bytes.backendPngRead, 33);
   assert.doesNotMatch(JSON.stringify(snapshot), /private|secret|iVBOR/);
 });
 

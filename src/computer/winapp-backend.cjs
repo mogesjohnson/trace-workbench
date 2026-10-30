@@ -167,6 +167,26 @@ function pngSize(buffer) {
   return { width, height };
 }
 
+async function readPngHeader(filePath, open = fs.open) {
+  const file = await open(filePath, 'r');
+  const header = Buffer.alloc(33);
+  let offset = 0, failure;
+  try {
+    while (offset < header.length) {
+      const { bytesRead } = await file.read(header, offset, header.length - offset, offset);
+      if (bytesRead === 0) break;
+      offset += bytesRead;
+    }
+    return header.subarray(0, offset);
+  } catch (error) {
+    failure = error;
+    throw error;
+  } finally {
+    try { await file.close(); }
+    catch (error) { if (!failure) throw error; }
+  }
+}
+
 async function verifyFiles(binaryPath = DEFAULT_BINARY) {
   for (const [name, expected] of Object.entries(pin.files)) {
     let data;
@@ -417,7 +437,7 @@ class WinappBackend {
     // frame. A PrintWindow fallback with different bounds is rejected by the exact dimension check.
     const screenshot = await measure('capture', () => this.command('screenshot', ['-w', window.id, '--output', screenshotPath, '--', state.rootSelector], signal));
     if (String(screenshot.hwnd) !== window.id || screenshot.processId !== window.pid || path.resolve(screenshot.filePath || '') !== path.resolve(screenshotPath) || screenshot.windows?.length > 1) fail('invalid_screenshot', 'Screenshot provenance does not match the selected window.');
-    const png = await measure('backendPngRead', () => fs.readFile(screenshotPath));
+    const png = await measure('backendPngRead', () => readPngHeader(screenshotPath));
     count('backendPngRead', png.length);
     const size = measure('pngHeader', () => pngSize(png));
     if (size.width !== screenshot.width || size.height !== screenshot.height) fail('invalid_screenshot', 'PNG dimensions disagree with native capture metadata.');
@@ -532,4 +552,4 @@ class WinappBackend {
   }
 }
 
-module.exports = { WinappBackend, BackendError, DEFAULT_BINARY, DEFAULT_BRIDGE, pin, runProcess, parseJson, pngSize, verifyFiles, verifyBridgeFiles, bridgeSourceHashes };
+module.exports = { WinappBackend, BackendError, DEFAULT_BINARY, DEFAULT_BRIDGE, pin, runProcess, parseJson, pngSize, readPngHeader, verifyFiles, verifyBridgeFiles, bridgeSourceHashes };
