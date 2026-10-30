@@ -324,14 +324,16 @@ class WinappBackend {
     return enriched;
   }
   currentWindow(window, { signal } = {}) { return this.identity(window, signal); }
-  async identity(window, signal) {
+  async identity(window, signal, adjacentBounds) {
     if (!object(window) || !Number.isSafeInteger(window.pid) || window.pid <= 0 || typeof window.processName !== 'string') fail('invalid_window', 'A pinned HWND, PID and process name are required.');
     const current = await this.command('status', ['-w', id(window.id)], signal);
     if (id(current.hwnd) !== window.id || current.processId !== window.pid || current.processName !== window.processName) fail('window_identity_changed', 'Window no longer belongs to the selected process.');
     if (current.coordinateSpace !== 'physical-screen-pixels') fail('coordinate_space', 'Engine coordinate space is not physical-screen-pixels.');
     if (window.processCreationTime !== undefined) {
-      const native = await this.bridge('identity', window, signal);
-      if (native.processCreationTime !== window.processCreationTime || native.sessionId !== window.sessionId) fail('window_identity_changed', 'The selected process identity changed.');
+      // Only observe supplies its immediately preceding, validated bounds receipt.
+      // Keep status/name checks and independent identities on either side of capture.
+      const native = adjacentBounds ?? await this.bridge('identity', window, signal);
+      if (native.hwnd !== window.id || native.pid !== window.pid || native.processCreationTime !== window.processCreationTime || native.sessionId !== window.sessionId) fail('window_identity_changed', 'The selected process identity changed.');
     }
     return { ...window, title: current.windowTitle || '' };
   }
@@ -397,7 +399,7 @@ class WinappBackend {
     const state = await measure('uia', () => this.inspect(window, signal, depth));
     geometry = await measure('geometry', () => this.bridge('bounds', window, signal));
     const captured = captureBounds(bounds(geometry.frameBounds), state.bounds);
-    await measure('identity', () => this.identity(window, signal));
+    await measure('identity', () => this.identity(window, signal, geometry));
     // DWM exposes the exact WGC source origin. Selecting the root crops to its intersection with that
     // frame. A PrintWindow fallback with different bounds is rejected by the exact dimension check.
     const screenshot = await measure('capture', () => this.command('screenshot', ['-w', window.id, '--output', screenshotPath, '--', state.rootSelector], signal));
