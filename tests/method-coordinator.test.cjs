@@ -113,7 +113,8 @@ test('METHOD-OBSERVE TTL, reused observation and failed refresh all prevent stal
   await rejects(m.execute('report','focus',{type:'focus'}),'stale-observation');
   p.observe=original;await m.observe('report','focus');p.observe=async()=>{throw new Error('capture failed');};
   await assert.rejects(m.observe('report','focus'),/capture failed/);
-  await rejects(m.execute('report','focus',{type:'focus'}),'stale-observation');
+  assert.equal(m.status().effects[0].steps[0].quarantine,true);
+  await rejects(m.execute('report','focus',{type:'focus'}),'quarantined');
 });
 
 test('simultaneous execution consumes before dispatch and cannot duplicate input',async()=>{
