@@ -5,11 +5,16 @@ const { StdioServerTransport } = require("@modelcontextprotocol/server/stdio");
 const { z } = require("zod");
 const { version } = require("../../package.json");
 const { safeError } = require("./controller.cjs");
+const { LIMITS, KEY_PATTERN, parseAction } = require("./action-contract.cjs");
 
 const id = z.string().min(1).max(256);
-const coordinate = z.number().int();
+const coordinate = z.number().int().nonnegative();
 const point = { x: coordinate, y: coordinate };
-const elementId = z.string().min(1).max(512).regex(/^[^\0]*$/);
+const elementId = z.string().min(1).max(LIMITS.elementId).regex(/^[^\0]*$/).describe('Observed element ID; at most 512 UTF-16 code units, without NUL.');
+const wheelDelta = z.union([
+  z.number().int().min(-LIMITS.wheel).max(-LIMITS.wheelStep).multipleOf(LIMITS.wheelStep),
+  z.number().int().min(LIMITS.wheelStep).max(LIMITS.wheel).multipleOf(LIMITS.wheelStep),
+]);
 
 // Strict alternatives make coordinate clicks and accessibility clicks distinct.
 // Extra fields never disappear silently before reaching the desktop controller.
@@ -17,19 +22,18 @@ const actionSchema = z.union([
   z.strictObject({ type: z.literal("activate") }),
   z.strictObject({ type: z.literal("click"), ...point }),
   z.strictObject({ type: z.literal("click"), elementId }),
-  z.strictObject({ type: z.literal("type_text"), text: z.string().min(1).max(8192).regex(/^[^\0]*$/) }),
-  z.strictObject({ type: z.literal("press_key"), key: z.string().min(1).max(100).regex(/^[^\0]*$/) }),
+  z.strictObject({ type: z.literal("type_text"), text: z.string().min(1).max(LIMITS.text).regex(/^[^\0]*$/).describe('1–8192 UTF-16 code units without NUL; supplementary characters use two units.') }),
+  z.strictObject({ type: z.literal("press_key"), key: z.string().min(1).max(LIMITS.key).regex(new RegExp(KEY_PATTERN)) }),
   z.strictObject({
     type: z.literal("scroll"), ...point,
-    deltaX: z.number().int().min(-2400).max(2400),
-    deltaY: z.number().int().min(-2400).max(2400),
+    deltaX: z.literal(0), deltaY: wheelDelta,
   }),
   z.strictObject({
     type: z.literal("drag"), fromX: coordinate, fromY: coordinate,
     toX: coordinate, toY: coordinate,
   }),
   z.strictObject({ type: z.literal("invoke"), elementId }),
-  z.strictObject({ type: z.literal("set_value"), elementId, value: z.string().max(8192).regex(/^[^\0]*$/) }),
+  z.strictObject({ type: z.literal("set_value"), elementId, value: z.string().max(LIMITS.text).regex(/^[^\0]*$/).describe('0–8192 UTF-16 code units without NUL; empty clears the value.') }),
 ]);
 
 const readOnly = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false };
@@ -107,6 +111,9 @@ function createComputerServer({ controller, onError = () => {} } = {}) {
       try {
         const signal = context.mcpReq.signal;
         if (signal.aborted) throw Object.assign(new Error("Computer request cancelled"), { code: "CANCELLED" });
+        // JSON Schema maxLength counts Unicode code points; enforce the runtime's
+        // UTF-16 unit limit before crossing the controller boundary as well.
+        if (method === "act") args = { ...args, action: parseAction(args.action) };
         const result = method === "doctor" || method === "listWindows"
           ? await controller[method]({ signal })
           : await controller[method](args, { signal });

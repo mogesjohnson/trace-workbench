@@ -2,7 +2,11 @@
 
 // Effective TRACE limits for the pinned provider, not every operation its CLI accepts.
 const LIMITS = Object.freeze({ text: 8192, elementId: 512, key: 100, wheel: 2400, wheelStep: 120 });
-const KEY_PATTERN = '^(?:(?:CTRL|CONTROL|ALT|SHIFT)\\+)*(?:[A-Z0-9]|F(?:[1-9]|1[0-2])|ENTER|RETURN|TAB|ESC|ESCAPE|BACKSPACE|DELETE|HOME|END|PAGEUP|PAGEDOWN|LEFT|RIGHT|UP|DOWN|SPACE)$';
+const KEY_NAMES = ['ENTER', 'RETURN', 'TAB', 'ESC', 'ESCAPE', 'BACKSPACE', 'DELETE', 'HOME', 'END', 'PAGEUP', 'PAGEDOWN', 'LEFT', 'RIGHT', 'UP', 'DOWN', 'SPACE'];
+const MODIFIERS = ['CTRL', 'CONTROL', 'ALT', 'SHIFT'];
+const alternatives = words => words.map(word => word.replace(/[A-Z]/g, letter => `[${letter}${letter.toLowerCase()}]`)).join('|');
+// JSON Schema has no regexp flags; encode case folding in the pattern itself.
+const KEY_PATTERN = `^(?:(?:${alternatives(MODIFIERS)})\\+)*(?:[A-Za-z0-9]|[Ff](?:[1-9]|1[0-2])|${alternatives(KEY_NAMES)})(?![\\s\\S])`;
 const FIELDS = {
   activate: [], click: ['x', 'y', 'elementId'], type_text: ['text'], press_key: ['key'],
   scroll: ['x', 'y', 'deltaX', 'deltaY'], drag: ['fromX', 'fromY', 'toX', 'toY'],
@@ -57,4 +61,38 @@ function validateAction(action, observation) {
   return checked;
 }
 
-module.exports = { LIMITS, KEY_PATTERN, normalizeKey, parseAction, validateAction };
+function actionSupport(observationTtlMs = 60000) {
+  return {
+    contractVersion: 1, scope: 'trace-wrapper-contract', engine: { name: 'winapp', version: require('./winapp-pin.json').version },
+    platform: 'win32', architecture: 'x64', limits: { ...LIMITS }, stringUnits: 'utf-16-code-units',
+    coordinateSpace: 'window-local-physical-pixels', origin: 'validated-intersection-crop',
+    actions: {
+      activate: { target: 'session-window' },
+      click: { targets: ['point', 'elementId'], button: 'left', count: 1, pointTransport: 'same-point-button-down-up' },
+      type_text: { minLength: 1, maxLength: LIMITS.text, nul: false },
+      press_key: { pattern: KEY_PATTERN, maxLength: LIMITS.key, caseSensitive: false,
+        modifiers: [...MODIFIERS], namedKeys: [...KEY_NAMES], normalization: { CONTROL: 'ctrl', RETURN: 'enter' } },
+      scroll: { deltaX: 0, minDeltaY: -LIMITS.wheel, maxDeltaY: LIMITS.wheel, step: LIMITS.wheelStep,
+        nonzero: true, positive: 'down', target: 'smallest-enabled-onscreen-element-containing-point', placement: 'element-center' },
+      drag: { targets: ['fromPoint', 'toPoint'], button: 'left' },
+      invoke: { target: 'enabled-elementId' },
+      set_value: { target: 'enabled-elementId', minLength: 0, maxLength: LIMITS.text, nul: false },
+    },
+    observation: { defaultDepth: 8, minDepth: 1, maxDepth: 32, ttlMs: observationTtlMs,
+      maxImageBytes: 6 * 1024 * 1024, requiresReadableUiaRoot: true },
+  };
+}
+
+function compatibleSupport(support) {
+  const ttl = support?.observation?.ttlMs;
+  if (!Number.isFinite(ttl) || ttl < 0) return false;
+  const matches = (actual, expected) => {
+    if (expected === null || typeof expected !== 'object') return actual === expected;
+    if (!actual || typeof actual !== 'object' || Array.isArray(actual) !== Array.isArray(expected)) return false;
+    if (Array.isArray(expected) && actual.length !== expected.length) return false;
+    return Object.keys(expected).every(key => Object.hasOwn(actual, key) && matches(actual[key], expected[key]));
+  };
+  return matches(support, actionSupport(ttl));
+}
+
+module.exports = { LIMITS, KEY_PATTERN, normalizeKey, parseAction, validateAction, actionSupport, compatibleSupport };

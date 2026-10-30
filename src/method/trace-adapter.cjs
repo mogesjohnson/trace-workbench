@@ -1,6 +1,7 @@
 'use strict';
 const { digest, fail, text } = require('./shared.cjs');
 const { validateAction: validateNativeAction, safeError } = require('../computer/controller.cjs');
+const { actionSupport, compatibleSupport } = require('../computer/action-contract.cjs');
 const TOOL_NAMES = ['doctor', 'list_windows', 'open_session', 'observe', 'act', 'close_session'].map(s => `trace_computer_${s}`);
 function state(result) {
   if (result?.structuredContent && typeof result.structuredContent === 'object') return result.structuredContent;
@@ -22,25 +23,42 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
     identity: { pid: w.pid ?? w.processId, processName: w.processName,
       generation: w.processCreationTime ?? null } });
   const call = async (index, args) => callTool({ name: TOOL_NAMES[index], arguments: args });
+  const unknownSupport = () => ({ status: 'unknown', code: 'support-unavailable' });
+  function diagnostics(ready, code = null, reason = null, support = unknownSupport(), { configured = false, native = null } = {}) {
+    provider.available = ready;
+    const readiness = { configured: { ready: configured, code: configured ? null : code, reason: configured ? null : reason },
+      native: { ready: native, code: native === false ? code : null, reason: native === false ? reason : null },
+      target: { ready: null, reason: 'Discover and observe the exact target; runtime readiness does not prove target readiness.' } };
+    provider.constraints.nativeSupport = support;
+    provider.constraints.observationTtlMs = support.observation?.ttlMs ?? 60000;
+    provider.constraints.readiness = readiness;
+    return { ready, code, reason, support, readiness };
+  }
   const provider = {
     id, channel: 'desktop', usesDesktop: true, available: false, environments: [environment], windowIds: [windowId],
     apps: [app], capabilities: ['native-action'],
     constraints: { coordinateSpace: 'window-local-physical-pixels', observationTtlMs: 60000,
       accessibilityDepth, physicalRecovery: typeof recover === 'function' ? 'injected' : 'unavailable' },
     async doctor() {
-      provider.available = false;
-      const listing = tools || (typeof listTools === 'function' ? (await listTools({})).tools : null);
-      if (!Array.isArray(listing) || !TOOL_NAMES.every(name => listing.some(t => t.name === name))) {
-        return { ready: false, code: 'schema-unavailable', reason: 'Discover all six live TRACE tools before enabling the adapter.' };
-      }
-      const schema = listing.find(t => t.name === TOOL_NAMES[3]).inputSchema;
-      supportsDepth = !!schema?.properties?.accessibilityDepth;
-      if (!supportsDepth && accessibilityDepth !== 8) {
-        return { ready: false, code: 'depth-unsupported', reason: 'The live observation schema does not advertise requested depth.' };
-      }
-      const result = await call(0, {}), value = state(result);
-      provider.available = result.isError !== true && value.ready === true;
-      return { ready: provider.available, code: value.code || null, reason: value.reason || null };
+      diagnostics(false, 'diagnostics-pending', 'Tool discovery and runtime diagnostics are pending.');
+      try {
+        const listing = tools || (typeof listTools === 'function' ? (await listTools({})).tools : null);
+        if (!Array.isArray(listing) || !TOOL_NAMES.every(name => listing.some(t => t.name === name))) {
+          return diagnostics(false, 'schema-unavailable', 'Discover all six live TRACE tools before enabling the adapter.');
+        }
+        const schema = listing.find(t => t.name === TOOL_NAMES[3]).inputSchema;
+        supportsDepth = !!schema?.properties?.accessibilityDepth;
+        if (!supportsDepth && accessibilityDepth !== 8) {
+          return diagnostics(false, 'depth-unsupported', 'The live observation schema does not advertise requested depth.');
+        }
+        const result = await call(0, {}), value = state(result), support = value.support ?? unknownSupport();
+        if (value.support != null && !compatibleSupport(support)) {
+          return diagnostics(false, 'support-unsupported', 'The live server declares an unsupported native action contract.', unknownSupport(), { native: value.ready === true });
+        }
+        const effectiveSupport = value.support != null ? actionSupport(support.observation.ttlMs) : support;
+        return diagnostics(result.isError !== true && value.ready === true, value.code || value.error?.code || null, value.reason || value.error?.message || null, effectiveSupport,
+          { configured: true, native: result.isError !== true && value.ready === true });
+      } catch { return diagnostics(false, 'diagnostics-unavailable', 'TRACE diagnostics could not be read.'); }
     },
     async discover(target) {
       if (!provider.available) fail('provider-unavailable', 'Run successful tool discovery and diagnostics first.');
