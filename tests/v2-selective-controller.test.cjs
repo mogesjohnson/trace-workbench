@@ -5,6 +5,8 @@ const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
 const { createComputerController } = require('../src/computer/controller.cjs');
+const { WinappBackend } = require('../src/computer/winapp-backend.cjs');
+const { createHash } = require('node:crypto');
 
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jVdAAAAAASUVORK5CYII=', 'base64');
 const window = { id: '101', pid: 123, processName: 'fixture', bounds: { x: 0, y: 0, width: 1, height: 1 } };
@@ -90,4 +92,51 @@ test('failed selective capture invalidates authority; invalid arguments preserve
   const result = await c.act({ ...session, observationId: full.observationId, action: activate });
   assert.equal(result.outcome, 'completed'); assert.ok(result.observation.screenshot);
   assert.equal(result.observation.accessibility.depth, 12); assert.equal(f.calls.at(-1).depth, 12);
+});
+
+test('real backend and controller combine selective capture with bounded PNG reads', async t => {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'trace-selective-'));
+  const pinned = { ...window, processCreationTime: '1000', sessionId: 2 };
+  const calls = [];
+  const backend = new WinappBackend({ run: async (_exe, args) => {
+    const verb = args[0] === 'ui' ? args[1] : args[0];
+    calls.push(verb);
+    let value;
+    if (verb === 'status') value = { hwnd: 101, processId: 123, processName: 'fixture', coordinateSpace: 'physical-screen-pixels' };
+    if (verb === 'bounds' || verb === 'identity') value = { hwnd: '101', pid: 123, processCreationTime: '1000', sessionId: 2,
+      frameBounds: window.bounds, windowBounds: window.bounds, minimized: false, enabled: true };
+    if (verb === 'inspect') value = { windows: [{ hwnd: 101, coordinateSpace: 'physical-screen-pixels',
+      elements: [{ selector: 'root', type: 'Window', isEnabled: true, ...window.bounds }] }] };
+    if (verb === 'get-focused') value = { hasFocus: false };
+    if (verb === 'screenshot') {
+      const filePath = args[args.indexOf('--output') + 1];
+      await fs.writeFile(filePath, png);
+      value = { hwnd: 101, processId: 123, filePath, width: 1, height: 1 };
+    }
+    assert.ok(value, `unexpected request ${args.join(' ')}`);
+    return { stdout: JSON.stringify(value), stderr: '', exitCode: 0 };
+  } });
+  backend.listWindows = async () => [pinned];
+  const indicator = { signal: new AbortController().signal, async start() { return {}; }, assertActive() {}, async stop() {} };
+  const lease = { async acquire() {}, async assert() {}, async release() {} };
+  const controller = createComputerController({ backend, indicator, lease, runtimeDirectory: directory });
+  t.after(async () => {
+    await controller.close();
+    const resolved = path.resolve(directory);
+    assert.ok(resolved.startsWith(path.resolve(os.tmpdir()) + path.sep) && path.basename(resolved).startsWith('trace-selective-'));
+    await fs.rm(resolved, { recursive: true, force: true });
+  });
+  await controller.listWindows();
+  const session = await controller.openSession({ windowId: pinned.id });
+  const a11y = await controller.observe({ ...session, mode: 'accessibility' });
+  assert.equal(a11y.actionable, false);
+  assert.equal(calls.includes('screenshot'), false);
+  assert.equal(a11y.metrics.stages.backendPngRead, undefined);
+  assert.equal(a11y.metrics.stages.fileRead, undefined);
+  const full = await controller.observe(session);
+  assert.equal(calls.filter(verb => verb === 'screenshot').length, 1);
+  assert.equal(full.metrics.bytes.backendPngRead, 33);
+  assert.equal(full.metrics.bytes.controllerPngRead, png.length);
+  assert.deepEqual(Buffer.from(full.screenshot.data, 'base64'), png);
+  assert.equal(full.screenshot.sha256, createHash('sha256').update(png).digest('hex'));
 });
