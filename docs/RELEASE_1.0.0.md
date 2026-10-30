@@ -1,6 +1,6 @@
-# TRACE Workbench 1.0.0 — release candidate
+# TRACE Workbench 1.0.0
 
-Prepared 29 October 2026. This file describes the V1 candidate; it does not establish publication. The latest published baseline is [v0.1.0](https://github.com/mogesjohnson/trace-workbench/releases/tag/v0.1.0).
+Published 30 October 2026 with direct owner approval. [Download v1.0.0](https://github.com/mogesjohnson/trace-workbench/releases/tag/v1.0.0). The [publication receipt](../evidence/release-1.0.0/publication.json) binds the tested source, passing CI, exact archive and five verified assets. Companion manifests and bundled notes preserve their prepublication snapshot; the public tag and publication receipt close the release gate.
 
 ## Changes
 

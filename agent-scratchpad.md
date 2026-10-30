@@ -1,5 +1,9 @@
 # Agent handoff
 
+## Latest: v1.0.0 published — 30 October 2026
+
+Owner approved publication of the verified draft. [v1.0.0](https://github.com/mogesjohnson/trace-workbench/releases/tag/v1.0.0) pins `d707ddb86069fd4f3c00c8a822898635120f9364`; [final CI](https://github.com/mogesjohnson/trace-workbench/actions/runs/41000652479) and exact archive installation/rollback passed. All five asset digests and public tag match the [publication receipt](evidence/release-1.0.0/publication.json). Companion manifests retain their prepublication snapshot. PRs 41–54 integrated all five V1 items; no compatible desktop acceptance was repeated. The owner then requested the next phase: V2 begins with selective observation modes; later V2 work covers provider-call consolidation and retention. Preserve full default/input guards, research-only snapshots and existing evidence; no desktop takeover is needed for initial contract work.
+
 ## Latest: v0.1.0 published — 27 October 2026
 
 The approved 29-PR stack is merged. Release source `190a06abfc7bc3b87e67e6b4ee070d4ea70b3308` passed [final hosted CI](https://github.com/mogesjohnson/trace-workbench/actions/runs/40603566212) including exact-archive installation/rollback. [GitHub v0.1.0](https://github.com/mogesjohnson/trace-workbench/releases/tag/v0.1.0) publishes five verified assets; independent downloads matched SHA-256. [Publication receipt](evidence/release-0.1.0/publication.json) records source, archive and assets. All 22 checkpoints are complete at their stated scope. Desktop work remains finished; no accepted live test was repeated. Original failures, mixed recovery scopes, legacy metadata and sampled-review limits stay explicit. The old prepared/blocked notes below are history.

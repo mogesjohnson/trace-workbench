@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "version": "1.0.0",
+  "status": "published",
+  "releaseId": 428642762,
+  "releaseUrl": "https://github.com/mogesjohnson/trace-workbench/releases/tag/v1.0.0",
+  "publishedAt": "2026-10-30T05:11:37Z",
+  "tag": "v1.0.0",
+  "sourceCommit": "d707ddb86069fd4f3c00c8a822898635120f9364",
+  "ci": {
+    "url": "https://github.com/mogesjohnson/trace-workbench/actions/runs/41000652479",
+    "head": "d707ddb86069fd4f3c00c8a822898635120f9364",
+    "conclusion": "success"
+  },
+  "archive": {
+    "file": "trace-workbench-1.0.0-source.zip",
+    "sha256": "828b1957d7eba7c7197ffe5b27b5b22af1fa971b77c1d12f2da28180c1e53596",
+    "bytes": 23916141,
+    "reproductionTimezone": "UTC",
+    "localReproductionMatches": true
+  },
+  "assets": [
+    {
+      "name": "trace-workbench-1.0.0-source.zip",
+      "bytes": 23916141,
+      "sha256": "828b1957d7eba7c7197ffe5b27b5b22af1fa971b77c1d12f2da28180c1e53596",
+      "id": 690871034
+    },
+    {
+      "name": "acceptance-manifest.json",
+      "bytes": 6733,
+      "sha256": "5c093341af857b3b01cb56a7e2e7b5bb2674dbd34b8b71a28137098693734781",
+      "id": 690871039
+    },
+    {
+      "name": "distribution-receipt.json",
+      "bytes": 2640,
+      "sha256": "d841661ef90ade7d98d39b8fece4ae2694e9ec2bf23b95b1bb8ed2af85e9f2fe",
+      "id": 690871036
+    },
+    {
+      "name": "RELEASE_NOTES.md",
+      "bytes": 4523,
+      "sha256": "ed818c3e4736a9a19181b05310a402330fef8380b20efa3a821a3b81314a6495",
+      "id": 690871040
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 365,
+      "sha256": "44586a49248894dc689c14856c9b74eef3e9d691dd6886eec699bd656ca0c79a",
+      "id": 690871038
+    }
+  ],
+  "independentDownloadedHashesVerified": true,
+  "publicTagAndAssetMetadataVerified": true,
+  "ownerApproval": {
+    "source": "direct-owner",
+    "reply": "yes",
+    "scope": "Publish the concrete verified v1.0.0 draft"
+  },
+  "prepublicationCompanionSnapshotsRetained": true,
+  "limits": "Retained compatible native/host/application acceptance; no new desktop runs or measured live speedup; original failures and declared limits preserved."
+}
