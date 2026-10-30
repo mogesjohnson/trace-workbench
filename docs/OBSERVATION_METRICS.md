@@ -44,3 +44,9 @@ const sample = {
 ```
 
 The caller measurement includes client processing and transport; it cannot isolate either. It does not include model thinking unless the caller explicitly measures that separately. No comparative latency result is claimed by this instrumentation change.
+
+## Adjacent identity consolidation (V2 development)
+
+The backend reuses its immediately preceding bounds receipt for the adjacent pre-capture process-lifetime/session check. Engine status still checks HWND/PID, process name and physical coordinates; independent identity reads before and after capture and all geometry checks remain. A mismatched or incomplete receipt for a pinned target fails without a second identity request or capture. This is transient receipt reuse within one observation, not an identity cache across captures.
+
+The non-minimized synthetic pinned-window path makes 12 backend provider requests rather than 13: three status, two independent native identity, three bounds, two UIA, one screenshot and one focus request. Unpinned paths do not gain this reduction. Controller/discovery/session calls and restoration branches are separate. The native identity sample is taken just before the adjacent status request; the combined reads are not atomic. This request-count result is not a measured wall-clock speedup; native providers, input dispatch and recovery are unchanged.
