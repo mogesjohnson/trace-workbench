@@ -1,6 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const { createHash } = require('node:crypto');
 const { Client, InMemoryTransport } = require('@modelcontextprotocol/client');
 const { createComputerServer } = require('../src/computer/server.cjs');
 const { createTraceProvider, TOOL_NAMES } = require('../src/method/index.cjs');
@@ -22,7 +23,7 @@ function adapterController(closeSession) {
     async doctor() { return { ready: true }; },
     async listWindows() { return { windows: [window] }; },
     async openSession() { return { sessionId: 'session', window }; },
-    async observe() { return { sessionId: 'session', window, observationId: 'capture', bounds: window.bounds, elements: [], screenshot: { data: png, mimeType: 'image/png', sha256: 'a'.repeat(64) } }; },
+    async observe() { return { sessionId: 'session', window, observationId: 'capture', bounds: window.bounds, elements: [], screenshot: { data: png, mimeType: 'image/png', width: 1, height: 1, sha256: createHash('sha256').update(Buffer.from(png, 'base64')).digest('hex') } }; },
     async act() { return { outcome: 'completed' }; },
     closeSession,
     async close() {},

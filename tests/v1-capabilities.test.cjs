@@ -1,6 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const { createHash } = require('node:crypto');
 const { Client, InMemoryTransport } = require('@modelcontextprotocol/client');
 const { createComputerServer } = require('../src/computer/server.cjs');
 const { createComputerController } = require('../src/computer/controller.cjs');
@@ -16,7 +17,7 @@ async function fixture(t) {
     async openSession() { return { sessionId: 's', window }; },
     async observe() { return { sessionId: 's', window, observationId: `capture-${++captures}`,
       bounds: { x: 0, y: 0, width: 1, height: 1 }, elements: [],
-      screenshot: { data: PNG, mimeType: 'image/png', width: 1, height: 1, sha256: 'a'.repeat(64) } }; },
+      screenshot: { data: PNG, mimeType: 'image/png', width: 1, height: 1, sha256: createHash('sha256').update(Buffer.from(PNG, 'base64')).digest('hex') } }; },
     async act() { calls++; return { outcome: 'completed' }; },
     async closeSession() { return { closed: true, cleanup: 'confirmed' }; }, async close() {},
   };
