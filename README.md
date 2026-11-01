@@ -4,9 +4,9 @@
 
 Shared tools that give agents abilities beyond written instructions.
 
-**Version:** [`1.0.0`](https://github.com/mogesjohnson/trace-workbench/releases/tag/v1.0.0) · **Status:** Published for the declared Windows scope
+**Version:** [`1.1.0`](https://github.com/mogesjohnson/trace-workbench/releases/tag/v1.1.0) · **Status:** Published for the declared Windows scope
 
-**Development candidate: `1.1.0`** adds selective observation modes, scoped provider/I/O reductions, numeric profile reports and opt-in capture retention. [Candidate notes](docs/RELEASE_1.1.0.md) record the completed four-observation diagnostic profile and compatibility limits. Final-source CI, exact archive and reviewed integration/publication remain pending; this is not a published update.
+**1.1.0 published, 31 October:** selective observation modes, scoped provider/I/O reductions, numeric profile reports and opt-in capture retention. [Release notes](docs/RELEASE_1.1.0.md) record the diagnostic profile and compatibility limits. The [publication receipt](evidence/release-1.1.0/publication.json) binds source `ccf8734`, passing final-main CI, exact archive and five verified assets. No comparative speedup is claimed.
 
 **V1 published, 30 October:** honest cleanup reporting, shared action support/validation, image association checks, scoped observation metrics and opt-in immediate read-only evidence reuse. [Release notes](docs/RELEASE_1.0.0.md) distinguish synthetic verification from retained live evidence. [The V1 contract](docs/COMPUTER_USE.md#v1-compatibility-boundary) declares the stable wrapper boundary. The [publication receipt](evidence/release-1.0.0/publication.json) binds tested source `d707ddb`, passing final Windows CI and five verified assets.
 
