@@ -308,7 +308,7 @@ class WinappBackend {
       if (bridge.version !== 1) fail('bridge_version', 'Unexpected window bridge version.');
       const result = await this.run(this.binaryPath, ['--version'], { signal });
       if (result.exitCode !== 0 || !new RegExp(`(^|\\s)${pin.version.replaceAll('.', '\\.')}($|\\s)`).test(result.stdout)) fail('engine_version', 'Unexpected Windows engine version.');
-      return { ready: true, engine: 'winapp', version: pin.version, platform: this.platform, architecture: this.arch, transport: 'public-cli', integrity: 'verified', bridge: { version: 1, runtime: '.NET 9', method: 'public-win32-dwm' }, activityIndicator, ...(supervision ? { supervision } : {}), limitations: ['Windows x64', 'minimized observations restore the selected window', 'unlocked interactive desktop for input', 'horizontal scroll unsupported', 'no secure desktop or elevation bypass'] };
+      return { ready: true, engine: 'winapp', version: pin.version, platform: this.platform, architecture: this.arch, transport: 'public-cli', integrity: 'verified', bridge: { version: 1, runtime: '.NET 9', method: 'public-win32-dwm' }, activityIndicator, ...(supervision ? { supervision } : {}), limitations: ['Windows x64', 'minimized observations restore the selected window', 'unlocked interactive desktop for input', 'legacy wheel is vertical at element center; point/horizontal wheel requires native supervision', 'no secure desktop or elevation bypass'] };
     } catch (error) {
       if (signal?.aborted) throw error;
       return { ready: false, engine: 'winapp', version: pin.version, code: error.code || 'engine_unavailable', reason: error.message };
@@ -478,7 +478,8 @@ class WinappBackend {
     if (!object(observation) || !sameBounds(bounds(observation.bounds), bounds(observation.window?.bounds)) || observation.window.id !== window.id || observation.window.pid !== window.pid) fail('invalid_observation', 'Action requires an observation of this exact window.');
     action = parseAction(action);
     const pointerClick = action.type === 'click' && ((action.button ?? 'left') !== 'left' || (action.count ?? 1) !== 1);
-    if (pointerClick && !this.supervisor?.ready) fail('supervision_required', 'Extended clicks require declared-input native supervision.', { outcome: 'not_dispatched' });
+    const pointWheel = action.type === 'scroll' && action.placement === 'point';
+    if ((pointerClick || pointWheel) && !this.supervisor?.ready) fail('supervision_required', 'Extended pointer input requires declared-input native supervision.', { outcome: 'not_dispatched' });
     await this.identity(window, signal);
     // Reinspect at the server-retained observation depth so deeply observed controls remain targetable.
     const fresh = await this.inspect(window, signal, observation.depth ?? 8);
@@ -529,6 +530,10 @@ class WinappBackend {
       }
       case 'drag': verb = 'drag'; positional = [point(action.fromX, action.fromY, captured), point(action.toX, action.toY, captured)]; break;
       case 'scroll': {
+        if (pointWheel) {
+          pointerArgs = [...point(action.x, action.y, captured).split(','), String(action.deltaX), String(action.deltaY)];
+          verb = 'wheel'; transport = 'supervised-public-win32'; break;
+        }
         point(action.x, action.y, captured);
         const physicalX = captured.x + action.x, physicalY = captured.y + action.y;
         const candidates = fresh.elements.filter(element => element.enabled && !element.offscreen && element.bounds && physicalX >= element.bounds.x && physicalY >= element.bounds.y && physicalX < element.bounds.x + element.bounds.width && physicalY < element.bounds.y + element.bounds.height).sort((a, b) => a.bounds.width * a.bounds.height - b.bounds.width * b.bounds.height);
@@ -563,9 +568,10 @@ class WinappBackend {
       if (!focused.elementId) fail('focus_not_acquired', 'Keyboard focus could not be bound to an observed control inside the exact selected window.');
     }
     progress.primary = true;
-    const result = pointerArgs ? await this.bridge('click', window, signal, pointerArgs)
+    const result = pointerArgs ? await this.bridge(verb, window, signal, pointerArgs)
       : await this.command(verb, ['-w', window.id, ...options, '--', ...positional], signal);
-    if (pointerArgs && (result.performed !== true || result.operation !== 'click' || result.inputEvents !== 2 * (action.count ?? 1))) {
+    const expectedEvents = pointWheel ? Number(action.deltaX !== 0) + Number(action.deltaY !== 0) : 2 * (action.count ?? 1);
+    if (pointerArgs && (result.performed !== true || result.operation !== verb || result.inputEvents !== expectedEvents)) {
       fail('invalid_native_response', 'Pointer receipt did not confirm the complete sequence.', { outcome: 'unknown' });
     }
     if (result.hwnd !== undefined && String(result.hwnd) !== window.id) fail('window_identity_changed', 'Native action receipt targets another window.', { outcome: 'unknown' });

@@ -9,7 +9,7 @@ const alternatives = words => words.map(word => word.replace(/[A-Z]/g, letter =>
 const KEY_PATTERN = `^(?:(?:${alternatives(MODIFIERS)})\\+)*(?:[A-Za-z0-9]|[Ff](?:[1-9]|1[0-2])|${alternatives(KEY_NAMES)})(?![\\s\\S])`;
 const FIELDS = {
   activate: [], click: ['x', 'y', 'elementId', 'button', 'count'], type_text: ['text'], press_key: ['key'],
-  scroll: ['x', 'y', 'deltaX', 'deltaY'], drag: ['fromX', 'fromY', 'toX', 'toY'],
+  scroll: ['x', 'y', 'deltaX', 'deltaY', 'placement'], drag: ['fromX', 'fromY', 'toX', 'toY'],
   invoke: ['elementId'], set_value: ['elementId', 'value'],
 };
 const reject = (code, message) => { throw Object.assign(new Error(message), { code, details: { outcome: 'not_dispatched' } }); };
@@ -44,6 +44,11 @@ function parseAction(action) {
     case 'scroll':
       point('x', 'y');
       if (![action.deltaX, action.deltaY].every(value => Number.isInteger(value) && Math.abs(value) <= LIMITS.wheel)) reject('invalid_action', 'Scroll deltas exceed the supported integer limits.');
+      if (action.placement !== undefined) {
+        if (action.placement !== 'point' || (!action.deltaX && !action.deltaY)
+          || action.deltaX % LIMITS.wheelStep || action.deltaY % LIMITS.wheelStep) reject('unsupported_action', 'Point wheel requires a nonzero pair of bounded 120-unit deltas.');
+        break;
+      }
       if (action.deltaX !== 0 || !action.deltaY || action.deltaY % LIMITS.wheelStep) reject('unsupported_action', 'Use vertical 120-unit wheel notches, positive down; horizontal scroll is unavailable.');
       break;
     case 'drag': point('fromX', 'fromY'); point('toX', 'toY'); break;
@@ -77,7 +82,9 @@ function actionSupport(observationTtlMs = 60000) {
       press_key: { pattern: KEY_PATTERN, maxLength: LIMITS.key, caseSensitive: false,
         modifiers: [...MODIFIERS], namedKeys: [...KEY_NAMES], normalization: { CONTROL: 'ctrl', RETURN: 'enter' } },
       scroll: { deltaX: 0, minDeltaY: -LIMITS.wheel, maxDeltaY: LIMITS.wheel, step: LIMITS.wheelStep,
-        nonzero: true, positive: 'down', target: 'smallest-enabled-onscreen-element-containing-point', placement: 'element-center' },
+        nonzero: true, positive: 'down', target: 'smallest-enabled-onscreen-element-containing-point', placement: 'element-center',
+        point: { maxAbsDelta: LIMITS.wheel, step: LIMITS.wheelStep, nonzeroPair: true, positiveX: 'right', positiveY: 'down',
+          order: ['y', 'x'], placement: 'requested-point', requiresSupervisor: true, transport: 'supervised-public-win32' } },
       drag: { targets: ['fromPoint', 'toPoint'], button: 'left' },
       invoke: { target: 'enabled-elementId' },
       set_value: { target: 'enabled-elementId', minLength: 0, maxLength: LIMITS.text, nul: false },
@@ -98,6 +105,7 @@ function compatibleSupport(support) {
   };
   const expected = actionSupport(ttl);
   if (!Object.hasOwn(support?.actions?.click ?? {}, 'variants')) delete expected.actions.click.variants;
+  if (!Object.hasOwn(support?.actions?.scroll ?? {}, 'point')) delete expected.actions.scroll.point;
   return matches(support, expected);
 }
 

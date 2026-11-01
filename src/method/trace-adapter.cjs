@@ -80,6 +80,7 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
         }
         const effectiveSupport = value.support != null ? actionSupport(support.observation.ttlMs) : support;
         if (value.support != null && !Object.hasOwn(support.actions.click, 'variants')) delete effectiveSupport.actions.click.variants;
+        if (value.support != null && !Object.hasOwn(support.actions.scroll, 'point')) delete effectiveSupport.actions.scroll.point;
         return diagnostics(result.isError !== true && value.ready === true, value.code || value.error?.code || null, value.reason || value.error?.message || null, effectiveSupport,
           { configured: true, native: result.isError !== true && value.ready === true });
       } catch { return diagnostics(false, 'diagnostics-unavailable', 'TRACE diagnostics could not be read.'); }

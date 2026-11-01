@@ -30,6 +30,8 @@ const actionSchema = z.union([
     type: z.literal("scroll"), ...point,
     deltaX: z.literal(0), deltaY: wheelDelta,
   }),
+  z.strictObject({ type: z.literal("scroll"), ...point, placement: z.literal('point'),
+    deltaX: z.union([z.literal(0), wheelDelta]), deltaY: z.union([z.literal(0), wheelDelta]) }),
   z.strictObject({
     type: z.literal("drag"), fromX: coordinate, fromY: coordinate,
     toX: coordinate, toY: coordinate,
