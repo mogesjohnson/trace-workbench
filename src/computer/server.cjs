@@ -19,10 +19,11 @@ const wheelDelta = z.union([
 
 // Strict alternatives make coordinate clicks and accessibility clicks distinct.
 // Extra fields never disappear silently before reaching the desktop controller.
+const clickOptions = { button: z.enum(['left', 'right', 'middle']).optional(), count: z.number().int().min(1).max(2).optional() };
 const actionSchema = z.union([
   z.strictObject({ type: z.literal("activate") }),
-  z.strictObject({ type: z.literal("click"), ...point }),
-  z.strictObject({ type: z.literal("click"), elementId }),
+  z.strictObject({ type: z.literal("click"), ...point, ...clickOptions }),
+  z.strictObject({ type: z.literal("click"), elementId, ...clickOptions }),
   z.strictObject({ type: z.literal("type_text"), text: z.string().min(1).max(LIMITS.text).regex(/^[^\0]*$/).describe('1–8192 UTF-16 code units without NUL; supplementary characters use two units.') }),
   z.strictObject({ type: z.literal("press_key"), key: z.string().min(1).max(LIMITS.key).regex(new RegExp(KEY_PATTERN)) }),
   z.strictObject({

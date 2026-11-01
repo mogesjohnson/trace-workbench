@@ -8,7 +8,7 @@ const alternatives = words => words.map(word => word.replace(/[A-Z]/g, letter =>
 // JSON Schema has no regexp flags; encode case folding in the pattern itself.
 const KEY_PATTERN = `^(?:(?:${alternatives(MODIFIERS)})\\+)*(?:[A-Za-z0-9]|[Ff](?:[1-9]|1[0-2])|${alternatives(KEY_NAMES)})(?![\\s\\S])`;
 const FIELDS = {
-  activate: [], click: ['x', 'y', 'elementId'], type_text: ['text'], press_key: ['key'],
+  activate: [], click: ['x', 'y', 'elementId', 'button', 'count'], type_text: ['text'], press_key: ['key'],
   scroll: ['x', 'y', 'deltaX', 'deltaY'], drag: ['fromX', 'fromY', 'toX', 'toY'],
   invoke: ['elementId'], set_value: ['elementId', 'value'],
 };
@@ -28,6 +28,9 @@ function parseAction(action) {
   };
   switch (action.type) {
     case 'click':
+      if (action.button !== undefined && !['left', 'right', 'middle'].includes(action.button)) reject('unsupported_action', 'Choose left, right or middle.');
+      if (action.count !== undefined && ![1, 2].includes(action.count)) reject('unsupported_action', 'Click count must be 1 or 2.');
+      if (action.count === 2 && (action.button ?? 'left') !== 'left') reject('unsupported_action', 'Double-click supports the left button only.');
       if (action.elementId !== undefined) {
         if (action.x !== undefined || action.y !== undefined) reject('invalid_action', 'Choose elementId or coordinates, not both.');
         text('elementId', LIMITS.elementId);
@@ -68,7 +71,8 @@ function actionSupport(observationTtlMs = 60000) {
     coordinateSpace: 'window-local-physical-pixels', origin: 'validated-intersection-crop',
     actions: {
       activate: { target: 'session-window' },
-      click: { targets: ['point', 'elementId'], button: 'left', count: 1, pointTransport: 'same-point-button-down-up' },
+      click: { targets: ['point', 'elementId'], button: 'left', count: 1, pointTransport: 'same-point-button-down-up',
+        variants: { buttons: ['left', 'right', 'middle'], counts: [1, 2], doubleButton: 'left', transport: 'supervised-public-win32', requiresSupervisor: true } },
       type_text: { minLength: 1, maxLength: LIMITS.text, nul: false },
       press_key: { pattern: KEY_PATTERN, maxLength: LIMITS.key, caseSensitive: false,
         modifiers: [...MODIFIERS], namedKeys: [...KEY_NAMES], normalization: { CONTROL: 'ctrl', RETURN: 'enter' } },
@@ -92,7 +96,9 @@ function compatibleSupport(support) {
     if (Array.isArray(expected) && actual.length !== expected.length) return false;
     return Object.keys(expected).every(key => Object.hasOwn(actual, key) && matches(actual[key], expected[key]));
   };
-  return matches(support, actionSupport(ttl));
+  const expected = actionSupport(ttl);
+  if (!Object.hasOwn(support?.actions?.click ?? {}, 'variants')) delete expected.actions.click.variants;
+  return matches(support, expected);
 }
 
 module.exports = { LIMITS, KEY_PATTERN, normalizeKey, parseAction, validateAction, actionSupport, compatibleSupport };
