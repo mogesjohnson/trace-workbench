@@ -6,6 +6,30 @@ Run the portable simulation with `node examples/method/report.cjs`, or the actua
 
 ## Goals, effects and steps
 
+For direct native use, `createTraceClient({client, environment?, accessibilityDepth?, ttlMs?})`
+wraps the existing six tools; it does not create a server or verify an application effect.
+Select `window` from `await native.windows()`, then
+`const target = await native.bind({app: 'editor', window})`. Use `target.observe()`,
+derive an action from its validated evidence, and call `target.act(action)` once.
+Inspect `delivery`, preparation and cleanup separately and independently check the effect.
+Always call `await native.close()` in `finally`; attached applications remain open.
+
+To transition, select another returned window and bind it; previous session release must
+be confirmed before its session can open. `ownedDialog: true` additionally verifies the
+current parent's lifetime and the dialog's native owner. Old handles become invalid.
+`native.rebind(target)` rechecks the same lifetime/owner and requires a new observation.
+After confirmed prior cleanup, a new client can `restore({app, window: savedWindow})`:
+serialized identity only constrains fresh inventory/discovery, never restores authority.
+Reused handles/PIDs, changed owners, ambiguity or uncertain cleanup block recovery.
+
+The local default TTL is 5000 ms, bounded by native TTL and measured from before capture
+using a monotonic clock; failed refresh invalidates prior evidence. Concurrent calls fail
+`busy`, with no queue or automatic retry. Unknown delivery is returned for caller
+reconciliation; unreadable post-dispatch responses also quarantine the client. Cleanup
+uncertainty requires explicit recovery and a new client. No semantic retry budget or
+independent verifier is supplied by this helper; use `ComputerMethod` for those obligations.
+Focused in-memory MCP checks cover these boundaries; new live acceptance is not claimed.
+
 ```javascript
 const { ComputerMethod, createTraceProvider } = require('./src/method/index.cjs');
 const native = createTraceProvider({ client: connectedMcpClient,

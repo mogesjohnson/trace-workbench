@@ -10,6 +10,11 @@ Before continuing implementation or acceptance, read the [owner-approved normal-
 
 ## Product and scope
 
+Roadmap item 9 development adds the optional native client helper described in
+[the method API](src/method/README.md#goals-effects-and-steps). Focused in-memory MCP
+checks cover exact binding, release, modal transitions and recovery; native acceptance
+and the published 1.1.0 source remain at their recorded scope.
+
 TRACE gives AI agents executable capabilities through a shared local MCP interface and accompanying skill instructions. The first two selected skills are **Reverse Engineer Anything** and **Computer Use**, in that order. TRACE remains the product name.
 
 The initial delivery targets Windows x64 and the Codex, Claude Code, Grok Build, and Gemini CLI hosts. Each host supplies its reasoning model and permission controls. TRACE supplies the operations and evidence; equivalent model behavior is not assumed.
