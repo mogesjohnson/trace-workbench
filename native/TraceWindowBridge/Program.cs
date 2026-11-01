@@ -2,8 +2,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Globalization;
+using System.Windows.Automation;
 
-// Public Win32/DWM calls only. This bridge reads exact capture geometry and activates one pinned
+// Public Win32/DWM and managed UIA calls. This bridge reads exact geometry and activates one pinned
 // HWND/PID. Pointer operations require explicit coordinates, foreground and unobscured target.
 // The controller admits them only through its job-owning supervisor and declared-input recovery.
 internal static class Program
@@ -15,10 +17,11 @@ internal static class Program
             if (!OperatingSystem.IsWindows()) throw new BridgeException("unsupported_platform", "Windows is required.");
             if (args.Length == 1 && args[0] == "info")
             {
-                Write(new { version = 1, runtime = "net9.0-windows", capabilities = new[] { "identities", "identity", "bounds", "activate", "release-left", "click", "wheel", "selftest" } });
+                Write(new { version = 1, runtime = "net9.0-windows", capabilities = new[] { "identities", "identity", "bounds", "activate", "release-left", "click", "wheel", "document", "selftest" } });
                 return 0;
             }
-            if (args.Length == 1 && args[0] == "selftest") { PointerSelfTest(); Write(new { passed = true, inputSent = false }); return 0; }
+            if (args.Length == 1 && args[0] == "selftest") { PointerSelfTest(); DocumentSelfTest(); Write(new { passed = true, inputSent = false }); return 0; }
+            if (args.Length > 0 && args[0] == "document") { ReadDocument(args); return 0; }
             if (args.Length > 0 && args[0] is "click" or "wheel") { Pointer(args); return 0; }
             if (args.Length == 1 && args[0] == "release-left")
             {
@@ -214,6 +217,82 @@ internal static class Program
             try { PointerInputs(invalid.Item1, invalid.Item2, invalid.Item3); } catch (BridgeException) { rejected = true; }
             Require(rejected);
         }
+    }
+
+    private static (string text, bool truncated) BoundedText(Func<int, string> read, int limit)
+    {
+        var value = read(limit + 1) ?? throw new BridgeException("invalid_native_response", "TextPattern returned no string.");
+        var length = Math.Min(value.Length, limit);
+        if (length > 0 && length < value.Length && char.IsHighSurrogate(value[length - 1])) length--;
+        return (value[..length], value.Length > length);
+    }
+    private static void DocumentSelfTest()
+    {
+        var requested = 0;
+        var value = BoundedText(n => { requested = n; return "12345"; }, 4);
+        if (requested != 5 || value.text != "1234" || !value.truncated
+            || BoundedText(_ => "", 4).truncated || BoundedText(_ => "ab😀", 3).text != "ab")
+            throw new BridgeException("selftest_failed", "Bounded text planning failed without UIA calls.");
+    }
+    private static void ReadDocument(string[] args)
+    {
+        if (args.Length != 10 || !long.TryParse(args[1], out var raw) || raw <= 0 || !uint.TryParse(args[2], out var pid) || pid == 0
+            || args[3].Length is < 1 or > 512 || args[4].Length > 64 || args[5].Length > 512)
+            throw new BridgeException("invalid_arguments", "Document read requires an exact window and observed automation identity/bounds.");
+        var numbers = args[6..].Select(value => double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture)).ToArray();
+        if (numbers.Any(value => !double.IsFinite(value)) || numbers[2] <= 0 || numbers[3] <= 0)
+            throw new BridgeException("invalid_arguments", "Invalid document bounds.");
+        var hwnd = new nint(raw); Guard(hwnd, pid); SetProcessDpiAwarenessContext(new nint(-4));
+        var root = AutomationElement.FromHandle(hwnd);
+        if (root.Current.ProcessId != pid) throw new BridgeException("window_identity_changed", "UIA root belongs to another process.");
+        bool Matches(AutomationElement element)
+        {
+            var current = element.Current; var rect = current.BoundingRectangle;
+            return current.ProcessId == pid && current.AutomationId == args[3] && current.ControlType.ProgrammaticName == "ControlType." + args[4]
+                && current.ClassName == args[5] && rect.X == numbers[0] && rect.Y == numbers[1] && rect.Width == numbers[2] && rect.Height == numbers[3];
+        }
+        var pending = new Stack<(AutomationElement element, int depth)>(); pending.Push((root, 0));
+        AutomationElement? found = null; var count = 0; var walker = TreeWalker.ControlViewWalker;
+        while (pending.Count > 0)
+        {
+            var item = pending.Pop();
+            if (++count > 10000 || item.depth > 32) throw new BridgeException("native_output_limit", "Document identity search exceeded its bounded tree.");
+            if (Matches(item.element))
+            {
+                if (found is not null) throw new BridgeException("ambiguous_element", "Observed document identity is not unique.");
+                found = item.element;
+            }
+            for (var child = walker.GetFirstChild(item.element); child is not null; child = walker.GetNextSibling(child))
+            {
+                if (pending.Count + count >= 10000) throw new BridgeException("native_output_limit", "Document identity search exceeded its node budget.");
+                pending.Push((child, item.depth + 1));
+            }
+        }
+        if (found is null) throw new BridgeException("stale_element", "Document identity was not found in the current window.");
+        var runtime = found.GetRuntimeId();
+        object unavailable(string reason) => new { available = false, reason };
+        object document, selection;
+        if (found.GetCurrentPropertyValue(AutomationElement.IsPasswordProperty, true) is not false)
+            document = selection = unavailable("password_or_unknown");
+        else if (!found.TryGetCurrentPattern(TextPattern.Pattern, out var pattern))
+            document = selection = unavailable("text_pattern_unavailable");
+        else
+        {
+            var text = (TextPattern)pattern;
+            var content = BoundedText(text.DocumentRange.GetText, 4096);
+            document = new { available = true, text = content.text, truncated = content.truncated };
+            if (text.SupportedTextSelection == SupportedTextSelection.None) selection = unavailable("selection_unavailable");
+            else
+            {
+                var ranges = text.GetSelection();
+                selection = new { available = true, ranges = ranges.Take(4).Select(range => {
+                    var bounded = BoundedText(range.GetText, 1024); return new { text = bounded.text, truncated = bounded.truncated };
+                }).ToArray(), truncated = ranges.Length > 4 };
+            }
+        }
+        Guard(hwnd, pid);
+        if (!Matches(found) || !found.GetRuntimeId().SequenceEqual(runtime)) throw new BridgeException("stale_element", "Document changed while reading.");
+        Write(new { hwnd = raw.ToString(), pid, method = "managed-uia-textpattern", document, selection });
     }
 
     private static void Write(object value) => Console.WriteLine(JsonSerializer.Serialize(value));
