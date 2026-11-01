@@ -366,20 +366,29 @@ class WinappBackend {
     const entry = result.windows?.find(candidate => String(candidate.hwnd) === window.id);
     if (!entry || entry.coordinateSpace !== 'physical-screen-pixels' || !Array.isArray(entry.elements) || !entry.elements.length) fail('invalid_native_response', 'Exact target UIA root was not returned.');
     const root = entry.elements[0];
-    const flat = [];
-    const visit = element => {
-      if (flat.length >= 10000) fail('native_output_limit', 'UIA element count exceeds limit.');
+    const flat = [], hierarchy = [], active = new WeakSet();
+    const visit = (element, parentNodeId = null, nestingDepth = 0) => {
+      if (!object(element) || active.has(element)) fail('invalid_native_response', 'UIA tree contains an invalid node or cycle.');
+      if (hierarchy.length >= 10000 || nestingDepth > 32) fail('native_output_limit', 'UIA tree exceeds its node/depth bounds.');
+      if (element.children != null && !Array.isArray(element.children)) fail('invalid_native_response', 'UIA children must be an array.');
+      active.add(element);
+      const nodeId = `n${hierarchy.length}`;
+      hierarchy.push({ nodeId, parentNodeId, elementId: element.selector ? selector(element.selector) : null,
+        name: String(element.name || '').slice(0, 512), controlType: element.type || 'Unknown',
+        nestingDepth, hasMoreChildren: element.hasMoreChildren === true });
       if (element.selector) {
         const item = { id: selector(element.selector), name: element.name || '', controlType: element.type || 'Unknown', enabled: element.isEnabled === true, offscreen: element.isOffscreen === true };
         if (typeof element.automationId === 'string' && element.automationId) item.automationId = element.automationId;
         if (typeof element.className === 'string' && element.className) item.className = element.className;
         if ([element.x, element.y, element.width, element.height].every(Number.isFinite) && element.width > 0 && element.height > 0) item.bounds = bounds(element);
-        flat.push(item);
+        flat.push({ ...item, treeNodeId: nodeId });
       }
-      for (const child of element.children || []) visit(child);
+      for (const child of element.children || []) visit(child, nodeId, nestingDepth + 1);
+      active.delete(element);
     };
     for (const element of entry.elements) visit(element);
-    return { bounds: bounds(root), rootSelector: selector(root.selector), elements: flat, coordinateSpace: entry.coordinateSpace, depth, truncated: JSON.stringify(entry.elements).includes('"hasMoreChildren":true') };
+    return { bounds: bounds(root), rootSelector: selector(root.selector), elements: flat, hierarchy,
+      coordinateSpace: entry.coordinateSpace, depth, truncated: hierarchy.some(node => node.hasMoreChildren) };
   }
   async focused(window, signal, elements) {
     const result = await this.command('get-focused', ['-w', window.id], signal);
