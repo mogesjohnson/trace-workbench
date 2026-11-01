@@ -51,7 +51,9 @@ function createInstalledApplications({ backend = new WinappBackend(), lease = ba
         coverage: native.coverage, partial: native.partial || skipped > 0, issues: native.issues, skipped };
     } finally { busy = false; }
   }
-  async function launch(appId, { signal } = {}) {
+  async function launch(appId, options = {}) {
+    if (!options || typeof options !== 'object' || Array.isArray(options) || Object.keys(options).some(key => key !== 'signal')) fail('invalid_application_request', 'Launch options accept only a cancellation signal.');
+    const { signal } = options;
     if (busy) fail('application_busy', 'A launch or discovery is already in flight.');
     if (typeof appId !== 'string' || !/^app:[a-f0-9]{64}$/.test(appId) || !apps.has(appId)) fail('unknown_application', 'Choose an ID from the current application catalog.');
     if (attempted.has(appId)) fail('application_already_attempted', 'Inspect the previous launch; no automatic replay is permitted.');

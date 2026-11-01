@@ -38,6 +38,8 @@ test('catalog deduplicates canonical EXEs, distinguishes installed apps from cur
 test('unknown IDs, registration/file changes and busy ownership never spawn; discovery reports unverifiable files',async t=>{
   const f=await fixture(t),app=(await f.catalog.discover()).applications[0];
   await assert.rejects(f.catalog.launch('app:bad'),{code:'unknown_application'});
+  for(const options of [{args:['--flag']},{executable:f.executable},{shell:true}])
+    await assert.rejects(f.catalog.launch(app.appId,options),{code:'invalid_application_request'});
   f.state.fault='unregistered';assert.equal((await f.catalog.launch(app.appId)).outcome,'not_dispatched');
   f.state.fault='busy';assert.equal((await f.catalog.launch(app.appId)).code,'desktop_busy');
   f.state.fault=null;await fs.appendFile(f.executable,'changed');assert.equal((await f.catalog.launch(app.appId)).code,'application_changed');
