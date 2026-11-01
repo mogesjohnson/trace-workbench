@@ -1,5 +1,16 @@
 # Agent handoff
 
+## Latest: items 13/14 resumed — 31 October 2026
+
+Owner requested the next two items under the two-item stop cadence. Items 11/12
+retain scoped live/cleanup passes and final CI in unmerged PRs 68/69/70; no repeat
+is needed. Item 13 adds bounded physical key aliases through the existing pinned
+SendInput parser and recovery declaration. Item 14 is split into hierarchy,
+bounded native document/selection reads and public read-only integration to keep
+PR review caps. No desktop slot or old readiness has been reused. Next: finish
+focused source/CI preparation, obtain fresh readiness only for new live checks,
+record actual evidence/limits and stop before item 15. Published 1.1.0 is unchanged.
+
 ## Latest: 1.1.0 published; V2 complete — 31 October 2026
 
 Owner authorized all three remaining phases. PRs 63/64 merged; [v1.1.0](https://github.com/mogesjohnson/trace-workbench/releases/tag/v1.1.0) pins `ccf873470a00ea8aa1acc551a9e4bc382e09db99`. [Final-main CI 41262809547](https://github.com/mogesjohnson/trace-workbench/actions/runs/41262809547) passed including exact archive install/rollback; UTC local archive reproduction matched SHA-256 `32899e02a4555ddf3f1bd1202536a652f5a75e0d2ab6a4dc8aac4af2338dc61d` (23948635 bytes). All five assets were independently downloaded and verified before and after publication; the public tag matches. [Publication receipt](evidence/release-1.1.0/publication.json) records actual source/CI/assets and approval. Bundled notes/manifests keep their prepublication snapshot; later metadata commits do not replace the tested archive.

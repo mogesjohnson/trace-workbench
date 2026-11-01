@@ -23,7 +23,7 @@ test('static contract enforces bounded text, identifiers, keys and wheel increme
   for (const key of ['CONTROL+RETURN', 'eSc', 'shift+F12']) assert.equal(parseAction({ type: 'press_key', key }).key, key);
   assert.equal(normalizeKey('CONTROL+RETURN'), 'ctrl+enter');
   assert.equal(normalizeKey('ESC'), 'esc');
-  for (const key of ['INSERT', 'WIN+R', 'ctrl+a enter', 'a'.repeat(101)]) reject({ type: 'press_key', key });
+  for (const key of ['WIN+R', 'ctrl+a enter', 'a'.repeat(101)]) reject({ type: 'press_key', key });
   for (const deltaY of [-2400, -120, 120, 2400]) parseAction({ type: 'scroll', x: 0, y: 0, deltaX: 0, deltaY });
   for (const [deltaX, deltaY] of [[1, 120], [0, 1], [0, 0], [0, 2520]]) reject({ type: 'scroll', x: 0, y: 0, deltaX, deltaY });
   for (const action of [{ type: 'click', x: -1, y: 0 }, { type: 'click', x: 0.5, y: 0 }, { type: 'activate', extra: true }, { type: 'launch_shell' }]) reject(action);
