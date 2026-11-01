@@ -44,7 +44,7 @@ test('native response distinguishes empty, unavailable, truncation and bounded s
 test('connected MCP document observations are image-free evidence, revoke authority and do not journal content',async t=>{
   const directory=await fs.mkdtemp(path.join(os.tmpdir(),'trace-document-')), calls=[], control={fail:false,acts:0};
   const backend=new WinappBackend({run:async()=>{throw Error('No OS calls');}});
-  backend.listWindows=async()=>[window]; backend.identity=async()=>window;
+  backend.listWindows=async()=>[window]; backend.identity=async()=>window; backend.openWindow=async()=>window;
   backend.bridge=async(verb,...args)=>{
     calls.push([verb,...args]);
     if(verb==='document') {
