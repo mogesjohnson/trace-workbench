@@ -1,6 +1,6 @@
-# TRACE Workbench 1.1.0 candidate
+# TRACE Workbench 1.1.0
 
-Prepared 31 October 2026. This candidate is not published. Final-source Windows CI, exact archive installation/rollback, asset verification and owner integration/publication approval remain release gates. Published [v1.0.0](RELEASE_1.0.0.md) and its immutable source/assets remain available.
+Published 31 October 2026 with direct owner approval. [Download v1.1.0](https://github.com/mogesjohnson/trace-workbench/releases/tag/v1.1.0). The [publication receipt](../evidence/release-1.1.0/publication.json) binds merged source `ccf8734`, passing final-main Windows CI, exact archive installation/rollback and five independently downloaded/hash-verified assets. Companion manifests and bundled notes preserve their prepublication snapshot. Published [v1.0.0](RELEASE_1.0.0.md) and its immutable source/assets remain available.
 
 ## Changes
 
