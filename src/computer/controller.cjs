@@ -113,8 +113,9 @@ function createComputerController(options = {}) {
     }
     if (allowStorageCleanup && session.captureRetention) return session.captureRetention.close();
   }
-  async function currentWindow(session, signal) {
-    const current = backend.currentWindow ? await backend.currentWindow(session.window, { signal })
+  async function currentWindow(session, signal, visualOnly = false) {
+    const read = visualOnly && backend.currentVisualWindow ? backend.currentVisualWindow : backend.currentWindow;
+    const current = read ? await read.call(backend, session.window, { signal })
       : (await backend.listWindows({ signal })).find(window => window.id === session.window.id);
     if (!identityMatches(current, session.window)) {
       session.observation = null;
@@ -141,12 +142,13 @@ function createComputerController(options = {}) {
   async function observeMeasured(session, signal, depth, mode, documentElementId) {
     signal = markedSignal(signal);
     await lease.assert(session.id);
-    await measure('identity', () => currentWindow(session, signal));
+    await measure('identity', () => currentWindow(session, signal, mode === 'screenshot'));
     session.observation = null;
     const observationId = randomUUID();
     const screenshotPath = mode === 'accessibility' ? undefined : path.join(session.directory, `${observationId}.png`);
     const snapshot = await measure('backend', () => backend.observe({ window: session.window, screenshotPath, signal, depth,
       ...(mode === 'accessibility' ? { includeScreenshot: false } : {}),
+      ...(mode === 'screenshot' ? { visualOnly: true } : {}),
       ...(documentElementId === undefined ? {} : { documentElementId }) }));
     // The effective depth stays server-side with the observation; actions cannot replace it.
     snapshot.depth = Number.isInteger(snapshot.depth) ? snapshot.depth : depth;
@@ -216,7 +218,7 @@ function createComputerController(options = {}) {
       return queued(async signal => {
         const result = await backend.doctor({ signal });
         return { ...result, support: actionSupport(observationTtlMs),
-          observationModes: { default: 'full', actionable: ['full'], evidenceOnly: ['accessibility', 'screenshot'] },
+          observationModes: { default: 'full', actionable: ['full'], evidenceOnly: ['accessibility', 'screenshot'], screenshotRequiresReadableUiaRoot: false },
           captureRetention: { mode: captureKeepLast ? 'keep-last' : 'preserve', keepLast: captureKeepLast,
             scope: 'validated-current-session-captures', onClose: captureKeepLast ? 'remove-tracked' : 'preserve' }, readiness: {
           native: { ready: result.ready === true, code: result.code || null, reason: result.reason || null },
@@ -236,7 +238,8 @@ function createComputerController(options = {}) {
         const selected = discovered.get(windowId);
         if (!selected) throw fail('unknown_window', 'Select a windowId returned by list_windows.');
         if (selected.identity?.available === false) throw fail('window_identity_unavailable', 'The selected window identity could not be inspected. Choose an available target.');
-        const current = backend.currentWindow ? await backend.currentWindow(selected, { signal })
+        const open = backend.openWindow ?? backend.currentWindow;
+        const current = open ? await open.call(backend, selected, { signal })
           : targetWindows(await backend.listWindows({ signal })).find(window => window.id === windowId);
         if (!identityMatches(selected, current)) throw fail('window_changed', 'The discovered window changed. Refresh the window list.');
         const id = randomUUID();
