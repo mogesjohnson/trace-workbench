@@ -40,13 +40,33 @@ The method adapter requires explicit confirmation, including when connected to a
 
 Cleanup confirmation concerns the owned session and input lifecycle. It does not prove the intended application effect or settle a deferred clipboard transaction. Existing observation freshness, input quarantine and clipboard obligations still apply. The six tools and supported Windows/display scope remain unchanged; the [V1 release notes](RELEASE_1.0.0.md) distinguish candidate readiness from publication.
 
-The server supports activation, coordinate/element clicks, typing, allowed key chords, vertical wheel scrolling, dragging, accessibility invocation and editable values. Actual tested coverage and limitations are recorded in [verification](VERIFICATION.md) and [the specification](../SPEC.md).
+The server supports activation, coordinate/element clicks, typing, allowed key chords, wheel scrolling, dragging, accessibility invocation and editable values. Development extensions for supervised buttons/double-click and opt-in point/horizontal wheel are described below; they are not new published 1.1.0 acceptance. Actual tested coverage and limitations are recorded in [verification](VERIFICATION.md) and [the specification](../SPEC.md).
 
 ### Effective action limits (V1)
 
 Literal text accepts 1–8192 UTF-16 code units; editable values accept 0–8192. Neither accepts NUL. Element IDs accept 1–512 units. Keys accept case-insensitive Ctrl/Control, Alt and Shift chords with letters, digits, F1–F12 and the existing navigation/edit keys; Return maps to Enter. INSERT, Windows-key chords and multi-command key scripts are unsupported. The shared validator applies the same limits to the method adapter, controller and native backend before native helper work.
 
-Wheel input requires `deltaX: 0` and a nonzero `deltaY` in 120-unit steps from -2400 to 2400; positive means down. The requested point selects the smallest enabled onscreen observed element containing it, and the wheel executes at that element's center. This is not exact point scrolling. Unsupported static requests fail before consuming the native observation or method attempt. Current geometry, element, modal and focus checks still run before dispatch; validation does not guarantee target readiness or application effect.
+Omitting wheel `placement` preserves legacy input: `deltaX: 0`, nonzero `deltaY` in 120-unit steps from -2400 to 2400, positive down. Its requested point selects the smallest enabled onscreen observed element; input occurs at the element center. This default is unchanged.
+
+Development item 12 adds `placement: 'point'` with both deltas in bounded 120-unit steps,
+allowing zero on one axis but not both. Positive X is right and positive Y is down.
+One action inserts Y then X at the requested image point, converted to physical screen
+coordinates without replacing it with a UIA element center. A matching element is not
+required, but observation still requires a readable UIA root. This mode requires the
+native supervisor and rebuilt source-matched helpers, with no unsupervised fallback.
+Discover the connected schema and optional `support.actions.scroll.point`; older servers
+reject the field and cannot acquire invented support through the adapter.
+
+Development item 11 adds optional click `button: 'left' | 'right' | 'middle'` and
+`count: 1 | 2`, with count 2 left-only. Omitted/default single-left forms retain old
+paths. New variants require supervision and use one complete native event sequence
+per observation; element targets use their revalidated physical center. See the
+[pointer foundation](POINTER_INPUT.md) for admission, selected-button recovery and limits.
+
+Unsupported static requests reject before consuming observations/attempts. Identity,
+geometry, modal, activation and target-hit guards remain; partial insertion or lost
+receipts remain unknown, without automatic replay. New source/synthetic checks do not
+establish live menu, middle/double-click, two-pane wheel or interruption acceptance.
 
 `trace_computer_doctor.support` declares version 1 of TRACE's wrapper contract for pinned winapp 0.7.1: action forms, limits, key syntax, coordinate origin and observation requirements. It describes intended support, not installed provider identity or successful target control. The diagnostic's existing engine/version and `readiness.native` report the actual backend check; `readiness.target.ready: null` means the target has not been checked.
 
