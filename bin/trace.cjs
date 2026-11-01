@@ -6,8 +6,18 @@ const { runCli } = require('../src/integration.cjs');
 async function dispatch(args) {
   if (args[0] !== 'computer') return runCli(args);
   const [command, ...extra] = args.slice(1);
+  if (command === 'apps') {
+    const [verb, appId, ...rest] = extra;
+    if (!['list', 'launch'].includes(verb) || rest.length || (verb === 'list' && appId !== undefined)
+      || (verb === 'launch' && !/^app:[a-f0-9]{64}$/.test(appId || ''))) throw new Error('Use computer apps list or computer apps launch <returned-app-ID>.');
+    const catalog = require('../src/method/installed-applications.cjs').createInstalledApplications();
+    const discovery = await catalog.discover();
+    const result = verb === 'list' ? discovery : await catalog.launch(appId);
+    process.stdout.write(`${JSON.stringify(result)}\n`);
+    return verb === 'launch' && result.outcome !== 'launched' ? 1 : 0;
+  }
   if (!command || command === '--help' || command === 'help') {
-    process.stdout.write('TRACE Computer Use\n\n  trace-workbench computer mcp     Serve computer tools over stdio\n  trace-workbench computer doctor  Check the pinned Windows engine\n  trace-workbench computer recover --check|--apply  Inspect or verify native cleanup\n\nSetup: node scripts/setup-computer.cjs --plan, then --apply\n');
+    process.stdout.write('TRACE Computer Use\n\n  trace-workbench computer mcp     Serve computer tools over stdio\n  trace-workbench computer doctor  Check the pinned Windows engine\n  trace-workbench computer recover --check|--apply  Inspect or verify native cleanup\n  trace-workbench computer apps list|launch <app-ID>  Discover registered apps or launch a returned ID\n\nSetup: node scripts/setup-computer.cjs --plan, then --apply\n');
     return 0;
   }
   if (command === 'recover') {
