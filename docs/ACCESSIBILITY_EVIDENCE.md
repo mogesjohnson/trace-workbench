@@ -33,3 +33,8 @@ marker. See [native limits](DOCUMENT_READER.md). Content is returned only on thi
 opt-in request and is not journaled. Ordinary observation/action refreshes do not
 read document content. The read revokes any prior full observation's authority,
 including on provider failure, and its new observation ID cannot authorize input.
+
+The [owned-fixture receipt](../evidence/keyboard-accessibility/acceptance.json)
+records scoped live hierarchy, bounded document/selection, empty, password and
+unsupported-control checks. It includes independent state/cleanup and explicit
+coverage limits; it does not establish support across arbitrary applications.
