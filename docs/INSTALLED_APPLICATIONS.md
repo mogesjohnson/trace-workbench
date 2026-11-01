@@ -30,3 +30,9 @@ open; its independent process is not an input-helper job child and crash cleanup
 of that application is not promised. Unknown lease cleanup stays explicit.
 This can activate the desktop and requires normal host authorization/readiness.
 Installed defaults/settings/registrations are not edited. Six MCP tools remain.
+
+The [owned-fixture receipt](../evidence/visual-app-handoff/acceptance.json) records
+registered discovery/launch/window handoff and two independently decoded MCP
+captures with UIA calls disabled. It preserves the original private-driver failure,
+one corrected retry, exact cleanup and coverage/display limits. The test used and
+removed only its own temporary registration; it establishes no arbitrary-app claim.
