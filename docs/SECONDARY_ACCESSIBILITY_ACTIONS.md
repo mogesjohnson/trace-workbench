@@ -38,3 +38,50 @@ wheel/point scrolling remains available under its separate contract.
 Provider behavior was checked in the pinned [invoke command](https://github.com/microsoft/winappCli/blob/v0.7.1/src/winapp-CLI/WinApp.Cli/Commands/UiInvokeCommand.cs)
 and [UIA service](https://github.com/microsoft/winappCli/blob/v0.7.1/src/winapp-CLI/WinApp.UIAutomation/Services/UiAutomationService.cs).
 Focused checks are separate from new owned-fixture live acceptance.
+
+## Scoped live acceptance — 1 November 2026
+
+Fresh owner readiness preceded this first bounded attempt. Root reviewed the
+initial and three post-action PNGs. Independent fixture counters and returned
+pattern state confirmed each effect; the duplicate-label decoy stayed unchanged.
+No failures/retries or new native binary/input primitive were needed.
+
+```json
+{
+  "source": "a25e7334c5d969043a8fa5d3d752eee3c8553106",
+  "status": "pass",
+  "startedAt": "2026-11-01T15:34:53.193Z",
+  "finishedAt": "2026-11-01T15:35:56.034Z",
+  "privateReceiptSha256": "7ff6936642259abd1ef95f0ea7e65e79413954dad93d1b5def7ca61097689743",
+  "privateDriverSha256": "8866b23f0fb4c4fd3b33e8f43df30787aa8ec634962ce4d75f5bbf770f8b856b",
+  "fixtureSourceSha256": "c93b96e35e31c7389b4ff85d2ca43ed9de076e476e2961df580f525d9c96bd72",
+  "display": {
+    "monitors": 1,
+    "width": 2880,
+    "height": 1800,
+    "dpi": 144
+  },
+  "unobservedCollapse": "not_dispatched; valid authority retained",
+  "expand": "collapsed -> expanded; ExpandCollapsePattern",
+  "collapse": "expanded -> collapsed; ExpandCollapsePattern",
+  "toggle": "off -> on; TogglePattern; decoy remained off",
+  "rootReviewedFrames": 4,
+  "sourceHelperFixtureHashesMatched": 54,
+  "cleanup": {
+    "session": "confirmed",
+    "connection": "closed",
+    "exactOwnerExited": true,
+    "exactMarkerExited": true,
+    "fixtureExitCode": 0,
+    "driverExitCode": 0,
+    "inputAllUp": true,
+    "recoveryClear": true
+  }
+}
+```
+
+Scope is one owned WPF fixture at the recorded display, not arbitrary UIA providers,
+three-state live cycling, scrolling, selection or an interruption matrix. Existing
+compatible host/clipboard/mouse/keyboard evidence is reused at its original scope.
+Desktop released. No merge/release/default settings or installed skill changes;
+item 18 remains outside the owner's selected work.
