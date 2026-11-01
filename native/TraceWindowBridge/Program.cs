@@ -8,7 +8,7 @@ using System.Windows.Automation;
 // Public Win32/DWM and managed UIA calls. This bridge reads exact geometry and activates one pinned
 // HWND/PID. Pointer operations require explicit coordinates, foreground and unobscured target.
 // The controller admits them only through its job-owning supervisor and declared-input recovery.
-internal static class Program
+internal static partial class Program
 {
     private static int Main(string[] args)
     {
@@ -17,10 +17,11 @@ internal static class Program
             if (!OperatingSystem.IsWindows()) throw new BridgeException("unsupported_platform", "Windows is required.");
             if (args.Length == 1 && args[0] == "info")
             {
-                Write(new { version = 1, runtime = "net9.0-windows", capabilities = new[] { "identities", "identity", "bounds", "activate", "release-left", "click", "wheel", "document", "selftest" } });
+                Write(new { version = 1, runtime = "net9.0-windows", capabilities = new[] { "identities", "identity", "bounds", "activate", "release-left", "click", "wheel", "document", "capture", "selftest" } });
                 return 0;
             }
-            if (args.Length == 1 && args[0] == "selftest") { PointerSelfTest(); DocumentSelfTest(); Write(new { passed = true, inputSent = false }); return 0; }
+            if (args.Length == 1 && args[0] == "selftest") { PointerSelfTest(); DocumentSelfTest(); CaptureSelfTest(); Write(new { passed = true, inputSent = false }); return 0; }
+            if (args.Length > 0 && args[0] == "capture") { CaptureWindow(args); return 0; }
             if (args.Length > 0 && args[0] == "document") { ReadDocument(args); return 0; }
             if (args.Length > 0 && args[0] is "click" or "wheel") { Pointer(args); return 0; }
             if (args.Length == 1 && args[0] == "release-left")
