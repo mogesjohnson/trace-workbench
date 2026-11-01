@@ -44,7 +44,10 @@ test('controller describes declared support independently of native and target r
   const { deltaX, minDeltaY, maxDeltaY, step, positive, placement } = result.support.actions.scroll;
   assert.deepEqual({ deltaX, minDeltaY, maxDeltaY, step, positive, placement }, { deltaX: 0, minDeltaY: -2400, maxDeltaY: 2400, step: 120, positive: 'down', placement: 'element-center' });
   const { pattern, caseSensitive, normalization } = result.support.actions.press_key;
-  assert.deepEqual({ pattern, caseSensitive, normalization }, { pattern: KEY_PATTERN, caseSensitive: false, normalization: { CONTROL: 'ctrl', RETURN: 'enter' } });
+  assert.deepEqual({ caseSensitive, normalization }, { caseSensitive: false, normalization: { CONTROL: 'ctrl', RETURN: 'enter' } });
+  assert.match('CONTROL+RETURN', new RegExp(pattern));
+  assert.doesNotMatch('INSERT', new RegExp(pattern)); // Legacy 1.x capability remains unchanged.
+  assert.equal(result.support.actions.press_key.extended.pattern, KEY_PATTERN);
   const { defaultDepth, minDepth, maxDepth, ttlMs, requiresReadableUiaRoot } = result.support.observation;
   assert.deepEqual({ defaultDepth, minDepth, maxDepth, ttlMs, requiresReadableUiaRoot }, { defaultDepth: 8, minDepth: 1, maxDepth: 32, ttlMs: 12345, requiresReadableUiaRoot: true });
   await controller.close();
@@ -69,7 +72,7 @@ test('actual MCP action schema rejects unsupported payloads before controller di
     assert.notEqual(result.isError, true, JSON.stringify(action));
   }
   const before = f.calls;
-  for (const action of [{ type: 'press_key', key: 'ENTER\n' }, { type: 'press_key', key: 'a\r' }, { type: 'press_key', key: 'INSERT' }, { type: 'press_key', key: 'WIN+R' },
+  for (const action of [{ type: 'press_key', key: 'ENTER\n' }, { type: 'press_key', key: 'a\r' }, { type: 'press_key', key: 'NUMPAD_DIVIDE' }, { type: 'press_key', key: 'WIN+R' },
     { type: 'scroll', x: 0, y: 0, deltaX: 1, deltaY: 120 }, { type: 'scroll', x: 0, y: 0, deltaX: 0, deltaY: 1 },
     { type: 'scroll', x: 0, y: 0, deltaX: 0, deltaY: 0 }, { type: 'scroll', x: 0, y: 0, deltaX: 0, deltaY: 2520 },
     { type: 'click', x: -1, y: 0 }, { type: 'type_text', text: '😀'.repeat(4097) }, { type: 'type_text', text: 'x'.repeat(8193) }]) {
