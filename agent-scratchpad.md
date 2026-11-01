@@ -1,13 +1,17 @@
 # Agent handoff
 
-## Latest: roadmap items 9–10 selected — 31 October 2026
+## Latest: roadmap items 9–10 prepared separately — 31 October 2026
 
 Owner selected the next six roadmap items (9–14), one PR each, then instructed stopping
-after every two. This batch is 9 and 10 only. Item 9 adds a direct native client with
+after every two. This batch is 9 and 10 only. [Item 9 PR 66](https://github.com/mogesjohnson/trace-workbench/pull/66) adds a direct native client with
 exact returned targets, single-use observations, confirmed-release transitions and
 identity-constrained recovery. In-memory MCP checks exercise changed contracts; no
-desktop, model-host, clipboard or old acceptance rerun. Next: open its bounded PR,
-implement item 10 focus/freshness contracts in another PR, inspect required CI and stop.
+desktop, model-host, clipboard or old acceptance rerun. [Item 10 PR 67](https://github.com/mogesjohnson/trace-workbench/pull/67)
+adds optional intended typing focus and per-check operation age limits, with separate
+verification freshness. Its six focused cases and affected checks passed. Both PRs
+target main independently. PR 66 source 6370528 passed hosted CI 41263890575; this
+handoff-only follow-up requires its own hosted result. Next: inspect final required
+CI and stop with the two reviewable, unmerged PRs. Items 11–14 await the next instruction.
 Release 1.1.0 and its publication receipt remain complete and unchanged.
 
 ## Latest: 1.1.0 published; V2 complete — 31 October 2026
