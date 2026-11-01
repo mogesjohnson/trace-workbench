@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "version": "1.1.0",
+  "status": "published",
+  "releaseId": 430302724,
+  "releaseUrl": "https://github.com/mogesjohnson/trace-workbench/releases/tag/v1.1.0",
+  "publishedAt": "2026-11-01T01:55:55Z",
+  "tag": "v1.1.0",
+  "sourceCommit": "ccf873470a00ea8aa1acc551a9e4bc382e09db99",
+  "ci": {
+    "url": "https://github.com/mogesjohnson/trace-workbench/actions/runs/41262809547",
+    "head": "ccf873470a00ea8aa1acc551a9e4bc382e09db99",
+    "conclusion": "success"
+  },
+  "archive": {
+    "sourceCommit": "ccf873470a00ea8aa1acc551a9e4bc382e09db99",
+    "file": "trace-workbench-1.1.0-source.zip",
+    "sha256": "32899e02a4555ddf3f1bd1202536a652f5a75e0d2ab6a4dc8aac4af2338dc61d",
+    "bytes": 23948635,
+    "retainedRequirementHashesVerified": 8,
+    "referenceHashesVerified": 13,
+    "reproductionTimezone": "UTC"
+  },
+  "assets": [
+    {
+      "name": "trace-workbench-1.1.0-source.zip",
+      "bytes": 23948635,
+      "sha256": "32899e02a4555ddf3f1bd1202536a652f5a75e0d2ab6a4dc8aac4af2338dc61d",
+      "id": 697040955
+    },
+    {
+      "name": "acceptance-manifest.json",
+      "bytes": 6790,
+      "sha256": "c35fbaf63e7bfdabe71eb20a758567952db65e1b4fbb1ebe71cf505128abd943",
+      "id": 697040578
+    },
+    {
+      "name": "distribution-receipt.json",
+      "bytes": 3597,
+      "sha256": "05fb415b9e0e73dead10d01979bc84a62b94f770a6539586d1aaf3c9a856da8b",
+      "id": 697040576
+    },
+    {
+      "name": "RELEASE_NOTES.md",
+      "bytes": 4831,
+      "sha256": "9b37516b5e8ae66ece81ed6923bae1957191a531a6eecdffa1b6799ad7cafd5b",
+      "id": 697040577
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 365,
+      "sha256": "1d9dea2aba024d8520136648b6150594636cfc1bf5690a9a76871f072ea0d0d7",
+      "id": 697040599
+    }
+  ],
+  "independentDownloadedHashesVerified": true,
+  "publicTagAndAssetMetadataVerified": true,
+  "ownerApproval": {
+    "source": "direct-owner",
+    "reply": "do the next 3 phases do any requre me to wait",
+    "scope": "Merge PRs 63/64, verify main archive/assets and publish 1.1.0 only after gates pass"
+  },
+  "mergedPrs": [
+    63,
+    64
+  ],
+  "prepublicationCompanionSnapshotsRetained": true,
+  "limits": "Four diagnostic observations at 593e309; no baseline speedup/cold-warm claim. Compatible accepted native/host/application evidence reused; original failures and limits retained. No further desktop work."
+}
