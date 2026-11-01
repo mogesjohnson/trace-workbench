@@ -11,7 +11,7 @@ const pin = require('./winapp-pin.json');
 const ROOT = path.resolve(__dirname, '../..');
 const DEFAULT_BINARY = path.join(ROOT, '.runtime', 'winapp', `v${pin.version}`, 'bin', 'winapp.exe');
 const DEFAULT_BRIDGE = path.join(ROOT, '.runtime', 'window-bridge', 'bin', 'TraceWindowBridge.exe');
-const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj', 'native/TraceWindowBridge/Capture.cs'];
+const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj', 'native/TraceWindowBridge/Capture.cs', 'native/TraceWindowBridge/Applications.cs'];
 
 class BackendError extends Error {
   constructor(code, message, details = {}) {
@@ -264,14 +264,15 @@ class WinappBackend {
   async bridge(verb, window, signal, parameters = []) {
     const pointer = verb === 'click' || verb === 'wheel';
     if (pointer && !this.supervisor?.ready) fail('supervision_required', 'New pointer input requires a ready native owner.', { outcome: 'not_dispatched' });
-    const args = verb === 'info' ? [verb] : [verb, id(window.id), String(window.pid), ...parameters];
+    const standalone = ['info', 'apps', 'process'].includes(verb);
+    const args = standalone ? [verb, ...parameters] : [verb, id(window.id), String(window.pid), ...parameters];
     const mutating = verb === 'activate' || pointer;
     if (this.supervisor && mutating && !this.supervisor.ready) fail('session_stopped', 'A ready native session is required before activation.', { outcome: 'not_dispatched' });
     const result = await providerRequest(this.supervisor?.ready === true, () => this.supervisor?.ready
       ? this.supervisor.run('bridge', args, { signal, timeoutMs: 10000, mutating })
       : this.run(this.bridgePath, args, { signal, timeoutMs: 10000 }));
     const parsed = parseJson(result.stdout, result.stderr, result.exitCode);
-    if (verb !== 'info' && (parsed.hwnd !== window.id || parsed.pid !== window.pid)) fail('window_identity_changed', 'Window bridge returned a different HWND/PID.');
+    if (!standalone && (parsed.hwnd !== window.id || parsed.pid !== window.pid)) fail('window_identity_changed', 'Window bridge returned a different HWND/PID.');
     return parsed;
   }
   async identities(windows, signal) {
@@ -337,6 +338,7 @@ class WinappBackend {
           continue;
         }
         enriched.push({ ...window,
+          ...(typeof native.executable === 'string' ? { executable: native.executable } : {}),
           ...(typeof native.processCreationTime === 'string' ? { processCreationTime: native.processCreationTime } : {}),
           ...(Number.isInteger(native.sessionId) ? { sessionId: native.sessionId } : {}),
           ...(native.ownerWindowId !== undefined ? { ownerWindowId: native.ownerWindowId } : {}),
