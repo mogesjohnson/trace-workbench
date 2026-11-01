@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "case": "V2 controlled observation timing",
+  "observedOn": "2026-10-31",
+  "sourceCommit": "593e309ed0c2eb05d555da9bcdca41d25750a01e",
+  "status": "blocked",
+  "completedSamples": 0,
+  "requestedSamples": 4,
+  "mode": "full",
+  "accessibilityDepth": 8,
+  "captureRetention": { "mode": "preserve", "keepLast": 0 },
+  "attempts": [
+    {
+      "ordinal": 1,
+      "privateReceipt": ".runtime/v2-profile-2026-10-30/measurement-1793496986528.json",
+      "code": "profile_target_not_foreground",
+      "inputActions": 0,
+      "cleanupConfirmed": true,
+      "privateTemporaryFilesRemoved": true
+    },
+    {
+      "ordinal": 2,
+      "privateReceipt": ".runtime/v2-profile-2026-10-30/measurement-1793497041469.json",
+      "correction": "Prepare one exact-fixture activation under a desktop lease after input-state inspection.",
+      "code": "foreground_elevated",
+      "activationAttempts": 0,
+      "inputActions": 0,
+      "cleanupConfirmed": true,
+      "privateTemporaryFilesRemoved": true
+    }
+  ],
+  "cleanup": "Both runs confirmed exact server process exit, fixture exit, clear recovery and free lease.",
+  "limits": "No timings or performance conclusions. Foreground process attribution was not retained. No third attempt; existing accepted desktop cases were not repeated.",
+  "next": "Establish normal non-elevated foreground readiness and obtain explicit owner approval for a new bounded attempt. Timing-dependent consolidation selection and final release remain open."
+}
