@@ -14,10 +14,12 @@ const KEY_ALIASES = Object.freeze({ INSERT: 'insert', SEMICOLON: 'vk=0xba', EQUA
   NUMPAD_ADD: 'vk=0x6b', NUMPAD_SUBTRACT: 'vk=0x6d', NUMPAD_MULTIPLY: 'vk=0x6a', NUMPAD_DECIMAL: 'vk=0x6e',
   ...Object.fromEntries(Array.from({ length: 10 }, (_, n) => [`NUMPAD${n}`, `vk=0x${(0x60 + n).toString(16)}`])) });
 const KEY_PATTERN = keyPattern([...KEY_NAMES, ...Object.keys(KEY_ALIASES)], '1[0-6]');
+const ACCESSIBILITY_ACTIONS = Object.freeze(['expand', 'collapse', 'toggle']);
 const FIELDS = {
   activate: [], click: ['x', 'y', 'elementId', 'button', 'count'], type_text: ['text'], press_key: ['key'],
   scroll: ['x', 'y', 'deltaX', 'deltaY', 'placement'], drag: ['fromX', 'fromY', 'toX', 'toY'],
   invoke: ['elementId'], set_value: ['elementId', 'value'],
+  accessibility_action: ['elementId', 'action'],
 };
 const reject = (code, message) => { throw Object.assign(new Error(message), { code, details: { outcome: 'not_dispatched' } }); };
 function normalizeKey(key) {
@@ -65,6 +67,10 @@ function parseAction(action) {
       break;
     case 'drag': point('fromX', 'fromY'); point('toX', 'toY'); break;
     case 'invoke': text('elementId', LIMITS.elementId); break;
+    case 'accessibility_action':
+      text('elementId', LIMITS.elementId);
+      if (!ACCESSIBILITY_ACTIONS.includes(action.action)) reject('unsupported_action', 'Choose an observed named accessibility action.');
+      break;
     case 'set_value': text('elementId', LIMITS.elementId); text('value', LIMITS.text, true); break;
   }
   return { ...action };
@@ -78,6 +84,10 @@ function validateAction(action, observation) {
     if (action[x] >= observation.bounds.width || action[y] >= observation.bounds.height) reject('invalid_coordinates', 'Use integer coordinates inside the observed window.');
   }
   if (action.elementId !== undefined && !(observation.elements ?? []).some(item => item.id === action.elementId && item.enabled !== false)) reject('unknown_element', 'Choose an enabled element from the latest observation.');
+  if (action.type === 'accessibility_action') {
+    const matches = (observation.elements ?? []).filter(item => item.id === action.elementId);
+    if (matches.length !== 1 || !Array.isArray(matches[0].secondaryActions) || !matches[0].secondaryActions.includes(action.action)) reject('unsupported_action', 'This exact control did not offer that action in the observation.');
+  }
   return checked;
 }
 
@@ -101,6 +111,8 @@ function actionSupport(observationTtlMs = 60000) {
           order: ['y', 'x'], placement: 'requested-point', requiresSupervisor: true, transport: 'supervised-public-win32' } },
       drag: { targets: ['fromPoint', 'toPoint'], button: 'left' },
       invoke: { target: 'enabled-elementId' },
+      accessibility_action: { target: 'unique-observed-enabled-elementId', actions: [...ACCESSIBILITY_ACTIONS],
+        requiresObservedAction: true, requiresSupervisor: true, fallback: false },
       set_value: { target: 'enabled-elementId', minLength: 0, maxLength: LIMITS.text, nul: false },
     },
     observation: { defaultDepth: 8, minDepth: 1, maxDepth: 32, ttlMs: observationTtlMs,
@@ -118,10 +130,11 @@ function compatibleSupport(support) {
     return Object.keys(expected).every(key => Object.hasOwn(actual, key) && matches(actual[key], expected[key]));
   };
   const expected = actionSupport(ttl);
+  if (!Object.hasOwn(support?.actions ?? {}, 'accessibility_action')) delete expected.actions.accessibility_action;
   if (!Object.hasOwn(support?.actions?.click ?? {}, 'variants')) delete expected.actions.click.variants;
   if (!Object.hasOwn(support?.actions?.scroll ?? {}, 'point')) delete expected.actions.scroll.point;
   if (!Object.hasOwn(support?.actions?.press_key ?? {}, 'extended')) delete expected.actions.press_key.extended;
   return matches(support, expected);
 }
 
-module.exports = { LIMITS, KEY_PATTERN, normalizeKey, parseAction, validateAction, actionSupport, compatibleSupport };
+module.exports = { LIMITS, KEY_PATTERN, ACCESSIBILITY_ACTIONS, normalizeKey, parseAction, validateAction, actionSupport, compatibleSupport };

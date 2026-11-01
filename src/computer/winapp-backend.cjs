@@ -390,6 +390,13 @@ class WinappBackend {
         const item = { id: selector(element.selector), name: element.name || '', controlType: element.type || 'Unknown', enabled: element.isEnabled === true, offscreen: element.isOffscreen === true };
         if (typeof element.automationId === 'string' && element.automationId) item.automationId = element.automationId;
         if (typeof element.className === 'string' && element.className) item.className = element.className;
+        const secondaryActions = [];
+        if (element.expandState === 'collapsed') secondaryActions.push('expand');
+        if (element.expandState === 'expanded') secondaryActions.push('collapse');
+        if (['on', 'off', 'indeterminate'].includes(element.toggleState)) secondaryActions.push('toggle');
+        if (['on', 'off', 'indeterminate'].includes(element.toggleState)) item.toggleState = element.toggleState;
+        if (['expanded', 'collapsed'].includes(element.expandState)) item.expandState = element.expandState;
+        item.secondaryActions = item.enabled ? secondaryActions : [];
         if ([element.x, element.y, element.width, element.height].every(Number.isFinite) && element.width > 0 && element.height > 0) item.bounds = bounds(element);
         flat.push({ ...item, treeNodeId: nodeId });
       }
@@ -553,6 +560,7 @@ class WinappBackend {
     action = parseAction(action);
     const pointerClick = action.type === 'click' && ((action.button ?? 'left') !== 'left' || (action.count ?? 1) !== 1);
     const pointWheel = action.type === 'scroll' && action.placement === 'point';
+    if (action.type === 'accessibility_action' && !this.supervisor?.ready) fail('supervision_required', 'Named UIA actions require native supervision.', { outcome: 'not_dispatched' });
     if ((pointerClick || pointWheel) && !this.supervisor?.ready) fail('supervision_required', 'Extended pointer input requires declared-input native supervision.', { outcome: 'not_dispatched' });
     await this.identity(window, signal);
     // Reinspect at the server-retained observation depth so deeply observed controls remain targetable.
@@ -615,6 +623,15 @@ class WinappBackend {
         verb = 'scroll'; positional = [choose(candidates[0].id)]; options = ['--wheel', String(-action.deltaY / 120)]; transport = 'wheel-at-element-center'; break;
       }
       case 'invoke': verb = 'invoke'; positional = [choose(action.elementId)]; break;
+      case 'accessibility_action': {
+        const old = observation.elements.filter(item => item.id === action.elementId), current = fresh.elements.filter(item => item.id === action.elementId);
+        if (old.length !== 1 || current.length !== 1 || !Array.isArray(old[0].secondaryActions) || !old[0].secondaryActions.includes(action.action)
+          || !Array.isArray(current[0].secondaryActions) || !current[0].secondaryActions.includes(action.action) || old[0].automationId !== current[0].automationId
+          || old[0].className !== current[0].className) fail('stale_element', 'Named action or exact control binding changed. Observe again.');
+        positional = [choose(action.elementId)]; transport = 'exact-uia-pattern';
+        verb = 'invoke'; options = ['--action', action.action];
+        break;
+      }
       case 'set_value':
         verb = 'set-value'; positional = [choose(action.elementId), action.value]; break;
       default: fail('unsupported_action', `Unsupported action type: ${action.type}.`);
