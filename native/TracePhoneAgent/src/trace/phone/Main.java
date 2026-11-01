@@ -107,6 +107,8 @@ public final class Main {
         h.put("model", android.os.Build.MODEL);
         h.put("statusBar", statusBarHeight());
         h.put("inject", injector() != null);
+        // Closing the adb exec stream does not stop this process; the host kills it by pid.
+        h.put("pid", android.os.Process.myPid());
         return new byte[0];
       case "screen":
         return screen(r, h);

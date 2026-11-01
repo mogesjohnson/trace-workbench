@@ -97,6 +97,26 @@ An animating page (Samsung battery-protection illustration) changed the hash on 
 `ignoreRegion` or a changed-rectangle in replies would let callers mask such animations.
 Agent stopped, dex/log and forward removed after the run (checked).
 
+## Node host (session 2)
+
+`src/phone/adb.cjs` talks to the adb server socket directly (no adb.exe per call): devices,
+connect, pair, mdns, `exec:` (28 ms vs 87 ms for `adb shell true`), sync push, and
+**`localabstract:` streams, so no `adb forward` is needed** (opened in 3 ms on USB).
+`src/phone/agent.cjs` frames requests; `src/phone/controller.cjs` starts the agent when absent
+(push + spawn), checks the version, retries once on a dropped link, saves every frame to
+`.runtime/phone/frames/`, maps image coordinates with the last `scale`/region, and does
+act-then-settle in one call. `stop()` kills the agent by the `pid` from `hello` and removes the dex
+(closing the exec stream alone left the process alive for at least 0.5 s). Tests:
+`node --test tests/phone.test.cjs` (fake adb + fake agent socket), 9 pass.
+Live-checked on the S23 over USB: push, spawn, open, hello, screen (245–300 ms, 59 KB).
+The `pid` field is added in source but **not yet run on the device** (rebuild first).
+`npm test` as a whole fails here with MODULE_NOT_FOUND in `src/computer/configuration.cjs`
+(no `node_modules` in this worktree; run `npm ci` first). Not caused by the phone code.
+
+Still to do: `scripts/build-phone-agent.cjs` (javac + d8 into `.runtime/phone/build/`, JBR
+not the PATH java 8), MCP server `trace-workbench phone mcp` (tools from step 3, on the
+controller), `skills/trace-phone/` + `SKILLS.md`, Wi-Fi bench, PR.
+
 ## Security (why the run was blocked, and the fix)
 
 Abstract sockets are reachable by **every app on the phone**, and the agent holds shell rights.
