@@ -12,6 +12,8 @@ Keep one implementation commit, one verification commit, and one documentation c
 
 ## Versions and releases
 
+The development candidate is `1.1.0`, covering additive selective observation modes, scoped observation cost reductions, numeric reporting and opt-in current-session capture retention. [Candidate notes](docs/RELEASE_1.1.0.md) preserve compatibility and evidence limits. This version bump is not integration or publication approval; final-source CI, exact archive and reviewed assets remain required.
+
 The published package is `1.0.0`. Its [release notes](docs/RELEASE_1.0.0.md), [publication receipt](evidence/release-1.0.0/publication.json) and [compatibility boundary](docs/COMPUTER_USE.md#v1-compatibility-boundary) define the V1 promise. Tag `v1.0.0` pins the tested release source; later documentation commits do not replace that archive or inherit its exact-byte gate. The older publication below remains historical evidence.
 
 ### Historical 0.1.0 publication
