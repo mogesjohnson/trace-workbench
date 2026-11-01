@@ -1,9 +1,16 @@
-# Native pointer foundation
+# Native pointer input
 
 The source-owned bridge has bounded internal click and wheel commands. This
-foundation does not yet add public MCP action fields or new live acceptance.
-The public wrapper still uses the existing pinned engine paths until the separate
-item 11/12 integrations are present. Existing default binaries need rebuilding
+foundation alone adds no public actions. Item 11 integration adds optional click
+`button: 'left' | 'right' | 'middle'` and `count: 1 | 2` for point/element targets.
+Omitted fields preserve the legacy single-left paths; count 2 is left-only. Other
+combinations reject before observation consumption. Right/middle/double require
+the native supervisor, without an unsupervised fallback. A single observation
+authorizes the entire sequence, not two separate actions. Element variants use
+the freshly revalidated element center inside the observed image crop.
+Discover connected schemas and optional `support.actions.click.variants`; older
+servers reject the fields, and adapters must not invent them for legacy servers.
+Public point/horizontal wheel remains a separate item 12 integration. Existing default binaries need rebuilding
 after helper source changes; source presence alone does not update installed tools.
 
 The new internal path uses exact physical screen coordinates, HWND/PID, foreground,
