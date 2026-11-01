@@ -68,6 +68,44 @@ geometry, modal, activation and target-hit guards remain; partial insertion or l
 receipts remain unknown, without automatic replay. New source/synthetic checks do not
 establish live menu, middle/double-click, two-pane wheel or interruption acceptance.
 
+### Scoped V4 live checkpoint — 31 October 2026
+
+An owner-approved corrected visible-fixture attempt tested cumulative source
+`c61da3aeaecb996857de983e32b0d1b9fe2ed83e`, including items 11/12. Node 26.2.0,
+Windows x64, verified winapp 0.7.1 and one 1920×1080 display at 144 DPI were used.
+Source/runtime hashes matched before/after; root reviewed initial pixels and retained
+before/after frames plus independently published app state.
+
+| Case | Independently checked result | Status |
+|---|---|---|
+| right-menu | Left-pane right count 0→1; actual context menu visible | pass |
+| middle | Left-pane middle count 0→1 | pass |
+| left-double | Double count 0→1; two native downs and ups | pass |
+| left-y-down | Left Y 500→620; other pane unchanged | pass |
+| right-y-up | Right Y 500→380; other pane unchanged | pass |
+| left-x-right / left-x-left | Left X 500→620→500; other pane unchanged | pass |
+| right-xy | Right X 500→620 and Y 380→500 | pass |
+| held-right / held-middle cancellation | Unknown delivery retained; owned child exit and declared release confirmed; independently all-up | pass |
+| distinct fresh right/middle followups | Right-pane selected count 0→1 for each, after cleanup and fresh observation | pass |
+
+Session close, native owner/marker/fixture exits, fixture exit 0, all-up input and clear
+recovery were confirmed. One preparatory fixture activation occurred. No compatible
+old workflow was repeated. Successful private receipt SHA-256:
+`8c2cfeaafe9993ef0cc9e90d93755da1db3371d54881cb19610980fa09d237e3`.
+
+The original and corrective preflights both stopped before session/input because the
+hidden fixture was absent from discovery; both remain blocked. Direct owner approval
+preceded the new visible-fixture attempt. Its private launcher adds a native-visibility
+gate; product code was unchanged between the blocked and successful runs.
+
+Scope limits: live click variants used points; element variants have synthetic routing
+checks. Menu visibility is app-state evidence: the retained root-window PNG omits the
+popup. The element-center contrast is a geometry inference, not an old-wheel rerun.
+Cancellation uses a private held-input replacement through production MCP/controller/
+supervision; this is not every failure cell or interrupted-double acceptance. The driver
+was explicitly interrupted after its saved receipt and confirmed native cleanup because
+terminal stdin stayed open; no natural driver exit is claimed. Publication remains separate.
+
 `trace_computer_doctor.support` declares version 1 of TRACE's wrapper contract for pinned winapp 0.7.1: action forms, limits, key syntax, coordinate origin and observation requirements. It describes intended support, not installed provider identity or successful target control. The diagnostic's existing engine/version and `readiness.native` report the actual backend check; `readiness.target.ready: null` means the target has not been checked.
 
 The method adapter separately reports configured transport/schema compatibility, native runtime readiness and unchecked target readiness. Missing providers retain an unavailable reason. An older server without a support descriptor remains usable under local conservative validation, with support explicitly unknown. Incomplete, contradictory or unsupported descriptors disable the adapter; compatible descriptors expose only the known local contract. This does not install browser, application or artifact providers. JSON Schema string lengths count Unicode code points, so field descriptions declare UTF-16 units and the MCP handler enforces the shared runtime limit before reaching the controller.
