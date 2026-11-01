@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "case": "V2 controlled observation timing",
+  "observedOn": "2026-10-31",
+  "sourceCommit": "593e309ed0c2eb05d555da9bcdca41d25750a01e",
+  "status": "completed",
+  "ownerAuthorization": "ready try, after bringing a normal non-admin window foreground",
+  "priorBlockedAttempts": "blocked-2026-10-31.json",
+  "privateReceipt": ".runtime/v2-profile-2026-10-30/measurement-1793497261633.json",
+  "privateReceiptSha256": "5777c8b7ac304160343eec4958fd8164ada4f931ae45252bc4b40061677eb248",
+  "privateHarnessSha256": "ec024ff560bbf5d6b7e21922dff802d9fec68c2030e4dd0571f579f1f5393d70",
+  "mode": "full",
+  "accessibilityDepth": 8,
+  "samples": { "first": 1, "later": 3 },
+  "inputActions": 0,
+  "preparatoryFixtureActivations": 1,
+  "runtime": { "node": "v26.2.0", "engine": "winapp", "engineVersion": "0.7.1", "integrity": "verified" },
+  "display": { "monitors": 1, "width": 1920, "height": 1080, "dpi": 144 },
+  "capture": { "width": 564, "height": 717, "elements": 48 },
+  "captureRetention": { "mode": "preserve", "keepLast": 0 },
+  "summaryUnits": "milliseconds; later arrays are minimum, median, maximum",
+  "first": {
+    "clientRoundTripMs": 2939.7205,
+    "observationMs": 2932.063,
+    "providerMs": 2924.785,
+    "backendMs": 2526.240,
+    "identityMs": 1235.618,
+    "uiaMs": 801.963,
+    "captureMs": 398.402,
+    "projectionMs": 0.319
+  },
+  "later": {
+    "clientRoundTripMs": [3061.3964, 3206.0319, 3457.7101],
+    "observationMs": [3056.778, 3202.184, 3453.375],
+    "providerMs": [3051.383, 3196.491, 3448.257],
+    "backendMs": [2659.077, 2850.688, 3030.359],
+    "identityMs": [1314.724, 1348.394, 1398.008],
+    "uiaMs": [818.138, 843.646, 919.659],
+    "captureMs": [299.743, 376.440, 683.931],
+    "projectionMs": [0.354, 0.357, 0.526]
+  },
+  "constantPerSample": {
+    "providerRequestAttempts": 13,
+    "supervisedRequestAttempts": 13,
+    "captureRequestAttempts": 1,
+    "backendPngReadBytes": 33,
+    "controllerPngReadBytes": 31444,
+    "imageBase64Bytes": 41928
+  },
+  "cleanup": {
+    "sessionConfirmed": true,
+    "processExitConfirmed": true,
+    "fixtureExited": true,
+    "recoveryAndLeaseClear": true,
+    "privateTemporaryFilesRemoved": true
+  },
+  "provenance": "Private receipt retains before/after source, native runtime and prepared-fixture hashes; dependency lock only, not all installed dependencies. Image association, fixed geometry/focus and all-up input were checked for each sample; no pixels retained.",
+  "limits": "Four diagnostic observations, no baseline or speedup/cold-warm proof. Inclusive stages overlap; never sum them. No isolated status/startup/transport/model timing. No attribution of earlier foreground interference.",
+  "scopeDecision": "Retain current independent controller/backend status and identity guards for 1.1.0. Aggregate provider cost does not isolate the savings or prove safe freshness for another receipt reuse; pursue any further consolidation separately."
+}

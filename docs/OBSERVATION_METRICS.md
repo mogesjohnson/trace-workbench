@@ -68,3 +68,11 @@ No native, input, geometry, recovery or retention behavior changes. The optimiza
 ## Internal selective capture (V2 development)
 
 The backend's internal `includeScreenshot:false` option omits screenshot capture, PNG reads and pixel-provenance fields, retaining initial/adjacent bounds identity checks, independent final identity, UIA, geometry, restore and focus checks. Full capture remains the default and uses the bounded header read above. Public selective modes and their evidence-only authority contract are a separate dependent change; this internal option alone does not expose them through MCP or permit image-free input.
+
+## Controlled diagnostic profile, 31 October 2026
+
+At source `593e309`, [four owned-fixture observations](../evidence/v2-observation-profile/completed-2026-10-31.json) completed at full depth 8 on one 1920×1080/144-DPI display. Caller first was 2939.721 ms; later minimum/median/maximum were 3061.396/3206.032/3457.710 ms. Each used 13 supervised provider attempts: the documented 11-request backend path plus the controller's current-window status and native identity pair. Each made one capture request, read 33 backend PNG bytes and 31444 controller PNG bytes. Effective retention was preserve/0. Cleanup was confirmed; no input actions were sent.
+
+The two earlier precondition stops remain [blocked evidence](../evidence/v2-observation-profile/blocked-2026-10-31.json). After explicit renewed owner readiness, one preparatory fixture activation established foreground for the completed run. No accepted desktop workflow was repeated.
+
+For 1.1.0, retain the remaining independent controller/backend status and identity checks. Provider time dominates this small sample, but inclusive aggregate spans do not isolate status or startup savings, nor prove a safe shared receipt lifetime. Additional consolidation needs a separate freshness design and targeted measurement. These four observations close the diagnostic selection gate; they are not comparative speedup, isolated helper-startup, cold/warm or model-latency evidence.

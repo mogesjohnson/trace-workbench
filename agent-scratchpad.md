@@ -1,5 +1,17 @@
 # Agent handoff
 
+## Latest: V2 timing completed; desktop released — 31 October 2026
+
+At unchanged source `593e309`, the owner authorized a new attempt after correcting foreground readiness. [Four controlled full depth-8 observations](evidence/v2-observation-profile/completed-2026-10-31.json) completed: caller first 2.940 seconds, later median 3.206 seconds (3.061–3.458). Each measured 13 supervised provider attempts, one capture and a 33-byte backend PNG read. The 11-request synthetic backend path excludes the controller's status/identity pair. Exact session/server/fixture exits, free lease/clear recovery and private temporary-file removal passed. No input actions or old acceptance reruns; one preparatory exact-fixture activation. Both earlier blocked receipts remain preserved below.
+
+Scope decision: retain current independent guards for 1.1.0. These four samples do not isolate status/startup savings or justify more freshness complexity; no baseline speedup or cold/warm claim. Next: prepare bounded versioned-source PRs, required final-source CI and exact archive/asset evidence; present concrete integration/publication approval. No new desktop slot is needed for this scope. Private source/runtime/fixture provenance remains retained.
+
+## Latest: V2 timing blocked; desktop released — 31 October 2026
+
+V2 source remains `593e309`; selective modes, request/I/O reductions, numeric reports and opt-in retention are integrated. The owner authorized the timing slot. [Blocked checkpoint](evidence/v2-observation-profile/blocked-2026-10-31.json) preserves initial `profile_target_not_foreground` and corrective `foreground_elevated` stops, both before observation or input. The corrective fixture activation was never dispatched. Both runs confirmed exact owned server/fixture exit, clear recovery/free lease and temporary-file removal. Desktop is released; no compatible acceptance was repeated and no third attempt ran.
+
+Next: establish a normal non-elevated foreground window and obtain explicit owner approval for a new bounded timing attempt. Preserve both private numeric/provenance receipts and the original/retry harnesses. Four samples, the remaining consolidation decision and final versioned release gates remain open. Do not infer which user/process caused the foreground condition. No version bump, PR, archive, tag or release was made.
+
 ## Latest: v1.0.0 published — 30 October 2026
 
 Owner approved publication of the verified draft. [v1.0.0](https://github.com/mogesjohnson/trace-workbench/releases/tag/v1.0.0) pins `d707ddb86069fd4f3c00c8a822898635120f9364`; [final CI](https://github.com/mogesjohnson/trace-workbench/actions/runs/41000652479) and exact archive installation/rollback passed. All five asset digests and public tag match the [publication receipt](evidence/release-1.0.0/publication.json). Companion manifests retain their prepublication snapshot. PRs 41–54 integrated all five V1 items; no compatible desktop acceptance was repeated. The owner then requested the next phase: V2 begins with selective observation modes; later V2 work covers provider-call consolidation and retention. Preserve full default/input guards, research-only snapshots and existing evidence; no desktop takeover is needed for initial contract work.
