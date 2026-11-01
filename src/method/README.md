@@ -56,6 +56,33 @@ Native `act()` now retains a validated `resultingObservation` only from a non-er
 
 The optional `postActionEvidence` token refers to a private process-local snapshot, action/request IDs and original source `observedAt`. Its age is conservatively bounded by adapter-local monotonic elapsed time since the act request began, not time since receipt or a subtraction across clock domains. Lifecycle changes invalidate it; copying/serializing its opaque marker cannot recreate a registered token. It is not an authentication boundary against arbitrary in-process code or a dishonest producer. Post-action frames never install the adapter's private input capture: another mutation requires normal fresh observation. Coordinator reuse is opt-in and described below when enabled.
 
+### Intended typing focus and operation freshness (item 10)
+
+Literal typing optionally accepts `{type: 'type_text', text, expectedFocusElementId}`.
+Use the ID of one enabled control bound to `focused` in the current full observation.
+Unavailable, unbound or different focus rejects before consuming the observation.
+The backend revalidates that control and checks actual focus again after activation,
+before sending text. This identifies the intended control; it does not prove that the
+application will accept edits. Omission preserves legacy typing/focus behavior.
+Keyboard navigation such as Tab remains a separate action; the optional field applies
+only to literal typing. Discover it in the connected act schema: older servers reject
+it, and callers must not silently remove an explicitly requested focus constraint.
+
+`ComputerMethod` accepts `operationPolicies: { 'type-report': {maxAgeMs: 1000} }`,
+keyed by step `checkId`. Effective dispatch age is the minimum of that policy,
+coordinator `ttlMs` (default 5000) and the provider's declared observation TTL.
+Omission keeps the coordinator limit; a larger policy never extends either bound.
+Age uses a local monotonic clock from before capture, including transport/capture
+time and asynchronous action validation. Nonfinite or backwards elapsed time rejects
+before consuming an attempt. Producer `observedAt` remains provenance in its own
+clock domain; it is not subtracted from this local clock or reset at receipt.
+
+Operation policies govern input admission, independently of `verificationPolicies`.
+Delayed/settled checks and final effect verification still capture freshly; immediate
+read-only reuse retains its own age, field and lifecycle gates and grants no input.
+These additions are covered by synthetic backend and in-memory MCP/coordinator checks.
+No new desktop acceptance, installed-skill update or native recovery change is claimed.
+
 ### Opt-in immediate step verification
 
 By default `verifyStep` and `verifyEffect` capture fresh evidence. A trusted integration can opt a particular **step checkId** into immediate, read-only verification:
@@ -74,7 +101,7 @@ Known `requiredFields` are `images`, `elements`, `accessibility`, `focus` and `t
 
 Only a clean delivered native action's registered token can supply cached evidence. The coordinator binds it to the exact provider object, target/process/owner, input observation, attempt and epoch. Its monotonic age must stay within the minimum of the declared limit, coordinator TTL and reported native TTL, both before and after awaiting the verifier. Lifecycle changes or checkpointing discard candidates; checkpoints contain no token or pixels. Tokens are one-use, in-memory handles, not input-authorizing observations.
 
-The callback and `verifyStep` result report `evidenceSource: 'post-action'` or `'fresh-observation'`. Cached `after` retains producer time as `sourceCapturedAt` and `evidence.state.observedAt`, with `consumed: true`. It deliberately has no fresh local `capturedAt`: existing checks relying on that local receipt-time field must remain on the default fresh path or adapt before opting in. Do not compare producer wall time to local monotonic time or reset age at receipt.
+The callback and `verifyStep` result report `evidenceSource: 'post-action'` or `'fresh-observation'`. Cached `after` retains producer time as `sourceCapturedAt` and `evidence.state.observedAt`, with `consumed: true`. It deliberately has no fresh local `capturedAt`: existing checks relying on that local capture-start field must remain on the default fresh path or adapt before opting in. Do not compare producer wall time to local monotonic time or reset age at receipt.
 
 Opted-in callbacks must be pure/read-only and safe to evaluate again. Only a still-eligible `confirmed` verdict can finish from the cached frame. Cached absence, unknown, exception or expiry forces a fresh capture and another independent check; cached absence alone never grants a retry. If reconciliation fails, the uncertain step stays unresolved. The snapshot proves its observed condition, not eventual completion of a delayed action. `verifyEffect` always captures freshly, and all subsequent input still needs normal fresh discovery/observation. Synthetic integration tests demonstrate one fewer capture for eligible confirmation; no wall-clock speedup or broader live acceptance is claimed.
 
