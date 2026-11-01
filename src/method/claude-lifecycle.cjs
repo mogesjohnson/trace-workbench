@@ -19,7 +19,7 @@ function createClaudeLifecycle({ controller, scope, timeoutMs = 1000, settleClip
     completion = new Promise(done => { resolve = done; });
     const unknown = Object.freeze({ matched: true, cleanup: 'unknown', inputRecoveryRequired: true });
     // Publish completion before abort listeners can reenter this lifecycle.
-    abort.abort(error('host_stopped'));
+    abort.abort(Object.assign(new Error('Host stopped'), { code: 'host_stopped' }));
     const finish = value => { if (!receipt) { receipt = value; clearTimeout(timer); resolve(value); } };
     const timer = setTimeout(() => finish(unknown), timeoutMs);
     Promise.resolve().then(async () => {
@@ -40,7 +40,7 @@ function createClaudeLifecycle({ controller, scope, timeoutMs = 1000, settleClip
     const options = args[index] || {};
     args[index] = { ...options, signal: options.signal ? AbortSignal.any([options.signal, abort.signal]) : abort.signal };
     const work = Promise.resolve().then(() => {
-      abort.signal.throwIfAborted();
+      if (abort.signal.aborted) throw error('host_stopped');
       return controller[method](...args);
     });
     pending.add(work);
