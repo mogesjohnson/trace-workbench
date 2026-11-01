@@ -420,8 +420,38 @@ class WinappBackend {
     }
     fail('window_moved', 'The restored window did not settle; observe again.');
   }
-  async observe({ window, screenshotPath, signal, depth = 8, includeScreenshot = true }) {
+  async readDocument(window, signal, elements, elementId) {
+    const candidates = elements.filter(element => element.id === elementId);
+    if (candidates.length !== 1) fail(candidates.length ? 'ambiguous_element' : 'stale_element', 'Document target must be a unique currently observed control.');
+    const element = candidates[0], rect = element.bounds;
+    const unavailable = reason => ({ available: false, reason });
+    if (typeof element.automationId !== 'string' || !element.automationId || element.automationId.length > 512
+      || typeof element.className !== 'string' || element.className.length > 512 || !/^[A-Za-z]{1,64}$/.test(element.controlType)
+      || !rect || !['x', 'y', 'width', 'height'].every(key => Number.isFinite(rect[key])) || rect.width <= 0 || rect.height <= 0)
+      return { elementId, document: unavailable('binding_unavailable'), selection: unavailable('binding_unavailable') };
+    const result = await this.bridge('document', window, signal,
+      [element.automationId, element.controlType, element.className, ...['x', 'y', 'width', 'height'].map(key => String(rect[key]))]);
+    const invalid = () => fail('invalid_native_response', 'Invalid bounded TextPattern response.');
+    const text = (value, limit) => {
+      if (!object(value) || typeof value.text !== 'string' || value.text.length > limit || typeof value.truncated !== 'boolean') invalid();
+      return { text: value.text, truncated: value.truncated };
+    };
+    const read = (value, selection) => {
+      if (!object(value) || typeof value.available !== 'boolean') invalid();
+      if (!value.available) {
+        if (!['password_or_unknown', 'text_pattern_unavailable', 'selection_unavailable'].includes(value.reason)) invalid();
+        return unavailable(value.reason);
+      }
+      if (!selection) return { available: true, ...text(value, 4096) };
+      if (!Array.isArray(value.ranges) || value.ranges.length > 4 || typeof value.truncated !== 'boolean') invalid();
+      return { available: true, ranges: value.ranges.map(range => text(range, 1024)), truncated: value.truncated };
+    };
+    if (result.method !== 'managed-uia-textpattern') invalid();
+    return { elementId, provenance: result.method, document: read(result.document, false), selection: read(result.selection, true) };
+  }
+  async observe({ window, screenshotPath, signal, depth = 8, includeScreenshot = true, documentElementId }) {
     if (typeof includeScreenshot !== 'boolean') fail('invalid_observation', 'includeScreenshot must be a boolean.');
+    if (documentElementId !== undefined && (includeScreenshot || selector(documentElementId) !== documentElementId)) fail('invalid_document_request', 'Document reads require accessibility-only observation.');
     if (includeScreenshot && (typeof screenshotPath !== 'string' || !path.isAbsolute(screenshotPath) || path.extname(screenshotPath).toLowerCase() !== '.png')) fail('invalid_screenshot_path', 'An absolute PNG output path is required.');
     if (!includeScreenshot && screenshotPath !== undefined) fail('invalid_screenshot_path', 'A screenshot path is not allowed when capture is omitted.');
     let initialBounds;
@@ -458,6 +488,8 @@ class WinappBackend {
       if (size.width !== screenshot.width || size.height !== screenshot.height) fail('invalid_screenshot', 'PNG dimensions disagree with native capture metadata.');
       if (size.width !== captured.width || size.height !== captured.height) fail('coordinate_space', 'PNG dimensions do not match exact DWM capture bounds. No scaling is assumed.');
     }
+    const documentRead = documentElementId === undefined ? undefined
+      : await measure('document', () => this.readDocument(window, signal, state.elements, documentElementId));
     const current = await measure('identity', () => this.identity(window, signal));
     const after = await measure('uia', () => this.inspect(window, signal, 1));
     const afterGeometry = await measure('geometry', () => this.bridge('bounds', window, signal));
@@ -466,7 +498,7 @@ class WinappBackend {
     try { focused = await measure('focus', () => this.focused(window, signal, state.elements)); }
     catch (error) { if (signal?.aborted) throw error; focused = { available: false, code: error.code || 'focus_query_failed' }; }
     if (window.processCreationTime !== undefined && afterGeometry.processCreationTime !== window.processCreationTime) fail('window_identity_changed', 'The selected process was replaced.');
-    return { ...state, window: { ...current, bounds: captured }, bounds: captured, uiaBounds: state.bounds, nativeWindowBounds: bounds(geometry.windowBounds), frameBounds: bounds(geometry.frameBounds), focused,
+    return { ...state, ...(documentRead ? { documentRead } : {}), window: { ...current, bounds: captured }, bounds: captured, uiaBounds: state.bounds, nativeWindowBounds: bounds(geometry.windowBounds), frameBounds: bounds(geometry.frameBounds), focused,
       targetState: { enabled: afterGeometry.enabled, minimized: afterGeometry.minimized, foreground: afterGeometry.foreground, ownerWindowId: afterGeometry.ownerWindowId ?? null, provenance: 'public-win32-dwm' },
       restoredFromMinimized: restored, ...(includeScreenshot ? { captureMethod: 'window-capture-dwm-bounds', actionCoordinateSpace: 'window-local-pixels', screenshot: { path: screenshotPath, mimeType: 'image/png', ...size } } : {}) };
   }
