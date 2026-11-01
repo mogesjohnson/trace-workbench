@@ -130,6 +130,12 @@ public final class Main {
         return Ui.find(r, h);
       case "node":
         return Ui.act(r, h);
+      case "release":
+        // Android allows one UiAutomation connection at a time; while this agent
+        // holds it, `uiautomator dump` fails. release frees it; the next ui/find/node
+        // reconnects.
+        h.put("released", Ui.release());
+        return new byte[0];
       default:
         throw new IllegalArgumentException("unknown op " + op);
     }
@@ -226,13 +232,17 @@ public final class Main {
     long timeout = r.optLong("timeoutMs", 5000);
     long stableFor = r.optLong("stableMs", 300);
     int ignoreTop = r.optInt("ignoreTop", statusBarHeight());
+    if (!"change".equals(mode) && !"stable".equals(mode)) throw new IllegalArgumentException("unknown until " + mode);
     String from = r.optString("from", "");
     long deadline = SystemClock.uptimeMillis() + timeout;
     Frame f = capture(ignoreTop);
     int frames = 1;
     long since = SystemClock.uptimeMillis();
     boolean met = false;
-    boolean changed = !from.isEmpty() && !Long.toHexString(f.crc).equals(from);
+    // Without "from", the first frame captured here is the baseline, so
+    // until:"change" waits for the screen to differ from how it is now.
+    String baseline = from.isEmpty() ? Long.toHexString(f.crc) : from;
+    boolean changed = !Long.toHexString(f.crc).equals(baseline);
     while (true) {
       if ("change".equals(mode) && changed) { met = true; break; }
       if ("stable".equals(mode) && SystemClock.uptimeMillis() - since >= stableFor
@@ -241,7 +251,7 @@ public final class Main {
       Frame next = capture(ignoreTop);
       frames++;
       if (next.crc != f.crc) since = SystemClock.uptimeMillis();
-      if (!from.isEmpty() && !Long.toHexString(next.crc).equals(from)) changed = true;
+      if (!Long.toHexString(next.crc).equals(baseline)) changed = true;
       f = next;
     }
     h.put("met", met);

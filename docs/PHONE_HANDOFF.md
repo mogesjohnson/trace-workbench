@@ -67,6 +67,36 @@ Features in the source:
   constructor is found by reflection (`Looper` or `Context` + `IUiAutomationConnection`) and
   may need `Looper.prepareMainLooper()` on SDK 37. TODO(verify).
 
+## Hardened agent run (session 2, 1 Nov 2026, USB, owner-approved)
+
+Review fixes: `wait until:"change"` without `from` now uses the first frame as the baseline;
+`bench.cjs` writes to `.runtime/phone/` (Git-ignored); new `release` op drops the UiAutomation
+connection. **While the agent holds UiAutomation, `uiautomator dump` fails** (one connection per
+device); after `release` it worked (checked). The next `ui`/`find`/`node` reconnects.
+
+UiAutomation works on SDK 37 through the `(int displayId, Looper, IUiAutomationConnection)`
+constructor; `ActivityThread.systemMain()` is gone (a `(Context, …)` fallback uses a
+looper-only `ContextWrapper`). The first read after connect returned 36 of 69 nodes (flags apply
+asynchronously; `clearCache` made it worse), so connect now warms up until two traversals visit
+the same number of nodes.
+
+| Operation (settled screen) | Time (host round trip) | Payload |
+| --- | --- | --- |
+| `screen` JPEG q75 1280 | 195–217 ms | 56 KB |
+| `screen` unchanged (`ifChangedFrom`) | 143 ms | 0 B |
+| `screen` JPEG q60 960 / WebP q70 1280 | 202 / 265 ms | 32 / 29 KB |
+| `wait stable 300 ms` | 538 ms (3 frames) | 0 B |
+| `ui` first call (connect + warm-up) | 1470–1483 ms | 13 KB, 92 nodes |
+| `ui` warm | 32–45 ms | 13 KB |
+| `find text=…` warm | 18–40 ms | 0.1 KB |
+| `release` | 13–36 ms | — |
+| `key` 0 | 35–63 ms | — |
+
+An animating page (Samsung battery-protection illustration) changed the hash on every frame, so
+`wait stable` timed out there; on settled screens it met in 3 frames. TODO: a host-side
+`ignoreRegion` or a changed-rectangle in replies would let callers mask such animations.
+Agent stopped, dex/log and forward removed after the run (checked).
+
 ## Security (why the run was blocked, and the fix)
 
 Abstract sockets are reachable by **every app on the phone**, and the agent holds shell rights.

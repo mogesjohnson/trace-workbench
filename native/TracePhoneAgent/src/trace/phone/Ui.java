@@ -22,6 +22,7 @@ import org.json.JSONObject;
 final class Ui {
   private static UiAutomation automation;
   private static HandlerThread thread;
+  static String constructor;
 
   static synchronized UiAutomation automation() throws Exception {
     if (automation != null) return automation;
@@ -30,26 +31,39 @@ final class Ui {
     Class<?> connectionType = Class.forName("android.app.UiAutomationConnection");
     Object connection = connectionType.getDeclaredConstructor().newInstance();
     Class<?> iface = Class.forName("android.app.IUiAutomationConnection");
+    final Looper looper = thread.getLooper();
     UiAutomation created = null;
+    String used = null;
+    // Constructor shapes differ by release. None of them needs a real app
+    // context, so ActivityThread.systemMain() (which boots system-server state
+    // inside this process) is never called.
     for (Constructor<?> c : UiAutomation.class.getDeclaredConstructors()) {
       Class<?>[] p = c.getParameterTypes();
+      Object[] args = null;
       if (p.length == 2 && p[0] == Looper.class && p[1] == iface) {
-        c.setAccessible(true);
-        created = (UiAutomation) c.newInstance(thread.getLooper(), connection);
-        break;
+        args = new Object[] {looper, connection};
+      } else if (p.length == 3 && p[0] == int.class && p[1] == Looper.class && p[2] == iface) {
+        args = new Object[] {0, looper, connection};
       }
+      if (args == null) continue;
+      c.setAccessible(true);
+      created = (UiAutomation) c.newInstance(args);
+      used = java.util.Arrays.toString(p);
+      break;
     }
     if (created == null) {
       for (Constructor<?> c : UiAutomation.class.getDeclaredConstructors()) {
         Class<?>[] p = c.getParameterTypes();
         if (p.length == 2 && p[0] == android.content.Context.class && p[1] == iface) {
           c.setAccessible(true);
-          created = (UiAutomation) c.newInstance(systemContext(), connection);
+          created = (UiAutomation) c.newInstance(new LooperContext(looper), connection);
+          used = java.util.Arrays.toString(p);
           break;
         }
       }
     }
     if (created == null) throw new IllegalStateException("no usable UiAutomation constructor");
+    constructor = used;
     // FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES keeps the owner's own services running.
     UiAutomation.class.getMethod("connect", int.class).invoke(created, UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES);
     android.accessibilityservice.AccessibilityServiceInfo info = created.getServiceInfo();
@@ -58,15 +72,39 @@ final class Ui {
           | android.accessibilityservice.AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS
           | android.accessibilityservice.AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS;
       created.setServiceInfo(info);
+      // The flags apply asynchronously: the first read after connect saw 36 of
+      // 69 nodes on the S23. Warm up until two traversals visit the same number
+      // of nodes (once per connection).
+      long deadline = android.os.SystemClock.uptimeMillis() + 1500;
+      int previous = -1;
+      while (android.os.SystemClock.uptimeMillis() < deadline) {
+        int visited = 0;
+        for (AccessibilityNodeInfo root : roots(created)) visited += count(root, 0);
+        if (visited > 0 && visited == previous) break;
+        previous = visited;
+        android.os.SystemClock.sleep(50);
+      }
     }
     automation = created;
     return created;
   }
 
-  static Object systemContext() throws Exception {
-    Class<?> thread = Class.forName("android.app.ActivityThread");
-    Object current = thread.getMethod("systemMain").invoke(null);
-    return thread.getMethod("getSystemContext").invoke(current);
+  /** UiAutomation(Context, ...) reads only the main looper and display id. */
+  static final class LooperContext extends android.content.ContextWrapper {
+    private final Looper looper;
+    LooperContext(Looper looper) { super(null); this.looper = looper; }
+    @Override public Looper getMainLooper() { return looper; }
+    // Hidden in the SDK stubs, so no @Override; it still overrides at runtime.
+    public int getDisplayId() { return 0; }
+  }
+
+  /** Drop the connection so other UiAutomation clients (uiautomator dump) work again. */
+  static synchronized boolean release() {
+    if (automation == null) return false;
+    try { UiAutomation.class.getMethod("disconnect").invoke(automation); } catch (Throwable ignored) { }
+    automation = null;
+    if (thread != null) { thread.quitSafely(); thread = null; }
+    return true;
   }
 
   static List<AccessibilityNodeInfo> roots(UiAutomation ui) {
@@ -98,6 +136,7 @@ final class Ui {
     h.put("count", nodes.length());
     h.put("visited", counter[0]);
     h.put("package", activePackage(ui));
+    h.put("constructor", constructor);
     return nodes.toString().getBytes(StandardCharsets.UTF_8);
   }
 
@@ -112,6 +151,13 @@ final class Ui {
     if (!node.isVisibleToUser() && !all) return;
     if (all || interesting(node)) out.put(describe(node, depth));
     for (int i = 0; i < node.getChildCount(); i++) walk(node.getChild(i), depth + 1, all, out, counter, max);
+  }
+
+  static int count(AccessibilityNodeInfo node, int depth) {
+    if (node == null || depth > 64) return 0;
+    int total = 1;
+    for (int i = 0; i < node.getChildCount(); i++) total += count(node.getChild(i), depth + 1);
+    return total;
   }
 
   static boolean interesting(AccessibilityNodeInfo n) {
