@@ -27,6 +27,8 @@ Discover optional `support.actions.accessibility_action`. Legacy descriptors rem
 compatible and never gain invented support in the method adapter. Unknown schemas,
 extra fields and unobserved actions reject. A toggle can cycle a three-state control;
 inspect the new state rather than assuming a boolean result.
+If its state changed since capture, toggle rejects before dispatch rather than
+reversing an externally changed value.
 
 Selection and ScrollItem are not inferred from generic invocation hints. Directional
 UIA scrolling is intentionally absent: the pinned ScrollContainer implementation

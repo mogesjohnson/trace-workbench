@@ -53,6 +53,9 @@ test('changed patterns, duplicate IDs, changed binding, disabled controls and bl
   await assert.rejects(f.backend.act({window,observation:snapshot,action:action('expand')}),e=>e.details.outcome==='unknown');
   assert.throws(()=>validateAction(action('collapse'),snapshot),{code:'unsupported_action'});
   assert.throws(()=>validateAction(action('expand'),{elements:[snapshot.elements[1],snapshot.elements[1]]}),{code:'unsupported_action'});
+  const changed=fixture();Object.assign(changed.state.control,{expandState:null,toggleState:'off'});const old=await changed.snapshot();changed.state.control.toggleState='on';
+  await assert.rejects(changed.backend.act({window,observation:old,action:action('toggle')}),{code:'stale_element'});
+  assert.equal(changed.calls.some(c=>c.args[1]==='invoke'||c.args[0]==='activate'),false);
 });
 test('MCP strict schema and shared parser admit only the bounded named actions; legacy support stays truthful',async t=>{
   const received=[],controller=Object.fromEntries(['doctor','listWindows','openSession','observe','closeSession','close'].map(n=>[n,async()=>({})]));

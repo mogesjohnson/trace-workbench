@@ -628,6 +628,7 @@ class WinappBackend {
         if (old.length !== 1 || current.length !== 1 || !Array.isArray(old[0].secondaryActions) || !old[0].secondaryActions.includes(action.action)
           || !Array.isArray(current[0].secondaryActions) || !current[0].secondaryActions.includes(action.action) || old[0].automationId !== current[0].automationId
           || old[0].className !== current[0].className) fail('stale_element', 'Named action or exact control binding changed. Observe again.');
+        if (action.action === 'toggle' && old[0].toggleState !== current[0].toggleState) fail('stale_element', 'Toggle state changed since observation. Observe again.');
         positional = [choose(action.elementId)]; transport = 'exact-uia-pattern';
         verb = 'invoke'; options = ['--action', action.action];
         break;
