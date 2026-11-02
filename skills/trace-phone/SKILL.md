@@ -9,7 +9,7 @@ TRACE Phone drives one Android phone through `trace-workbench phone mcp`. A smal
 
 ## Before the first call
 
-1. **Consent.** The agent injects input and reads the screen while it runs. Start it only on a phone the user owns and has approved for this session. `phone_connect` starts it; confirm the approval before that call.
+1. **Consent.** The agent injects input and reads the screen while it runs. Start it only on a phone the user owns and has approved for this session. On the owner's S23, follow `docs/PHONE_AUTONOMY_POLICY.md` in the TRACE repo: starting and stopping the agent, observing, the `home` and `back` keys and opening an app the task names need no further OK; typing, taps in messaging, email, banking, shopping or settings apps, installs and removals, and anything that sends data off the phone need the owner's OK first; payments, passwords and 2FA codes, deleting user data and changing security settings are never done. If unsure, ask. On any other phone, confirm the approval before `phone_connect`.
 2. **Build.** `node scripts/build-phone-agent.cjs` compiles the agent into `.runtime/phone/build/classes.dex` (needs a JDK 11+, Android Studio's JBR by default, and an Android SDK; `--print-config` shows what it found). The dex stays out of Git.
 3. **Link.** USB debugging, or Wireless debugging on the phone: pass its `address` (ip:port) and, the first time, `pairAddress` and the six-digit `pairCode` from the pairing dialog.
 
