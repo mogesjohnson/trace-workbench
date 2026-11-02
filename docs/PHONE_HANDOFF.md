@@ -330,3 +330,28 @@ Findings:
 - A port scan from the PC (500 probes in parallel, 800 ms timeout) missed port 42809, which a single
   probe found open. Over Wi-Fi, use mDNS or a slower scan. eduroam showed no `_adb-tls` mDNS
   services to the PC.
+
+## Task A5 headless Remote Control (2 November 2026, device run, owner-approved)
+
+Phone Claude 2.1.316 runs `claude remote-control --name s23-trace` in `/root/phone-work`, started
+from Termux with `nohup` and a wake lock, as the proot login's own command. **Result: pass.**
+
+- Remote Control refuses an untrusted folder ("Workspace not trusted"). The installer now creates
+  `/root/phone-work` and sets `hasTrustDialogAccepted` for it in `~/.claude.json`.
+- The phone was signed into a different claude.ai account than the PC. The owner ran
+  `claude auth login` in Debian; after that the PC's claude.ai/code showed the `s23-trace` environment.
+- Run (13:23-13:26 EST, screen off and dozing throughout): the owner sent a task from claude.ai/code
+  on the PC. The phone session ran `node --test tests/phone-boot-adb.test.cjs` (2 pass, 0 fail) and
+  its `Write` of `~/phone-work/a5-result.txt` waited 2 min 2 s for a permission prompt that the owner
+  approved from the PC. The transcript shows both tool results `ok`.
+- The Termux:Boot script now starts Remote Control after `phone-boot-adb.cjs`, in a login that
+  first runs `adb start-server` and `adb connect 127.0.0.1:5555` (A3: no adb server, no tools).
+  Log: `~/.trace-rc.log` in Termux.
+- Install and reboot test (13:43-13:48 EST, S23 on USB, eduroam): `install-phone-claude.cjs --ref
+  efc2588` ended `TRACE-INSTALL-END 0` with the trust entry in place. After `adb reboot` and an
+  unlock, Termux:Boot reopened 5555 at 13:47:33, then started `claude remote-control --name
+  s23-trace`, and `~/.trace-rc.log` showed `Connected · phone-work`. **Result: pass**, no hand
+  steps besides the unlock. Remote Control starts only after `phone-boot-adb.cjs` ends (about
+  50 s after unlock), because the boot script runs them in sequence.
+- Not covered: push notifications for ask-tier actions (Remote Control shows the prompt in
+  claude.ai/code and the Claude app; whether the app notifies is TODO(verify)).
