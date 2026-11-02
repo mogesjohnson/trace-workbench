@@ -104,7 +104,7 @@ test('MCP plus real controller drains cancellation and retains independent actio
     const backend = {
       doctor: async () => ({ ready: true }), listWindows: async () => [window],
       observe: async ({ screenshotPath }) => {
-        await fs.writeFile(screenshotPath, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==', 'base64'));
+        if (screenshotPath) await fs.writeFile(screenshotPath, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==', 'base64'));
         return { window, bounds: { x: 0, y: 0, width: 1, height: 1 }, elements: [], screenshot: { path: screenshotPath } };
       },
       act: async ({ signal }) => {

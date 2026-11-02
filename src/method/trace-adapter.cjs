@@ -4,6 +4,7 @@ const { validateAction: validateNativeAction, safeError } = require('../computer
 const { actionSupport, compatibleSupport } = require('../computer/action-contract.cjs');
 const { validateObservationImages, windowIdentity: identity } = require('./observation-images.cjs');
 const { createPostActionEvidence } = require('./post-action-evidence.cjs');
+const { advertisesFullReturn } = require('../computer/act-compat.cjs');
 const { performance } = require('node:perf_hooks');
 const TOOL_NAMES = ['doctor', 'list_windows', 'open_session', 'observe', 'act', 'close_session'].map(s => `trace_computer_${s}`);
 function state(result) {
@@ -19,7 +20,7 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
     || !Number.isInteger(accessibilityDepth) || accessibilityDepth < 1 || accessibilityDepth > 32 || typeof monotonicClock !== 'function') {
     fail('adapter-config', 'Bind a transport, exact environment/app/window and depth 1-32.');
   }
-  let sessionId = null, capture = null, binding = null, supportsDepth = false;
+  let sessionId = null, capture = null, binding = null, supportsDepth = false, fullReturn = false;
   let boundWindow = null;
   const seenObservations = new Set();
   let closeFailure = null;
@@ -75,6 +76,8 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
           return diagnostics(false, 'depth-unsupported', 'The live observation schema does not advertise requested depth.');
         }
         const result = await call(0, {}), value = state(result), support = value.support ?? unknownSupport();
+        // 2.x defaults act to a compact summary; post-action evidence needs the full observation.
+        fullReturn = advertisesFullReturn(value);
         if (value.support != null && !compatibleSupport(support)) {
           return diagnostics(false, 'support-unsupported', 'The live server declares an unsupported native action contract.', unknownSupport(), { native: value.ready === true });
         }
@@ -153,7 +156,7 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
       let startedAt;
       try { startedAt = monotonicClock(); } catch { startedAt = NaN; }
       let result;
-      try { result = await call(4, { sessionId, observationId, action: payload }); }
+      try { result = await call(4, { sessionId, observationId, action: payload, ...(fullReturn ? { returnObservation: 'full' } : {}) }); }
       catch { return { delivery: 'unknown' }; }
       const value = state(result), recovery = value.error?.recovery;
       const cleanupRequired = value.error?.inputRecoveryRequired === true || value.error?.code === 'input_recovery_required'

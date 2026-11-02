@@ -64,7 +64,7 @@ async function realControllerConnection(t) {
   let clock = 0, dispatches = 0;
   const backend = {
     doctor: async () => ({ ready: true }), listWindows: async () => [{ ...window }],
-    observe: async ({ screenshotPath }) => { await fs.writeFile(screenshotPath, Buffer.from(PNG, "base64")); return { window: { ...window }, bounds: { x: 0, y: 0, width: 1, height: 1 }, elements: [], screenshot: { path: screenshotPath } }; },
+    observe: async ({ screenshotPath }) => { if (screenshotPath) await fs.writeFile(screenshotPath, Buffer.from(PNG, "base64")); return { window: { ...window }, bounds: { x: 0, y: 0, width: 1, height: 1 }, elements: [], screenshot: { path: screenshotPath } }; },
     act: async () => { dispatches++; return { performed: true }; },
   };
   const controller = createComputerController({ backend, runtimeDirectory: directory, now: () => clock, observationTtlMs: 60000,

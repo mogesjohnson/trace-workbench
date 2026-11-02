@@ -9,6 +9,7 @@ const { ActivityIndicator } = require('./activity-indicator.cjs');
 const { validateAction, actionSupport } = require('./action-contract.cjs');
 const { createObservationMetrics, measure, count } = require('./observation-metrics.cjs');
 const { parseCaptureKeepLast, createCaptureRetention } = require('./capture-retention.cjs');
+const { downscalePng, DEFAULT_MAX_EDGE } = require('./png-scale.cjs');
 
 const fail = (code, message) => Object.assign(new Error(message), { code });
 const identityMatches = (a, b) => a && b && a.id === b.id && a.pid === b.pid && a.processName === b.processName
@@ -56,6 +57,51 @@ function validateDepth(depth) {
 function validateObservationMode(mode = 'full') {
   if (!['full', 'accessibility', 'screenshot'].includes(mode)) throw fail('invalid_observation_mode', 'mode must be full, accessibility or screenshot.');
   return mode;
+}
+const SCREENSHOT_MODES = ['none', 'scaled', 'full'];
+// Pixels are evidence, not authority: dispatch guards use UIA bounds and DWM geometry, so a
+// full observation without a PNG still authorizes one action.
+function validateScreenshot(screenshot, mode) {
+  const fallback = mode === 'accessibility' ? 'none' : 'full';
+  if (screenshot === undefined) return fallback;
+  if (!SCREENSHOT_MODES.includes(screenshot)) throw fail('invalid_observation', 'screenshot must be none, scaled or full.');
+  if (mode === 'accessibility' && screenshot !== 'none') throw fail('invalid_observation', 'Accessibility mode has no screenshot.');
+  if (mode === 'screenshot' && screenshot === 'none') throw fail('invalid_observation', 'Screenshot mode requires an image.');
+  return screenshot;
+}
+const RETURN_OBSERVATIONS = ['full', 'summary', 'none'];
+const DIFF_LIMIT = 15;
+const short = value => { const text = String(value ?? ''); return text.length > 80 ? `${text.slice(0, 79)}…` : text; };
+const sameRect = (a, b) => (!a && !b) || (a && b && ['x', 'y', 'width', 'height'].every(key => a[key] === b[key]));
+function compactFocus(focused) {
+  if (!focused || focused.available === false || !focused.hasFocus) return focused ? { available: focused.available !== false, hasFocus: false, ...(focused.code ? { code: focused.code } : {}) } : { available: false };
+  return { hasFocus: true, elementId: focused.elementId ?? null, name: short(focused.name), controlType: focused.controlType, ...(focused.binding ? { binding: focused.binding } : {}) };
+}
+// A bounded element diff between the consumed observation and the fresh one, keyed by element ID.
+function elementDiff(before = [], after = []) {
+  const old = new Map(), now = new Map();
+  for (const item of before) if (!old.has(item.id)) old.set(item.id, item);
+  for (const item of after) if (!now.has(item.id)) now.set(item.id, item);
+  const added = [], removed = [], changed = [];
+  for (const [id, item] of now) {
+    const prior = old.get(id);
+    if (!prior) { added.push({ id, name: short(item.name), controlType: item.controlType }); continue; }
+    const fields = ['name', 'enabled', 'offscreen', 'toggleState', 'expandState'].filter(key => prior[key] !== item[key]);
+    if (!sameRect(prior.bounds, item.bounds)) fields.push('bounds');
+    if (fields.length) changed.push({ id, fields, ...(fields.includes('name') ? { name: short(item.name) } : {}),
+      ...(fields.includes('toggleState') ? { toggleState: item.toggleState } : {}), ...(fields.includes('expandState') ? { expandState: item.expandState } : {}) });
+  }
+  for (const id of old.keys()) if (!now.has(id)) removed.push(id);
+  const truncated = added.length > DIFF_LIMIT || removed.length > DIFF_LIMIT || changed.length > DIFF_LIMIT;
+  return { counts: { added: added.length, removed: removed.length, changed: changed.length },
+    ...(added.length ? { added: added.slice(0, DIFF_LIMIT) } : {}), ...(removed.length ? { removed: removed.slice(0, DIFF_LIMIT) } : {}),
+    ...(changed.length ? { changed: changed.slice(0, DIFF_LIMIT) } : {}), ...(truncated ? { truncated: true } : {}) };
+}
+function actSummary(before, fresh) {
+  const titleChanged = before.window?.title !== fresh.window?.title;
+  return { elementCount: fresh.elements?.length ?? 0, focused: compactFocus(fresh.focused),
+    ...(titleChanged ? { titleChanged: true, title: short(fresh.window?.title) } : {}),
+    targetState: fresh.targetState, changes: elementDiff(before.elements, fresh.elements) };
 }
 
 function createComputerController(options = {}) {
@@ -127,38 +173,41 @@ function createComputerController(options = {}) {
     // No typed text, values, screenshots, or full window inventory in the journal.
     await fs.appendFile(path.join(session.directory, 'events.jsonl'), `${JSON.stringify({ at: new Date(now()).toISOString(), sessionId: session.id, ...event })}\n`);
   }
-  async function observeInternal(session, signal, depth = DEFAULT_DEPTH, mode = 'full', documentElementId, includeOffscreen = false) {
+  async function observeInternal(session, signal, { depth = DEFAULT_DEPTH, mode = 'full', documentElementId, includeOffscreen = false, screenshot = mode === 'accessibility' ? 'none' : 'full', screenshotPreference = screenshot } = {}) {
     // A valid selective read revokes input authority even if readiness/capture fails.
     if (mode !== 'full') session.observation = null;
     const metrics = createObservationMetrics({ clock: options.metricsClock,
       sample: observedBefore ? 'later-controller-attempt' : 'first-controller-attempt' });
     observedBefore = true;
     return metrics.run(async () => {
-      const result = await measure('observation', () => observeMeasured(session, signal, depth, mode, documentElementId, includeOffscreen));
+      const result = await measure('observation', () => observeMeasured(session, signal, depth, mode, documentElementId, includeOffscreen, screenshot, screenshotPreference));
       result.metrics = metrics.snapshot();
       return result;
     });
   }
-  async function observeMeasured(session, signal, depth, mode, documentElementId, includeOffscreen) {
+  async function observeMeasured(session, signal, depth, mode, documentElementId, includeOffscreen, screenshotMode, screenshotPreference) {
     signal = markedSignal(signal);
     await lease.assert(session.id);
     await measure('identity', () => currentWindow(session, signal, mode === 'screenshot'));
     session.observation = null;
     const observationId = randomUUID();
-    const screenshotPath = mode === 'accessibility' ? undefined : path.join(session.directory, `${observationId}.png`);
+    const capture = screenshotMode !== 'none';
+    const screenshotPath = capture ? path.join(session.directory, `${observationId}.png`) : undefined;
     const snapshot = await measure('backend', () => backend.observe({ window: session.window, screenshotPath, signal, depth,
-      ...(mode === 'accessibility' ? { includeScreenshot: false } : {}),
+      ...(!capture ? { includeScreenshot: false } : {}),
       ...(mode === 'screenshot' ? { visualOnly: true } : {}),
       ...(includeOffscreen ? { includeOffscreen: true } : {}),
       ...(documentElementId === undefined ? {} : { documentElementId }) }));
     // The effective depth stays server-side with the observation; actions cannot replace it.
     snapshot.depth = Number.isInteger(snapshot.depth) ? snapshot.depth : depth;
     snapshot.includeOffscreen = includeOffscreen;
+    // What the caller asked for, kept for a later act with returnObservation: full.
+    snapshot.screenshotPreference = screenshotPreference;
     if (!identityMatches(snapshot.window, session.window)) throw fail('window_changed', 'Observation returned a different window identity.');
     const bounds = snapshot.bounds;
     if (!bounds || !['x', 'y', 'width', 'height'].every(key => Number.isFinite(bounds[key])) || bounds.width < 1 || bounds.height < 1) throw fail('invalid_observation', 'Backend returned invalid window bounds.');
     let bytes, screenshot, width, height;
-    if (mode !== 'accessibility') {
+    if (capture) {
       if (path.resolve(snapshot.screenshot?.path ?? '') !== screenshotPath) throw fail('invalid_capture', 'Backend returned a different screenshot path.');
       const stat = await measure('fileStat', () => fs.stat(screenshotPath));
       if (stat.size > 6 * 1024 * 1024) throw fail('capture_too_large', 'Capture exceeds the 6 MiB image limit.');
@@ -171,8 +220,14 @@ function createComputerController(options = {}) {
     count('elements', snapshot.elements?.length ?? 0);
     const observedAtMs = now();
     if (bytes) {
-      screenshot = measure('hashEncode', () => ({ data: bytes.toString('base64'), mimeType: 'image/png', width, height,
-        sha256: createHash('sha256').update(bytes).digest('hex') }));
+      // A scaled image is sent instead of the source; multiply its pixels by `scale.factor`
+      // to get window-local physical coordinates.
+      const scaled = screenshotMode === 'scaled' ? measure('scale', () => downscalePng(bytes, DEFAULT_MAX_EDGE)) : null;
+      const sent = scaled ? scaled.data : bytes;
+      screenshot = measure('hashEncode', () => ({ data: sent.toString('base64'), mimeType: 'image/png',
+        width: scaled?.width ?? width, height: scaled?.height ?? height,
+        ...(scaled ? { scale: { factor: scaled.factor, sourceWidth: width, sourceHeight: height, ...(scaled.reason ? { reason: scaled.reason } : {}) } } : {}),
+        sha256: createHash('sha256').update(sent).digest('hex') }));
       count('base64', screenshot.data.length);
     }
     const result = {
@@ -186,8 +241,9 @@ function createComputerController(options = {}) {
       focused: snapshot.focused ? { ...snapshot.focused } : { available: false, code: 'focus_unavailable' },
       targetState: snapshot.targetState ?? { available: false },
       ...(snapshot.restoredFromMinimized === true ? { preparation: [{ step: 'restore', status: 'restored' }] } : {}),
-      screenshot,
+      ...(screenshot ? { screenshot } : {}),
     };
+    if (mode === 'full' && !screenshot) delete result.captureMethod;
     if (mode === 'full') session.observation = { id: observationId, observedAtMs, snapshot, result };
     else {
       Object.assign(result, { mode, actionable: false });
@@ -195,7 +251,8 @@ function createComputerController(options = {}) {
       else { delete result.screenshot; delete result.captureMethod; delete result.coordinateSpace; }
     }
     await measure('journal', () => record(session, { type: 'observation', observationId,
-      ...(mode !== 'full' ? { mode } : {}), ...(screenshot ? { screenshotSha256: screenshot.sha256 } : {}) }));
+      ...(mode !== 'full' ? { mode } : {}), ...(screenshotMode !== (mode === 'accessibility' ? 'none' : 'full') ? { screenshot: screenshotMode } : {}),
+      ...(screenshot ? { screenshotSha256: screenshot.sha256 } : {}) }));
     signal.throwIfAborted();
     indicator.assertActive();
     return result;
@@ -221,7 +278,9 @@ function createComputerController(options = {}) {
       return queued(async signal => {
         const result = await backend.doctor({ signal });
         return { ...result, support: actionSupport(observationTtlMs),
-          observationModes: { default: 'full', actionable: ['full'], evidenceOnly: ['accessibility', 'screenshot'], screenshotRequiresReadableUiaRoot: false },
+          observationModes: { default: 'full', actionable: ['full'], evidenceOnly: ['accessibility', 'screenshot'], screenshotRequiresReadableUiaRoot: false,
+            screenshotModes: { values: [...SCREENSHOT_MODES], default: 'full', actionableWithout: true, scaledMaxEdge: DEFAULT_MAX_EDGE } },
+          actResult: { returnObservation: [...RETURN_OBSERVATIONS], default: 'summary', diffLimit: DIFF_LIMIT },
           captureRetention: { mode: captureKeepLast ? 'keep-last' : 'preserve', keepLast: captureKeepLast,
             scope: 'validated-current-session-captures', onClose: captureKeepLast ? 'remove-tracked' : 'preserve' }, readiness: {
           native: { ready: result.ready === true, code: result.code || null, reason: result.reason || null },
@@ -271,7 +330,7 @@ function createComputerController(options = {}) {
         }
       }, callOptions);
     },
-    observe({ sessionId, accessibilityDepth, mode, documentElementId, includeOffscreen }, callOptions) {
+    observe({ sessionId, accessibilityDepth, mode, documentElementId, includeOffscreen, screenshot }, callOptions) {
       return queued(async signal => {
         const session = getSession(sessionId);
         const depth = validateDepth(accessibilityDepth), checkedMode = validateObservationMode(mode);
@@ -279,12 +338,14 @@ function createComputerController(options = {}) {
           || !documentElementId || documentElementId.length > 512 || documentElementId.startsWith('-') || /[\u0000-\u001f]/.test(documentElementId)))
           throw fail('invalid_document_request', 'documentElementId requires accessibility mode and a valid observed element ID.');
         if (includeOffscreen !== undefined && typeof includeOffscreen !== 'boolean') throw fail('invalid_observation', 'includeOffscreen must be a boolean.');
-        const result = await observeInternal(session, signal, depth, checkedMode, documentElementId, includeOffscreen === true);
+        const screenshotMode = validateScreenshot(screenshot, checkedMode);
+        const result = await observeInternal(session, signal, { depth, mode: checkedMode, documentElementId, includeOffscreen: includeOffscreen === true, screenshot: screenshotMode });
         return retainCapture(session, result, signal);
       }, callOptions);
     },
-    act({ sessionId, observationId, action }, callOptions) {
+    act({ sessionId, observationId, action, returnObservation = 'summary' }, callOptions) {
       return queued(async signal => {
+        if (!RETURN_OBSERVATIONS.includes(returnObservation)) throw Object.assign(fail('invalid_argument', 'returnObservation must be full, summary or none.'), { details: { outcome: 'not_dispatched' } });
         const session = getSession(sessionId);
         signal = markedSignal(signal);
         await lease.assert(sessionId);
@@ -308,10 +369,18 @@ function createComputerController(options = {}) {
           indicator.assertActive();
           const nativeResult = await backend.act({ window: session.window, observation: observation.snapshot, action: checked, signal });
           nativeCompleted = true;
-          const fresh = await observeInternal(session, signal, observation.snapshot.depth, 'full', undefined, observation.snapshot.includeOffscreen === true);
+          // The fresh observation always runs server-side so the next action has authority. Only
+          // `full` returns it; it keeps the consumed observation's depth, offscreen and image setting.
+          const fresh = await observeInternal(session, signal, { depth: observation.snapshot.depth, mode: 'full',
+            includeOffscreen: observation.snapshot.includeOffscreen === true,
+            screenshot: returnObservation === 'full' ? observation.snapshot.screenshotPreference ?? 'full' : 'none',
+            screenshotPreference: observation.snapshot.screenshotPreference ?? 'full' });
           await record(session, { type: 'action_completed', actionId, observationId: fresh.observationId });
           await retainCapture(session, fresh, signal);
-          return { actionId, outcome: 'completed', verification: 'fresh_observation', nativeResult, observation: fresh };
+          const completed = { actionId, outcome: 'completed', verification: 'fresh_observation' };
+          if (returnObservation === 'full') return { ...completed, nativeResult, observation: fresh };
+          if (returnObservation === 'none') return { ...completed, observationId: fresh.observationId };
+          return { ...completed, nativeResult, observationId: fresh.observationId, summary: actSummary(observation.result, fresh) };
         } catch (error) {
           session.observation = null;
           const outcome = !nativeCompleted && error.details?.outcome === 'not_dispatched' ? 'not_dispatched' : 'unknown';
@@ -365,4 +434,4 @@ function createComputerController(options = {}) {
   };
 }
 
-module.exports = { createComputerController, defaultRuntimeDirectory, validateAction, validateDepth, safeError };
+module.exports = { createComputerController, defaultRuntimeDirectory, validateAction, validateDepth, validateScreenshot, elementDiff, safeError };

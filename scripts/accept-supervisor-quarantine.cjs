@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 'use strict';
+const { createActCompat } = require('../src/computer/act-compat.cjs');
 
 // A real held-input/failure-acknowledgement case. The injected failure occurs only after a separate
 // helper verifies native child exit and released input. Importing this module performs no UI work.
@@ -158,7 +159,7 @@ async function connect(directory, input = 'none', fault = false, options = {}) {
   } catch (error) { try { await close(); } catch { } throw error; }
   return { controlPath, client, transport, pid: transport.pid, nodeIdentity,
     journal: async () => { try { return JSON.parse(await fs.readFile(journalPath, 'utf8')); } catch (error) { if (error.code === 'ENOENT') return { events: [] }; throw error; } },
-    call: async (name, args = {}, options = {}) => stateOf(await client.callTool({ name: `trace_computer_${name}`, arguments: args }, { timeout: 30000, ...options })),
+    call: createActCompat().wrap(async (name, args = {}, options = {}) => stateOf(await client.callTool({ name: `trace_computer_${name}`, arguments: args }, { timeout: 30000, ...options }))),
     close,
   };
 }

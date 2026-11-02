@@ -89,7 +89,7 @@ test('failed selective capture invalidates authority; invalid arguments preserve
   f.control.leaseFail = false;
   await assert.rejects(c.act({ ...session, observationId: full.observationId, action: activate }), stale);
   full = await c.observe({ ...session, accessibilityDepth: 12 });
-  const result = await c.act({ ...session, observationId: full.observationId, action: activate });
+  const result = await c.act({ ...session, observationId: full.observationId, action: activate, returnObservation: 'full' });
   assert.equal(result.outcome, 'completed'); assert.ok(result.observation.screenshot);
   assert.equal(result.observation.accessibility.depth, 12); assert.equal(f.calls.at(-1).depth, 12);
 });

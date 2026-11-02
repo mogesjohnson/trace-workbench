@@ -14,7 +14,7 @@ async function fixture(t, captureKeepLast) {
   const control = { failCapture: false, failClose: false }, files = [];
   const backend = { async doctor() { return { ready: true }; }, async listWindows() { return [window]; },
     async observe({ screenshotPath }) {
-      files.push(screenshotPath); await fs.writeFile(screenshotPath, png);
+      if (screenshotPath) { files.push(screenshotPath); await fs.writeFile(screenshotPath, png); }
       if (control.failCapture) throw Object.assign(new Error('capture failed'), { code: 'capture_failed' });
       return { window, bounds: window.bounds, elements: [], screenshot: { path: screenshotPath } };
     }, async act() { return { performed: true }; },
@@ -49,7 +49,7 @@ test('MCP keeps completed action and storage warning separate; confirmed close r
   const mock = t.mock.method(fs, 'unlink', async () => { throw new Error('private path'); });
   let response;
   try { response = await client.callTool({ name: 'trace_computer_act', arguments: {
-    sessionId: f.session.sessionId, observationId: full.observationId, action: { type: 'activate' } } }); }
+    sessionId: f.session.sessionId, observationId: full.observationId, action: { type: 'activate' }, returnObservation: 'full' } }); }
   finally { mock.mock.restore(); }
   const result = response.structuredContent;
   assert.equal(result.outcome, 'completed');
@@ -80,7 +80,7 @@ test('late action journal failure and cancellation leave uncertain frames untrac
     return append(file, value, ...args);
   });
   let result;
-  try { result = await f.c.act({ ...f.session, observationId: full.observationId, action: { type: 'activate' } }); }
+  try { result = await f.c.act({ ...f.session, observationId: full.observationId, action: { type: 'activate' }, returnObservation: 'full' }); }
   finally { mock.mock.restore(); }
   assert.equal(result.outcome, 'unknown'); await fs.stat(f.files[0]);
   await f.c.closeSession(f.session); await fs.stat(f.files[1]);
