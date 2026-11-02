@@ -111,6 +111,19 @@ session. A1 tiers apply: recording the microphone and sending audio off the phon
 until the owner moves them. Done when the research doc names a recommended route with measured
 numbers, or the follow-up tool returns a transcript of a spoken test phrase.
 
+### A9. Termux:API notifications with an Approve/Deny wait
+
+- [x] **Approve** (owner approved on 2 Nov 2026)
+
+A `phone_notify` tool or script that posts a notification through Termux:API, plus an ask-and-wait
+helper: `termux-notification --button1 Approve --button2 Deny`, where each button's action writes an
+answer file the helper polls. A timeout counts as Deny. This is the push-and-wait that A5 needs for
+ask-tier actions. First check whether the Claude mobile app already pushes Remote Control approval
+prompts; if it does, record that and keep A9 for prompts outside Claude. TODO(verify) the `termux-*`
+binaries can be called from Debian by full path (`/data/data/com.termux/files/usr/bin` is bound into
+proot). Done when one ask-first action waits for, and receives, a real button press on the S23.
+`termux-sms-send` stays parked until A9 works, then only to an approved-number list, ask first.
+
 ## Suggested order
 
-A1 → A2 → A6 → A3 → A4 → A5 → A7, then A8 (voice) once A3 shows phone Claude can run tools. A1 and A2 can share one PR if the owner approves both together.
+A1 → A2 → A6 → A3 → A4 → A5 → A7, then A8 (voice) once A3 shows phone Claude can run tools, and A9 alongside A5. A1 and A2 can share one PR if the owner approves both together.
