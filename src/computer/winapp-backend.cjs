@@ -320,7 +320,10 @@ class WinappBackend {
     if (!Array.isArray(windows)) fail('invalid_native_response', 'Expected native window array.');
     const discovered = windows.map(window => {
       if (!Number.isSafeInteger(window.processId) || window.processId <= 0 || typeof window.processName !== 'string' || !Number.isFinite(window.width) || !Number.isFinite(window.height)) fail('invalid_native_response', 'Invalid native window identity.');
-      return { id: id(window.hwnd), pid: window.processId, processName: window.processName, title: window.title || '', bounds: { x: null, y: null, width: window.width, height: window.height } };
+      return { id: id(window.hwnd), pid: window.processId, processName: window.processName, title: window.title || '', bounds: { x: null, y: null, width: window.width, height: window.height },
+        // Listing-only hints for the default noise filter; they are not part of the session identity.
+        ...(typeof window.className === 'string' && window.className ? { className: window.className.slice(0, 256) } : {}),
+        ...(window.isForeground === true ? { foreground: true } : {}) };
     });
     const enriched = [];
     // One read-only process per bounded batch replaces one .NET process per window. Selected
@@ -348,6 +351,14 @@ class WinappBackend {
     return enriched;
   }
   currentWindow(window, { signal } = {}) { return this.identity(window, signal); }
+  // True only when the bridge proves the HWND is gone or now belongs to another process.
+  async targetClosed(window, { signal } = {}) {
+    try { await this.bridge('bounds', window, signal); return false; }
+    catch (error) {
+      if (signal?.aborted) throw error;
+      return ['window_closed', 'window_identity_changed'].includes(error.code);
+    }
+  }
   openWindow(window, options) { return this.currentVisualWindow(window, options); }
   async currentVisualWindow(window, { signal } = {}) {
     const native = await this.bridge('identity', window, signal);
@@ -375,20 +386,53 @@ class WinappBackend {
   // treeNodeId/parentNodeId; `hierarchy` holds only selectorless structural nodes.
   // Offscreen nodes are omitted unless requested; kept descendants attach to the
   // nearest kept ancestor. The root is always kept.
-  async inspect(window, signal, depth = 8, { includeOffscreen = false } = {}) {
-    const result = await this.command('inspect', ['-w', id(window.id), '--depth', String(depth)], signal);
-    const entry = result.windows?.find(candidate => String(candidate.hwnd) === window.id);
-    if (!entry || entry.coordinateSpace !== 'physical-screen-pixels' || !Array.isArray(entry.elements) || !entry.elements.length) fail('invalid_native_response', 'Exact target UIA root was not returned.');
-    const root = entry.elements[0];
+  // Scoping: `rootElementId` walks only that element's subtree (winapp's selector argument) and
+  // `interactiveOnly` uses winapp -i, which nests the full tree before collapsing non-interactive
+  // nodes, so survivors keep their nearest interactive ancestor. Both can drop the window root, so
+  // a depth-1 read supplies it: bounds, the capture selector and the movement guards stay
+  // window-level, and the window root stays the first element unless a subtree is requested.
+  async inspect(window, signal, depth = 8, { includeOffscreen = false, rootElementId, interactiveOnly = false } = {}) {
+    const scoped = rootElementId !== undefined, filtered = scoped || interactiveOnly;
+    const read = async (args, missing) => {
+      const result = await this.command('inspect', ['-w', id(window.id), ...args], signal);
+      const entry = result.windows?.find(candidate => String(candidate.hwnd) === window.id);
+      if (!entry || entry.coordinateSpace !== 'physical-screen-pixels' || !Array.isArray(entry.elements) || (missing && !entry.elements.length)) fail('invalid_native_response', missing || 'Exact target UIA root was not returned.');
+      return entry;
+    };
+    const windowEntry = filtered ? await read(['--depth', '1'], 'Exact target UIA root was not returned.') : null;
+    // winapp 0.7.1 can answer an unresolved selector with the window root, or fail with a generic
+    // error. A subtree read therefore counts only when its single top node is the requested
+    // element. -i can collapse a non-interactive scope root, so that case checks it separately.
+    const scopeLost = () => fail('element_not_found', 'The scope root is not in this window now. Observe without rootElementId.');
+    const scopedRead = async (args, verify) => {
+      let entry;
+      try { entry = await read([...args, '--', selector(rootElementId)]); }
+      catch (error) { if (signal?.aborted || !['element_not_found', 'stale_element', 'internal_error'].includes(error.code)) throw error; scopeLost(); }
+      if (verify && (entry.elements.length !== 1 || entry.elements[0]?.selector !== rootElementId)) scopeLost();
+      return entry;
+    };
+    if (scoped && interactiveOnly) await scopedRead(['--depth', '1'], true);
+    const deep = ['--depth', String(depth), ...(interactiveOnly ? ['-i'] : [])];
+    const entry = scoped ? await scopedRead(deep, !interactiveOnly)
+      : await read(deep, filtered ? undefined : 'Exact target UIA root was not returned.');
+    const root = (windowEntry ?? entry).elements[0];
     const flat = [], hierarchy = [], active = new WeakSet();
     let visited = 0, kept = 0, offscreenOmitted = 0, truncated = false;
+    // Top-level nodes of a scoped or filtered walk are kept like the root.
+    let starts = entry.elements;
+    if (interactiveOnly && !scoped && entry.elements[0]?.selector !== root.selector) {
+      // The window root itself was collapsed by -i: keep it and hang the interactive nodes under it.
+      const { children, hasMoreChildren, ...windowRoot } = root;
+      starts = [{ ...windowRoot, children: entry.elements }];
+    }
+    const tops = new Set(scoped ? starts : [starts[0]]);
     const visit = (element, parentNodeId = null, nestingDepth = 0) => {
       if (!object(element) || active.has(element)) fail('invalid_native_response', 'UIA tree contains an invalid node or cycle.');
       if (visited >= 10000 || nestingDepth > 32) fail('native_output_limit', 'UIA tree exceeds its node/depth bounds.');
       if (element.children != null && !Array.isArray(element.children)) fail('invalid_native_response', 'UIA children must be an array.');
       active.add(element);
       visited++;
-      if (!includeOffscreen && element.isOffscreen === true && element !== root) {
+      if (!includeOffscreen && element.isOffscreen === true && !tops.has(element)) {
         offscreenOmitted++;
         for (const child of element.children || []) visit(child, parentNodeId, nestingDepth + 1);
         active.delete(element);
@@ -417,9 +461,10 @@ class WinappBackend {
       for (const child of element.children || []) visit(child, nodeId, nestingDepth + 1);
       active.delete(element);
     };
-    for (const element of entry.elements) visit(element);
+    for (const element of starts) visit(element);
     return { bounds: bounds(root), rootSelector: selector(root.selector), elements: flat, hierarchy,
-      coordinateSpace: entry.coordinateSpace, depth, truncated, includeOffscreen, offscreenOmitted, nodeCount: kept };
+      coordinateSpace: entry.coordinateSpace, depth, truncated, includeOffscreen, offscreenOmitted, nodeCount: kept,
+      ...(scoped ? { rootElementId } : {}), ...(interactiveOnly ? { interactiveOnly: true } : {}) };
   }
   // Root-first UIA chain from the window root to the element the selector resolves to.
   async ancestors(window, signal, nativeSelector) {
@@ -436,11 +481,16 @@ class WinappBackend {
   // Adds the focused control and its ancestors to an inspected tree that stopped above them.
   // Nodes already present (same selector, or same AutomationId, type and bounds) are reused, so
   // nothing is listed twice. Returns the target's element id, or null when nothing can be merged.
+  // A scoped tree merges only the part of the chain below its scope root; focus outside the scope
+  // stays unresolved.
   mergeFocusPath(state, chain) {
     if (!chain.length || chain[0].selector !== state.rootSelector) return null;
+    const anchor = state.rootElementId === undefined ? 0 : chain.findIndex(node => node.selector === state.rootElementId);
+    if (anchor < 0) return null;
     let next = Number.isInteger(state.nodeCount) ? state.nodeCount : state.elements.length + state.hierarchy.length;
-    let parentNodeId = state.elements.find(item => item.id === state.rootSelector)?.treeNodeId ?? null, targetId = null;
-    for (let index = 1; index < chain.length; index++) {
+    const anchorElement = state.elements.find(item => item.id === chain[anchor].selector);
+    let parentNodeId = anchorElement?.treeNodeId ?? null, targetId = anchor === chain.length - 1 && anchorElement ? anchorElement.id : null;
+    for (let index = anchor + 1; index < chain.length; index++) {
       const node = chain[index], last = index === chain.length - 1;
       const nodeBounds = [node.x, node.y, node.width, node.height].every(Number.isFinite) && node.width > 0 && node.height > 0 ? bounds(node) : null;
       const existing = node.selector ? state.elements.find(item => item.id === node.selector
@@ -557,8 +607,9 @@ class WinappBackend {
       targetState: { enabled: after.enabled, minimized: after.minimized, foreground: after.foreground, provenance: 'public-win32-dwm' },
       restoredFromMinimized: restored, captureMethod: capture.method, screenshot: { path: screenshotPath, mimeType: 'image/png', ...size } };
   }
-  async observe({ window, screenshotPath, signal, depth = 8, includeScreenshot = true, documentElementId, visualOnly = false, includeOffscreen = false }) {
-    if (typeof includeOffscreen !== 'boolean') fail('invalid_observation', 'includeOffscreen must be a boolean.');
+  async observe({ window, screenshotPath, signal, depth = 8, includeScreenshot = true, documentElementId, visualOnly = false, includeOffscreen = false, rootElementId, interactiveOnly = false }) {
+    if (typeof includeOffscreen !== 'boolean' || typeof interactiveOnly !== 'boolean') fail('invalid_observation', 'includeOffscreen and interactiveOnly must be booleans.');
+    if (rootElementId !== undefined && (visualOnly || selector(rootElementId) !== rootElementId)) fail('invalid_observation', 'rootElementId needs an accessibility tree.');
     if (typeof visualOnly !== 'boolean' || (visualOnly && (!includeScreenshot || documentElementId !== undefined))) fail('invalid_observation', 'Visual-only capture cannot include document reads or omit PNG.');
     if (visualOnly) return this.observeVisual({ window, screenshotPath, signal });
     if (typeof includeScreenshot !== 'boolean') fail('invalid_observation', 'includeScreenshot must be a boolean.');
@@ -583,7 +634,7 @@ class WinappBackend {
       await measure('restore', () => this.bridge('activate', window, signal));
       geometry = await measure('settle', () => this.settledBounds(window, signal));
     }
-    const state = await measure('uia', () => this.inspect(window, signal, depth, { includeOffscreen }));
+    const state = await measure('uia', () => this.inspect(window, signal, depth, { includeOffscreen, rootElementId, interactiveOnly }));
     geometry = await measure('geometry', () => this.bridge('bounds', window, signal));
     const captured = captureBounds(bounds(geometry.frameBounds), state.bounds);
     await measure('identity', () => this.identity(window, signal, geometry));
@@ -634,8 +685,9 @@ class WinappBackend {
     if (action.type === 'accessibility_action' && !this.supervisor?.ready) fail('supervision_required', 'Named UIA actions require native supervision.', { outcome: 'not_dispatched' });
     if ((pointerClick || pointWheel) && !this.supervisor?.ready) fail('supervision_required', 'Extended pointer input requires declared-input native supervision.', { outcome: 'not_dispatched' });
     await this.identity(window, signal);
-    // Reinspect at the server-retained observation depth so deeply observed controls remain targetable.
-    const fresh = await this.inspect(window, signal, observation.depth ?? 8, { includeOffscreen: observation.includeOffscreen === true });
+    // Reinspect at the server-retained depth and scope so deeply or narrowly observed controls remain targetable.
+    const fresh = await this.inspect(window, signal, observation.depth ?? 8, { includeOffscreen: observation.includeOffscreen === true,
+      ...(observation.rootElementId !== undefined ? { rootElementId: observation.rootElementId } : {}), interactiveOnly: observation.interactiveOnly === true });
     const geometry = await this.bridge('bounds', window, signal);
     if (geometry.enabled === false) fail('window_blocked', 'The selected window is disabled. Select its enabled dialog explicitly before input.', { outcome: 'not_dispatched' });
     const captured = captureBounds(bounds(geometry.frameBounds), fresh.bounds);
