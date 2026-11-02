@@ -114,7 +114,7 @@ function main(argv) {
       const src = path.join(tmp, 'src');
       fs.mkdirSync(src);
       run('git', ['archive', '--format=tar', '-o', path.join(tmp, 'src.tar'), sha], { cwd: ROOT });
-      run('tar', ['-xf', path.join(tmp, 'src.tar'), '-C', src]);
+      run('tar', ['-xf', 'src.tar', '-C', 'src'], { cwd: tmp }); // relative: GNU tar reads C: as a host
       run(process.execPath, [path.join(src, 'scripts', 'build-phone-agent.cjs')], { stdio: 'inherit' });
       script = 'install.sh';
       fs.writeFileSync(path.join(tmp, script), installScript(sha));
