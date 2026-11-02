@@ -10,6 +10,22 @@ work got and what comes next.
 - Worktree: `trace-workbench-worktrees/token-cost-fixes`, a sibling of the main checkout
   (`npm ci` already run there).
 
+## State at handoff (2 November 2026, session 2)
+
+- PR #98 (`fix/observation-token-cost`, head `b88fd81`, 4 commits): P0-1, P0-2 and P0-5.
+  Marked ready for review at the owner's request, although #80 is unmerged.
+  Full `npm test`: 669/670 in its worktree. The one failure is an environment
+  artifact: an `accept-replay-workflow` test asserts no `/token/i` in a checkpoint
+  that contains the worktree path `token-cost-fixes`, and it passes 23/23 through a
+  path without "token". `npm run check` passed.
+- PR #99 (`fix/compact-act-result`, draft, stacked on #98, 4 commits): P0-3, P0-4 and
+  the 2.0.0 candidate. Full `npm test` 678/678 (5 skipped) and `npm run check` passed.
+- Once, `tests/prepare-acceptance-anchor.test.cjs` hung during a full run under
+  load. It passed alone (9/9) and on reruns. Use `--test-timeout` for full runs.
+- Next: PR C (P1-1…P1-5) as a new worktree and branch stacked on
+  `fix/compact-act-result`, then PR D (P2). Each fix needs a size test against the
+  incident bar.
+
 ## Done: P0-1 and P0-2 (commit on this branch)
 
 - **P0-1, serialize the tree once.** `winapp-backend.cjs` `inspect()`: every
