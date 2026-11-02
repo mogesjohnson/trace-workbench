@@ -50,9 +50,14 @@ and the PR link, so the owner learns the outcome without asking.
 
 1. Close every `trace-phone` MCP server and phone agent the session started. Check:
    `adb shell ls /data/local/tmp/trace-phone.dex` reports no such file, and
-   `adb shell pidof app_process` prints nothing from this session.
+   `adb shell pidof app_process` prints nothing from this session. A Remote Control session
+   stays alive after its last message, and so do its MCP server and agent, so the session can't
+   check this itself: report it `not_run` and leave it to whoever archives the session (A7 trial,
+   2 Nov 2026).
 2. Delete frames older than 7 days on each machine that took frames:
    `find .runtime/phone/frames -type f -mtime +7 -delete` (in `/opt/trace` on the phone).
+   In auto mode the permission check denies this delete unless the A2 profile allows it, so
+   report it `blocked` with a read-only count of the old frames.
 3. Leave nothing running: no dev servers, watchers, extra adb forwards or stray worktrees.
 4. Update `docs/PHONE_HANDOFF.md` and capture the handoff in the second brain (one stable
    subject; supersede the previous handoff). If capture fails, say so and keep the repo handoff.
