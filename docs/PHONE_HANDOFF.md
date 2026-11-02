@@ -232,3 +232,8 @@ Not done: applying the profile to the PC's and the phone's real `~/.claude/setti
 session's auto-mode classifier blocked that write as self-modification, so the owner runs
 `node scripts/configure-phone-permissions.cjs --apply`: on the PC from the repo, and on the phone
 in Debian from a TRACE checkout at or after this PR.
+
+Update, 1 November 2026: applied on the PC (`--apply`, then a dry run listed no changes).
+Phone: not_run. Its `/opt/trace` predates the script, so both scripts were copied to
+`/sdcard/Download/trace-a2/`; the owner runs `node configure-phone-permissions.cjs --apply`
+from there in Debian (A6 will make this part of the install).
