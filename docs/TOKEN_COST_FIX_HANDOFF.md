@@ -69,8 +69,8 @@ work got and what comes next.
      compatibility boundary), so it needs a major version and migration notes.
      `src/method/trace-adapter.cjs` and `scripts/accept-*.cjs` read
      `value.observation`. They must request `returnObservation: 'full'` when
-     `doctor` advertises support; older servers reject unknown fields. Confirm the
-     version choice with the owner before merging.
+     `doctor` advertises support; older servers reject unknown fields. **Owner decision, 2 November 2026: go ahead
+     with the major version bump (2.0.0)**; include migration notes.
    - Acceptance: default `press_key` response is at most 1,500 chars with no image.
 3. **P1.**
    - P1-1: `rootElementId` uses the inspect selector argument, and
