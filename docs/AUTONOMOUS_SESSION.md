@@ -55,7 +55,8 @@ and the PR link, so the owner learns the outcome without asking.
    check this itself: report it `not_run` and leave it to whoever archives the session (A7 trial,
    2 Nov 2026).
 2. Delete frames older than 7 days on each machine that took frames:
-   `find .runtime/phone/frames -type f -mtime +7 -delete` (in `/opt/trace` on the phone).
+   `find /opt/trace/.runtime/phone/frames -type f -mtime +7 -delete` on the phone (absolute path,
+   no `cd`; it must match the A2 rule exactly).
    In auto mode the permission check denies this delete unless the A2 profile allows it, so
    report it `blocked` with a read-only count of the old frames.
 3. Leave nothing running: no dev servers, watchers, extra adb forwards or stray worktrees.

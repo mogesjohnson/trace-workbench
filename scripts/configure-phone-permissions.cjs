@@ -16,8 +16,12 @@ const ALLOW = [
   ...['phone_connect', 'phone_screen', 'phone_ui', 'phone_wait', 'phone_logcat'].map((tool) => PREFIX + tool),
   'Bash(adb devices*)', 'Bash(adb shell getprop*)', 'Bash(adb shell pidof*)', 'Bash(adb shell ls /data/local/tmp*)',
   // The A7 frame prune: exact command, no wildcard, so no other find or delete is allowed.
-  'Bash(find .runtime/phone/frames -type f -mtime +7 -delete)',
+  // Absolute path: the phone session runs in /root/phone-work, and `cd /opt/trace && find ...`
+  // did not match a relative rule (C4 re-run, 2 Nov 2026: auto mode denied it).
+  'Bash(find /opt/trace/.runtime/phone/frames -type f -mtime +7 -delete)',
 ];
+// TRACE-owned rules from earlier profiles; --apply removes them.
+const RETIRED = ['Bash(find .runtime/phone/frames -type f -mtime +7 -delete)'];
 const ACT = PREFIX + 'phone_act';
 const HOOK_NAME = 'trace-phone-act.cjs';
 
@@ -28,6 +32,12 @@ function plan(settings, hookPath) {
   const changes = [];
   next.permissions = next.permissions || {};
   next.permissions.allow = next.permissions.allow || [];
+  for (const rule of RETIRED) {
+    if (next.permissions.allow.includes(rule)) {
+      next.permissions.allow = next.permissions.allow.filter((r) => r !== rule);
+      changes.push(`permissions.allow -= ${rule}`);
+    }
+  }
   for (const rule of ALLOW) {
     if (!next.permissions.allow.includes(rule)) { next.permissions.allow.push(rule); changes.push(`permissions.allow += ${rule}`); }
   }
