@@ -210,3 +210,25 @@ Next steps:
    5555 closes on reboot; reopen it with `adb tcpip 5555`. TODO(verify) proot reach to the
    abstract socket (step 4 above).
 2. Wi-Fi bench (step 2 above).
+
+## Task A2 permission profile (1 November 2026, device run, owner-approved)
+
+The profile was applied to a scratch `--claude-dir`. A scripted session ran with
+`claude -p --settings <scratch>/settings.json --strict-mcp-config` against
+`node bin/trace.cjs phone mcp` on the S23 over USB. Non-interactive mode denies anything that
+would prompt, so a denial stands for a prompt here.
+
+| Mode | connect | screen | ui | act `home` | act `text` |
+|---|---|---|---|---|---|
+| with an `ask` rule for `phone_act` (first design) | pass | pass | pass | denied (fail) | denied |
+| `default`, hook only | pass | pass | pass | allowed, no prompt | denied by hook `ask` |
+| `auto`, hook only | pass | pass | pass | allowed, no prompt | denied by hook `ask` |
+
+After each run, `/data/local/tmp` held no trace-phone dex and no agent process was left. In the
+`default` run the screen changed from home to the launcher search between `phone_screen` and
+`phone_ui`, with no `phone_act` in between. Cause not found; TODO(verify).
+
+Not done: applying the profile to the PC's and the phone's real `~/.claude/settings.json`. The
+session's auto-mode classifier blocked that write as self-modification, so the owner runs
+`node scripts/configure-phone-permissions.cjs --apply`: on the PC from the repo, and on the phone
+in Debian from a TRACE checkout at or after this PR.
