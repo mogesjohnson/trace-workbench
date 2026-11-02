@@ -34,4 +34,4 @@ Coordinates default to `space:"image"`: pixels of the last returned frame. Use `
 
 ## Finish
 
-Closing the MCP server kills the agent by pid and removes its dex from `/data/local/tmp`, so nothing with shell rights stays listening. Report what each action's returned frame showed, and anything not verified, at its actual scope.
+Closing the MCP server kills the agent by pid and removes its dex from `/data/local/tmp`, so nothing with shell rights stays listening. Report what each action's returned frame showed, and anything not verified, at its actual scope. A session running with no one at the keyboard also follows `docs/AUTONOMOUS_SESSION.md` in the TRACE repo: when to stop, how to report each check, and what to clean up.
