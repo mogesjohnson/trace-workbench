@@ -372,5 +372,8 @@ The phone session followed `AUTONOMOUS_SESSION.md` and posted this notification:
   A2 profile.
 - C7: after the last message, the session process, its `trace-phone` MCP server and
   `app_process` were all still running, and `trace-phone.dex` was still in `/data/local/tmp`.
-  A Remote Control session stays alive until it is archived. The PC check is blocked until the
-  owner archives the session; ending its process from adb was denied by the PC's permission check.
+  A Remote Control session stays alive until it is archived. Ending its process from adb was
+  denied by the PC's permission check.
+- C7 pass (2 November 2026): the session was archived in the Claude app over adb (session menu >
+  Archive > Archive). About 20 seconds later `pidof app_process` printed nothing and
+  `/data/local/tmp/trace-phone.dex` was gone. Only the A5 boot Remote Control host was still running.
