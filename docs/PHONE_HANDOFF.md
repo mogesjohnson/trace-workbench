@@ -15,6 +15,13 @@ build has **not been run yet** because the session's permission check blocked re
 Nothing was left running on the phone: the agent process, its dex, its log and the adb forward
 were removed and checked.
 
+## Code layout (2 November 2026)
+
+The adb client, agent client, controller, on-device agent and dex build moved to
+[`src/agentic-phone/`](../src/agentic-phone/README.md) (owner decision: one repo, separate folder,
+split later only if a second project needs it). The MCP server stays at `src/phone/server.cjs`;
+`node scripts/build-phone-agent.cjs` still works. Paths in the session notes below are historical.
+
 ## Measured baseline (S23 Ultra SM-S918U, Android 17 / SDK 37, 1440×3088, USB)
 
 | Operation | Time | Bytes on the link |

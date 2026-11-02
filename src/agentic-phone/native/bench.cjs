@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const port = Number(process.argv[2] || 27183);
 const findText = process.argv[3] || 'Settings';
-const outDir = path.join(__dirname, '..', '..', '.runtime', 'phone');
+const outDir = path.join(__dirname, '..', '..', '..', '.runtime', 'phone');
 const sock = net.connect(port, '127.0.0.1');
 let buf = Buffer.alloc(0); const waiters = [];
 sock.on('data', (d) => { buf = Buffer.concat([buf, d]); pump(); });

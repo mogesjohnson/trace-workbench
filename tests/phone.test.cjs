@@ -6,9 +6,9 @@ const net = require('node:net');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { createAdbClient, encode } = require('../src/phone/adb.cjs');
-const { createAgentClient } = require('../src/phone/agent.cjs');
-const { createPhoneController } = require('../src/phone/controller.cjs');
+const { createAdbClient, encode } = require('../src/agentic-phone/adb.cjs');
+const { createAgentClient } = require('../src/agentic-phone/agent.cjs');
+const { createPhoneController } = require('../src/agentic-phone/controller.cjs');
 const { frame, fakeAgent, fakeAdb, tempDir, hello, jpeg } = require('./fixtures/phone-fakes.cjs');
 
 
