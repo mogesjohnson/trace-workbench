@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { parseArgs, installScript, checkScript, termuxRunner, termuxCommand, parseLog, STAGE } = require('../scripts/install-phone-claude.cjs');
+const { parseArgs, installScript, checkScript, bootScript, termuxRunner, termuxCommand, parseLog, STAGE } = require('../scripts/install-phone-claude.cjs');
 
 const SHA = 'a'.repeat(40);
 
@@ -37,4 +37,13 @@ test('termux runner logs to staging and appends the end marker; log parser reads
   assert.deepEqual(parseLog('TRACE-INSTALL-END 3'), { done: true, code: 3 });
   assert.deepEqual(parseLog('still running'), { done: false, code: null });
   assert.deepEqual(parseLog(undefined), { done: false, code: null });
+});
+
+test('install puts the A4 boot script in ~/.termux/boot; a check does not', () => {
+  const boot = bootScript();
+  assert.match(boot, /^#!\/data\/data\/com\.termux\/files\/usr\/bin\/sh\n/);
+  assert.ok(boot.includes('termux-wake-lock'));
+  assert.ok(boot.includes('proot-distro login debian -- /opt/node22/bin/node /opt/trace/scripts/phone-boot-adb.cjs'));
+  assert.ok(termuxRunner('install.sh').includes(`cp ${STAGE}/trace-adb ~/.termux/boot/trace-adb`));
+  assert.ok(!termuxRunner('check.sh').includes('.termux/boot'));
 });
