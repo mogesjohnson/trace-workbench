@@ -186,8 +186,8 @@ Next steps (replace 1, 3 and 6 above):
 ## Session 4 (1 November 2026, device run, owner-approved)
 
 The owner approved one on-device run on the S23 (SM-S918U, SDK 37) over USB. A stdio MCP client
-started `node bin/trace.cjs phone mcp` (the same command a registered server runs) on main's
-code, then before PR #81 merged on unchanged code. The dex was rebuilt with
+started `node bin/trace.cjs phone mcp` (the same command a registered server runs) on the PR #81
+head `6278bd5`, just before it merged unchanged. The dex was rebuilt with
 `node scripts/build-phone-agent.cjs` (22,568 bytes, 4 classes).
 
 | Step | Result | Time (host) | Notes |
