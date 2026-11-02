@@ -182,3 +182,31 @@ Next steps (replace 1, 3 and 6 above):
    `adb shell ls /data/local/tmp/trace-phone.dex` and `pidof app_process` that nothing remains.
 2. Wi-Fi bench (step 2 above), then the on-phone Termux/Debian install (step 4 above) after this
    PR merges.
+
+## Session 4 (1 November 2026, device run, owner-approved)
+
+The owner approved one on-device run on the S23 (SM-S918U, SDK 37) over USB. A stdio MCP client
+started `node bin/trace.cjs phone mcp` (the same command a registered server runs) on the PR #81
+head `6278bd5`, just before it merged unchanged. The dex was rebuilt with
+`node scripts/build-phone-agent.cjs` (22,568 bytes, 4 classes).
+
+| Step | Result | Time (host) | Notes |
+|---|---|---|---|
+| `tools/list` | pass | | 6 tools: connect, screen, ui, act, wait, logcat |
+| `phone_connect` | pass | 2002 ms | one USB device picked; agent `pid` returned (verifies `hello` pid) |
+| `phone_screen` (`force`) | pass | 383 ms | 597×1280 JPEG, 62,709 bytes, capture 329 ms, encode 42 ms; home screen |
+| `phone_ui` (`maxNodes` 25) | pass | 1517 ms | launcher package, 25 of 55 nodes; UiAutomation constructor `(int, Looper, IUiAutomationConnection)` works |
+| `phone_act` key `home` | pass | 669 ms | `met:true` after 4 frames; frame unchanged (already on home, expected) |
+| close server | pass | | `ls /data/local/tmp/trace-phone.dex`: no such file; `pidof app_process`: none |
+
+This verifies `stop()` by pid and the MCP server against a real phone over USB (the
+session 3 TODO(verify) items). Not run: Wi-Fi bench, `phone_wait`, `phone_logcat`, selector taps.
+Frames stay local in `.runtime/phone/frames/`.
+
+Next steps:
+
+1. On-phone Claude (Termux → proot Debian): node at `/opt/node22`, a user-level MCP server
+   `trace-phone`, a copy of `skills/trace-phone/`, as REA was set up. Wireless debugging port
+   5555 closes on reboot; reopen it with `adb tcpip 5555`. TODO(verify) proot reach to the
+   abstract socket (step 4 above).
+2. Wi-Fi bench (step 2 above).
