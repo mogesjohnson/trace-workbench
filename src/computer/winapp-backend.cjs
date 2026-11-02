@@ -419,9 +419,53 @@ class WinappBackend {
     };
     for (const element of entry.elements) visit(element);
     return { bounds: bounds(root), rootSelector: selector(root.selector), elements: flat, hierarchy,
-      coordinateSpace: entry.coordinateSpace, depth, truncated, includeOffscreen, offscreenOmitted };
+      coordinateSpace: entry.coordinateSpace, depth, truncated, includeOffscreen, offscreenOmitted, nodeCount: kept };
   }
-  async focused(window, signal, elements) {
+  // Root-first UIA chain from the window root to the element the selector resolves to.
+  async ancestors(window, signal, nativeSelector) {
+    const result = await this.command('inspect', ['-w', id(window.id), '--ancestors', '--', selector(nativeSelector)], signal);
+    const entry = result.windows?.find(candidate => String(candidate.hwnd) === window.id);
+    if (!entry || entry.coordinateSpace !== 'physical-screen-pixels' || !Array.isArray(entry.elements) || entry.elements.length !== 1) fail('invalid_native_response', 'Focus ancestor chain was not returned for the exact target.');
+    const chain = [];
+    for (let node = entry.elements[0]; node; node = node.children?.[0]) {
+      if (!object(node) || chain.length > 64 || (node.children != null && (!Array.isArray(node.children) || node.children.length > 1))) fail('invalid_native_response', 'Focus ancestor chain must be a single bounded path.');
+      chain.push(node);
+    }
+    return chain;
+  }
+  // Adds the focused control and its ancestors to an inspected tree that stopped above them.
+  // Nodes already present (same selector, or same AutomationId, type and bounds) are reused, so
+  // nothing is listed twice. Returns the target's element id, or null when nothing can be merged.
+  mergeFocusPath(state, chain) {
+    if (!chain.length || chain[0].selector !== state.rootSelector) return null;
+    let next = Number.isInteger(state.nodeCount) ? state.nodeCount : state.elements.length + state.hierarchy.length;
+    let parentNodeId = state.elements.find(item => item.id === state.rootSelector)?.treeNodeId ?? null, targetId = null;
+    for (let index = 1; index < chain.length; index++) {
+      const node = chain[index], last = index === chain.length - 1;
+      const nodeBounds = [node.x, node.y, node.width, node.height].every(Number.isFinite) && node.width > 0 && node.height > 0 ? bounds(node) : null;
+      const existing = node.selector ? state.elements.find(item => item.id === node.selector
+        || (node.automationId && item.automationId === node.automationId && item.controlType === (node.type || 'Unknown') && nodeBounds && sameBounds(item.bounds, nodeBounds))) : null;
+      if (existing) { parentNodeId = existing.treeNodeId; if (last) targetId = existing.id; continue; }
+      if (!state.includeOffscreen && node.isOffscreen === true && !last) continue;
+      const nodeId = `n${next++}`;
+      if (!node.selector) state.hierarchy.push({ nodeId, parentNodeId, name: String(node.name || '').slice(0, 512), controlType: node.type || 'Unknown', focusPath: true });
+      else {
+        const item = { id: selector(node.selector), name: node.name || '', controlType: node.type || 'Unknown', enabled: node.isEnabled === true, offscreen: node.isOffscreen === true };
+        if (typeof node.automationId === 'string' && node.automationId) item.automationId = node.automationId;
+        if (typeof node.className === 'string' && node.className) item.className = node.className;
+        if (nodeBounds) item.bounds = nodeBounds;
+        item.secondaryActions = [];
+        state.elements.push({ ...item, treeNodeId: nodeId, parentNodeId, focusPath: true });
+        if (last) targetId = item.id;
+      }
+      parentNodeId = nodeId;
+    }
+    state.nodeCount = next;
+    return targetId;
+  }
+  // With `state`, an unresolved focus outside the inspected depth is completed with its ancestor
+  // chain and bound again. The unique-binding rule is unchanged.
+  async focused(window, signal, elements, state) {
     const result = await this.command('get-focused', ['-w', window.id], signal);
     if (typeof result.hasFocus !== 'boolean') fail('invalid_native_response', 'Invalid focused-element envelope.');
     if (!result.hasFocus) return { available: true, hasFocus: false, provenance: 'winapp-get-focused' };
@@ -429,16 +473,28 @@ class WinappBackend {
     const focused = { available: true, hasFocus: true, elementId: native.selector || null, name: native.name || '', controlType: native.type || 'Unknown', provenance: 'winapp-get-focused' };
     if (!elements) return focused;
     const nativeBounds = [native.x, native.y, native.width, native.height].every(Number.isFinite) && native.width > 0 && native.height > 0 ? bounds(native) : null;
-    const candidates = elements.filter(item => {
-      const exactSelector = item.id === native.selector;
-      const automationIdentity = native.automationId && item.automationId === native.automationId && nativeBounds && sameBounds(item.bounds, nativeBounds)
-        && (!native.className || item.className === native.className);
-      return (exactSelector || automationIdentity) && item.name === focused.name && item.controlType === focused.controlType;
-    });
-    // get-focused generates a transient selector while inspect can use AutomationId. Bind only a
-    // unique same-control match from this capture; a shared label alone never identifies focus.
-    return { ...focused, elementId: candidates.length === 1 ? candidates[0].id : null,
-      binding: candidates.length === 1 ? 'observed-control' : 'unresolved', nativeSelector: native.selector || null };
+    const bind = (items, chainTarget) => {
+      const candidates = items.filter(item => {
+        const exactSelector = item.id === native.selector;
+        const automationIdentity = native.automationId && item.automationId === native.automationId && nativeBounds && sameBounds(item.bounds, nativeBounds)
+          && (!native.className || item.className === native.className);
+        // The chain target is the element winapp resolved from this focus selector in this capture.
+        const resolved = chainTarget !== undefined && item.id === chainTarget && nativeBounds && sameBounds(item.bounds, nativeBounds);
+        return (exactSelector || automationIdentity || resolved) && item.name === focused.name && item.controlType === focused.controlType;
+      });
+      // get-focused generates a transient selector while inspect can use AutomationId. Bind only a
+      // unique same-control match from this capture; a shared label alone never identifies focus.
+      return { ...focused, elementId: candidates.length === 1 ? candidates[0].id : null,
+        binding: candidates.length === 1 ? 'observed-control' : 'unresolved', nativeSelector: native.selector || null };
+    };
+    const bound = bind(elements);
+    if (bound.binding !== 'unresolved' || !state || !native.selector) return bound;
+    let target = null;
+    // A failed chain read leaves focus unresolved: observation still succeeds and keyboard input
+    // still fails closed with focus_not_acquired.
+    try { target = this.mergeFocusPath(state, await this.ancestors(window, signal, native.selector)); }
+    catch (error) { if (signal?.aborted) throw error; }
+    return target === null ? bound : { ...bind(state.elements, target), focusPath: true };
   }
   // A restored window animates from its minimized state; capture only after two equal geometry reads.
   async settledBounds(window, signal, { attempts = 15, intervalMs = 100 } = {}) {
@@ -550,7 +606,7 @@ class WinappBackend {
     const afterGeometry = await measure('geometry', () => this.bridge('bounds', window, signal));
     if (!sameBounds(state.bounds, after.bounds) || !sameBounds(bounds(geometry.frameBounds), bounds(afterGeometry.frameBounds)) || !sameBounds(bounds(geometry.windowBounds), bounds(afterGeometry.windowBounds))) fail('window_moved', 'Window moved during observation; request a fresh observation.');
     let focused;
-    try { focused = await measure('focus', () => this.focused(window, signal, state.elements)); }
+    try { focused = await measure('focus', () => this.focused(window, signal, state.elements, state)); }
     catch (error) { if (signal?.aborted) throw error; focused = { available: false, code: error.code || 'focus_query_failed' }; }
     if (window.processCreationTime !== undefined && afterGeometry.processCreationTime !== window.processCreationTime) fail('window_identity_changed', 'The selected process was replaced.');
     return { ...state, ...(documentRead ? { documentRead } : {}), window: { ...current, bounds: captured }, bounds: captured, uiaBounds: state.bounds, nativeWindowBounds: bounds(geometry.windowBounds), frameBounds: bounds(geometry.frameBounds), focused,
@@ -669,7 +725,7 @@ class WinappBackend {
       if (ready.enabled === false) fail('window_blocked', 'The selected window became disabled before its value operation.', { outcome: 'not_dispatched' });
     }
     if (action.type === 'type_text' || action.type === 'press_key') {
-      const focused = await this.focused(window, signal, fresh.elements);
+      const focused = await this.focused(window, signal, fresh.elements, fresh);
       if (!focused.hasFocus) fail('focus_not_acquired', 'Keyboard focus could not be verified inside the exact selected window.');
       if (observation.focused?.hasFocus && observation.focused.elementId !== focused.elementId) fail('focus_changed', 'Focused control changed since observation. Observe again.');
       if (!focused.elementId) fail('focus_not_acquired', 'Keyboard focus could not be bound to an observed control inside the exact selected window.');

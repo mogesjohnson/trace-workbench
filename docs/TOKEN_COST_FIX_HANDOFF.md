@@ -1,13 +1,13 @@
 # Token cost fixes — handoff (2 November 2026)
 
-Work for [the token cost incident](OBSERVATION_TOKEN_COST_INCIDENT.md) (PR #97). The
+Work for [the token cost incident](https://github.com/mogesjohnson/trace-workbench/pull/97) (`docs/OBSERVATION_TOKEN_COST_INCIDENT.md` on PR #97). The
 owner asked for every issue in PR #97 to be fixed. This file records how far the
 work got and what comes next.
 
 - Branch: `fix/observation-token-cost`, stacked on `feat/v8-claude-lifecycle` @
   `e762f25` (PR #80 head, the build that was measured). C1 exists only on that
   stack, so the fixes are stacked on it.
-- Worktree: `C:/Users/johns/projects/trace-workbench-worktrees/token-cost-fixes`
+- Worktree: `trace-workbench-worktrees/token-cost-fixes`, a sibling of the main checkout
   (`npm ci` already run there).
 
 ## Done: P0-1 and P0-2 (commit on this branch)
@@ -33,6 +33,23 @@ work got and what comes next.
   v1-capabilities. Result: 117/117 passed. The full suite and `npm run check` have
   not been run. No live measurement has been made.
 
+## Done: P0-5, focus path (commit on this branch)
+
+- `winapp-backend.cjs` `focused(window, signal, elements, state)`: when the focus
+  binding is `unresolved` and get-focused returned a selector, TRACE runs
+  `ui inspect -w <hwnd> --json --ancestors -- <selector>` (`ancestors()`) and merges the
+  root-first chain into the inspected state (`mergeFocusPath()`). Existing nodes (same
+  selector, or AutomationId + type + bounds) are reused; added nodes carry
+  `focusPath: true`. Offscreen ancestors are skipped unless `includeOffscreen`; the
+  target is always kept. Binding then also accepts the chain target when its bounds
+  equal the focus bounds, still only as a unique same-control match.
+- Both `observe()` and `dispatch()` (before the keyboard focus check) do this. A
+  failed or mismatched chain leaves focus unresolved, so keyboard input still fails
+  closed with `focus_not_acquired`.
+- Limit: focus-path controls are re-inspected only for keyboard input; clicking one
+  needs a deeper observation (fail-closed `stale_element`).
+- Tests: `tests/v8-focus-path.test.cjs` (5 cases, including a size check).
+
 ## Findings to reuse (verified read-only on this PC)
 
 - winapp 0.7.1 `ui inspect` accepts `[<selector>]` (subtree root), `--ancestors`
@@ -47,14 +64,7 @@ work got and what comes next.
 
 ## Next, in order
 
-1. **P0-5, focus path.** Both in `observe()` (after `focused()`) and in
-   `dispatch()` (before the keyboard focus check): when `binding === 'unresolved'`
-   and `nativeSelector` is set, run
-   `inspect -w <hwnd> --json --ancestors -- <nativeSelector>`. Merge the chain nodes
-   that are not already present, matching by selector, or else by
-   automationId + type + bounds, under the chain parent. Then rebind. This must not
-   weaken the unique-binding rule. Test: depth-1 observation with focus deep in the
-   tree, then `type_text`, gets past the focus guards.
+1. ~~P0-5~~ done (see above).
 2. **P0-3 and P0-4, compact act and optional screenshot.**
    - `act` gets `returnObservation: 'full' | 'summary' | 'none'`, default
      `'summary'`. Summary means `observationId`, focus, title, `targetState` and a

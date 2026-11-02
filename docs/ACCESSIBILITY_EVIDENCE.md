@@ -12,7 +12,19 @@ Offscreen nodes are omitted by default and counted in
 `accessibility.offscreenOmitted`; their kept descendants attach to the nearest kept
 ancestor. The window root is always kept. Pass `includeOffscreen: true` to observe
 them; the setting is retained server-side for that observation's action check, like
-depth. See [the token cost incident](OBSERVATION_TOKEN_COST_INCIDENT.md) (C1, C2).
+depth. See [the token cost incident](https://github.com/mogesjohnson/trace-workbench/pull/97) (C1, C2).
+
+The focused control and its ancestors are included whatever the depth (C5). When
+keyboard focus lies below the observed depth, TRACE reads winapp's root-first chain
+for the focused element (`ui inspect --ancestors`) and merges the missing nodes under
+their observed parent, marked `focusPath: true`. Nodes already present (same
+selector, or same AutomationId, type and bounds) are reused, so nothing is listed
+twice. Focus then binds only to a unique same-control match, as before. `act`
+repeats the merge on its re-inspection before the keyboard focus check, so a depth-1
+observation can authorize `type_text` or `press_key`. If the chain cannot be read or
+ends in another control, focus stays `unresolved` and keyboard input fails closed
+with `focus_not_acquired`. Focus-path controls are re-inspected only for keyboard
+input; to click one, observe at a depth that reaches it.
 
 Hierarchy names are bounded to 512 UTF-16 units. All nodes, including selectorless
 ones, count toward 10000 nodes and depth 32. Cycles or malformed children reject
