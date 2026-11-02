@@ -54,10 +54,9 @@ and the PR link, so the owner learns the outcome without asking.
    stays alive after its last message, and so do its MCP server and agent, so the session can't
    check this itself: report it `not_run` and leave it to whoever archives the session (A7 trial,
    2 Nov 2026).
-2. Delete frames older than 7 days on each machine that took frames:
-   `find .runtime/phone/frames -type f -mtime +7 -delete` (in `/opt/trace` on the phone).
-   In auto mode the permission check denies this delete unless the A2 profile allows it, so
-   report it `blocked` with a read-only count of the old frames.
+2. Frames older than 7 days: trace-phone deletes them itself when its MCP server starts, so do
+   not delete frames from Bash (auto mode denies it, even with an exact allow rule). Check with a
+   read-only count: `find /opt/trace/.runtime/phone/frames -type f -mtime +7 | wc -l` should be 0.
 3. Leave nothing running: no dev servers, watchers, extra adb forwards or stray worktrees.
 4. Update `docs/PHONE_HANDOFF.md` and capture the handoff in the second brain (one stable
    subject; supersede the previous handoff). If capture fails, say so and keep the repo handoff.
