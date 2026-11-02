@@ -10,8 +10,8 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { Client, InMemoryTransport } = require('@modelcontextprotocol/client');
 const { createPhoneServer, toControllerAction, KEYS } = require('../src/phone/server.cjs');
-const { createPhoneController } = require('../src/phone/controller.cjs');
-const { newest, compare } = require('../scripts/build-phone-agent.cjs');
+const { createPhoneController } = require('../src/agentic-phone/controller.cjs');
+const { newest, compare } = require('../src/agentic-phone/build.cjs');
 const { fakeAgent, fakeAdb, tempDir, hello, jpeg } = require('./fixtures/phone-fakes.cjs');
 
 const TOOLS = ['phone_act', 'phone_connect', 'phone_logcat', 'phone_screen', 'phone_ui', 'phone_wait'];

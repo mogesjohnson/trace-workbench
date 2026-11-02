@@ -1,7 +1,7 @@
 'use strict';
 
 // MCP server for TRACE Phone: drives one Android phone through the on-device
-// trace-phone agent (src/phone/controller.cjs). Frames are returned as MCP image
+// trace-phone agent (src/agentic-phone/controller.cjs). Frames are returned as MCP image
 // content only when the screen changed; every frame is also saved locally.
 
 const { McpServer } = require('@modelcontextprotocol/server');
@@ -177,7 +177,7 @@ function createPhoneServer({ controller, onError = () => {}, stopOnClose = true 
 }
 
 async function runPhoneServer(options = {}) {
-  const controller = options.controller ?? require('./controller.cjs').createPhoneController();
+  const controller = options.controller ?? require('../agentic-phone/controller.cjs').createPhoneController();
   const onError = options.onError ?? ((error) => {
     process.stderr.write(`TRACE Phone: ${error instanceof Error ? error.message : 'Server error'}\n`);
   });
