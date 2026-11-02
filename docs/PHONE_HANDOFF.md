@@ -355,3 +355,25 @@ from Termux with `nohup` and a wake lock, as the proot login's own command. **Re
   50 s after unlock), because the boot script runs them in sequence.
 - Not covered: push notifications for ask-tier actions (Remote Control shows the prompt in
   claude.ai/code and the Claude app; whether the app notifies is TODO(verify)).
+
+## Task A7 trial run (2 November 2026, device run, owner-approved)
+
+The PC sent the trial task (`/sdcard/Download/trace-install/a7/TASK.md`, allowed tier only) from
+the Claude app on the S23 over adb: Code, new session, environment `localhost · phone-work`.
+The phone session followed `AUTONOMOUS_SESSION.md` and posted this notification:
+"A7 trial: pass 5 (C1 C2 C3 C5 C6), blocked 1 (C4 frame delete denied by permission check; 0 of
+22 frames were older than 7d), not_run 1 (C7). No PR (no repo)." The handoff was written to
+`/root/phone-work/a7-handoff.md`.
+
+- C2 to C3: `phone_connect` reused the running agent, `phone_ui` after `home` reported
+  `com.sec.android.app.launcher`, and `phone_screen` saved a 21547-byte frame.
+- C4 blocked: the auto-mode permission check denied `find ... -mtime +7 -delete` as an
+  irreversible delete. Nothing needed deleting (0 of 22 frames were old). Fix: an allow rule in the
+  A2 profile.
+- C7: after the last message, the session process, its `trace-phone` MCP server and
+  `app_process` were all still running, and `trace-phone.dex` was still in `/data/local/tmp`.
+  A Remote Control session stays alive until it is archived. Ending its process from adb was
+  denied by the PC's permission check.
+- C7 pass (2 November 2026): the session was archived in the Claude app over adb (session menu >
+  Archive > Archive). About 20 seconds later `pidof app_process` printed nothing and
+  `/data/local/tmp/trace-phone.dex` was gone. Only the A5 boot Remote Control host was still running.
