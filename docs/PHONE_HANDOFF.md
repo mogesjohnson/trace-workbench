@@ -346,7 +346,12 @@ from Termux with `nohup` and a wake lock, as the proot login's own command. **Re
   approved from the PC. The transcript shows both tool results `ok`.
 - The Termux:Boot script now starts Remote Control after `phone-boot-adb.cjs`, in a login that
   first runs `adb start-server` and `adb connect 127.0.0.1:5555` (A3: no adb server, no tools).
-  Log: `~/.trace-rc.log` in Termux. TODO(verify): a reboot starts it with no hand steps; this run
-  started it by hand.
+  Log: `~/.trace-rc.log` in Termux.
+- Install and reboot test (13:43-13:48 EST, S23 on USB, eduroam): `install-phone-claude.cjs --ref
+  efc2588` ended `TRACE-INSTALL-END 0` with the trust entry in place. After `adb reboot` and an
+  unlock, Termux:Boot reopened 5555 at 13:47:33, then started `claude remote-control --name
+  s23-trace`, and `~/.trace-rc.log` showed `Connected · phone-work`. **Result: pass**, no hand
+  steps besides the unlock. Remote Control starts only after `phone-boot-adb.cjs` ends (about
+  50 s after unlock), because the boot script runs them in sequence.
 - Not covered: push notifications for ask-tier actions (Remote Control shows the prompt in
   claude.ai/code and the Claude app; whether the app notifies is TODO(verify)).
