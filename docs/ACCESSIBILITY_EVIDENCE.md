@@ -1,12 +1,18 @@
 # Accessibility evidence — item 14
 
-Full and accessibility observations add `accessibility.hierarchy`, a bounded
-preorder forest. Each node has a local `nodeId`, `parentNodeId` (null for a root),
-optional observed `elementId`, type/name, `nestingDepth` and `hasMoreChildren`.
-Selectorless parents remain in the hierarchy; duplicate labels remain distinct.
-Flat actionable element IDs/order stay unchanged, with `treeNodeId` linking each
-element to this observation's hierarchy. Node IDs never authorize input and must
-not survive a refresh as target identity.
+Full and accessibility observations serialize the UIA tree once. Each entry in
+`elements` carries a local `treeNodeId` and `parentNodeId` (null for a root), plus
+`hasMoreChildren: true` when native depth truncated it. `accessibility.hierarchy`,
+present only when needed, lists the selectorless structural nodes (`nodeId`,
+`parentNodeId`, name, type, optional `hasMoreChildren`); together they form the
+preorder forest. Duplicate labels remain distinct. Node IDs never authorize input
+and must not survive a refresh as target identity.
+
+Offscreen nodes are omitted by default and counted in
+`accessibility.offscreenOmitted`; their kept descendants attach to the nearest kept
+ancestor. The window root is always kept. Pass `includeOffscreen: true` to observe
+them; the setting is retained server-side for that observation's action check, like
+depth. See [the token cost incident](OBSERVATION_TOKEN_COST_INCIDENT.md) (C1, C2).
 
 Hierarchy names are bounded to 512 UTF-16 units. All nodes, including selectorless
 ones, count toward 10000 nodes and depth 32. Cycles or malformed children reject

@@ -371,22 +371,36 @@ class WinappBackend {
     }
     return { ...window, title: current.windowTitle || '' };
   }
-  async inspect(window, signal, depth = 8) {
+  // The tree is serialized once: every selector-backed node is an element carrying its
+  // treeNodeId/parentNodeId; `hierarchy` holds only selectorless structural nodes.
+  // Offscreen nodes are omitted unless requested; kept descendants attach to the
+  // nearest kept ancestor. The root is always kept.
+  async inspect(window, signal, depth = 8, { includeOffscreen = false } = {}) {
     const result = await this.command('inspect', ['-w', id(window.id), '--depth', String(depth)], signal);
     const entry = result.windows?.find(candidate => String(candidate.hwnd) === window.id);
     if (!entry || entry.coordinateSpace !== 'physical-screen-pixels' || !Array.isArray(entry.elements) || !entry.elements.length) fail('invalid_native_response', 'Exact target UIA root was not returned.');
     const root = entry.elements[0];
     const flat = [], hierarchy = [], active = new WeakSet();
+    let visited = 0, kept = 0, offscreenOmitted = 0, truncated = false;
     const visit = (element, parentNodeId = null, nestingDepth = 0) => {
       if (!object(element) || active.has(element)) fail('invalid_native_response', 'UIA tree contains an invalid node or cycle.');
-      if (hierarchy.length >= 10000 || nestingDepth > 32) fail('native_output_limit', 'UIA tree exceeds its node/depth bounds.');
+      if (visited >= 10000 || nestingDepth > 32) fail('native_output_limit', 'UIA tree exceeds its node/depth bounds.');
       if (element.children != null && !Array.isArray(element.children)) fail('invalid_native_response', 'UIA children must be an array.');
       active.add(element);
-      const nodeId = `n${hierarchy.length}`;
-      hierarchy.push({ nodeId, parentNodeId, elementId: element.selector ? selector(element.selector) : null,
-        name: String(element.name || '').slice(0, 512), controlType: element.type || 'Unknown',
-        nestingDepth, hasMoreChildren: element.hasMoreChildren === true });
-      if (element.selector) {
+      visited++;
+      if (!includeOffscreen && element.isOffscreen === true && element !== root) {
+        offscreenOmitted++;
+        for (const child of element.children || []) visit(child, parentNodeId, nestingDepth + 1);
+        active.delete(element);
+        return;
+      }
+      const nodeId = `n${kept++}`;
+      const more = element.hasMoreChildren === true;
+      if (more) truncated = true;
+      if (!element.selector) {
+        hierarchy.push({ nodeId, parentNodeId, name: String(element.name || '').slice(0, 512), controlType: element.type || 'Unknown',
+          ...(more ? { hasMoreChildren: true } : {}) });
+      } else {
         const item = { id: selector(element.selector), name: element.name || '', controlType: element.type || 'Unknown', enabled: element.isEnabled === true, offscreen: element.isOffscreen === true };
         if (typeof element.automationId === 'string' && element.automationId) item.automationId = element.automationId;
         if (typeof element.className === 'string' && element.className) item.className = element.className;
@@ -398,14 +412,14 @@ class WinappBackend {
         if (['expanded', 'collapsed'].includes(element.expandState)) item.expandState = element.expandState;
         item.secondaryActions = item.enabled ? secondaryActions : [];
         if ([element.x, element.y, element.width, element.height].every(Number.isFinite) && element.width > 0 && element.height > 0) item.bounds = bounds(element);
-        flat.push({ ...item, treeNodeId: nodeId });
+        flat.push({ ...item, treeNodeId: nodeId, parentNodeId, ...(more ? { hasMoreChildren: true } : {}) });
       }
       for (const child of element.children || []) visit(child, nodeId, nestingDepth + 1);
       active.delete(element);
     };
     for (const element of entry.elements) visit(element);
     return { bounds: bounds(root), rootSelector: selector(root.selector), elements: flat, hierarchy,
-      coordinateSpace: entry.coordinateSpace, depth, truncated: hierarchy.some(node => node.hasMoreChildren) };
+      coordinateSpace: entry.coordinateSpace, depth, truncated, includeOffscreen, offscreenOmitted };
   }
   async focused(window, signal, elements) {
     const result = await this.command('get-focused', ['-w', window.id], signal);
@@ -487,7 +501,8 @@ class WinappBackend {
       targetState: { enabled: after.enabled, minimized: after.minimized, foreground: after.foreground, provenance: 'public-win32-dwm' },
       restoredFromMinimized: restored, captureMethod: capture.method, screenshot: { path: screenshotPath, mimeType: 'image/png', ...size } };
   }
-  async observe({ window, screenshotPath, signal, depth = 8, includeScreenshot = true, documentElementId, visualOnly = false }) {
+  async observe({ window, screenshotPath, signal, depth = 8, includeScreenshot = true, documentElementId, visualOnly = false, includeOffscreen = false }) {
+    if (typeof includeOffscreen !== 'boolean') fail('invalid_observation', 'includeOffscreen must be a boolean.');
     if (typeof visualOnly !== 'boolean' || (visualOnly && (!includeScreenshot || documentElementId !== undefined))) fail('invalid_observation', 'Visual-only capture cannot include document reads or omit PNG.');
     if (visualOnly) return this.observeVisual({ window, screenshotPath, signal });
     if (typeof includeScreenshot !== 'boolean') fail('invalid_observation', 'includeScreenshot must be a boolean.');
@@ -512,7 +527,7 @@ class WinappBackend {
       await measure('restore', () => this.bridge('activate', window, signal));
       geometry = await measure('settle', () => this.settledBounds(window, signal));
     }
-    const state = await measure('uia', () => this.inspect(window, signal, depth));
+    const state = await measure('uia', () => this.inspect(window, signal, depth, { includeOffscreen }));
     geometry = await measure('geometry', () => this.bridge('bounds', window, signal));
     const captured = captureBounds(bounds(geometry.frameBounds), state.bounds);
     await measure('identity', () => this.identity(window, signal, geometry));
@@ -564,7 +579,7 @@ class WinappBackend {
     if ((pointerClick || pointWheel) && !this.supervisor?.ready) fail('supervision_required', 'Extended pointer input requires declared-input native supervision.', { outcome: 'not_dispatched' });
     await this.identity(window, signal);
     // Reinspect at the server-retained observation depth so deeply observed controls remain targetable.
-    const fresh = await this.inspect(window, signal, observation.depth ?? 8);
+    const fresh = await this.inspect(window, signal, observation.depth ?? 8, { includeOffscreen: observation.includeOffscreen === true });
     const geometry = await this.bridge('bounds', window, signal);
     if (geometry.enabled === false) fail('window_blocked', 'The selected window is disabled. Select its enabled dialog explicitly before input.', { outcome: 'not_dispatched' });
     const captured = captureBounds(bounds(geometry.frameBounds), fresh.bounds);

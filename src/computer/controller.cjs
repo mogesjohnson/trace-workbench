@@ -127,19 +127,19 @@ function createComputerController(options = {}) {
     // No typed text, values, screenshots, or full window inventory in the journal.
     await fs.appendFile(path.join(session.directory, 'events.jsonl'), `${JSON.stringify({ at: new Date(now()).toISOString(), sessionId: session.id, ...event })}\n`);
   }
-  async function observeInternal(session, signal, depth = DEFAULT_DEPTH, mode = 'full', documentElementId) {
+  async function observeInternal(session, signal, depth = DEFAULT_DEPTH, mode = 'full', documentElementId, includeOffscreen = false) {
     // A valid selective read revokes input authority even if readiness/capture fails.
     if (mode !== 'full') session.observation = null;
     const metrics = createObservationMetrics({ clock: options.metricsClock,
       sample: observedBefore ? 'later-controller-attempt' : 'first-controller-attempt' });
     observedBefore = true;
     return metrics.run(async () => {
-      const result = await measure('observation', () => observeMeasured(session, signal, depth, mode, documentElementId));
+      const result = await measure('observation', () => observeMeasured(session, signal, depth, mode, documentElementId, includeOffscreen));
       result.metrics = metrics.snapshot();
       return result;
     });
   }
-  async function observeMeasured(session, signal, depth, mode, documentElementId) {
+  async function observeMeasured(session, signal, depth, mode, documentElementId, includeOffscreen) {
     signal = markedSignal(signal);
     await lease.assert(session.id);
     await measure('identity', () => currentWindow(session, signal, mode === 'screenshot'));
@@ -149,9 +149,11 @@ function createComputerController(options = {}) {
     const snapshot = await measure('backend', () => backend.observe({ window: session.window, screenshotPath, signal, depth,
       ...(mode === 'accessibility' ? { includeScreenshot: false } : {}),
       ...(mode === 'screenshot' ? { visualOnly: true } : {}),
+      ...(includeOffscreen ? { includeOffscreen: true } : {}),
       ...(documentElementId === undefined ? {} : { documentElementId }) }));
     // The effective depth stays server-side with the observation; actions cannot replace it.
     snapshot.depth = Number.isInteger(snapshot.depth) ? snapshot.depth : depth;
+    snapshot.includeOffscreen = includeOffscreen;
     if (!identityMatches(snapshot.window, session.window)) throw fail('window_changed', 'Observation returned a different window identity.');
     const bounds = snapshot.bounds;
     if (!bounds || !['x', 'y', 'width', 'height'].every(key => Number.isFinite(bounds[key])) || bounds.width < 1 || bounds.height < 1) throw fail('invalid_observation', 'Backend returned invalid window bounds.');
@@ -178,7 +180,8 @@ function createComputerController(options = {}) {
       elements: snapshot.elements ?? [], observedAt: new Date(observedAtMs).toISOString(),
       coordinateSpace: 'window-local-physical-pixels', captureMethod: snapshot.captureMethod ?? 'native-window',
       accessibility: { truncated: snapshot.truncated === true, depth: snapshot.depth,
-        ...(Array.isArray(snapshot.hierarchy) ? { hierarchy: snapshot.hierarchy } : {}) },
+        ...(Number.isInteger(snapshot.offscreenOmitted) && snapshot.offscreenOmitted > 0 ? { offscreenOmitted: snapshot.offscreenOmitted } : {}),
+        ...(Array.isArray(snapshot.hierarchy) && snapshot.hierarchy.length ? { hierarchy: snapshot.hierarchy } : {}) },
       ...(documentElementId === undefined ? {} : { documentRead: snapshot.documentRead }),
       focused: snapshot.focused ? { ...snapshot.focused } : { available: false, code: 'focus_unavailable' },
       targetState: snapshot.targetState ?? { available: false },
@@ -268,14 +271,15 @@ function createComputerController(options = {}) {
         }
       }, callOptions);
     },
-    observe({ sessionId, accessibilityDepth, mode, documentElementId }, callOptions) {
+    observe({ sessionId, accessibilityDepth, mode, documentElementId, includeOffscreen }, callOptions) {
       return queued(async signal => {
         const session = getSession(sessionId);
         const depth = validateDepth(accessibilityDepth), checkedMode = validateObservationMode(mode);
         if (documentElementId !== undefined && (checkedMode !== 'accessibility' || typeof documentElementId !== 'string'
           || !documentElementId || documentElementId.length > 512 || documentElementId.startsWith('-') || /[\u0000-\u001f]/.test(documentElementId)))
           throw fail('invalid_document_request', 'documentElementId requires accessibility mode and a valid observed element ID.');
-        const result = await observeInternal(session, signal, depth, checkedMode, documentElementId);
+        if (includeOffscreen !== undefined && typeof includeOffscreen !== 'boolean') throw fail('invalid_observation', 'includeOffscreen must be a boolean.');
+        const result = await observeInternal(session, signal, depth, checkedMode, documentElementId, includeOffscreen === true);
         return retainCapture(session, result, signal);
       }, callOptions);
     },
@@ -304,7 +308,7 @@ function createComputerController(options = {}) {
           indicator.assertActive();
           const nativeResult = await backend.act({ window: session.window, observation: observation.snapshot, action: checked, signal });
           nativeCompleted = true;
-          const fresh = await observeInternal(session, signal, observation.snapshot.depth);
+          const fresh = await observeInternal(session, signal, observation.snapshot.depth, 'full', undefined, observation.snapshot.includeOffscreen === true);
           await record(session, { type: 'action_completed', actionId, observationId: fresh.observationId });
           await retainCapture(session, fresh, signal);
           return { actionId, outcome: 'completed', verification: 'fresh_observation', nativeResult, observation: fresh };
