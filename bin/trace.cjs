@@ -3,7 +3,22 @@
 
 const { runCli } = require('../src/integration.cjs');
 
+async function phone(args) {
+  const [command, ...extra] = args;
+  if (!command || command === '--help' || command === 'help') {
+    process.stdout.write('TRACE Phone\n\n  trace-workbench phone mcp  Serve Android phone tools over stdio\n\nBuild the agent first: node scripts/build-phone-agent.cjs\n');
+    return 0;
+  }
+  if (extra.length) throw new Error('Phone commands accept no extra options.');
+  if (command === 'mcp') {
+    await require('../src/phone/server.cjs').runPhoneServer();
+    return 0;
+  }
+  throw new Error('Unknown phone command. Use phone --help.');
+}
+
 async function dispatch(args) {
+  if (args[0] === 'phone') return phone(args.slice(1));
   if (args[0] !== 'computer') return runCli(args);
   const [command, ...extra] = args.slice(1);
   if (!command || command === '--help' || command === 'help') {
