@@ -262,3 +262,33 @@ program, the typed command goes to that program.
 |---|---|---|
 | install `e227f4a` (`/opt/trace` had no ref) | pass | npm ci 175 packages in 18 s; `trace-phone ✔ Connected` |
 | rerun on this PR's docs commit (new ref) | pass | ref updated; `--check` shows the new ref and `✔ Connected`; staged archive and dex removed |
+
+## Task A3 phone Claude smoke test (1 November 2026, device run, owner-approved)
+
+In Debian on the S23, with port 5555 open (`adb tcpip 5555` from the PC earlier): `adb connect
+127.0.0.1:5555`. The A6 install was at the PR #87 docs commit, and the A2 profile was applied.
+
+Direct controller timings (`createPhoneController`, the server's code path) over 127.0.0.1 versus
+session 4's USB numbers:
+
+| Call | 127.0.0.1:5555 | USB (session 4) |
+|---|---|---|
+| connect (agent start) | 320 ms | 2002 ms |
+| forced screen (5 runs) | 212-242 ms, capture ~207 ms | 383 ms, capture 329 ms |
+| ui, 25 nodes | 348 ms | 1517 ms |
+| key home (settle included) | 2030 ms | 669 ms (screen already home) |
+
+The phone's Claude (`claude -p`, Claude Code 2.1.316) called `phone_connect` with
+`address: "127.0.0.1:5555"`, then `phone_screen` (force) and `phone_act` key `home`. All three
+passed: capture 184 ms, `met:true` after 11 frames, back on the home screen. The run had zero
+permission denials, so the A2 allow rules and the `phone_act` hook worked on the phone.
+Afterwards there was no `trace-phone.dex` and no `app_process`.
+
+Findings:
+- **`emulator-5554` is the same phone.** adb auto-detects the 5554/5555 emulator port pair, and
+  it shows as `device` with the S23's model and transport 1 (the TODO(verify) from session 4).
+  `phone_connect` needs `address` or `serial`, or it stops with "several devices".
+- **No adb server, no tools.** proot ends Debian's adb daemon when a login exits, and
+  `phone_connect` does not start one. The first run failed with `adb server unreachable at
+  127.0.0.1:5037`. Run `adb start-server` and `adb connect 127.0.0.1:5555` before starting
+  Claude (A4/A5 put this in the boot script).
