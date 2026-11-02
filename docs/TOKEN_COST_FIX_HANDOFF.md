@@ -50,6 +50,40 @@ work got and what comes next.
   needs a deeper observation (fail-closed `stale_element`).
 - Tests: `tests/v8-focus-path.test.cjs` (5 cases, including a size check).
 
+## Done: P0-3 and P0-4, 2.0.0 candidate (PR B, branch `fix/compact-act-result`)
+
+- Worktree: `trace-workbench-worktrees/compact-act` (`npm ci` already run there).
+- `controller.cjs`: `act` takes `returnObservation` (`full` | `summary` | `none`,
+  default `summary`). It always re-observes server-side. For `summary`/`none` the
+  refresh takes no PNG. `summary` holds the compact focus, `targetState`, a changed
+  title, the element count and `changes` (an `elementDiff` capped at 15 per kind).
+  `full` uses the consumed observation's `screenshotPreference`, so a summary act in
+  between does not drop the image. An invalid value is `invalid_argument`
+  with `not_dispatched`, checked before the observation is consumed.
+- `observe` takes `screenshot` (`none` | `scaled` | `full`). Full mode with `none`
+  still authorizes one action. `scaled` uses `src/computer/png-scale.cjs` (pure Node,
+  8-bit RGB/RGBA, integer box factor, longest edge ≤ 1280). It reports
+  `screenshot.scale`; an unsupported format falls back to the original bytes with a
+  `reason`.
+- Doctor reports `actResult` and `observationModes.screenshotModes`. The key must not
+  be `screenshot`: `server.cjs` `toolResult` projects every object under a key
+  named `screenshot` as a PNG.
+- `src/computer/act-compat.cjs` adds `returnObservation: "full"` only after doctor
+  advertises it. It is used by `trace-adapter.cjs`, `replacement-acceptance-common`,
+  `accept-supervisor-quarantine` (and through it `accept-supervisor-stop`),
+  `accept-supervisor-recovery`, `accept-clipboard`, `accept-claude-host`,
+  `smoke-computer-live` `createMcpController` (and through it `accept-targeting`) and
+  `accept-supervised-typing`. `accept-codex-host` is host-driven, so the model
+  chooses its own arguments there.
+- Version 2.0.0 in `package.json` and the lockfile. Also updated:
+  `docs/RELEASE_2.0.0.md` (unpublished candidate, migration notes),
+  `docs/COMPUTER_USE.md` "V2 compatibility boundary (2.0.0)" and the use steps, and
+  `VERSION_CONTROL.md`.
+- Tests: `tests/v9-compact-act.test.cjs` (8 cases). The default `press_key` response
+  was 689 chars with no image (bar 1,500). `full` was 78,997 chars plus a 2 MB image.
+  Existing tests that read `act().observation` now pass `returnObservation: 'full'`.
+  Fake backends write a PNG only when given a path.
+
 ## Findings to reuse (verified read-only on this PC)
 
 - winapp 0.7.1 `ui inspect` accepts `[<selector>]` (subtree root), `--ancestors`
@@ -65,23 +99,7 @@ work got and what comes next.
 ## Next, in order
 
 1. ~~P0-5~~ done (see above).
-2. **P0-3 and P0-4, compact act and optional screenshot.**
-   - `act` gets `returnObservation: 'full' | 'summary' | 'none'`, default
-     `'summary'`. Summary means `observationId`, focus, title, `targetState` and a
-     small element diff, with no PNG. Even with `'none'`, act still re-observes
-     server-side so the next action has authority.
-   - `observe` gets `screenshot: 'none' | 'scaled' | 'full'`. The `'none'` choice
-     with `mode: 'full'` must still authorize one action: dispatch guards use UIA
-     bounds and DWM geometry, not pixels. `'scaled'` needs a downscale step in the
-     bridge, or can be deferred and documented.
-   - **Compatibility decision:** compact-by-default changes the documented act
-     result. That is a 1.x contract change per `docs/COMPUTER_USE.md` (V1
-     compatibility boundary), so it needs a major version and migration notes.
-     `src/method/trace-adapter.cjs` and `scripts/accept-*.cjs` read
-     `value.observation`. They must request `returnObservation: 'full'` when
-     `doctor` advertises support; older servers reject unknown fields. **Owner decision, 2 November 2026: go ahead
-     with the major version bump (2.0.0)**; include migration notes.
-   - Acceptance: default `press_key` response is at most 1,500 chars with no image.
+2. ~~P0-3 and P0-4~~ done in PR B (see below).
 3. **P1.**
    - P1-1: `rootElementId` uses the inspect selector argument, and
      `interactiveOnly` uses `-i`. The dispatch re-inspection must reuse the same
@@ -96,7 +114,9 @@ work got and what comes next.
      native completion in `act`. At present this is `internal_error`.
    - P1-5: `responseBytes` in `_meta`, plus a skill rule in
      `skills/trace-computer-use/SKILL.md` (keep the discovery copies in sync;
-     `tests/skill-sync.test.cjs`).
+     `tests/skill-sync.test.cjs`). The skill should also explain the 2.0 act summary,
+     `returnObservation` and `screenshot: none|scaled`. That was left for P1-5 so the
+     skill bundle and its manifest change only once.
 4. **P2.**
    - P2-1: `metrics` becomes opt-in, and `doctor` prints the key regex once.
    - P2-2: RichEdit readback. Try winapp `get-value` (TextPattern) when the
