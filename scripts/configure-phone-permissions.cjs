@@ -15,13 +15,14 @@ const PREFIX = 'mcp__trace-phone__';
 const ALLOW = [
   ...['phone_connect', 'phone_screen', 'phone_ui', 'phone_wait', 'phone_logcat'].map((tool) => PREFIX + tool),
   'Bash(adb devices*)', 'Bash(adb shell getprop*)', 'Bash(adb shell pidof*)', 'Bash(adb shell ls /data/local/tmp*)',
-  // The A7 frame prune: exact command, no wildcard, so no other find or delete is allowed.
-  // Absolute path: the phone session runs in /root/phone-work, and `cd /opt/trace && find ...`
-  // did not match a relative rule (C4 re-run, 2 Nov 2026: auto mode denied it).
+];
+// TRACE-owned rules from earlier profiles; --apply removes them. The frame-prune rules never took
+// effect: auto mode denied the exact command anyway (A7 C4, 2 Nov 2026), so trace-phone now prunes
+// its own frames at startup (src/agentic-phone/controller.cjs pruneFrames).
+const RETIRED = [
+  'Bash(find .runtime/phone/frames -type f -mtime +7 -delete)',
   'Bash(find /opt/trace/.runtime/phone/frames -type f -mtime +7 -delete)',
 ];
-// TRACE-owned rules from earlier profiles; --apply removes them.
-const RETIRED = ['Bash(find .runtime/phone/frames -type f -mtime +7 -delete)'];
 const ACT = PREFIX + 'phone_act';
 const HOOK_NAME = 'trace-phone-act.cjs';
 
