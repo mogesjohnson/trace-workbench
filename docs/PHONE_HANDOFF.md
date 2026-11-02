@@ -237,3 +237,28 @@ Update, 1 November 2026: applied on the PC (`--apply`, then a dry run listed no 
 Phone: not_run. Its `/opt/trace` predates the script, so both scripts were copied to
 `/sdcard/Download/trace-a2/`; the owner runs `node configure-phone-permissions.cjs --apply`
 from there in Debian (A6 will make this part of the install).
+
+Update, 1 November 2026 (A6 session): applied on the phone. The session typed the command into
+Termux over adb; dry run listed 11 changes, `--apply` wrote them, a second dry run listed none.
+
+## Task A6 one-command install (1 November 2026, device run, owner-approved)
+
+`node scripts/install-phone-claude.cjs [--ref <ref>] [--serial <id>]` installs or updates TRACE
+in the phone's Debian. On the PC it runs `git archive` on the ref, builds the dex from that tree,
+and pushes the archive, dex and an install script to `/sdcard/Download/trace-install`. adb cannot
+write Termux's home, so staging uses shared storage. adb shell also lacks Termux's
+`RUN_COMMAND` permission, so the script types `bash /sdcard/Download/trace-install/run.sh`
+into the Termux terminal and reads `install.log` back until `TRACE-INSTALL-END <code>`.
+In Debian: `npm ci --omit=dev` into `/opt/trace.new`, then the swap with `/opt/trace`.
+`.runtime/phone/frames` is kept. Then it copies `skills/trace-phone`, registers the user-level
+`trace-phone` MCP, applies the A2 profile, deletes the staged archive and dex, and prints the ref
+and `claude mcp list`. `--check` prints only those two. `--print` stages the files and prints the
+command for the owner to type.
+
+Precondition: the phone is unlocked and Termux is at a shell prompt. If Termux is running a
+program, the typed command goes to that program.
+
+| Run | Result | Notes |
+|---|---|---|
+| install `e227f4a` (`/opt/trace` had no ref) | pass | npm ci 175 packages in 18 s; `trace-phone ✔ Connected` |
+| rerun on this PR's docs commit (new ref) | pass | ref updated; `--check` shows the new ref and `✔ Connected`; staged archive and dex removed |
