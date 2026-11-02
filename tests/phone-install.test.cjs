@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { parseArgs, installScript, checkScript, bootScript, termuxRunner, termuxCommand, parseLog, STAGE } = require('../scripts/install-phone-claude.cjs');
+const { remoteControlCommand, RC_DIR, parseArgs, installScript, checkScript, bootScript, termuxRunner, termuxCommand, parseLog, STAGE } = require('../scripts/install-phone-claude.cjs');
 
 const SHA = 'a'.repeat(40);
 
@@ -44,6 +44,14 @@ test('install puts the A4 boot script in ~/.termux/boot; a check does not', () =
   assert.match(boot, /^#!\/data\/data\/com\.termux\/files\/usr\/bin\/sh\n/);
   assert.ok(boot.includes('termux-wake-lock'));
   assert.ok(boot.includes('proot-distro login debian -- /opt/node22/bin/node /opt/trace/scripts/phone-boot-adb.cjs'));
+  const rc = remoteControlCommand();
+  assert.ok(boot.includes(rc), 'boot script starts Remote Control');
+  assert.ok(boot.indexOf(rc) > boot.indexOf('phone-boot-adb.cjs'), 'after port 5555 is reopened');
+  assert.ok(rc.startsWith("nohup proot-distro login debian -- bash -lc '"));
+  assert.ok(rc.includes('adb start-server; adb connect 127.0.0.1:5555; cd /root/phone-work && exec claude remote-control --name s23-trace'));
+  assert.ok(rc.endsWith(`' > "$HOME/.trace-rc.log" 2>&1 < /dev/null &`));
+  assert.ok(installScript(SHA).includes(`mkdir -p ${RC_DIR}`));
+  assert.ok(installScript(SHA).includes('hasTrustDialogAccepted:true'));
   assert.ok(termuxRunner('install.sh').includes(`cp ${STAGE}/trace-adb ~/.termux/boot/trace-adb`));
   assert.ok(!termuxRunner('check.sh').includes('.termux/boot'));
 });
