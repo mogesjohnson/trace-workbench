@@ -11,6 +11,12 @@ Initial selection confirmed by the owner on 18 October 2026. TRACE is the produc
 
 Both skills are selected; neither configuration nor a fixture test establishes every host/app combination. All four CLI connections are configured. Finish Computer Use reliability, Codex/Claude workflows and real-app acceptance under [the specification](SPEC.md); report Grok/Gemini live coverage separately.
 
+## Added skills
+
+| Skill | Purpose | Current status |
+| --- | --- | --- |
+| [TRACE Phone](skills/trace-phone/SKILL.md) | Control an Android phone over adb (Wi-Fi or USB) through an on-device agent: scaled screenshots, accessibility nodes, act-then-settle, logcat. | Agent build, adb-server client, controller and MCP server (`trace-workbench phone mcp`, six tools) pass fake-adb/fake-agent tests. Owner-approved agent runs over USB are recorded in [the phone handoff](docs/PHONE_HANDOFF.md); the MCP server has not yet driven a real phone, and Wi-Fi and on-phone (Termux) links are unmeasured. |
+
 ## Future skills under review
 
 | Candidate | Intended ability | Status |

@@ -118,14 +118,40 @@ function createPhoneController({
     return { header, payload, file };
   }
 
-  async function settle({ stableMs = 300, timeoutMs = 3000, maxSide, quality } = {}) {
-    const request = { op: 'wait', until: 'stable', stableMs, timeoutMs, image: true };
+  /** Poll on the phone until the screen changes from the last frame or settles; returns the frame. */
+  async function wait({ until = 'stable', stableMs = 300, timeoutMs = 3000, maxSide, quality } = {}) {
+    const request = { op: 'wait', until, stableMs, timeoutMs, image: true };
     if (lastHash) request.from = lastHash;
     if (maxSide) request.maxSide = maxSide;
     if (quality) request.quality = quality;
     const { header, payload } = await call(request, { timeoutMs: timeoutMs + 10000 });
     const file = remember(header, payload);
     return { header, payload, file };
+  }
+
+  const settle = (options = {}) => wait({ ...options, until: 'stable' });
+
+  /**
+   * Pair and/or connect over Wi-Fi when asked, pick the device, then make sure
+   * the agent runs. address/pairAddress are host:port; serial picks among several.
+   */
+  async function connect({ address, pairAddress, pairCode, serial } = {}) {
+    const steps = {};
+    if (pairCode) steps.pair = (await adb.pair(pairAddress || address, pairCode)).trim();
+    if (address) steps.connect = (await adb.connect(address)).trim();
+    const devices = await adb.devices();
+    const ready = devices.filter((d) => d.state === 'device');
+    const chosen = serial || (address && ready.some((d) => d.serial === address) ? address : null)
+      || (ready.length === 1 ? ready[0].serial : null);
+    if (!chosen) {
+      throw new Error(ready.length ? `several devices; pass serial (${ready.map((d) => d.serial).join(', ')})` : 'no device in state "device"');
+    }
+    if (chosen !== adb.serial) {
+      if (agent) { agent.close(); agent = null; }
+      info = null; lastFrame = null; lastHash = null;
+      adb.setSerial(chosen);
+    }
+    return { ...steps, devices, serial: chosen, agent: await ensure() };
   }
 
   /**
@@ -177,7 +203,7 @@ function createPhoneController({
   }
 
   return {
-    ensure, screen, settle, act, ui, find, stop, toDevice,
+    ensure, connect, screen, wait, settle, act, ui, find, stop, toDevice,
     release: () => call({ op: 'release' }).then((r) => r.header),
     logcat: async ({ lines = 200, filter } = {}) => {
       const n = Math.max(1, Math.min(5000, Math.floor(lines)));

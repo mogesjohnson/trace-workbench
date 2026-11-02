@@ -9,7 +9,7 @@ uiautomator. Optimize for three links, in this order of importance:
    same phone through adb on localhost.
 3. USB (used now for development only).
 
-State: **prototype only, not merged, no PR.** The on-device agent source is in
+State: **host side complete in session 3 (see the end); PR open, not merged.** The on-device agent source is in
 `native/TracePhoneAgent/`. It was measured over USB, then hardened (see "Security"). The hardened
 build has **not been run yet** because the session's permission check blocked restarting it.
 Nothing was left running on the phone: the agent process, its dex, its log and the adb forward
@@ -158,3 +158,27 @@ and reads the screen while it runs) and, if needed, add a permission rule.
    tests with a fake agent socket; PR per VERSION_CONTROL.md (2–3 commits).
 
 Build output (`.dex`, classes) stays out of Git; build it at setup into `.runtime/`.
+
+## Session 3 (1 November 2026, no device run)
+
+Done, host side only: `scripts/build-phone-agent.cjs` (javac `--release 11` + d8 into
+`.runtime/phone/build/classes.dex`; JBR, newest platform and build-tools; built 22,568 bytes,
+4 classes); `src/phone/server.cjs`, served by `trace-workbench phone mcp`, with `phone_connect`,
+`phone_screen`, `phone_ui`, `phone_act`, `phone_wait`, `phone_logcat` on the controller
+(closing the server kills the agent and removes the dex); `skills/trace-phone/` + manifest;
+`SKILLS.md` row; tests in `tests/phone.test.cjs` and `tests/phone-mcp.test.cjs` (fake adb + fake
+agent socket, shared in `tests/fixtures/phone-fakes.cjs`).
+
+Not run in session 3: the agent on the phone (no owner approval in that session). Read-only
+checks only: `adb devices` shows the S23, SDK 37; no `trace-phone.dex` in `/data/local/tmp`,
+no agent process. The `pid` in `hello`, `stop()` by pid, and the MCP server against a real
+phone remain TODO(verify).
+
+Next steps (replace 1, 3 and 6 above):
+
+1. Owner approves an on-device run. Then: `node scripts/build-phone-agent.cjs`, register
+   `trace-workbench phone mcp` as a local stdio MCP server, call `phone_connect`, `phone_screen`,
+   `phone_ui`, one `phone_act` with a `key` (e.g. `home`), and close the server; check with
+   `adb shell ls /data/local/tmp/trace-phone.dex` and `pidof app_process` that nothing remains.
+2. Wi-Fi bench (step 2 above), then the on-phone Termux/Debian install (step 4 above) after this
+   PR merges.
