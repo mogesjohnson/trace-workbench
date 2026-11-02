@@ -26,6 +26,18 @@ ends in another control, focus stays `unresolved` and keyboard input fails close
 with `focus_not_acquired`. Focus-path controls are re-inspected only for keyboard
 input; to click one, observe at a depth that reaches it.
 
+A scoped observation (C7, P1-1) reads only part of the tree. `rootElementId` passes the
+element's selector to `ui inspect`, and `interactiveOnly` passes `-i`, which nests the
+full tree before collapsing non-interactive nodes, so survivors attach to their nearest
+interactive ancestor. A separate depth-1 read supplies the window root for bounds,
+capture and the movement guard; in `interactiveOnly` without a scope, the window root
+stays the first element. winapp 0.7.1 can answer an unresolved selector with the
+window root, so a subtree counts only when its single top node is the requested
+element; with `-i`, a separate depth-1 read of the scope root checks this. Otherwise
+the observation fails with `element_not_found`. The scope is retained like depth, so
+dispatch re-inspects the same subtree. Focus inside the scope merges its path below the
+scope root; focus outside it stays `unresolved`.
+
 Hierarchy names are bounded to 512 UTF-16 units. All nodes, including selectorless
 ones, count toward 10000 nodes and depth 32. Cycles or malformed children reject
 the observation. Native depth truncation remains explicit; a missing child is not
