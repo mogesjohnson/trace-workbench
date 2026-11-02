@@ -24,7 +24,7 @@ Order matters: A1 sets the rules the others rely on.
 
 ### A1. Standing approval policy for phone actions
 
-- [ ] **Approve**
+- [x] **Approve** (owner, 1 Nov 2026; merged in PR 84)
 
 Write `docs/PHONE_AUTONOMY_POLICY.md`: three tiers that a session reads before acting.
 - **Allowed without asking:** start/stop the agent on the owner's S23, `phone_screen`, `phone_ui`,
@@ -38,7 +38,7 @@ skill text cites it. Owner decision needed: the tier lists themselves.
 
 ### A2. Permission profile that matches A1
 
-- [ ] **Approve** (changes Claude settings on the PC and the phone, so it needs an explicit OK)
+- [x] **Approve** (owner, 1 Nov 2026) (changes Claude settings on the PC and the phone, so it needs an explicit OK)
 
 PC and phone `~/.claude/settings.json`: allow `mcp__trace-phone__phone_screen`, `phone_ui`,
 `phone_wait`, `phone_logcat`, `phone_connect`; keep `phone_act` on **ask**, plus a PreToolUse hook
@@ -97,6 +97,20 @@ and the second-brain capture, close every phone agent and server, delete frames 
 Stop at: an unapproved tier, a failing check it cannot explain, or 125k context. Done when one A3/A5 run
 ends with that report and nothing left running.
 
+### A8. Voice input and transcription
+
+- [ ] **Approve** (owner asked for this on 1 Nov 2026; scope below is a proposal)
+
+The owner can speak a task to the phone and get a transcript, and the session can read back
+transcripts of recordings. First step is research, recorded in a short doc: which speech-to-text
+runs on the S23 (Android's on-device recognizer, Termux:API `termux-speech-to-text`, or a local
+model in Debian such as whisper.cpp), its latency and accuracy on a few owner-recorded samples, and
+whether audio leaves the phone. TODO(verify) each option on the device. Then, if the owner picks one:
+a `phone_transcribe` tool or a script that turns a recording or a live utterance into text for the
+session. A1 tiers apply: recording the microphone and sending audio off the phone are **ask first**
+until the owner moves them. Done when the research doc names a recommended route with measured
+numbers, or the follow-up tool returns a transcript of a spoken test phrase.
+
 ## Suggested order
 
-A1 → A2 → A6 → A3 → A4 → A5 → A7. A1 and A2 can share one PR if the owner approves both together.
+A1 → A2 → A6 → A3 → A4 → A5 → A7, then A8 (voice) once A3 shows phone Claude can run tools. A1 and A2 can share one PR if the owner approves both together.
