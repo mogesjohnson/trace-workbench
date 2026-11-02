@@ -299,3 +299,59 @@ Findings:
   `phone_connect` does not start one. The first run failed with `adb server unreachable at
   127.0.0.1:5037`. Run `adb start-server` and `adb connect 127.0.0.1:5555` before starting
   Claude (A4/A5 put this in the boot script).
+
+## Task A4 reboot test (2 November 2026, device run, owner-approved)
+
+S23 on eduroam, USB unplugged, A4 branch `e96b609` installed. The PC rebooted the phone over Wi-Fi
+adb (`adb -s <phone-ip>:5555 reboot`) at 12:31:45 local time. **Result: pass.**
+
+| Time (local) | Event |
+|---|---|
+| 12:31:45 | reboot; port 5555 closed |
+| ~12:33 | phone booted; Shizuku server up (Wireless debugging on, port 42809) |
+| 12:38:46 | owner unlocked; Termux:Boot started `trace-adb` (boot log: `adb server running`) |
+| 12:39:42 | first scan of 127.0.0.1:30000-65535 (56 s): 1 open port, not adbd |
+| 12:40:34 | second scan found Wireless debugging at 127.0.0.1:42809; `adb tcpip 5555` |
+| 12:40:46 | `127.0.0.1:5555 device`; script exited 0 at 12:40:54 |
+
+From the PC, `adb connect <phone-ip>:5555` worked again from 12:40:34. On the phone, Debian's adb
+server held an established connection to 127.0.0.1:5555. The log was read by copying
+`~/.trace-boot.log` to shared storage (typed into Termux, owner-approved) and deleted afterwards.
+
+Findings:
+- **Nothing runs before the first unlock.** Termux:Boot starts only after the owner unlocks the
+  phone (Termux's data is credential-encrypted), so the phone is unreachable over 5555 from boot
+  to unlock plus about 2 minutes. Shizuku started earlier, but it does not open 5555.
+- **One wasted round after `tcpip`.** The first round logged `not reachable after tcpip` 1.5 s
+  after the restart, not after the 10 s wait; the next round (10 s later) found 5555 open. Cause
+  not found; TODO(verify). It costs about 10 s and needs no fix for A4.
+- The first scan saw one open port that was not adbd. Whether Wireless debugging was on yet is
+  unknown; TODO(verify).
+- A port scan from the PC (500 probes in parallel, 800 ms timeout) missed port 42809, which a single
+  probe found open. Over Wi-Fi, use mDNS or a slower scan. eduroam showed no `_adb-tls` mDNS
+  services to the PC.
+
+## Task A5 headless Remote Control (2 November 2026, device run, owner-approved)
+
+Phone Claude 2.1.316 runs `claude remote-control --name s23-trace` in `/root/phone-work`, started
+from Termux with `nohup` and a wake lock, as the proot login's own command. **Result: pass.**
+
+- Remote Control refuses an untrusted folder ("Workspace not trusted"). The installer now creates
+  `/root/phone-work` and sets `hasTrustDialogAccepted` for it in `~/.claude.json`.
+- The phone was signed into a different claude.ai account than the PC. The owner ran
+  `claude auth login` in Debian; after that the PC's claude.ai/code showed the `s23-trace` environment.
+- Run (13:23-13:26 EST, screen off and dozing throughout): the owner sent a task from claude.ai/code
+  on the PC. The phone session ran `node --test tests/phone-boot-adb.test.cjs` (2 pass, 0 fail) and
+  its `Write` of `~/phone-work/a5-result.txt` waited 2 min 2 s for a permission prompt that the owner
+  approved from the PC. The transcript shows both tool results `ok`.
+- The Termux:Boot script now starts Remote Control after `phone-boot-adb.cjs`, in a login that
+  first runs `adb start-server` and `adb connect 127.0.0.1:5555` (A3: no adb server, no tools).
+  Log: `~/.trace-rc.log` in Termux.
+- Install and reboot test (13:43-13:48 EST, S23 on USB, eduroam): `install-phone-claude.cjs --ref
+  efc2588` ended `TRACE-INSTALL-END 0` with the trust entry in place. After `adb reboot` and an
+  unlock, Termux:Boot reopened 5555 at 13:47:33, then started `claude remote-control --name
+  s23-trace`, and `~/.trace-rc.log` showed `Connected · phone-work`. **Result: pass**, no hand
+  steps besides the unlock. Remote Control starts only after `phone-boot-adb.cjs` ends (about
+  50 s after unlock), because the boot script runs them in sequence.
+- Not covered: push notifications for ask-tier actions (Remote Control shows the prompt in
+  claude.ai/code and the Claude app; whether the app notifies is TODO(verify)).

@@ -9,6 +9,8 @@
 // Debian side: npm ci --omit=dev into /opt/trace.new, swap with /opt/trace (frames kept), copy
 // skills/trace-phone, register the user-level MCP server trace-phone, apply the A2 permission
 // profile, delete the staging files, and print `claude mcp list`.
+// Termux side: installs ~/.termux/boot/trace-adb, which runs scripts/phone-boot-adb.cjs in Debian
+// after each reboot (task A4; needs Termux:Boot, and Shizuku set to start on boot).
 // Precondition: phone unlocked, Termux at a shell prompt (not inside a running program).
 // Usage: node scripts/install-phone-claude.cjs [--ref <git ref>] [--serial <id>] [--check] [--print]
 //   --check  prints the installed ref and the trace-phone MCP status; installs nothing.
@@ -23,6 +25,10 @@ const STAGE = '/sdcard/Download/trace-install';
 const NODE_BIN = '/opt/node22/bin';
 const END = 'TRACE-INSTALL-END';
 const TERMUX_SHELL = '#!/data/data/com.termux/files/usr/bin/bash';
+// Task A5: the phone's Claude runs headless as `claude remote-control` in this folder, so the owner
+// starts tasks and answers approvals from claude.ai/code or the Claude app. It must be trusted first.
+const RC_DIR = '/root/phone-work';
+const RC_NAME = 's23-trace';
 
 function parseArgs(argv) {
   const opts = { ref: 'HEAD', serial: null, check: false, print: false, timeoutSec: 900 };
@@ -62,6 +68,8 @@ function installScript(sha) {
     'claude mcp remove --scope user trace-phone >/dev/null 2>&1 || true',
     `claude mcp add --scope user trace-phone -- ${NODE_BIN}/node /opt/trace/bin/trace.cjs phone mcp`,
     'node /opt/trace/scripts/configure-phone-permissions.cjs --apply',
+    `mkdir -p ${RC_DIR}`,
+    `node -e 'const fs=require("fs"),f=process.env.HOME+"/.claude.json";const j=JSON.parse(fs.readFileSync(f,"utf8"));j.projects=j.projects||{};j.projects["${RC_DIR}"]={...j.projects["${RC_DIR}"],hasTrustDialogAccepted:true};fs.writeFileSync(f,JSON.stringify(j,null,2))'`,
     'rm -f "$S/src.tar" "$S/classes.dex"',
     checkScript().trimEnd(),
   ].join('\n') + '\n';
@@ -74,11 +82,32 @@ function checkScript() {
   ].join('\n') + '\n';
 }
 
-// Termux-side wrapper: runs the Debian script and appends the end marker with its exit code.
+// Termux:Boot script (tasks A4, A5). The wake lock keeps Termux and Debian alive with the screen off.
+// A5: Remote Control runs as the login's own command (proot ends detached children when a login
+// exits), and that login starts Debian's adb server first so trace-phone has one.
+function bootScript() {
+  return [
+    TERMUX_SHELL.replace('bash', 'sh'),
+    '# Installed by TRACE scripts/install-phone-claude.cjs. Termux:Boot runs it after each boot.',
+    'termux-wake-lock',
+    `proot-distro login debian -- ${NODE_BIN}/node /opt/trace/scripts/phone-boot-adb.cjs > "$HOME/.trace-boot.log" 2>&1`,
+    remoteControlCommand(),
+  ].join('\n') + '\n';
+}
+
+// Termux-side line that starts the headless Remote Control session in the background (task A5).
+function remoteControlCommand() {
+  const inner = `export PATH=${NODE_BIN}:$PATH; adb start-server; adb connect 127.0.0.1:5555; cd ${RC_DIR} && exec claude remote-control --name ${RC_NAME}`;
+  return `nohup proot-distro login debian -- bash -lc '${inner}' > "$HOME/.trace-rc.log" 2>&1 < /dev/null &`;
+}
+
+// Termux-side wrapper: installs the boot script (install only), runs the Debian script and
+// appends the end marker with its exit code.
 function termuxRunner(script) {
   return [
     TERMUX_SHELL,
     `L=${STAGE}/install.log`,
+    ...(script === 'install.sh' ? [`mkdir -p ~/.termux/boot && cp ${STAGE}/trace-adb ~/.termux/boot/trace-adb && chmod 700 ~/.termux/boot/trace-adb && rm -f ${STAGE}/trace-adb`] : []),
     `proot-distro login debian -- bash -l ${STAGE}/${script} > "$L" 2>&1`,
     `echo "${END} $?" >> "$L"`,
   ].join('\n') + '\n';
@@ -118,6 +147,8 @@ function main(argv) {
       run(process.execPath, [path.join(src, 'scripts', 'build-phone-agent.cjs')], { stdio: 'inherit' });
       script = 'install.sh';
       fs.writeFileSync(path.join(tmp, script), installScript(sha));
+      fs.writeFileSync(path.join(tmp, 'trace-adb'), bootScript());
+      adb('push', path.join(tmp, 'trace-adb'), `${STAGE}/trace-adb`);
       adb('push', path.join(tmp, 'src.tar'), `${STAGE}/src.tar`);
       adb('push', path.join(src, '.runtime', 'phone', 'build', 'classes.dex'), `${STAGE}/classes.dex`);
       console.log(`staged ${sha}`);
@@ -149,4 +180,4 @@ function main(argv) {
 if (require.main === module) {
   try { process.exitCode = main(process.argv.slice(2)); } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
-module.exports = { parseArgs, installScript, checkScript, termuxRunner, termuxCommand, parseLog, STAGE, END };
+module.exports = { remoteControlCommand, RC_DIR, parseArgs, installScript, checkScript, bootScript, termuxRunner, termuxCommand, parseLog, STAGE, END };
