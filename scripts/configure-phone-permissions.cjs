@@ -15,6 +15,8 @@ const PREFIX = 'mcp__trace-phone__';
 const ALLOW = [
   ...['phone_connect', 'phone_screen', 'phone_ui', 'phone_wait', 'phone_logcat'].map((tool) => PREFIX + tool),
   'Bash(adb devices*)', 'Bash(adb shell getprop*)', 'Bash(adb shell pidof*)', 'Bash(adb shell ls /data/local/tmp*)',
+  // The A7 frame prune: exact command, no wildcard, so no other find or delete is allowed.
+  'Bash(find .runtime/phone/frames -type f -mtime +7 -delete)',
 ];
 const ACT = PREFIX + 'phone_act';
 const HOOK_NAME = 'trace-phone-act.cjs';

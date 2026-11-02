@@ -55,7 +55,9 @@ file to `settings.json.trace-backup-<ms>` and installs `scripts/phone-act-hook.c
 
 - `permissions.allow`: `phone_connect`, `phone_screen`, `phone_ui`, `phone_wait`, `phone_logcat`
   (as `mcp__trace-phone__*`), and `adb devices`, `adb shell getprop`, `adb shell pidof`,
-  `adb shell ls /data/local/tmp`.
+  `adb shell ls /data/local/tmp`, and exactly
+  `find .runtime/phone/frames -type f -mtime +7 -delete` (the A7 7-day frame prune; no other
+  `find` or delete).
 - A `PreToolUse` hook on `phone_act` returns `allow` for `key` `home` or `back` and `ask` for
   every other `phone_act`, so those prompt in auto mode too.
 - There is no `ask` rule for `phone_act`. With one, the hook's `allow` was overridden and

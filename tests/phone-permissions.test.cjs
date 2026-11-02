@@ -32,6 +32,11 @@ test('hook process prints allow, ask, or nothing for other tools', () => {
   }
 });
 
+test('profile allows only the exact 7-day frame prune', () => {
+  const prune = ALLOW.filter((rule) => rule.startsWith('Bash(find'));
+  assert.deepEqual(prune, ['Bash(find .runtime/phone/frames -type f -mtime +7 -delete)']);
+});
+
 test('plan adds the profile, keeps other settings and is idempotent', () => {
   const settings = { theme: 'dark', permissions: { defaultMode: 'auto', allow: ['Read'] },
     hooks: { SessionStart: [{ hooks: [{ type: 'command', command: 'x' }] }] } };
