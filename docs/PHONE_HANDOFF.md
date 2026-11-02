@@ -330,3 +330,32 @@ Findings:
 - A port scan from the PC (500 probes in parallel, 800 ms timeout) missed port 42809, which a single
   probe found open. Over Wi-Fi, use mDNS or a slower scan. eduroam showed no `_adb-tls` mDNS
   services to the PC.
+
+## Wi-Fi trust watcher (2 November 2026, device run on eduroam only)
+
+Owner decision, 2 November 2026: every Wi-Fi network the phone joins is trusted for Wireless
+debugging ([policy exception](PHONE_AUTONOMY_POLICY.md)). `trace.phone.WifiTrust`, in the agent
+dex, is the watcher. `scripts/phone-boot-adb.cjs` starts it once `127.0.0.1:5555` is up: it pushes
+the dex to `/data/local/tmp/trace-wifi.dex` and runs it under `app_process` as the shell user,
+named `tracewifitrust` and logging to `/data/local/tmp/trace-wifi.log`. Every 5 s the watcher reads
+`dumpsys adb`. When `is_trusted_network=false`, it takes the BSSID from `cmd wifi status` and calls
+`IAdbManager.allowWirelessDebugging(true, bssid)`, the call behind the dialog's "Always allow on
+this network". It never turns Wireless debugging off, removes networks or pairs devices.
+
+| Check (S23, eduroam, USB) | Result |
+|---|---|
+| `dumpsys adb` prints `is_trusted_network=true` and `network_bssid`; `cmd wifi status` prints `BSSID: <mac>` | pass |
+| watcher starts, logs `trust watcher started, every 5 s` | pass |
+| starting it again leaves one process (`pgrep -f '^tracewifitrust$'`) | pass |
+| joining a new network (hotspot) → network trusted, no dialog tap | **not_run** (no hotspot) |
+
+Findings:
+- `pkill -f trace.phone.WifiTrust` also matches the `sh -c` running it, so it kills itself before
+  starting the watcher. `pkill -x` does not work either: the process's kernel name is `main`.
+  The script matches the whole command line instead, `^tracewifitrust$`.
+- On eduroam the trusted list holds BSSID `…34:d3` but the phone is trusted on `…90:53`, so SDK 37
+  seems to match on SSID too. TODO(verify).
+- The `allowWirelessDebugging` call itself is unverified on SDK 37 (it only runs on an untrusted
+  network). TODO(verify) with the hotspot test.
+- Limit: nothing runs before adb is up, so a reboot straight onto a never-joined network still
+  shows the system dialog once.

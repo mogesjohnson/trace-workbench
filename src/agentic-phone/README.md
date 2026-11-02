@@ -9,7 +9,7 @@ fast. It has no TRACE imports, so it can move to its own repo later with `git fi
 | `agent.cjs` | Frames requests to the on-device agent. |
 | `controller.cjs` | Starts the agent, checks its version, reconnects once, saves frames, maps coordinates, acts then settles. |
 | `build.cjs` | Compiles `native/` into `.runtime/phone/build/classes.dex` (run through `node scripts/build-phone-agent.cjs`). |
-| `native/` | The on-device Java agent (`trace.phone`) and `bench.cjs`, a read-only benchmark. |
+| `native/` | The on-device Java agent (`trace.phone`), the Wi-Fi trust watcher (`trace.phone.WifiTrust`) and `bench.cjs`, a read-only benchmark. |
 
 ## Boundary
 
