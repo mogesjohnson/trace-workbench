@@ -121,4 +121,9 @@ Without those lost words, route 2b was word-perfect and base.en misheard "set a"
    deleted after the runs. Not run yet: the call from phone Claude.
 4. claude-voice: add `EXTRA_PREFER_OFFLINE = true` (owner approved). Done 3 Nov 2026 in the
    separate private claude-voice repository (its PR 1). The owner installed the build and spoken
-   commands worked; recognition with the network off has not been tested.
+   commands worked. Network-off test, 3 Nov 2026 (owner approved): Wi-Fi and mobile data
+   disabled over adb (`svc wifi disable`, `svc data disable`; ping 8.8.8.8 "Network is
+   unreachable"). Claude Listen heard "What's my battery" exactly, shown as soon as the owner
+   stopped speaking. The bridge call then failed as expected (placeholder token, and no network
+   for Claude). Network restored to its prior state (Wi-Fi on, data on, airplane off; online
+   within about 3 s).
