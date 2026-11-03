@@ -1,6 +1,6 @@
 # Autonomous Claude sessions: task specs (awaiting owner approval)
 
-Status: **proposed, 1 November 2026.** Nothing here is approved. The owner ticks each task's
+Status: **proposed 1 November 2026; A1-A5, A8 and A9 approved by 3 November 2026.** The owner ticks each task's
 **Approve** box (or says "approve A3") before work starts; each task becomes one branch and one PR.
 
 Goal: a Claude session (on the PC or the phone's Termux → Debian Claude) runs a whole task, such as
@@ -48,7 +48,7 @@ session runs connect → screen → ui → home → close with zero prompts, and
 
 ### A3. Phone Claude drives trace-phone on its own (smoke test)
 
-- [ ] **Approve** (runs the agent from Termux; the faster path in PHONE_HANDOFF step 4 also lets Termux apps drive the phone)
+- [x] **Approve** (owner, 3 Nov 2026) (runs the agent from Termux; the faster path in PHONE_HANDOFF step 4 also lets Termux apps drive the phone)
 
 In Debian: `adb connect 127.0.0.1:5555`, then the phone's Claude calls `phone_connect` with
 `address: "127.0.0.1:5555"`, takes a screenshot, presses Home and closes. Measure frame time against
@@ -58,7 +58,7 @@ PHONE_HANDOFF.md.
 
 ### A4. Survive a reboot without USB
 
-- [ ] **Approve** (keeps wireless debugging reachable from the phone itself)
+- [x] **Approve** (owner, 3 Nov 2026) (keeps wireless debugging reachable from the phone itself)
 
 Termux:Boot script: acquire a wake lock, start Debian's adb, reconnect. Since `adb tcpip 5555` needs an
 existing adb link, research the on-phone route: Debian `adb pair` against the phone's own Wireless
@@ -69,7 +69,7 @@ or the doc records why it can't.
 
 ### A5. Headless, long-running phone Claude with remote approvals
 
-- [ ] **Approve**
+- [x] **Approve** (owner, 3 Nov 2026; passed in PR 93)
 
 Run the phone's Claude as the login's own command (per 058f2b8c), backgrounded from Termux with a wake
 lock, started by Termux:Boot, with Remote Control on so the owner sees and approves from the PC or
@@ -99,7 +99,7 @@ ends with that report and nothing left running.
 
 ### A8. Voice input and transcription
 
-- [ ] **Approve** (owner asked for this on 1 Nov 2026; scope below is a proposal)
+- [x] **Approve** (owner, 3 Nov 2026; asked for on 1 Nov 2026; route measurements in PR 94 and PR 111)
 
 The owner can speak a task to the phone and get a transcript, and the session can read back
 transcripts of recordings. First step is research, recorded in a short doc: which speech-to-text
