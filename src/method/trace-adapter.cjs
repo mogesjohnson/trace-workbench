@@ -79,6 +79,7 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
           return diagnostics(false, 'support-unsupported', 'The live server declares an unsupported native action contract.', unknownSupport(), { native: value.ready === true });
         }
         const effectiveSupport = value.support != null ? actionSupport(support.observation.ttlMs) : support;
+        if (value.support != null && !Object.hasOwn(support.actions.click, 'variants')) delete effectiveSupport.actions.click.variants;
         return diagnostics(result.isError !== true && value.ready === true, value.code || value.error?.code || null, value.reason || value.error?.message || null, effectiveSupport,
           { configured: true, native: result.isError !== true && value.ready === true });
       } catch { return diagnostics(false, 'diagnostics-unavailable', 'TRACE diagnostics could not be read.'); }

@@ -261,9 +261,11 @@ class WinappBackend {
     }
     return parseJson(result.stdout, result.stderr, result.exitCode);
   }
-  async bridge(verb, window, signal) {
-    const args = verb === 'info' ? [verb] : [verb, id(window.id), String(window.pid)];
-    const mutating = verb === 'activate';
+  async bridge(verb, window, signal, parameters = []) {
+    const pointer = verb === 'click' || verb === 'wheel';
+    if (pointer && !this.supervisor?.ready) fail('supervision_required', 'New pointer input requires a ready native owner.', { outcome: 'not_dispatched' });
+    const args = verb === 'info' ? [verb] : [verb, id(window.id), String(window.pid), ...parameters];
+    const mutating = verb === 'activate' || pointer;
     if (this.supervisor && mutating && !this.supervisor.ready) fail('session_stopped', 'A ready native session is required before activation.', { outcome: 'not_dispatched' });
     const result = await providerRequest(this.supervisor?.ready === true, () => this.supervisor?.ready
       ? this.supervisor.run('bridge', args, { signal, timeoutMs: 10000, mutating })
@@ -475,6 +477,8 @@ class WinappBackend {
     if (this.inputRecoveryRequired) fail('input_recovery_required', 'Input is quarantined after incomplete mouse recovery. Check the owned input process and button state before restarting TRACE.', { outcome: 'not_dispatched', cause: this.inputRecoveryRequired });
     if (!object(observation) || !sameBounds(bounds(observation.bounds), bounds(observation.window?.bounds)) || observation.window.id !== window.id || observation.window.pid !== window.pid) fail('invalid_observation', 'Action requires an observation of this exact window.');
     action = parseAction(action);
+    const pointerClick = action.type === 'click' && ((action.button ?? 'left') !== 'left' || (action.count ?? 1) !== 1);
+    if (pointerClick && !this.supervisor?.ready) fail('supervision_required', 'Extended clicks require declared-input native supervision.', { outcome: 'not_dispatched' });
     await this.identity(window, signal);
     // Reinspect at the server-retained observation depth so deeply observed controls remain targetable.
     const fresh = await this.inspect(window, signal, observation.depth ?? 8);
@@ -488,7 +492,7 @@ class WinappBackend {
       if (!old || !now || !now.enabled || old.enabled !== now.enabled || old.name !== now.name || old.controlType !== now.controlType || (old.bounds && (!now.bounds || !sameBounds(old.bounds, now.bounds)))) fail('stale_element', 'Element changed since observation. Observe again.');
       return selector(elementId);
     };
-    let verb, positional = [], options = [], transport;
+    let verb, positional = [], options = [], transport, pointerArgs;
     switch (action.type) {
       case 'activate': {
         // Activation is the primary mutation of an activate action.
@@ -499,6 +503,17 @@ class WinappBackend {
         return { performed: true, type: action.type, engine: 'public-win32-dwm', version: 1, native: activated };
       }
       case 'click':
+        if (pointerClick) {
+          let x = action.x, y = action.y;
+          if (action.elementId) {
+            choose(action.elementId);
+            const rect = fresh.elements.find(item => item.id === action.elementId)?.bounds;
+            if (!rect) fail('unsupported_action', 'An extended element click needs current physical bounds.');
+            x = Math.floor(rect.x + rect.width / 2) - captured.x; y = Math.floor(rect.y + rect.height / 2) - captured.y;
+          }
+          pointerArgs = [...point(x, y, captured).split(','), action.button ?? 'left', String(action.count ?? 1)];
+          verb = 'click'; transport = 'supervised-public-win32'; break;
+        }
         if (action.elementId) { verb = 'click'; positional = [choose(action.elementId)]; }
         else {
           const p = point(action.x, action.y, captured);
@@ -548,9 +563,13 @@ class WinappBackend {
       if (!focused.elementId) fail('focus_not_acquired', 'Keyboard focus could not be bound to an observed control inside the exact selected window.');
     }
     progress.primary = true;
-    const result = await this.command(verb, ['-w', window.id, ...options, '--', ...positional], signal);
+    const result = pointerArgs ? await this.bridge('click', window, signal, pointerArgs)
+      : await this.command(verb, ['-w', window.id, ...options, '--', ...positional], signal);
+    if (pointerArgs && (result.performed !== true || result.operation !== 'click' || result.inputEvents !== 2 * (action.count ?? 1))) {
+      fail('invalid_native_response', 'Pointer receipt did not confirm the complete sequence.', { outcome: 'unknown' });
+    }
     if (result.hwnd !== undefined && String(result.hwnd) !== window.id) fail('window_identity_changed', 'Native action receipt targets another window.', { outcome: 'unknown' });
-    return { performed: true, type: action.type, engine: 'winapp', version: pin.version, ...(transport ? { transport } : {}), preparation: progress.preparation, native: result };
+    return { performed: true, type: action.type, engine: pointerArgs ? 'public-win32-sendinput' : 'winapp', version: pointerArgs ? 1 : pin.version, ...(transport ? { transport } : {}), preparation: progress.preparation, native: result };
   }
   async close() {
     if (this.supervisor?.child && this.supervisor.owner) await this.supervisor.release(this.supervisor.owner);
