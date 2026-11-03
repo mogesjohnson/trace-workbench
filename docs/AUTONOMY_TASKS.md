@@ -79,7 +79,7 @@ one approval was answered remotely.
 
 ### A6. One-command install and update of TRACE on the phone
 
-- [x] **Approve** (owner-approved device run, 1 Nov 2026; merged in PR 87. Install and rerun on a new ref both showed `trace-phone ✔ Connected`; see PHONE_HANDOFF.md "Task A6")
+- [x] **Approve** (owner-approved device run, 1 Nov 2026; merged in PR 87. Install and rerun on a new ref both showed `trace-phone ✔ Connected`, and a fresh update to main `803fdc2` passed on 3 Nov 2026; see PHONE_HANDOFF.md "Task A6")
 
 `scripts/install-phone-claude.cjs` (PC side, no new dependencies): `git archive` of a given ref,
 build the dex, stage through Termux home, `npm ci --omit=dev` into `/opt/trace.new`, swap,
