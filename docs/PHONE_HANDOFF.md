@@ -411,7 +411,8 @@ watcher with `tests/fixtures/WifiTrustTest.java` (skips without a JDK and Androi
 | eduroam: starting it again leaves one process (`pgrep -f '^tracewifitrust$'`) | pass |
 | 3 Nov, `5613c91`: joining MogesAIGirlfriend5 (5 GHz, `12:36:aa:0d:52:a6`) does not restart the watcher or adbd (same pid, adbd STIME unchanged) | pass |
 | 3 Nov, `5613c91`: joining MogesAIGirlfriend5 → network trusted, no dialog tap | **fail** (two causes below; the owner tapped Allow once) |
-| fixed watcher: MogesAIGirlfriend5 joins the trusted list within about 5 s; switching to 2.4 GHz and back shows no dialog | **not_run** (the owner starts the watcher) |
+| 3 Nov 00:52, `948dfac` watcher started by the owner: first round logs `allowed 12:36:aa:0d:52:a6 "MogesAIGirlfriend5" (3-arg)`; the keystore lists `12:36:aa:0d:52:a6` / `"MogesAIGirlfriend5"`; `is_trusted_network=true`; adbd not restarted (STIME 23:30:01) | pass |
+| fixed watcher: switching to 2.4 GHz and back to 5 GHz shows no dialog | **not_run** |
 
 Findings:
 - `pkill -f trace.phone.WifiTrust` also matches the `sh -c` running it, so it kills itself before
@@ -425,8 +426,9 @@ Findings:
 - Hotspot cause 2: `allowWirelessDebugging(boolean, String)` throws `NoSuchMethodException` on SDK
   37; reflection lists `allowWirelessDebugging(boolean, String, String)`. AOSP `main` still has
   the 2-argument AIDL (`alwaysAllow, bssid`), so the third argument is a Samsung/SDK 37 addition.
-  The order `(alwaysAllow, bssid, ssid)` matches the keystore (`bssid` then `ssid`) but is
-  TODO(verify) by the device run. The old watcher logged this error every 5 s.
+  The order `(alwaysAllow, bssid, ssid)` is confirmed by the device run: the new keystore entry
+  holds the BSSID and the quoted SSID in the right fields. The old watcher logged this error every
+  5 s.
 - The trusted list is in the keystore dump (binary ABX) before `adb_wifi={`: the `wifiAP` section
   lists `bssid` then `ssid` per network, the SSID in quotes (`"eduroam"`, `"Thomas and Caden"`).
   Base64 adb keys contain no colons, so every MAC before `adb_wifi={` is a trusted BSSID. Each band
