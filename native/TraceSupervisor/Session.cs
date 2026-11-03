@@ -310,7 +310,8 @@ internal sealed class SupervisorSession : IDisposable
                 return new { attempted = false, released = false, processExitConfirmed = false, reason = "process_exit_unconfirmed",
                     childPid = record.Child?.Pid, childCreated = record.Child?.Created.ToString(), declaredKeysDown = Array.Empty<int>() };
             }
-            var released = InputState.ReleaseDeclared(record.Keys, record.Unicode);
+            // Post-dispatch only: a keyboard close may leave no foreground for a moment (bounded wait).
+            var released = InputState.ReleaseDeclared(record.Keys, record.Unicode, waitForForeground: true);
             if (released.Released)
             {
                 if (allowControlled && provider == "controlled" && recoveryFault is not null && !recoveryFaultConsumed
@@ -319,6 +320,7 @@ internal sealed class SupervisorSession : IDisposable
                 RecoveryStore.Clear(sessionKey);
                 return new { attempted = true, released = true, processExitConfirmed = true, method = "declared-sendinput", reason,
                     childPid = record.Child?.Pid, childCreated = record.Child?.Created.ToString(), declaredKeysDown = released.RemainingDown,
+                    foregroundWaitMs = released.ForegroundWaitMs,
                     stopCleanupMs = physicalStopAtTicks > 0 ? (double?)Math.Round(Stopwatch.GetElapsedTime(physicalStopAtTicks).TotalMilliseconds, 3) : null };
             }
             RecoveryStore.Write(record with { Phase = "quarantined", Reason = "input_release_unconfirmed" });
