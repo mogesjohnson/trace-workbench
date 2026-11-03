@@ -1,6 +1,6 @@
-# Autonomous Claude sessions: task specs (awaiting owner approval)
+# Autonomous Claude sessions: task specs
 
-Status: **proposed 1 November 2026; A1-A6, A8 and A9 approved by 3 November 2026.** The owner ticks each task's
+Status: **proposed 1 November 2026; A1-A9 approved and done by 3 November 2026.** The owner ticks each task's
 **Approve** box (or says "approve A3") before work starts; each task becomes one branch and one PR.
 
 Goal: a Claude session (on the PC or the phone's Termux → Debian Claude) runs a whole task, such as
@@ -89,7 +89,7 @@ and `claude mcp list` there shows `trace-phone ✔ Connected`.
 
 ### A7. Session self-reporting and stop rules
 
-- [ ] **Approve**
+- [x] **Approve** (owner-approved trial, 2 Nov 2026; merged in PRs 90, 95 and 96. C4 frame prune moved into trace-phone by PR 96 and re-checked pass; C7 passes once the Remote Control session is archived, which the rules leave to the archiver; see PHONE_HANDOFF.md "Task A7")
 
 A short `docs/AUTONOMOUS_SESSION.md` that an autonomous session follows: work from one task spec, report
 each check as pass/fail/blocked/not_run, push a notification on finish or block, write the handoff
