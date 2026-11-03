@@ -37,7 +37,7 @@ Before any native input can use the temporary clipboard, durably defer automatic
 
 ## Recover and release
 
-Marker loss stops input. Establish delivery/cleanup and close the failed session before reopening; a new capture alone does not restore the marker. Use the installed executor's documented recovery command and current diagnostics. `computer recover --check` is inspection; `--apply`, where implemented, must establish owned-process exit and released input before clearing recovery state. Retain an unresolved result instead of switching servers around it.
+Marker loss stops input. Establish delivery/cleanup and close the failed session before reopening; a new capture alone does not restore the marker. Use the installed executor's documented recovery command and current diagnostics. `computer recover --check` is inspection; `--apply`, where implemented, must establish owned-process exit and released input before clearing recovery state. Retain an unresolved result instead of switching servers around it. After `--apply` clears recovery, call `close_session` on the stuck session again: it re-checks recovery and native owner exit, then returns `recoveredExternally: true` and frees the desktop with no server reconnect. Doctor's `supervision.code: "release_pending_recovery"` marks that state.
 
 Claim native supervision, durable per-user quarantine, keyboard/mouse balancing, or physical Escape only at their actual tested scope. A source implementation, simulated coordinator, or MCP close receipt cannot independently prove physical input release or crash-safe ownership. Physical stop and interruption acceptance remain separate from ordinary successful actions.
 
