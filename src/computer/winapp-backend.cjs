@@ -11,7 +11,7 @@ const pin = require('./winapp-pin.json');
 const ROOT = path.resolve(__dirname, '../..');
 const DEFAULT_BINARY = path.join(ROOT, '.runtime', 'winapp', `v${pin.version}`, 'bin', 'winapp.exe');
 const DEFAULT_BRIDGE = path.join(ROOT, '.runtime', 'window-bridge', 'bin', 'TraceWindowBridge.exe');
-const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj', 'native/TraceWindowBridge/Capture.cs', 'native/TraceWindowBridge/Applications.cs'];
+const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj', 'native/TraceWindowBridge/Capture.cs', 'native/TraceWindowBridge/Applications.cs', 'native/TraceWindowBridge/Packages.cs'];
 
 class BackendError extends Error {
   constructor(code, message, details = {}) {
@@ -264,7 +264,7 @@ class WinappBackend {
   async bridge(verb, window, signal, parameters = []) {
     const pointer = verb === 'click' || verb === 'wheel';
     if (pointer && !this.supervisor?.ready) fail('supervision_required', 'New pointer input requires a ready native owner.', { outcome: 'not_dispatched' });
-    const standalone = ['info', 'apps', 'process'].includes(verb);
+    const standalone = ['info', 'apps', 'process', 'packaged', 'packaged-identities', 'activate-package'].includes(verb);
     const args = standalone ? [verb, ...parameters] : [verb, id(window.id), String(window.pid), ...parameters];
     const mutating = verb === 'activate' || pointer;
     if (this.supervisor && mutating && !this.supervisor.ready) fail('session_stopped', 'A ready native session is required before activation.', { outcome: 'not_dispatched' });
