@@ -171,7 +171,7 @@ function createComputerServer({ controller, onError = () => {} } = {}) {
     z.strictObject({ sessionId: id, observationId: id, action: actionSchema,
       returnObservation: z.enum(['full', 'summary', 'none']).optional().describe('full, summary (default) or none.') }), "act",
     { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true });
-  if (typeof controller.launch === "function") register("trace_computer_launch", "Start a registered application by its App Paths name (such as notepad; .exe optional) without a shell, and return its new windows in the list_windows form; open_session accepts their IDs directly. Close any open session first. URIs (such as ms-settings:) and paths are unsupported. An unknown outcome is never relaunched automatically.",
+  if (typeof controller.launch === "function") register("trace_computer_launch", "Start a registered application by its App Paths name (such as notepad; .exe optional) without a shell, and return its new windows in the list_windows form; open_session accepts their IDs directly. Close any open session first. URIs (such as ms-settings:) and paths are unsupported. handedOff: true means the app passed the start to another of its processes (single-instance apps); the returned windows are still new and run the registered EXE. An unknown outcome is never relaunched automatically.",
     z.strictObject({ app: z.string().min(1).max(64) }), "launch", { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true });
   register("trace_computer_close_session", "Release this session's desktop lease without closing the target application.",
     z.strictObject({ sessionId: id }), "closeSession", { ...sessionMutation, idempotentHint: true });

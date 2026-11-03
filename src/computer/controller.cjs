@@ -575,7 +575,8 @@ function createComputerController(options = {}) {
             nextStep: result.outcome === 'unknown' ? 'The app may have started. List windows before deciding; it is not relaunched automatically.' : 'Nothing was started.' };
         }
         for (const window of result.windows) discovered.set(window.id, window);
-        return { outcome: 'launched', app: wanted, pid: result.process.pid, windows: result.windows.map(listedWindow), cleanup: result.cleanup };
+        return { outcome: 'launched', app: wanted, pid: result.process.pid, ...(result.ownership === 'handed-off' ? { handedOff: true } : {}),
+          windows: result.windows.map(listedWindow), cleanup: result.cleanup };
       }, callOptions);
     },
     closeSession({ sessionId }, callOptions) {

@@ -68,9 +68,15 @@ function createInstalledApplications({ backend = new WinappBackend(), lease = ba
       if (canonical(actual.executable) !== canonical(app.executable) || actual.fingerprint !== app.fingerprint) fail('application_changed', 'Executable changed before launch.');
       await lease.acquire(owner); acquired = true; await lease.assert(owner);
       const active = AbortSignal.any([...(signal ? [signal] : []), ...(lease.signal ? [lease.signal] : []), AbortSignal.timeout(timeoutMs)]);
+      active.throwIfAborted();
+      // Single-instance apps (Notepad 11, a running Firefox) hand the start to another process and
+      // the spawned one exits. Only windows absent from this snapshot can be a handoff.
+      const windowKey = window => `${window.id}:${window.pid}:${window.processCreationTime ?? ''}`;
+      const before = new Set((await backend.listWindows({ signal: active })).map(windowKey));
       active.throwIfAborted(); attempted.add(appId);
       child = spawnImpl(app.executable, [], { shell: false, windowsHide: false, cwd: path.dirname(app.executable), stdio: 'ignore' });
       child.on('error', () => {});
+      let exited = false; const exit = new Promise(resolve => child.once('exit', () => { exited = true; resolve(); }));
       await new Promise((resolve, reject) => {
         const finish = error => { active.removeEventListener('abort', abort); child.off('spawn', ready); child.off('error', failed); error ? reject(error) : resolve(); };
         const ready = () => finish(), failed = error => finish(error), abort = () => finish(active.reason);
@@ -83,23 +89,53 @@ function createInstalledApplications({ backend = new WinappBackend(), lease = ba
           || typeof value.executable !== 'string' || canonical(await fs.realpath(value.executable)) !== canonical(app.executable)) fail('application_identity_changed', 'Actual launched process differs from the registered executable.');
         return value;
       };
-      const process = await readProcess(); let candidates = [];
+      // A spawned process that exits before it can be read may have handed off. A process that is
+      // readable but runs another executable is never accepted.
+      let process = null;
+      try { process = await readProcess(); }
+      catch (error) {
+        if (error.code === 'application_identity_changed' || active.aborted) throw error;
+        await Promise.race([exit, new Promise(resolve => setTimeout(resolve, 500))]);
+        if (!exited) throw error;
+      }
+      // A handed-off window is new since the snapshot, belongs to a readable process in the
+      // launched process's session (when known), and its executable resolves to the registered EXE.
+      const sameApp = async window => {
+        if (before.has(windowKey(window)) || typeof window.processCreationTime !== 'string' || !Number.isInteger(window.sessionId)
+          || (process && window.sessionId !== process.sessionId) || typeof window.executable !== 'string') return false;
+        try { return canonical(await fs.realpath(window.executable)) === canonical(app.executable); } catch { return false; }
+      };
+      let candidates = [], ownership = 'created-process';
       while (!active.aborted) {
         await lease.assert(owner);
-        candidates = (await backend.listWindows({ signal: active })).filter(window => window.pid === process.pid
-          && window.processCreationTime === process.processCreationTime && window.sessionId === process.sessionId);
+        const windows = await backend.listWindows({ signal: active });
+        candidates = process ? windows.filter(window => window.pid === process.pid
+          && window.processCreationTime === process.processCreationTime && window.sessionId === process.sessionId) : [];
         if (candidates.length) break;
+        const handed = [];
+        for (const window of windows) if (await sameApp(window)) handed.push(window);
+        if (handed.length) {
+          candidates = handed.filter(window => window.pid === handed[0].pid && window.processCreationTime === handed[0].processCreationTime);
+          ownership = 'handed-off'; break;
+        }
         await new Promise(resolve => setTimeout(resolve, 100));
       }
       active.throwIfAborted();
       if (!candidates.length) fail('application_window_unavailable', 'Launched process has no verified window.');
-      const final = await readProcess();
-      if (final.processCreationTime !== process.processCreationTime || final.sessionId !== process.sessionId) fail('application_identity_changed', 'Launched process lifetime changed.');
+      if (ownership === 'created-process') {
+        const final = await readProcess();
+        if (final.processCreationTime !== process.processCreationTime || final.sessionId !== process.sessionId) fail('application_identity_changed', 'Launched process lifetime changed.');
+      }
       const after = await file(app.registeredPath);
       if (after.fingerprint !== app.fingerprint || canonical(after.executable) !== canonical(app.executable)) fail('application_changed', 'Executable changed during launch.');
       const handoff = [];
-      for (const window of candidates) handoff.push(await backend.currentVisualWindow(window, { signal: active }));
-      result = { outcome: 'launched', appId, process, windows: handoff, ownership: 'created-process', applicationClosed: false };
+      for (const window of candidates) {
+        const current = await backend.currentVisualWindow(window, { signal: active });
+        if (ownership === 'handed-off' && (current.pid !== window.pid || current.processCreationTime !== window.processCreationTime)) fail('window_identity_changed', 'Handed-off window changed before it was returned.');
+        handoff.push(current);
+      }
+      const owned = ownership === 'handed-off' ? { pid: candidates[0].pid, processCreationTime: candidates[0].processCreationTime, sessionId: candidates[0].sessionId, executable: candidates[0].executable } : process;
+      result = { outcome: 'launched', appId, process: owned, windows: handoff, ownership, ...(ownership === 'handed-off' ? { spawnedPid: child.pid } : {}), applicationClosed: false };
     } catch (error) {
       const code = typeof error.code === 'string' ? error.code : error.name === 'TimeoutError' ? 'application_timeout' : error.name === 'AbortError' ? 'cancelled' : 'application_launch_failed';
       result = { outcome: child?.pid ? 'unknown' : 'not_dispatched', appId, code,

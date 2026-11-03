@@ -466,6 +466,16 @@ class WinappBackend {
       coordinateSpace: entry.coordinateSpace, depth, truncated, includeOffscreen, offscreenOmitted, nodeCount: kept,
       ...(scoped ? { rootElementId } : {}), ...(interactiveOnly ? { interactiveOnly: true } : {}) };
   }
+  // The common file dialog (#32770) keeps its own copy of the File name; a UIA ValuePattern write
+  // changes the edit text but not that copy, so Save uses the previous name (seen live 2026-11-02).
+  // Only an Edit 1001 of class Edit pays for the confirming unscoped read.
+  async fileDialogNameBox(window, signal, target) {
+    if (target?.controlType !== 'Edit' || target.automationId !== '1001' || target.className !== 'Edit') return false;
+    const tree = await this.inspect(window, signal, 3);
+    if (tree.elements[0]?.className !== '#32770') return false;
+    const hosts = new Set(tree.elements.filter(element => element.automationId === 'FileNameControlHost' && element.controlType === 'ComboBox').map(element => element.treeNodeId));
+    return tree.elements.some(element => element.id === target.id && hosts.has(element.parentNodeId));
+  }
   // Root-first UIA chain from the window root to the element the selector resolves to.
   async ancestors(window, signal, nativeSelector) {
     const result = await this.command('inspect', ['-w', id(window.id), '--ancestors', '--', selector(nativeSelector)], signal);
@@ -786,8 +796,12 @@ class WinappBackend {
         verb = 'invoke'; options = ['--action', action.action];
         break;
       }
-      case 'set_value':
-        verb = 'set-value'; positional = [choose(action.elementId), action.value]; break;
+      case 'set_value': {
+        positional = [choose(action.elementId), action.value];
+        if (await this.fileDialogNameBox(window, signal, fresh.elements.find(element => element.id === action.elementId)))
+          fail('unsupported_action', 'The file dialog ignores a File name value set through UI Automation and would save under its previous name. Click the File name box, press ctrl+a and use type_text instead.', { outcome: 'not_dispatched' });
+        verb = 'set-value'; break;
+      }
       default: fail('unsupported_action', `Unsupported action type: ${action.type}.`);
     }
     // Recheck PID immediately before launching the mutating native command. The CLI also pins the

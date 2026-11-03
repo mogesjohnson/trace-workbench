@@ -489,3 +489,33 @@ test('setup plan pins official release and has no global changes; unknown flags 
   assert.match(plan().source, /^https:\/\/github.com\/microsoft\/winappCli\/releases\/download\/v0\.7\.1\//);
   await assert.rejects(main(['--unknown']), /Usage/);
 });
+
+// Live 2026-11-02: a UIA value write to the common file dialog's File name box changed the edit
+// text, but Save used the previous name. set_value there is refused before any native mutation.
+function fileDialog({ rootClass = '#32770', hostId = 'FileNameControlHost' } = {}) {
+  const edit = { selector: 'txt-1001', name: 'File name:', type: 'Edit', automationId: '1001', className: 'Edit', isEnabled: true, isOffscreen: false, x: 140, y: 260, width: 200, height: 30 };
+  const host = { selector: 'host-name', name: 'File name:', type: 'ComboBox', automationId: hostId, className: 'AppControlHost', isEnabled: true, isOffscreen: false, x: 130, y: 255, width: 220, height: 40, children: [edit] };
+  const tree = { selector: 'win-saveas', name: 'Save as', type: 'Window', className: rootClass, isEnabled: true, isOffscreen: false, ...rect, children: [host] };
+  const observation = { ...canonical(), focused: { available: true, hasFocus: true, elementId: 'txt-1001' }, rootSelector: 'win-saveas', elements: [
+    { id: 'win-saveas', name: 'Save as', controlType: 'Window', enabled: true, offscreen: false, className: rootClass, bounds: { ...rect } },
+    { id: 'host-name', name: 'File name:', controlType: 'ComboBox', automationId: hostId, className: 'AppControlHost', enabled: true, offscreen: false, bounds: { x: 130, y: 255, width: 220, height: 40 } },
+    { id: 'txt-1001', name: 'File name:', controlType: 'Edit', automationId: '1001', className: 'Edit', enabled: true, offscreen: false, bounds: { x: 140, y: 260, width: 200, height: 30 } }
+  ] };
+  const { backend, calls } = mock(args => args[1] === 'inspect' ? { windows: [{ hwnd: 1234, coordinateSpace: 'physical-screen-pixels', elements: [tree] }] } : undefined);
+  return { backend, calls, observation };
+}
+
+test('set_value is refused, not dispatched, on the common file dialog File name box', async () => {
+  const { backend, calls, observation } = fileDialog();
+  await assert.rejects(backend.act({ window, observation, action: { type: 'set_value', elementId: 'txt-1001', value: 'C:\out\saved.txt' } }),
+    error => error.code === 'unsupported_action' && error.details.outcome === 'not_dispatched' && /type_text/.test(error.message));
+  assert.equal(calls.some(call => call.args[1] === 'set-value'), false);
+});
+
+for (const [label, options] of [['outside a #32770 window', { rootClass: 'Notepad' }], ['not under FileNameControlHost', { hostId: 'SomeOtherHost' }]])
+test(`set_value still dispatches to an Edit 1001 ${label}`, async () => {
+  const { backend, calls, observation } = fileDialog(options);
+  const result = await backend.act({ window, observation, action: { type: 'set_value', elementId: 'txt-1001', value: 'kept' } });
+  assert.equal(result.performed, true);
+  assert.equal(calls.at(-1).args[1], 'set-value');
+});
