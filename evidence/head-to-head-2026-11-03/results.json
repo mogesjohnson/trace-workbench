@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-03",
+  "trace": { "version": "2.0.0", "sourceCommit": "b89574b", "winapp": "0.7.1" },
+  "agentDesktop": { "version": "1.0.2", "mode": "headless" },
+  "driver": { "host": "Claude Code", "model": "claude-opus-5-5", "effort": "medium" },
+  "environment": { "os": "Windows 11 Home 10.0.26200", "notepad": "11.2607.14.0", "firefox": "159 (MSIX)" },
+  "order": ["T1", "A1", "A2", "T2"],
+  "runs": {
+    "T1": [
+      { "task": 1, "result": "pass", "seconds": 36.9, "calls": 6, "readback": "exact TextPattern" },
+      { "task": 2, "result": "pass", "seconds": 61.7, "calls": 9, "disk": "exact 19 bytes" },
+      { "task": 3, "result": "pass", "seconds": 99.3, "calls": 12, "url": "www.iana.org/help/example-domains",
+        "note": "close by ctrl+shift+w -> unknown, input_recovery_required (foreground_unavailable); recover --apply recovered" },
+      { "task": 4, "result": "fail", "calls": 3,
+        "errors": ["desktop_busy and input_recovery_required after recover --apply (cached releaseErrors) until MCP reconnect",
+                   "after reconnect: launch SystemSettings -> unknown_application: No App Paths registration has this name."] }
+    ],
+    "A1": [
+      { "task": 1, "result": "pass", "seconds": 51.3, "calls": 6 },
+      { "task": 2, "result": "pass", "seconds": 73.2, "calls": 16 },
+      { "task": 3, "result": "pass", "seconds": 96.4, "calls": 15, "url": "www.iana.org/help/example-domains" },
+      { "task": 4, "result": "fail", "seconds": 78.5, "calls": 6, "errors": ["launch SystemSettings.exe ok (pid attached) but no window, also with --activate"] }
+    ],
+    "A2": [
+      { "task": 1, "result": "pass", "seconds": 36.0, "calls": 5 },
+      { "task": 2, "result": "pass", "seconds": 29.3, "calls": 13 },
+      { "task": 3, "result": "pass", "seconds": 61.3, "calls": 14, "url": "www.iana.org/help/example-domains" },
+      { "task": 4, "result": "fail", "seconds": 83.6, "calls": 23,
+        "errors": ["--headed open-system-surface start-menu opened Settings; System nav click (LegacyIAccessible.DoDefaultAction) delivered_unverified twice, no navigation; headless rule forbids headed recovery"] }
+    ],
+    "T2": [
+      { "task": 1, "result": "pass", "seconds": 78.3, "calls": 9, "readback": "exact TextPattern" },
+      { "task": 2, "result": "pass", "seconds": 109.2, "calls": 13, "disk": "exact 19 bytes",
+        "note": "set_value on File name refused not_dispatched (intended guard); click, ctrl+a, type_text worked" },
+      { "task": 3, "result": "pass", "seconds": 97.9, "calls": 11, "url": "www.iana.org/help/example-domains" },
+      { "task": 4, "result": "fail", "seconds": 5.7, "calls": 1, "errors": ["launch SystemSettings.exe -> unknown_application: No App Paths registration has this name."] }
+    ]
+  },
+  "totals": {
+    "trace": { "passed": 6, "of": 8, "calls": 68, "responseChars": 151697, "images": 1, "contextTokensUpperBound": 94000,
+      "contextReadings": { "session1": "86k -> 122k", "session2": "77k -> 135k" } },
+    "agentDesktop": { "passed": 6, "of": 8, "calls": 98, "outputChars": 82686, "images": 0, "contextTokens": 59000,
+      "contextReadings": { "session1": "122k -> 181k" } }
+  },
+  "incidentAcceptance": { "goal": "TRACE share under 100k tokens", "met": true,
+    "caveats": ["two sessions and an MCP reconnect", "meter readings include driver reasoning and logging", "Settings task failed for both tools"] },
+  "baseline2026-11-02": { "taskRuns": 3, "responseChars": 745285, "images": 16, "contextTokens": 420000 }
+}
