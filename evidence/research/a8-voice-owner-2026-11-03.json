@@ -1,0 +1,39 @@
+{
+ "observedDate": "2026-11-03",
+ "device": "SM-S918U (S23 Ultra), same build and whisper.cpp binary as a8-voice-2026-11-03.json",
+ "testSet": {
+  "clips": 5,
+  "speaker": "owner",
+  "seconds_each": 6,
+  "format": "termux-microphone-record AAC 16 kHz mono, converted on the phone by Termux ffmpeg to 16 kHz mono PCM16 WAV",
+  "phrases": [
+   "open the camera and take a photo",
+   "set a timer for twelve minutes",
+   "turn on Wi-Fi and check the battery level",
+   "send a message to Sam saying I will be late",
+   "summarize the last three notifications"
+  ],
+  "conditions": "Owner-reported: other people were talking in the background. Phone microphone, normal speaking pace.",
+  "peak_abs_pcm16": [6189, 7744, 5760, 5696, 7833],
+  "note": "Audio stayed on the phone (Termux:API app folder and /data/local/tmp); only transcript text left the device. The clips were deleted after scoring."
+ },
+ "method": {
+  "android": "Route 2b: trace.a8.stt, createSpeechRecognizer + EXTRA_PREFER_OFFLINE true, Wi-Fi on, one launch per clip.",
+  "whisper": "whisper-cli base.en, 4 threads, adb shell.",
+  "wer": "score.py as in the main A8 run."
+ },
+ "results": {
+  "android_default_offline": {"wer": 0.139, "failures": 0, "mean_ms_start_to_result": 4054},
+  "whisper_base_en": {"wer": 0.25, "failures": 0}
+ },
+ "transcripts": {
+  "android_default_offline": ["Open the camera and take a photo", "Set a timer for 12 minutes", "Wi-Fi and check the battery level", "Message to Sam saying I will be late", "Is the last three notifications"],
+  "whisper_base_en": ["Open the camera and take the photo.", "That timer for 12 minutes.", "Wifi and check the battery level.", "message to Sam saying I will be late.", "This is the last three notifications."]
+ },
+ "limits": [
+  "Five clips from one session; not a statistically strong sample.",
+  "Background speech was present; a quiet-room re-run may change the numbers and should replace this one if done.",
+  "Both routes lost the same opening words on clips 3 to 5 ('turn on', 'send a', 'summarize'), which points at the clip start, not the recognizer: the recording script printed SPEAK NOW before termux-microphone-record had started. Fix the script to start recording first, then prompt.",
+  "Owner wording is not verified independently; references are the prompted phrases."
+ ]
+}
