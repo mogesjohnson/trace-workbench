@@ -6,14 +6,26 @@ const KEY_NAMES = ['ENTER', 'RETURN', 'TAB', 'ESC', 'ESCAPE', 'BACKSPACE', 'DELE
 const MODIFIERS = ['CTRL', 'CONTROL', 'ALT', 'SHIFT'];
 const alternatives = words => words.map(word => word.replace(/[A-Z]/g, letter => `[${letter}${letter.toLowerCase()}]`)).join('|');
 // JSON Schema has no regexp flags; encode case folding in the pattern itself.
-const KEY_PATTERN = `^(?:(?:${alternatives(MODIFIERS)})\\+)*(?:[A-Za-z0-9]|[Ff](?:[1-9]|1[0-2])|${alternatives(KEY_NAMES)})(?![\\s\\S])`;
+const keyPattern = (names, fRange) => `^(?:(?:${alternatives(MODIFIERS)})\\+)*(?:[A-Za-z0-9]|[Ff](?:[1-9]|${fRange})|${alternatives(names)})(?![\\s\\S])`;
+const LEGACY_KEY_PATTERN = keyPattern(KEY_NAMES, '1[0-2]');
+const KEY_ALIASES = Object.freeze({ INSERT: 'insert', SEMICOLON: 'vk=0xba', EQUAL: 'vk=0xbb', PLUS: 'vk=0xbb',
+  COMMA: 'vk=0xbc', MINUS: 'vk=0xbd', PERIOD: 'vk=0xbe', SLASH: 'vk=0xbf', GRAVE: 'vk=0xc0',
+  BRACKETLEFT: 'vk=0xdb', BACKSLASH: 'vk=0xdc', BRACKETRIGHT: 'vk=0xdd', APOSTROPHE: 'vk=0xde',
+  NUMPAD_ADD: 'vk=0x6b', NUMPAD_SUBTRACT: 'vk=0x6d', NUMPAD_MULTIPLY: 'vk=0x6a', NUMPAD_DECIMAL: 'vk=0x6e',
+  ...Object.fromEntries(Array.from({ length: 10 }, (_, n) => [`NUMPAD${n}`, `vk=0x${(0x60 + n).toString(16)}`])) });
+const KEY_PATTERN = keyPattern([...KEY_NAMES, ...Object.keys(KEY_ALIASES)], '1[0-6]');
 const FIELDS = {
   activate: [], click: ['x', 'y', 'elementId', 'button', 'count'], type_text: ['text'], press_key: ['key'],
   scroll: ['x', 'y', 'deltaX', 'deltaY', 'placement'], drag: ['fromX', 'fromY', 'toX', 'toY'],
   invoke: ['elementId'], set_value: ['elementId', 'value'],
 };
 const reject = (code, message) => { throw Object.assign(new Error(message), { code, details: { outcome: 'not_dispatched' } }); };
-const normalizeKey = key => key.toLowerCase().split('+').map(token => token === 'control' ? 'ctrl' : token === 'return' ? 'enter' : token).join('+');
+function normalizeKey(key) {
+  const tokens = key.toLowerCase().split('+').map(token => token === 'control' ? 'ctrl' : token === 'return' ? 'enter' : token);
+  const name = tokens.pop(), mapped = KEY_ALIASES[name.toUpperCase()];
+  if (name === 'plus' && !tokens.includes('shift')) tokens.push('shift');
+  return [...tokens, mapped ?? name].join('+');
+}
 
 // Static support checks run before observation consumption or native helper work.
 function parseAction(action) {
@@ -79,8 +91,10 @@ function actionSupport(observationTtlMs = 60000) {
       click: { targets: ['point', 'elementId'], button: 'left', count: 1, pointTransport: 'same-point-button-down-up',
         variants: { buttons: ['left', 'right', 'middle'], counts: [1, 2], doubleButton: 'left', transport: 'supervised-public-win32', requiresSupervisor: true } },
       type_text: { minLength: 1, maxLength: LIMITS.text, nul: false },
-      press_key: { pattern: KEY_PATTERN, maxLength: LIMITS.key, caseSensitive: false,
-        modifiers: [...MODIFIERS], namedKeys: [...KEY_NAMES], normalization: { CONTROL: 'ctrl', RETURN: 'enter' } },
+      press_key: { pattern: LEGACY_KEY_PATTERN, maxLength: LIMITS.key, caseSensitive: false,
+        modifiers: [...MODIFIERS], namedKeys: [...KEY_NAMES], normalization: { CONTROL: 'ctrl', RETURN: 'enter' },
+        extended: { pattern: KEY_PATTERN, aliases: { ...KEY_ALIASES }, functionKeys: 16, plusAddsShift: true,
+          semantics: 'physical-virtual-key-layout-dependent', unavailable: ['NUMPAD_DIVIDE', 'NUMPAD_ENTER', 'side-specific modifiers'] } },
       scroll: { deltaX: 0, minDeltaY: -LIMITS.wheel, maxDeltaY: LIMITS.wheel, step: LIMITS.wheelStep,
         nonzero: true, positive: 'down', target: 'smallest-enabled-onscreen-element-containing-point', placement: 'element-center',
         point: { maxAbsDelta: LIMITS.wheel, step: LIMITS.wheelStep, nonzeroPair: true, positiveX: 'right', positiveY: 'down',
@@ -106,6 +120,7 @@ function compatibleSupport(support) {
   const expected = actionSupport(ttl);
   if (!Object.hasOwn(support?.actions?.click ?? {}, 'variants')) delete expected.actions.click.variants;
   if (!Object.hasOwn(support?.actions?.scroll ?? {}, 'point')) delete expected.actions.scroll.point;
+  if (!Object.hasOwn(support?.actions?.press_key ?? {}, 'extended')) delete expected.actions.press_key.extended;
   return matches(support, expected);
 }
 
