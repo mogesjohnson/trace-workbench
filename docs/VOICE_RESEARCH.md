@@ -111,8 +111,14 @@ Without those lost words, route 2b was word-perfect and base.en misheard "set a"
    `phone_transcribe` MCP tool returned the same text from the PC over SSH
    ([evidence](../evidence/research/a8-phone-transcribe-2026-11-03.json)). small.en is installed
    too (`install-whisper.sh small.en`): `phone-transcribe -m small.en` got the jfk words exact in
-   about 16.5 s (1.5× real time), on the phone and over SSH from the PC. Not run yet: a live
-   `--record` utterance by the owner (microphone stays ask-first) and the call from phone Claude.
+   about 16.5 s (1.5× real time), on the phone and over SSH from the PC. Live `--record 8`
+   test by the owner (approved, 3 Nov 2026, soft speech in a library), reference "open termux
+   and run the phone bench": base.en "Open Turmox and run the phone badge." (2 of 7 words wrong,
+   3.7 s), small.en on the same clip "Open termox and run the phone bench." (1 of 7, 15.6 s).
+   Two practical points: `--keep` must be a path Termux can reach (the Termux home, not Debian's
+   `/tmp`), and the speaker should start at the phone's green mic indicator with about 3 s of
+   slack, since the PC-side prompt is invisible to them and 5 s cut the sentence off. Clips were
+   deleted after the runs. Not run yet: the call from phone Claude.
 4. claude-voice: add `EXTRA_PREFER_OFFLINE = true` (owner approved). Done 3 Nov 2026 in the
    separate private claude-voice repository (its PR 1). The owner installed the build and spoken
    commands worked; recognition with the network off has not been tested.

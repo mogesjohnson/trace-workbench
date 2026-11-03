@@ -35,12 +35,31 @@
   {"via": "PC: ssh phone proot-distro login debian -- phone-transcribe --json -m small.en (the TRACE_PHONE_TRANSCRIBE route)", "input": "jfk.wav", "model": "small.en",
    "audioSeconds": 11.0, "elapsedSeconds": 16.86, "exact": true}
  ],
+ "liveRecord": {
+  "approval": "Owner approved the live microphone test and was at the phone (A1: recording is ask-first). Quiet library; owner spoke softly.",
+  "command": "ssh phone 'proot-distro login debian -- phone-transcribe --json --record 8 --keep /data/data/com.termux/files/home/a8rec', then phone-transcribe --json -m small.en on the kept clip",
+  "reference": "open termux and run the phone bench",
+  "result": [
+   {"model": "base.en", "text": "Open Turmox and run the phone badge.", "audioSeconds": 8.07, "elapsedSeconds": 3.73, "wordErrors": "2 of 7 (termux, bench)"},
+   {"model": "small.en", "text": "Open termox and run the phone bench.", "audioSeconds": 8.07, "elapsedSeconds": 15.56, "wordErrors": "1 of 7 (termux)"}
+  ],
+  "clipLevel": "mean -38.5 dB, peak -16.8 dB (soft speech)",
+  "earlierTakes": [
+   "--keep /tmp/a8rec: recording failed, file empty. Termux:API writes the file, so --keep must be a path Termux can reach (Termux home), not the Debian /tmp. Microphone permission was granted.",
+   "--record 5, three takes: [BLANK_AUDIO]; 'Open Turmux.'; 'Open terms.' (small.en on that clip: 'Open.'). The owner could not see the SPEAK NOW prompt, which prints on the PC, and recording starts 1 to 2 s after the request, so speech was cut off. Timing, not recognition."
+  ],
+  "lessons": [
+   "Cue the speaker with the phone's green microphone indicator, not the PC prompt.",
+   "Allow 3 s of slack over the sentence length (--record 8 for a 7-word command)."
+  ],
+  "cleanup": "All clips deleted from the phone after the runs (rm -rf ~/a8rec); only text left the phone."
+ },
  "errors": {
   "missingModel": "small.en not installed (checked before it was downloaded) -> exit 2 with the download command",
-  "missingFile": "exit 2, 'no such file'"
+  "missingFile": "exit 2, 'no such file'",
+  "keepOutsideTermux": "--keep /tmp/... inside Debian -> 'recording failed: ... is empty (microphone permission for Termux:API?)'; the hint is misleading, the cause is the path"
  },
  "notRun": [
-  "phone-transcribe --record (live microphone): needs the owner speaking at the phone; recording stays ask-first under A1",
   "tiny.en through phone-transcribe: not downloaded (not requested)",
   "phone_transcribe from a phone-side Claude session (A3 path)"
  ],
