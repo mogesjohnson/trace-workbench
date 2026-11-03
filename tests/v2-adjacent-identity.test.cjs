@@ -23,13 +23,15 @@ function fixture(screenshotPath, alter = () => {}) {
     calls.push({ verb, args, options });
     let value;
     if (verb === 'status') value = { hwnd: 1234, processId: 456, processName: 'Fixture', windowTitle: 'Fixture', coordinateSpace: 'physical-screen-pixels' };
-    if (verb === 'identity' || verb === 'bounds') value = { hwnd: '1234', pid: 456, processCreationTime: '1000', sessionId: 2, ownerWindowId: '99', frameBounds: { ...rect }, windowBounds: { ...rect }, foreground: true, minimized: false, enabled: true };
+    if (verb === 'identity') value = { hwnd: '1234', pid: 456, processCreationTime: '1000', sessionId: 2, ownerWindowId: '99', title: 'Fixture title' };
+    if (verb === 'bounds' || verb === 'activate') value = { hwnd: '1234', pid: 456, processCreationTime: '1000', sessionId: 2, ownerWindowId: '99', frameBounds: { ...rect }, windowBounds: { ...rect }, foreground: true, minimized: false, enabled: true };
     if (verb === 'inspect') value = { windows: [{ hwnd: 1234, coordinateSpace: 'physical-screen-pixels', elements: [{ selector: 'root', name: 'Fixture', type: 'Window', isEnabled: true, ...rect }] }] };
     if (verb === 'screenshot') {
       await fs.writeFile(screenshotPath, png);
       value = { hwnd: 1234, processId: 456, filePath: screenshotPath, width: 300, height: 400 };
     }
     if (verb === 'get-focused') value = { hasFocus: false };
+    if (verb === 'invoke') value = { hwnd: 1234 };
     assert.ok(value, `unexpected request ${args.join(' ')}`);
     alter(verb, number, value);
     return { stdout: JSON.stringify(value), stderr: '', exitCode: 0 };
@@ -48,40 +50,39 @@ async function withFrame(fn) {
   }
 }
 
-test('adjacent bounds supplies pinned identity once while independent checks bracket capture', async () => withFrame(async screenshotPath => {
+const receiptChanges = [
+  ['missing generation', v => { delete v.processCreationTime; }],
+  ['changed generation', v => { v.processCreationTime = '1001'; }],
+  ['missing session', v => { delete v.sessionId; }],
+  ['changed session', v => { v.sessionId = 3; }],
+  ['substituted hwnd', v => { v.hwnd = '999'; }],
+  ['substituted pid', v => { v.pid = 999; }]
+];
+
+test('observe reuses its bounds receipts for identity and runs one guard after capture', async () => withFrame(async screenshotPath => {
   const { backend, calls } = fixture(screenshotPath);
   const signal = new AbortController().signal;
   const metrics = createObservationMetrics();
   const result = await metrics.run(() => backend.observe({ window, screenshotPath, signal }));
-  assert.deepEqual(calls.map(call => call.verb), ['status', 'bounds', 'inspect', 'bounds', 'status', 'screenshot', 'status', 'identity', 'inspect', 'bounds', 'get-focused']);
+  assert.deepEqual(calls.map(call => call.verb), ['bounds', 'inspect', 'bounds', 'screenshot', 'identity', 'inspect', 'bounds', 'get-focused']);
   assert.ok(calls.every(call => call.options.signal === signal));
-  assert.equal(metrics.snapshot().counts.providerRequests, 11);
-  assert.deepEqual(await fs.readFile(screenshotPath), png);
+  assert.equal(metrics.snapshot().counts.providerRequests, 8);
+  assert.equal(result.window.title, 'Fixture title');
   assert.deepEqual(result.screenshot, { path: screenshotPath, mimeType: 'image/png', width: 300, height: 400 });
   assert.deepEqual(result.bounds, rect);
   assert.equal(result.targetState.ownerWindowId, '99');
 }));
 
-test('adjacent receipt and status fail closed before capture without identity fallback', async () => {
-  const variants = [
-    ['missing generation', (verb, n, v) => { if (verb === 'bounds' && n === 2) delete v.processCreationTime; }, 'window_identity_changed'],
-    ['changed generation', (verb, n, v) => { if (verb === 'bounds' && n === 2) v.processCreationTime = '1001'; }, 'window_identity_changed'],
-    ['missing session', (verb, n, v) => { if (verb === 'bounds' && n === 2) delete v.sessionId; }, 'window_identity_changed'],
-    ['changed session', (verb, n, v) => { if (verb === 'bounds' && n === 2) v.sessionId = 3; }, 'window_identity_changed'],
-    ['substituted hwnd', (verb, n, v) => { if (verb === 'bounds' && n === 2) v.hwnd = '999'; }, 'window_identity_changed'],
-    ['substituted pid', (verb, n, v) => { if (verb === 'bounds' && n === 2) v.pid = 999; }, 'window_identity_changed'],
-    ['changed name', (verb, n, v) => { if (verb === 'status' && n === 2) v.processName = 'Other'; }, 'window_identity_changed'],
-    ['changed coordinates', (verb, n, v) => { if (verb === 'status' && n === 2) v.coordinateSpace = 'logical'; }, 'coordinate_space']
-  ];
-  for (const [name, alter, code] of variants) await test(name, async () => withFrame(async screenshotPath => {
-    const { backend, calls } = fixture(screenshotPath, alter);
-    await assert.rejects(backend.observe({ window, screenshotPath }), { code });
-    assert.equal(calls.filter(call => call.verb === 'identity').length, 0);
-    assert.ok(!calls.some(call => call.verb === 'screenshot'));
+test('opening and pre-capture bounds receipts fail closed before capture without a fallback read', async () => {
+  for (const n of [1, 2]) for (const [name, alter] of receiptChanges) await test(`bounds ${n}: ${name}`, async () => withFrame(async screenshotPath => {
+    const { backend, calls } = fixture(screenshotPath, (verb, number, value) => { if (verb === 'bounds' && number === n) alter(value); });
+    await assert.rejects(backend.observe({ window, screenshotPath }), { code: 'window_identity_changed' });
+    assert.equal(calls.filter(call => call.verb === 'bounds').length, n);
+    assert.ok(!calls.some(call => call.verb === 'identity' || call.verb === 'screenshot'));
   }));
 });
 
-test('post-capture independent identity and geometry still reject changes', async () => {
+test('post-capture guard and geometry still reject changes', async () => {
   for (const [name, alter, code] of [
     ['generation', (verb, n, v) => { if (verb === 'identity' && n === 1) v.processCreationTime = '1001'; }, 'window_identity_changed'],
     ['geometry', (verb, n, v) => { if (verb === 'bounds' && n === 3) v.frameBounds.x++; }, 'window_moved']
@@ -92,35 +93,18 @@ test('post-capture independent identity and geometry still reject changes', asyn
   }));
 });
 
-
-test('initial status rejects changed targets and coordinates before requesting bounds', async () => {
-  for (const [name, alter, code] of [
-    ['name', v => { v.processName = 'Other'; }, 'window_identity_changed'],
-    ['coordinates', v => { v.coordinateSpace = 'logical'; }, 'coordinate_space']
-  ]) await test(name, async () => withFrame(async screenshotPath => {
-    const { backend, calls } = fixture(screenshotPath, (verb, n, value) => {
-      if (verb === 'status' && n === 1) alter(value);
-    });
-    await assert.rejects(backend.observe({ window, screenshotPath }), { code });
+test('a window without a pinned generation keeps the engine status name check, the first before bounds', async () => {
+  const unpinned = { id: window.id, pid: window.pid, processName: window.processName };
+  await withFrame(async screenshotPath => {
+    const { backend, calls } = fixture(screenshotPath);
+    await backend.observe({ window: unpinned, screenshotPath });
+    assert.deepEqual(calls.map(call => call.verb), ['status', 'bounds', 'inspect', 'bounds', 'status', 'screenshot', 'status', 'inspect', 'bounds', 'get-focused']);
+  });
+  await withFrame(async screenshotPath => {
+    const { backend, calls } = fixture(screenshotPath, (verb, n, v) => { if (verb === 'status') v.processName = 'Other'; });
+    await assert.rejects(backend.observe({ window: unpinned, screenshotPath }), { code: 'window_identity_changed' });
     assert.deepEqual(calls.map(call => call.verb), ['status']);
-  }));
-});
-
-test('initial bounds rejects changed lifetime or target before restore and capture', async () => {
-  for (const [name, alter] of [
-    ['missing generation', v => { delete v.processCreationTime; }],
-    ['changed generation', v => { v.processCreationTime = '1001'; }],
-    ['missing session', v => { delete v.sessionId; }],
-    ['changed session', v => { v.sessionId = 3; }],
-    ['changed hwnd', v => { v.hwnd = '999'; }],
-    ['changed pid', v => { v.pid = 999; }]
-  ]) await test(name, async () => withFrame(async screenshotPath => {
-    const { backend, calls } = fixture(screenshotPath, (verb, n, value) => {
-      if (verb === 'bounds' && n === 1) { value.minimized = true; alter(value); }
-    });
-    await assert.rejects(backend.observe({ window, screenshotPath }), { code: 'window_identity_changed' });
-    assert.deepEqual(calls.map(call => call.verb), ['status', 'bounds']);
-  }));
+  });
 });
 
 test('initial bounds failure or cancellation is not retried', async () => {
@@ -133,19 +117,9 @@ test('initial bounds failure or cancellation is not retried', async () => {
       }
     });
     await assert.rejects(backend.observe({ window, screenshotPath, signal: controller.signal }), { code });
-    assert.ok(calls.every(call => call.options.signal === controller.signal));
-    assert.deepEqual(calls.map(call => call.verb), ['status', 'bounds']);
+    assert.deepEqual(calls.map(call => call.verb), ['bounds']);
   }));
 });
-
-test('an injected identity that ignores the supplier still reads initial bounds once', async () => withFrame(async screenshotPath => {
-  const { backend, calls } = fixture(screenshotPath);
-  const unpinned = { id: window.id, pid: window.pid, processName: window.processName };
-  backend.identity = async target => target;
-  const result = await backend.observe({ window: unpinned, screenshotPath });
-  assert.deepEqual(calls.map(call => call.verb), ['bounds', 'inspect', 'bounds', 'screenshot', 'inspect', 'bounds', 'get-focused']);
-  assert.deepEqual(result.bounds, rect);
-}));
 
 test('initial bounds accepts synchronous injected bridge receipts', async () => withFrame(async screenshotPath => {
   const { backend } = fixture(screenshotPath);
@@ -157,21 +131,22 @@ test('initial bounds accepts synchronous injected bridge receipts', async () => 
   assert.deepEqual(await fs.readFile(screenshotPath), png);
 }));
 
+const observed = screenshotPath => fixture(screenshotPath).backend.observe({ window, screenshotPath });
+const invoke = { type: 'invoke', elementId: 'root' };
 
-test('detached initial bounds rejection is observed after identity override fails', async () => withFrame(async screenshotPath => {
+test('dispatch proves identity from its bounds receipt and keeps the guard just before input', async () => withFrame(async screenshotPath => {
+  const observation = await observed(screenshotPath);
   const { backend, calls } = fixture(screenshotPath);
-  let rejectBounds;
-  backend.bridge = async verb => {
-    assert.equal(verb, 'bounds');
-    calls.push({ verb });
-    return new Promise((resolve, reject) => { rejectBounds = reject; });
-  };
-  backend.identity = async (target, signal, readBounds) => {
-    readBounds();
-    throw Object.assign(new Error('identity failed'), { code: 'identity_failed' });
-  };
-  await assert.rejects(backend.observe({ window, screenshotPath }), { code: 'identity_failed' });
-  rejectBounds(new Error('late bounds failure'));
-  await new Promise(resolve => setImmediate(resolve));
-  assert.deepEqual(calls.map(call => call.verb), ['bounds']);
+  assert.equal((await backend.act({ window, observation, action: invoke })).performed, true);
+  assert.deepEqual(calls.map(call => call.verb), ['inspect', 'bounds', 'identity', 'activate', 'invoke']);
 }));
+
+test('a changed dispatch bounds receipt or pre-input guard stops before input', async () => {
+  for (const verb of ['bounds', 'identity']) for (const [name, alter] of receiptChanges) await test(`${verb}: ${name}`, async () => withFrame(async screenshotPath => {
+    const observation = await observed(screenshotPath);
+    const { backend, calls } = fixture(screenshotPath, (called, n, value) => { if (called === verb && n === 1) alter(value); });
+    await assert.rejects(backend.act({ window, observation, action: invoke }),
+      error => error.code === 'window_identity_changed' && error.details.outcome === 'not_dispatched');
+    assert.ok(!calls.some(call => call.verb === 'activate' || call.verb === 'invoke'));
+  }));
+});
