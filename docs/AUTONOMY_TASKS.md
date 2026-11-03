@@ -1,6 +1,6 @@
 # Autonomous Claude sessions: task specs (awaiting owner approval)
 
-Status: **proposed 1 November 2026; A1-A5, A8 and A9 approved by 3 November 2026.** The owner ticks each task's
+Status: **proposed 1 November 2026; A1-A6, A8 and A9 approved by 3 November 2026.** The owner ticks each task's
 **Approve** box (or says "approve A3") before work starts; each task becomes one branch and one PR.
 
 Goal: a Claude session (on the PC or the phone's Termux → Debian Claude) runs a whole task, such as
@@ -79,7 +79,7 @@ one approval was answered remotely.
 
 ### A6. One-command install and update of TRACE on the phone
 
-- [ ] **Approve**
+- [x] **Approve** (owner-approved device run, 1 Nov 2026; merged in PR 87. Install and rerun on a new ref both showed `trace-phone ✔ Connected`; see PHONE_HANDOFF.md "Task A6")
 
 `scripts/install-phone-claude.cjs` (PC side, no new dependencies): `git archive` of a given ref,
 build the dex, stage through Termux home, `npm ci --omit=dev` into `/opt/trace.new`, swap,
