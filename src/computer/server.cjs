@@ -5,7 +5,7 @@ const { StdioServerTransport } = require("@modelcontextprotocol/server/stdio");
 const { z } = require("zod");
 const { version } = require("../../package.json");
 const { safeError } = require("./controller.cjs");
-const { LIMITS, KEY_PATTERN, parseAction } = require("./action-contract.cjs");
+const { LIMITS, KEY_PATTERN, ACCESSIBILITY_ACTIONS, parseAction } = require("./action-contract.cjs");
 const { performance } = require("node:perf_hooks");
 
 const id = z.string().min(1).max(256);
@@ -37,6 +37,7 @@ const actionSchema = z.union([
     toX: coordinate, toY: coordinate,
   }),
   z.strictObject({ type: z.literal("invoke"), elementId }),
+  z.strictObject({ type: z.literal('accessibility_action'), elementId, action: z.enum(ACCESSIBILITY_ACTIONS) }),
   z.strictObject({ type: z.literal("set_value"), elementId, value: z.string().max(LIMITS.text).regex(/^[^\0]*$/).describe('0–8192 UTF-16 code units without NUL; empty clears the value.') }),
 ]);
 

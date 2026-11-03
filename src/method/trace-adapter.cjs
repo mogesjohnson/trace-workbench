@@ -79,6 +79,7 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
           return diagnostics(false, 'support-unsupported', 'The live server declares an unsupported native action contract.', unknownSupport(), { native: value.ready === true });
         }
         const effectiveSupport = value.support != null ? actionSupport(support.observation.ttlMs) : support;
+        if (value.support != null && !Object.hasOwn(support.actions, 'accessibility_action')) delete effectiveSupport.actions.accessibility_action;
         if (value.support != null && !Object.hasOwn(support.actions.click, 'variants')) delete effectiveSupport.actions.click.variants;
         if (value.support != null && !Object.hasOwn(support.actions.scroll, 'point')) delete effectiveSupport.actions.scroll.point;
         if (value.support != null && !Object.hasOwn(support.actions.press_key, 'extended')) delete effectiveSupport.actions.press_key.extended;
@@ -134,6 +135,7 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
     },
     validateAction({ observationId, payload }) {
       if (!capture || observationId !== capture.observationId) fail('stale-target', 'Validate against the current native capture.');
+      if (payload?.type === 'accessibility_action' && !provider.constraints.nativeSupport.actions?.accessibility_action) fail('unsupported-action', 'The connected server does not advertise named UIA actions.');
       return validateNativeAction(payload, capture);
     },
     async act({ target, observationId, capability, payload }) {
@@ -142,6 +144,7 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
         fail('stale-target', 'One current exact-target native observation is required.');
       }
       assertBoundTarget(target);
+      if (payload?.type === 'accessibility_action') provider.validateAction({ observationId, payload });
       const actionEpoch = ++evidenceEpoch, ownedSession = sessionId, ownedBinding = binding;
       const actionTarget = structuredClone(target);
       const currentAction = () => evidenceEpoch === actionEpoch && sessionId === ownedSession
