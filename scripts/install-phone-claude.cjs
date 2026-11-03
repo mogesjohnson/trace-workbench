@@ -85,6 +85,7 @@ function checkScript() {
 // Termux:Boot script (tasks A4, A5). The wake lock keeps Termux and Debian alive with the screen off.
 // A5: Remote Control runs as the login's own command (proot ends detached children when a login
 // exits), and that login starts Debian's adb server first so trace-phone has one.
+// Then the watcher keep-alive runs the same way, as its login's own command.
 function bootScript() {
   return [
     TERMUX_SHELL.replace('bash', 'sh'),
@@ -92,7 +93,14 @@ function bootScript() {
     'termux-wake-lock',
     `proot-distro login debian -- ${NODE_BIN}/node /opt/trace/scripts/phone-boot-adb.cjs > "$HOME/.trace-boot.log" 2>&1`,
     remoteControlCommand(),
+    keepAliveCommand(),
   ].join('\n') + '\n';
+}
+
+// Termux-side line that keeps the Wi-Fi trust watcher running after adbd restarts, which kill it.
+function keepAliveCommand() {
+  return `nohup proot-distro login debian -- ${NODE_BIN}/node /opt/trace/scripts/phone-boot-adb.cjs --keep-alive`
+    + ` > "$HOME/.trace-keepalive.log" 2>&1 < /dev/null &`;
 }
 
 // Termux-side line that starts the headless Remote Control session in the background (task A5).
@@ -180,4 +188,4 @@ function main(argv) {
 if (require.main === module) {
   try { process.exitCode = main(process.argv.slice(2)); } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
-module.exports = { remoteControlCommand, RC_DIR, parseArgs, installScript, checkScript, bootScript, termuxRunner, termuxCommand, parseLog, STAGE, END };
+module.exports = { remoteControlCommand, keepAliveCommand, RC_DIR, parseArgs, installScript, checkScript, bootScript, termuxRunner, termuxCommand, parseLog, STAGE, END };

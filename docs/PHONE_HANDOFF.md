@@ -437,9 +437,16 @@ Findings:
 - On eduroam the trusted list holds BSSID `…34:d3` but the phone is trusted on `…90:53`, so SDK 37
   seems to match on SSID too. TODO(verify). With the list check the watcher adds `…90:53` once
   there, which only adds trust.
-- Gap: the watcher does not survive an adbd restart. On 3 November adbd restarted at 12:35:24
-  without a reboot (uptime 23 h; cause unknown), and the watcher was gone with no log line. Only
-  `phone-boot-adb.cjs` starts it, so a mid-session adbd restart leaves the phone unwatched until
-  it is started again.
+- adbd restart: the watcher runs in adbd's cgroup (`/proc/<pid>/cgroup` shows
+  `/system/uid_0/pid_<adbd>`), and Android kills that cgroup when adbd restarts, so neither `nohup`
+  nor `setsid` keeps it alive. On 3 November adbd restarted at 12:35:24 without a reboot (uptime
+  23 h; cause unknown), and the watcher was gone with no log line. Fix: the boot script also starts
+  `phone-boot-adb.cjs --keep-alive` in the background, after Remote Control. Every 30 s it checks
+  that `127.0.0.1:5555` is a device (reconnecting the way boot does, including `adb tcpip 5555`)
+  and that the watcher runs, and starts it again if not. It logs only changes to
+  `~/.trace-keepalive.log` in Termux, and a pid file (`/tmp/trace-keepalive.pid` in Debian) keeps
+  one copy. Device check **not_run**: it needs a reinstall (`install-phone-claude.cjs`) and a
+  reboot, then an adbd restart. Limit: if Wireless debugging is off after the restart (for example,
+  on an untrusted network) it can only wait.
 - Limit: nothing runs before adb is up, so a reboot straight onto a never-joined network still
   shows the system dialog once.

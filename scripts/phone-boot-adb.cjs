@@ -8,7 +8,11 @@
 // and connects to 127.0.0.1:5555, so phone Claude reaches the phone as in task A3. Then it starts
 // the Wi-Fi trust watcher (trace.phone.WifiTrust in the agent dex), which marks each newly joined
 // network "always allow" for Wireless debugging (owner decision, 2 Nov 2026).
-// Usage: node phone-boot-adb.cjs [--wait-sec 300]
+// With --keep-alive (started in the background by the boot script) it instead checks every 30 s
+// that 127.0.0.1:5555 is a device and the watcher runs, reconnecting and restarting it after an
+// adbd restart, which kills the watcher.
+// Usage: node phone-boot-adb.cjs [--wait-sec 300] | --keep-alive [--interval-sec 30]
+const fs = require('node:fs');
 const net = require('node:net');
 const { spawnSync } = require('node:child_process');
 
@@ -17,6 +21,7 @@ const DEX = '/opt/trace/.runtime/phone/build/classes.dex';
 const REMOTE_DEX = '/data/local/tmp/trace-wifi.dex';
 const WATCH_LOG = '/data/local/tmp/trace-wifi.log';
 const WATCH_NAME = 'tracewifitrust';
+const LOCK = '/tmp/trace-keepalive.pid';
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function adb(...args) {
@@ -82,35 +87,88 @@ function startWatcher(log, serial = TARGET) {
   log(`trust watcher: ${adb('-s', serial, 'shell', `pgrep -f '^${WATCH_NAME}$'`) || 'not running'}`);
 }
 
+// One attempt to reach TARGET: port 5555 directly, else the Wireless debugging TLS port on
+// 127.0.0.1, reopened as 5555 with `adb tcpip 5555`. Returns how it connected, or null.
+async function connectOnce(log) {
+  adb('connect', TARGET);
+  if (isDevice(TARGET)) return 'port 5555 already open';
+  adb('disconnect', TARGET);
+  const ports = await openPorts();
+  const tls = connectFirst(ports);
+  if (!tls) { log(`no adb port among ${ports.length} open ports; waiting for Wireless debugging`); return null; }
+  log(`wireless debugging at ${tls}; reopening 5555`);
+  log(adb('-s', tls, 'tcpip', '5555'));
+  for (let i = 0; i < 10 && !isDevice(TARGET); i += 1) { await sleep(1000); adb('connect', TARGET); }
+  adb('disconnect', tls);
+  if (isDevice(TARGET)) return 'reopened 5555';
+  log(`${TARGET} not reachable after tcpip`);
+  return null;
+}
+
+const watcherRunning = (serial = TARGET) => /^\d+$/m.test(adb('-s', serial, 'shell', `pgrep -f '^${WATCH_NAME}$'`));
+
+// One keep-alive round. Android kills everything adbd started (its cgroup) when adbd restarts, so
+// the watcher cannot outlive adbd on the phone; this Debian-side loop starts it again.
+// Returns ok | adb_down | restarted | reconnected | reconnected+restarted.
+async function keepAliveRound({ isUp, connect, running, start }) {
+  let reconnected = false;
+  if (!isUp()) {
+    if (!await connect()) return 'adb_down';
+    reconnected = true;
+  }
+  if (running()) return reconnected ? 'reconnected' : 'ok';
+  start();
+  return reconnected ? 'reconnected+restarted' : 'restarted';
+}
+
+// Keeps one keep-alive per Debian: the pid file names a live phone-boot-adb process -> false.
+function claimLock(file, pid = process.pid, cmdline = (p) => fs.readFileSync(`/proc/${p}/cmdline`, 'utf8')) {
+  try {
+    const old = Number(fs.readFileSync(file, 'utf8').trim());
+    if (old && old !== pid && cmdline(old).includes('phone-boot-adb')) return false;
+  } catch { /* no pid file, or the old process is gone */ }
+  fs.writeFileSync(file, `${pid}\n`);
+  return true;
+}
+
+async function keepAlive(log, intervalSec) {
+  if (!claimLock(LOCK)) { log(`keep-alive already running (${LOCK})`); return 0; }
+  log(`keep-alive started, every ${intervalSec} s`);
+  let last = null;
+  for (;;) {
+    let result;
+    try {
+      result = await keepAliveRound({
+        isUp: () => isDevice(TARGET),
+        connect: () => connectOnce(log),
+        running: () => watcherRunning(),
+        start: () => startWatcher(log),
+      });
+    } catch (error) {
+      result = `error: ${error.message}`;
+    }
+    if (result !== last) log(`keep-alive: ${result}`);
+    last = result;
+    await sleep(intervalSec * 1000);
+  }
+}
+
 async function main(argv) {
-  const waitIndex = argv.indexOf('--wait-sec');
-  const waitSec = waitIndex >= 0 ? Number(argv[waitIndex + 1]) : 300;
+  const option = (name, fallback) => { const i = argv.indexOf(name); return i >= 0 ? Number(argv[i + 1]) : fallback; };
   const log = (msg) => console.log(`${new Date().toISOString()} ${msg}`);
   log(adb('start-server') || 'adb server running');
-  const deadline = Date.now() + waitSec * 1000;
+  if (argv.includes('--keep-alive')) return keepAlive(log, option('--interval-sec', 30));
+  const deadline = Date.now() + option('--wait-sec', 300) * 1000;
   while (Date.now() < deadline) {
-    adb('connect', TARGET);
-    if (isDevice(TARGET)) { log(`${TARGET} device (port 5555 already open)`); startWatcher(log); return 0; }
-    adb('disconnect', TARGET);
-    const ports = await openPorts();
-    const tls = connectFirst(ports);
-    if (tls) {
-      log(`wireless debugging at ${tls}; reopening 5555`);
-      log(adb('-s', tls, 'tcpip', '5555'));
-      for (let i = 0; i < 10 && !isDevice(TARGET); i += 1) { await sleep(1000); adb('connect', TARGET); }
-      adb('disconnect', tls);
-      if (isDevice(TARGET)) { log(`${TARGET} device`); log(adb('devices', '-l')); startWatcher(log); return 0; }
-      log(`${TARGET} not reachable after tcpip`);
-    } else {
-      log(`no adb port among ${ports.length} open ports; waiting for Wireless debugging`);
-    }
+    const how = await connectOnce(log);
+    if (how) { log(`${TARGET} device (${how})`); log(adb('devices', '-l')); startWatcher(log); return 0; }
     await sleep(10000);
   }
-  log(`gave up after ${waitSec}s: is the phone on a trusted Wi-Fi network and Shizuku set to start on boot?`);
+  log(`gave up after ${option('--wait-sec', 300)}s: is the phone on a trusted Wi-Fi network and Shizuku set to start on boot?`);
   return 1;
 }
 
 if (require.main === module) {
   main(process.argv.slice(2)).then((code) => { process.exitCode = code; }, (error) => { console.error(error); process.exitCode = 1; });
 }
-module.exports = { parseDevices, openPorts, watcherCommand, TARGET };
+module.exports = { parseDevices, openPorts, watcherCommand, keepAliveRound, claimLock, TARGET };
