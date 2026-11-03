@@ -11,7 +11,7 @@ const pin = require('./winapp-pin.json');
 const ROOT = path.resolve(__dirname, '../..');
 const DEFAULT_BINARY = path.join(ROOT, '.runtime', 'winapp', `v${pin.version}`, 'bin', 'winapp.exe');
 const DEFAULT_BRIDGE = path.join(ROOT, '.runtime', 'window-bridge', 'bin', 'TraceWindowBridge.exe');
-const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj'];
+const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj', 'native/TraceWindowBridge/Capture.cs', 'native/TraceWindowBridge/Applications.cs'];
 
 class BackendError extends Error {
   constructor(code, message, details = {}) {
@@ -233,7 +233,7 @@ class WinappBackend {
     this.inputRecoveryRequired = null;
   }
   async command(verb, args, signal) {
-    const mutating = !['list-windows', 'status', 'inspect', 'get-focused', 'screenshot'].includes(verb);
+    const mutating = !['list-windows', 'status', 'inspect', 'get-focused', 'get-property', 'get-value', 'screenshot'].includes(verb);
     if (verb === 'screenshot') count('captureRequests');
     if (this.supervisor) {
       if (this.supervisor.ready) {
@@ -261,15 +261,18 @@ class WinappBackend {
     }
     return parseJson(result.stdout, result.stderr, result.exitCode);
   }
-  async bridge(verb, window, signal) {
-    const args = verb === 'info' ? [verb] : [verb, id(window.id), String(window.pid)];
-    const mutating = verb === 'activate';
+  async bridge(verb, window, signal, parameters = []) {
+    const pointer = verb === 'click' || verb === 'wheel';
+    if (pointer && !this.supervisor?.ready) fail('supervision_required', 'New pointer input requires a ready native owner.', { outcome: 'not_dispatched' });
+    const standalone = ['info', 'apps', 'process'].includes(verb);
+    const args = standalone ? [verb, ...parameters] : [verb, id(window.id), String(window.pid), ...parameters];
+    const mutating = verb === 'activate' || pointer;
     if (this.supervisor && mutating && !this.supervisor.ready) fail('session_stopped', 'A ready native session is required before activation.', { outcome: 'not_dispatched' });
     const result = await providerRequest(this.supervisor?.ready === true, () => this.supervisor?.ready
       ? this.supervisor.run('bridge', args, { signal, timeoutMs: 10000, mutating })
       : this.run(this.bridgePath, args, { signal, timeoutMs: 10000 }));
     const parsed = parseJson(result.stdout, result.stderr, result.exitCode);
-    if (verb !== 'info' && (parsed.hwnd !== window.id || parsed.pid !== window.pid)) fail('window_identity_changed', 'Window bridge returned a different HWND/PID.');
+    if (!standalone && (parsed.hwnd !== window.id || parsed.pid !== window.pid)) fail('window_identity_changed', 'Window bridge returned a different HWND/PID.');
     return parsed;
   }
   async identities(windows, signal) {
@@ -306,7 +309,7 @@ class WinappBackend {
       if (bridge.version !== 1) fail('bridge_version', 'Unexpected window bridge version.');
       const result = await this.run(this.binaryPath, ['--version'], { signal });
       if (result.exitCode !== 0 || !new RegExp(`(^|\\s)${pin.version.replaceAll('.', '\\.')}($|\\s)`).test(result.stdout)) fail('engine_version', 'Unexpected Windows engine version.');
-      return { ready: true, engine: 'winapp', version: pin.version, platform: this.platform, architecture: this.arch, transport: 'public-cli', integrity: 'verified', bridge: { version: 1, runtime: '.NET 9', method: 'public-win32-dwm' }, activityIndicator, ...(supervision ? { supervision } : {}), limitations: ['Windows x64', 'minimized observations restore the selected window', 'unlocked interactive desktop for input', 'horizontal scroll unsupported', 'no secure desktop or elevation bypass'] };
+      return { ready: true, engine: 'winapp', version: pin.version, platform: this.platform, architecture: this.arch, transport: 'public-cli', integrity: 'verified', bridge: { version: 1, runtime: '.NET 9', method: 'public-win32-dwm' }, activityIndicator, ...(supervision ? { supervision } : {}), limitations: ['Windows x64', 'minimized observations restore the selected window', 'unlocked interactive desktop for input', 'legacy wheel is vertical at element center; point/horizontal wheel requires native supervision', 'no secure desktop or elevation bypass'] };
     } catch (error) {
       if (signal?.aborted) throw error;
       return { ready: false, engine: 'winapp', version: pin.version, code: error.code || 'engine_unavailable', reason: error.message };
@@ -317,7 +320,10 @@ class WinappBackend {
     if (!Array.isArray(windows)) fail('invalid_native_response', 'Expected native window array.');
     const discovered = windows.map(window => {
       if (!Number.isSafeInteger(window.processId) || window.processId <= 0 || typeof window.processName !== 'string' || !Number.isFinite(window.width) || !Number.isFinite(window.height)) fail('invalid_native_response', 'Invalid native window identity.');
-      return { id: id(window.hwnd), pid: window.processId, processName: window.processName, title: window.title || '', bounds: { x: null, y: null, width: window.width, height: window.height } };
+      return { id: id(window.hwnd), pid: window.processId, processName: window.processName, title: window.title || '', bounds: { x: null, y: null, width: window.width, height: window.height },
+        // Listing-only hints for the default noise filter; they are not part of the session identity.
+        ...(typeof window.className === 'string' && window.className ? { className: window.className.slice(0, 256) } : {}),
+        ...(window.isForeground === true ? { foreground: true } : {}) };
     });
     const enriched = [];
     // One read-only process per bounded batch replaces one .NET process per window. Selected
@@ -335,6 +341,7 @@ class WinappBackend {
           continue;
         }
         enriched.push({ ...window,
+          ...(typeof native.executable === 'string' ? { executable: native.executable } : {}),
           ...(typeof native.processCreationTime === 'string' ? { processCreationTime: native.processCreationTime } : {}),
           ...(Number.isInteger(native.sessionId) ? { sessionId: native.sessionId } : {}),
           ...(native.ownerWindowId !== undefined ? { ownerWindowId: native.ownerWindowId } : {}),
@@ -344,6 +351,22 @@ class WinappBackend {
     return enriched;
   }
   currentWindow(window, { signal } = {}) { return this.identity(window, signal); }
+  // True only when the bridge proves the HWND is gone or now belongs to another process.
+  async targetClosed(window, { signal } = {}) {
+    try { await this.bridge('bounds', window, signal); return false; }
+    catch (error) {
+      if (signal?.aborted) throw error;
+      return ['window_closed', 'window_identity_changed'].includes(error.code);
+    }
+  }
+  openWindow(window, options) { return this.currentVisualWindow(window, options); }
+  async currentVisualWindow(window, { signal } = {}) {
+    const native = await this.bridge('identity', window, signal);
+    if (typeof native.processCreationTime !== 'string' || !/^\d+$/.test(native.processCreationTime) || !Number.isInteger(native.sessionId)
+      || (window.processCreationTime !== undefined && native.processCreationTime !== window.processCreationTime)
+      || (window.sessionId !== undefined && native.sessionId !== window.sessionId)) fail('window_identity_changed', 'Native window lifetime changed.');
+    return { ...window, processCreationTime: native.processCreationTime, sessionId: native.sessionId };
+  }
   async identity(window, signal, adjacentBounds) {
     if (!object(window) || !Number.isSafeInteger(window.pid) || window.pid <= 0 || typeof window.processName !== 'string') fail('invalid_window', 'A pinned HWND, PID and process name are required.');
     const current = await this.command('status', ['-w', id(window.id)], signal);
@@ -359,27 +382,140 @@ class WinappBackend {
     }
     return { ...window, title: current.windowTitle || '' };
   }
-  async inspect(window, signal, depth = 8) {
-    const result = await this.command('inspect', ['-w', id(window.id), '--depth', String(depth)], signal);
-    const entry = result.windows?.find(candidate => String(candidate.hwnd) === window.id);
-    if (!entry || entry.coordinateSpace !== 'physical-screen-pixels' || !Array.isArray(entry.elements) || !entry.elements.length) fail('invalid_native_response', 'Exact target UIA root was not returned.');
-    const root = entry.elements[0];
-    const flat = [];
-    const visit = element => {
-      if (flat.length >= 10000) fail('native_output_limit', 'UIA element count exceeds limit.');
-      if (element.selector) {
+  // The tree is serialized once: every selector-backed node is an element carrying its
+  // treeNodeId/parentNodeId; `hierarchy` holds only selectorless structural nodes.
+  // Offscreen nodes are omitted unless requested; kept descendants attach to the
+  // nearest kept ancestor. The root is always kept.
+  // Scoping: `rootElementId` walks only that element's subtree (winapp's selector argument) and
+  // `interactiveOnly` uses winapp -i, which nests the full tree before collapsing non-interactive
+  // nodes, so survivors keep their nearest interactive ancestor. Both can drop the window root, so
+  // a depth-1 read supplies it: bounds, the capture selector and the movement guards stay
+  // window-level, and the window root stays the first element unless a subtree is requested.
+  async inspect(window, signal, depth = 8, { includeOffscreen = false, rootElementId, interactiveOnly = false } = {}) {
+    const scoped = rootElementId !== undefined, filtered = scoped || interactiveOnly;
+    const read = async (args, missing) => {
+      const result = await this.command('inspect', ['-w', id(window.id), ...args], signal);
+      const entry = result.windows?.find(candidate => String(candidate.hwnd) === window.id);
+      if (!entry || entry.coordinateSpace !== 'physical-screen-pixels' || !Array.isArray(entry.elements) || (missing && !entry.elements.length)) fail('invalid_native_response', missing || 'Exact target UIA root was not returned.');
+      return entry;
+    };
+    const windowEntry = filtered ? await read(['--depth', '1'], 'Exact target UIA root was not returned.') : null;
+    // winapp 0.7.1 can answer an unresolved selector with the window root, or fail with a generic
+    // error. A subtree read therefore counts only when its single top node is the requested
+    // element. -i can collapse a non-interactive scope root, so that case checks it separately.
+    const scopeLost = () => fail('element_not_found', 'The scope root is not in this window now. Observe without rootElementId.');
+    const scopedRead = async (args, verify) => {
+      let entry;
+      try { entry = await read([...args, '--', selector(rootElementId)]); }
+      catch (error) { if (signal?.aborted || !['element_not_found', 'stale_element', 'internal_error'].includes(error.code)) throw error; scopeLost(); }
+      if (verify && (entry.elements.length !== 1 || entry.elements[0]?.selector !== rootElementId)) scopeLost();
+      return entry;
+    };
+    if (scoped && interactiveOnly) await scopedRead(['--depth', '1'], true);
+    const deep = ['--depth', String(depth), ...(interactiveOnly ? ['-i'] : [])];
+    const entry = scoped ? await scopedRead(deep, !interactiveOnly)
+      : await read(deep, filtered ? undefined : 'Exact target UIA root was not returned.');
+    const root = (windowEntry ?? entry).elements[0];
+    const flat = [], hierarchy = [], active = new WeakSet();
+    let visited = 0, kept = 0, offscreenOmitted = 0, truncated = false;
+    // Top-level nodes of a scoped or filtered walk are kept like the root.
+    let starts = entry.elements;
+    if (interactiveOnly && !scoped && entry.elements[0]?.selector !== root.selector) {
+      // The window root itself was collapsed by -i: keep it and hang the interactive nodes under it.
+      const { children, hasMoreChildren, ...windowRoot } = root;
+      starts = [{ ...windowRoot, children: entry.elements }];
+    }
+    const tops = new Set(scoped ? starts : [starts[0]]);
+    const visit = (element, parentNodeId = null, nestingDepth = 0) => {
+      if (!object(element) || active.has(element)) fail('invalid_native_response', 'UIA tree contains an invalid node or cycle.');
+      if (visited >= 10000 || nestingDepth > 32) fail('native_output_limit', 'UIA tree exceeds its node/depth bounds.');
+      if (element.children != null && !Array.isArray(element.children)) fail('invalid_native_response', 'UIA children must be an array.');
+      active.add(element);
+      visited++;
+      if (!includeOffscreen && element.isOffscreen === true && !tops.has(element)) {
+        offscreenOmitted++;
+        for (const child of element.children || []) visit(child, parentNodeId, nestingDepth + 1);
+        active.delete(element);
+        return;
+      }
+      const nodeId = `n${kept++}`;
+      const more = element.hasMoreChildren === true;
+      if (more) truncated = true;
+      if (!element.selector) {
+        hierarchy.push({ nodeId, parentNodeId, name: String(element.name || '').slice(0, 512), controlType: element.type || 'Unknown',
+          ...(more ? { hasMoreChildren: true } : {}) });
+      } else {
         const item = { id: selector(element.selector), name: element.name || '', controlType: element.type || 'Unknown', enabled: element.isEnabled === true, offscreen: element.isOffscreen === true };
         if (typeof element.automationId === 'string' && element.automationId) item.automationId = element.automationId;
         if (typeof element.className === 'string' && element.className) item.className = element.className;
+        const secondaryActions = [];
+        if (element.expandState === 'collapsed') secondaryActions.push('expand');
+        if (element.expandState === 'expanded') secondaryActions.push('collapse');
+        if (['on', 'off', 'indeterminate'].includes(element.toggleState)) secondaryActions.push('toggle');
+        if (['on', 'off', 'indeterminate'].includes(element.toggleState)) item.toggleState = element.toggleState;
+        if (['expanded', 'collapsed'].includes(element.expandState)) item.expandState = element.expandState;
+        item.secondaryActions = item.enabled ? secondaryActions : [];
         if ([element.x, element.y, element.width, element.height].every(Number.isFinite) && element.width > 0 && element.height > 0) item.bounds = bounds(element);
-        flat.push(item);
+        flat.push({ ...item, treeNodeId: nodeId, parentNodeId, ...(more ? { hasMoreChildren: true } : {}) });
       }
-      for (const child of element.children || []) visit(child);
+      for (const child of element.children || []) visit(child, nodeId, nestingDepth + 1);
+      active.delete(element);
     };
-    for (const element of entry.elements) visit(element);
-    return { bounds: bounds(root), rootSelector: selector(root.selector), elements: flat, coordinateSpace: entry.coordinateSpace, depth, truncated: JSON.stringify(entry.elements).includes('"hasMoreChildren":true') };
+    for (const element of starts) visit(element);
+    return { bounds: bounds(root), rootSelector: selector(root.selector), elements: flat, hierarchy,
+      coordinateSpace: entry.coordinateSpace, depth, truncated, includeOffscreen, offscreenOmitted, nodeCount: kept,
+      ...(scoped ? { rootElementId } : {}), ...(interactiveOnly ? { interactiveOnly: true } : {}) };
   }
-  async focused(window, signal, elements) {
+  // Root-first UIA chain from the window root to the element the selector resolves to.
+  async ancestors(window, signal, nativeSelector) {
+    const result = await this.command('inspect', ['-w', id(window.id), '--ancestors', '--', selector(nativeSelector)], signal);
+    const entry = result.windows?.find(candidate => String(candidate.hwnd) === window.id);
+    if (!entry || entry.coordinateSpace !== 'physical-screen-pixels' || !Array.isArray(entry.elements) || entry.elements.length !== 1) fail('invalid_native_response', 'Focus ancestor chain was not returned for the exact target.');
+    const chain = [];
+    for (let node = entry.elements[0]; node; node = node.children?.[0]) {
+      if (!object(node) || chain.length > 64 || (node.children != null && (!Array.isArray(node.children) || node.children.length > 1))) fail('invalid_native_response', 'Focus ancestor chain must be a single bounded path.');
+      chain.push(node);
+    }
+    return chain;
+  }
+  // Adds the focused control and its ancestors to an inspected tree that stopped above them.
+  // Nodes already present (same selector, or same AutomationId, type and bounds) are reused, so
+  // nothing is listed twice. Returns the target's element id, or null when nothing can be merged.
+  // A scoped tree merges only the part of the chain below its scope root; focus outside the scope
+  // stays unresolved.
+  mergeFocusPath(state, chain) {
+    if (!chain.length || chain[0].selector !== state.rootSelector) return null;
+    const anchor = state.rootElementId === undefined ? 0 : chain.findIndex(node => node.selector === state.rootElementId);
+    if (anchor < 0) return null;
+    let next = Number.isInteger(state.nodeCount) ? state.nodeCount : state.elements.length + state.hierarchy.length;
+    const anchorElement = state.elements.find(item => item.id === chain[anchor].selector);
+    let parentNodeId = anchorElement?.treeNodeId ?? null, targetId = anchor === chain.length - 1 && anchorElement ? anchorElement.id : null;
+    for (let index = anchor + 1; index < chain.length; index++) {
+      const node = chain[index], last = index === chain.length - 1;
+      const nodeBounds = [node.x, node.y, node.width, node.height].every(Number.isFinite) && node.width > 0 && node.height > 0 ? bounds(node) : null;
+      const existing = node.selector ? state.elements.find(item => item.id === node.selector
+        || (node.automationId && item.automationId === node.automationId && item.controlType === (node.type || 'Unknown') && nodeBounds && sameBounds(item.bounds, nodeBounds))) : null;
+      if (existing) { parentNodeId = existing.treeNodeId; if (last) targetId = existing.id; continue; }
+      if (!state.includeOffscreen && node.isOffscreen === true && !last) continue;
+      const nodeId = `n${next++}`;
+      if (!node.selector) state.hierarchy.push({ nodeId, parentNodeId, name: String(node.name || '').slice(0, 512), controlType: node.type || 'Unknown', focusPath: true });
+      else {
+        const item = { id: selector(node.selector), name: node.name || '', controlType: node.type || 'Unknown', enabled: node.isEnabled === true, offscreen: node.isOffscreen === true };
+        if (typeof node.automationId === 'string' && node.automationId) item.automationId = node.automationId;
+        if (typeof node.className === 'string' && node.className) item.className = node.className;
+        if (nodeBounds) item.bounds = nodeBounds;
+        item.secondaryActions = [];
+        state.elements.push({ ...item, treeNodeId: nodeId, parentNodeId, focusPath: true });
+        if (last) targetId = item.id;
+      }
+      parentNodeId = nodeId;
+    }
+    state.nodeCount = next;
+    return targetId;
+  }
+  // With `state`, an unresolved focus outside the inspected depth is completed with its ancestor
+  // chain and bound again. The unique-binding rule is unchanged.
+  async focused(window, signal, elements, state) {
     const result = await this.command('get-focused', ['-w', window.id], signal);
     if (typeof result.hasFocus !== 'boolean') fail('invalid_native_response', 'Invalid focused-element envelope.');
     if (!result.hasFocus) return { available: true, hasFocus: false, provenance: 'winapp-get-focused' };
@@ -387,16 +523,28 @@ class WinappBackend {
     const focused = { available: true, hasFocus: true, elementId: native.selector || null, name: native.name || '', controlType: native.type || 'Unknown', provenance: 'winapp-get-focused' };
     if (!elements) return focused;
     const nativeBounds = [native.x, native.y, native.width, native.height].every(Number.isFinite) && native.width > 0 && native.height > 0 ? bounds(native) : null;
-    const candidates = elements.filter(item => {
-      const exactSelector = item.id === native.selector;
-      const automationIdentity = native.automationId && item.automationId === native.automationId && nativeBounds && sameBounds(item.bounds, nativeBounds)
-        && (!native.className || item.className === native.className);
-      return (exactSelector || automationIdentity) && item.name === focused.name && item.controlType === focused.controlType;
-    });
-    // get-focused generates a transient selector while inspect can use AutomationId. Bind only a
-    // unique same-control match from this capture; a shared label alone never identifies focus.
-    return { ...focused, elementId: candidates.length === 1 ? candidates[0].id : null,
-      binding: candidates.length === 1 ? 'observed-control' : 'unresolved', nativeSelector: native.selector || null };
+    const bind = (items, chainTarget) => {
+      const candidates = items.filter(item => {
+        const exactSelector = item.id === native.selector;
+        const automationIdentity = native.automationId && item.automationId === native.automationId && nativeBounds && sameBounds(item.bounds, nativeBounds)
+          && (!native.className || item.className === native.className);
+        // The chain target is the element winapp resolved from this focus selector in this capture.
+        const resolved = chainTarget !== undefined && item.id === chainTarget && nativeBounds && sameBounds(item.bounds, nativeBounds);
+        return (exactSelector || automationIdentity || resolved) && item.name === focused.name && item.controlType === focused.controlType;
+      });
+      // get-focused generates a transient selector while inspect can use AutomationId. Bind only a
+      // unique same-control match from this capture; a shared label alone never identifies focus.
+      return { ...focused, elementId: candidates.length === 1 ? candidates[0].id : null,
+        binding: candidates.length === 1 ? 'observed-control' : 'unresolved', nativeSelector: native.selector || null };
+    };
+    const bound = bind(elements);
+    if (bound.binding !== 'unresolved' || !state || !native.selector) return bound;
+    let target = null;
+    // A failed chain read leaves focus unresolved: observation still succeeds and keyboard input
+    // still fails closed with focus_not_acquired.
+    try { target = this.mergeFocusPath(state, await this.ancestors(window, signal, native.selector)); }
+    catch (error) { if (signal?.aborted) throw error; }
+    return target === null ? bound : { ...bind(state.elements, target), focusPath: true };
   }
   // A restored window animates from its minimized state; capture only after two equal geometry reads.
   async settledBounds(window, signal, { attempts = 15, intervalMs = 100 } = {}) {
@@ -409,8 +557,93 @@ class WinappBackend {
     }
     fail('window_moved', 'The restored window did not settle; observe again.');
   }
-  async observe({ window, screenshotPath, signal, depth = 8, includeScreenshot = true }) {
+  async readDocument(window, signal, elements, elementId) {
+    const candidates = elements.filter(element => element.id === elementId);
+    if (candidates.length !== 1) fail(candidates.length ? 'ambiguous_element' : 'stale_element', 'Document target must be a unique currently observed control.');
+    const element = candidates[0], rect = element.bounds;
+    const unavailable = reason => ({ available: false, reason });
+    if (!/^[A-Za-z]{1,64}$/.test(element.controlType) || !rect || !['x', 'y', 'width', 'height'].every(key => Number.isFinite(rect[key])) || rect.width <= 0 || rect.height <= 0)
+      return { elementId, document: unavailable('binding_unavailable'), selection: unavailable('binding_unavailable') };
+    if (typeof element.automationId !== 'string' || !element.automationId || element.automationId.length > 512
+      || typeof element.className !== 'string' || element.className.length > 512) {
+      // The bridge binds by AutomationId. Notepad's RichEdit document has none, so its text is read
+      // through the engine's own selector instead.
+      if (['Document', 'Edit'].includes(element.controlType)) return this.readDocumentValue(window, signal, element);
+      return { elementId, document: unavailable('binding_unavailable'), selection: unavailable('binding_unavailable') };
+    }
+    const result = await this.bridge('document', window, signal,
+      [element.automationId, element.controlType, element.className, ...['x', 'y', 'width', 'height'].map(key => String(rect[key]))]);
+    const invalid = () => fail('invalid_native_response', 'Invalid bounded TextPattern response.');
+    const text = (value, limit) => {
+      if (!object(value) || typeof value.text !== 'string' || value.text.length > limit || typeof value.truncated !== 'boolean') invalid();
+      return { text: value.text, truncated: value.truncated };
+    };
+    const read = (value, selection) => {
+      if (!object(value) || typeof value.available !== 'boolean') invalid();
+      if (!value.available) {
+        if (!['password_or_unknown', 'text_pattern_unavailable', 'selection_unavailable'].includes(value.reason)) invalid();
+        return unavailable(value.reason);
+      }
+      if (!selection) return { available: true, ...text(value, 4096) };
+      if (!Array.isArray(value.ranges) || value.ranges.length > 4 || typeof value.truncated !== 'boolean') invalid();
+      return { available: true, ranges: value.ranges.map(range => text(range, 1024)), truncated: value.truncated };
+    };
+    if (result.method !== 'managed-uia-textpattern') invalid();
+    return { elementId, provenance: result.method, document: read(result.document, false), selection: read(result.selection, true) };
+  }
+  // TextPattern readback by engine selector, for documents without an AutomationId. get-value falls
+  // back to ValuePattern, SelectionPattern and finally the Name (a label), so it runs only after
+  // get-property shows that the exact observed control answers TextPattern and is not a password
+  // field. This path cannot read the selection.
+  async readDocumentValue(window, signal, element) {
+    const elementId = element.id, slug = selector(elementId);
+    const unavailable = reason => ({ available: false, reason });
+    const result = document => ({ elementId, provenance: 'winapp-textpattern-value', document, selection: unavailable('selection_unavailable') });
+    const invalid = () => fail('invalid_native_response', 'Invalid document value response.');
+    const read = await this.command('get-property', ['-w', id(window.id), '--', slug], signal);
+    const node = read?.element, properties = read?.properties;
+    if (!object(node) || !object(properties) || read.elementId !== slug) invalid();
+    if (node.selector !== slug || (node.type || 'Unknown') !== element.controlType
+      || ![node.x, node.y, node.width, node.height].every(Number.isFinite) || !sameBounds(bounds(node), element.bounds)) fail('stale_element', 'The document control changed after the observation.');
+    if (properties.IsPassword !== 'False') return result(unavailable('password_or_unknown'));
+    // Whole-document formatting is read through TextPattern; every value is "Unavailable" without it.
+    const formatting = ['FontName', 'FontSize', 'FontWeight', 'ForegroundColor', 'IsItalic', 'StrikethroughStyle'];
+    if (!formatting.some(name => typeof properties[name] === 'string' && properties[name] !== 'Unavailable')) return result(unavailable('text_pattern_unavailable'));
+    const value = await this.command('get-value', ['-w', id(window.id), '--', slug], signal);
+    if (!object(value) || value.elementId !== slug || typeof value.text !== 'string') invalid();
+    let text = value.text.slice(0, 4096);
+    const last = text.charCodeAt(text.length - 1);
+    if (text.length < value.text.length && last >= 0xd800 && last <= 0xdbff) text = text.slice(0, -1);
+    return result({ available: true, text, truncated: text.length < value.text.length });
+  }
+  async observeVisual({ window, screenshotPath, signal }) {
+    if (typeof screenshotPath !== 'string' || !path.isAbsolute(screenshotPath) || path.extname(screenshotPath).toLowerCase() !== '.png') fail('invalid_screenshot_path', 'An absolute PNG output path is required.');
+    await this.currentVisualWindow(window, { signal });
+    let geometry = await this.bridge('bounds', window, signal);
+    const restored = geometry.minimized === true;
+    if (restored) { await this.bridge('activate', window, signal); geometry = await this.settledBounds(window, signal); }
+    const frame = bounds(geometry.frameBounds), outer = bounds(geometry.windowBounds);
+    const capture = await this.bridge('capture', window, signal, [screenshotPath]);
+    if (capture.method !== 'public-win32-printwindow-dwm' || capture.uiaRequired !== false
+      || path.resolve(capture.filePath || '') !== screenshotPath || !sameBounds(capture.bounds, frame)) fail('invalid_capture', 'Native visual capture provenance differs.');
+    const png = await readPngHeader(screenshotPath); count('backendPngRead', png.length);
+    const size = pngSize(png);
+    if (size.width !== capture.width || size.height !== capture.height || size.width !== frame.width || size.height !== frame.height) fail('capture_mismatch', 'Native PNG dimensions differ from exact DWM frame.');
+    const current = await this.currentVisualWindow(window, { signal }), after = await this.bridge('bounds', window, signal);
+    if (after.processCreationTime !== current.processCreationTime || after.sessionId !== current.sessionId) fail('window_identity_changed', 'Native lifetime changed after visual capture.');
+    if (after.minimized || !sameBounds(after.frameBounds, frame) || !sameBounds(after.windowBounds, outer)) fail('window_moved', 'Window moved during visual observation.');
+    return { window: { ...current, bounds: frame }, bounds: frame, elements: [],
+      focused: { available: false, code: 'visual_only' },
+      targetState: { enabled: after.enabled, minimized: after.minimized, foreground: after.foreground, provenance: 'public-win32-dwm' },
+      restoredFromMinimized: restored, captureMethod: capture.method, screenshot: { path: screenshotPath, mimeType: 'image/png', ...size } };
+  }
+  async observe({ window, screenshotPath, signal, depth = 8, includeScreenshot = true, documentElementId, visualOnly = false, includeOffscreen = false, rootElementId, interactiveOnly = false }) {
+    if (typeof includeOffscreen !== 'boolean' || typeof interactiveOnly !== 'boolean') fail('invalid_observation', 'includeOffscreen and interactiveOnly must be booleans.');
+    if (rootElementId !== undefined && (visualOnly || selector(rootElementId) !== rootElementId)) fail('invalid_observation', 'rootElementId needs an accessibility tree.');
+    if (typeof visualOnly !== 'boolean' || (visualOnly && (!includeScreenshot || documentElementId !== undefined))) fail('invalid_observation', 'Visual-only capture cannot include document reads or omit PNG.');
+    if (visualOnly) return this.observeVisual({ window, screenshotPath, signal });
     if (typeof includeScreenshot !== 'boolean') fail('invalid_observation', 'includeScreenshot must be a boolean.');
+    if (documentElementId !== undefined && (includeScreenshot || selector(documentElementId) !== documentElementId)) fail('invalid_document_request', 'Document reads require accessibility-only observation.');
     if (includeScreenshot && (typeof screenshotPath !== 'string' || !path.isAbsolute(screenshotPath) || path.extname(screenshotPath).toLowerCase() !== '.png')) fail('invalid_screenshot_path', 'An absolute PNG output path is required.');
     if (!includeScreenshot && screenshotPath !== undefined) fail('invalid_screenshot_path', 'A screenshot path is not allowed when capture is omitted.');
     let initialBounds;
@@ -431,7 +664,7 @@ class WinappBackend {
       await measure('restore', () => this.bridge('activate', window, signal));
       geometry = await measure('settle', () => this.settledBounds(window, signal));
     }
-    const state = await measure('uia', () => this.inspect(window, signal, depth));
+    const state = await measure('uia', () => this.inspect(window, signal, depth, { includeOffscreen, rootElementId, interactiveOnly }));
     geometry = await measure('geometry', () => this.bridge('bounds', window, signal));
     const captured = captureBounds(bounds(geometry.frameBounds), state.bounds);
     await measure('identity', () => this.identity(window, signal, geometry));
@@ -447,15 +680,17 @@ class WinappBackend {
       if (size.width !== screenshot.width || size.height !== screenshot.height) fail('invalid_screenshot', 'PNG dimensions disagree with native capture metadata.');
       if (size.width !== captured.width || size.height !== captured.height) fail('coordinate_space', 'PNG dimensions do not match exact DWM capture bounds. No scaling is assumed.');
     }
+    const documentRead = documentElementId === undefined ? undefined
+      : await measure('document', () => this.readDocument(window, signal, state.elements, documentElementId));
     const current = await measure('identity', () => this.identity(window, signal));
     const after = await measure('uia', () => this.inspect(window, signal, 1));
     const afterGeometry = await measure('geometry', () => this.bridge('bounds', window, signal));
     if (!sameBounds(state.bounds, after.bounds) || !sameBounds(bounds(geometry.frameBounds), bounds(afterGeometry.frameBounds)) || !sameBounds(bounds(geometry.windowBounds), bounds(afterGeometry.windowBounds))) fail('window_moved', 'Window moved during observation; request a fresh observation.');
     let focused;
-    try { focused = await measure('focus', () => this.focused(window, signal, state.elements)); }
+    try { focused = await measure('focus', () => this.focused(window, signal, state.elements, state)); }
     catch (error) { if (signal?.aborted) throw error; focused = { available: false, code: error.code || 'focus_query_failed' }; }
     if (window.processCreationTime !== undefined && afterGeometry.processCreationTime !== window.processCreationTime) fail('window_identity_changed', 'The selected process was replaced.');
-    return { ...state, window: { ...current, bounds: captured }, bounds: captured, uiaBounds: state.bounds, nativeWindowBounds: bounds(geometry.windowBounds), frameBounds: bounds(geometry.frameBounds), focused,
+    return { ...state, ...(documentRead ? { documentRead } : {}), window: { ...current, bounds: captured }, bounds: captured, uiaBounds: state.bounds, nativeWindowBounds: bounds(geometry.windowBounds), frameBounds: bounds(geometry.frameBounds), focused,
       targetState: { enabled: afterGeometry.enabled, minimized: afterGeometry.minimized, foreground: afterGeometry.foreground, ownerWindowId: afterGeometry.ownerWindowId ?? null, provenance: 'public-win32-dwm' },
       restoredFromMinimized: restored, ...(includeScreenshot ? { captureMethod: 'window-capture-dwm-bounds', actionCoordinateSpace: 'window-local-pixels', screenshot: { path: screenshotPath, mimeType: 'image/png', ...size } } : {}) };
   }
@@ -475,9 +710,14 @@ class WinappBackend {
     if (this.inputRecoveryRequired) fail('input_recovery_required', 'Input is quarantined after incomplete mouse recovery. Check the owned input process and button state before restarting TRACE.', { outcome: 'not_dispatched', cause: this.inputRecoveryRequired });
     if (!object(observation) || !sameBounds(bounds(observation.bounds), bounds(observation.window?.bounds)) || observation.window.id !== window.id || observation.window.pid !== window.pid) fail('invalid_observation', 'Action requires an observation of this exact window.');
     action = parseAction(action);
+    const pointerClick = action.type === 'click' && ((action.button ?? 'left') !== 'left' || (action.count ?? 1) !== 1);
+    const pointWheel = action.type === 'scroll' && action.placement === 'point';
+    if (action.type === 'accessibility_action' && !this.supervisor?.ready) fail('supervision_required', 'Named UIA actions require native supervision.', { outcome: 'not_dispatched' });
+    if ((pointerClick || pointWheel) && !this.supervisor?.ready) fail('supervision_required', 'Extended pointer input requires declared-input native supervision.', { outcome: 'not_dispatched' });
     await this.identity(window, signal);
-    // Reinspect at the server-retained observation depth so deeply observed controls remain targetable.
-    const fresh = await this.inspect(window, signal, observation.depth ?? 8);
+    // Reinspect at the server-retained depth and scope so deeply or narrowly observed controls remain targetable.
+    const fresh = await this.inspect(window, signal, observation.depth ?? 8, { includeOffscreen: observation.includeOffscreen === true,
+      ...(observation.rootElementId !== undefined ? { rootElementId: observation.rootElementId } : {}), interactiveOnly: observation.interactiveOnly === true });
     const geometry = await this.bridge('bounds', window, signal);
     if (geometry.enabled === false) fail('window_blocked', 'The selected window is disabled. Select its enabled dialog explicitly before input.', { outcome: 'not_dispatched' });
     const captured = captureBounds(bounds(geometry.frameBounds), fresh.bounds);
@@ -488,7 +728,7 @@ class WinappBackend {
       if (!old || !now || !now.enabled || old.enabled !== now.enabled || old.name !== now.name || old.controlType !== now.controlType || (old.bounds && (!now.bounds || !sameBounds(old.bounds, now.bounds)))) fail('stale_element', 'Element changed since observation. Observe again.');
       return selector(elementId);
     };
-    let verb, positional = [], options = [], transport;
+    let verb, positional = [], options = [], transport, pointerArgs;
     switch (action.type) {
       case 'activate': {
         // Activation is the primary mutation of an activate action.
@@ -499,6 +739,17 @@ class WinappBackend {
         return { performed: true, type: action.type, engine: 'public-win32-dwm', version: 1, native: activated };
       }
       case 'click':
+        if (pointerClick) {
+          let x = action.x, y = action.y;
+          if (action.elementId) {
+            choose(action.elementId);
+            const rect = fresh.elements.find(item => item.id === action.elementId)?.bounds;
+            if (!rect) fail('unsupported_action', 'An extended element click needs current physical bounds.');
+            x = Math.floor(rect.x + rect.width / 2) - captured.x; y = Math.floor(rect.y + rect.height / 2) - captured.y;
+          }
+          pointerArgs = [...point(x, y, captured).split(','), action.button ?? 'left', String(action.count ?? 1)];
+          verb = 'click'; transport = 'supervised-public-win32'; break;
+        }
         if (action.elementId) { verb = 'click'; positional = [choose(action.elementId)]; }
         else {
           const p = point(action.x, action.y, captured);
@@ -514,6 +765,10 @@ class WinappBackend {
       }
       case 'drag': verb = 'drag'; positional = [point(action.fromX, action.fromY, captured), point(action.toX, action.toY, captured)]; break;
       case 'scroll': {
+        if (pointWheel) {
+          pointerArgs = [...point(action.x, action.y, captured).split(','), String(action.deltaX), String(action.deltaY)];
+          verb = 'wheel'; transport = 'supervised-public-win32'; break;
+        }
         point(action.x, action.y, captured);
         const physicalX = captured.x + action.x, physicalY = captured.y + action.y;
         const candidates = fresh.elements.filter(element => element.enabled && !element.offscreen && element.bounds && physicalX >= element.bounds.x && physicalY >= element.bounds.y && physicalX < element.bounds.x + element.bounds.width && physicalY < element.bounds.y + element.bounds.height).sort((a, b) => a.bounds.width * a.bounds.height - b.bounds.width * b.bounds.height);
@@ -521,6 +776,16 @@ class WinappBackend {
         verb = 'scroll'; positional = [choose(candidates[0].id)]; options = ['--wheel', String(-action.deltaY / 120)]; transport = 'wheel-at-element-center'; break;
       }
       case 'invoke': verb = 'invoke'; positional = [choose(action.elementId)]; break;
+      case 'accessibility_action': {
+        const old = observation.elements.filter(item => item.id === action.elementId), current = fresh.elements.filter(item => item.id === action.elementId);
+        if (old.length !== 1 || current.length !== 1 || !Array.isArray(old[0].secondaryActions) || !old[0].secondaryActions.includes(action.action)
+          || !Array.isArray(current[0].secondaryActions) || !current[0].secondaryActions.includes(action.action) || old[0].automationId !== current[0].automationId
+          || old[0].className !== current[0].className) fail('stale_element', 'Named action or exact control binding changed. Observe again.');
+        if (action.action === 'toggle' && old[0].toggleState !== current[0].toggleState) fail('stale_element', 'Toggle state changed since observation. Observe again.');
+        positional = [choose(action.elementId)]; transport = 'exact-uia-pattern';
+        verb = 'invoke'; options = ['--action', action.action];
+        break;
+      }
       case 'set_value':
         verb = 'set-value'; positional = [choose(action.elementId), action.value]; break;
       default: fail('unsupported_action', `Unsupported action type: ${action.type}.`);
@@ -542,15 +807,20 @@ class WinappBackend {
       if (ready.enabled === false) fail('window_blocked', 'The selected window became disabled before its value operation.', { outcome: 'not_dispatched' });
     }
     if (action.type === 'type_text' || action.type === 'press_key') {
-      const focused = await this.focused(window, signal, fresh.elements);
+      const focused = await this.focused(window, signal, fresh.elements, fresh);
       if (!focused.hasFocus) fail('focus_not_acquired', 'Keyboard focus could not be verified inside the exact selected window.');
       if (observation.focused?.hasFocus && observation.focused.elementId !== focused.elementId) fail('focus_changed', 'Focused control changed since observation. Observe again.');
       if (!focused.elementId) fail('focus_not_acquired', 'Keyboard focus could not be bound to an observed control inside the exact selected window.');
     }
     progress.primary = true;
-    const result = await this.command(verb, ['-w', window.id, ...options, '--', ...positional], signal);
+    const result = pointerArgs ? await this.bridge(verb, window, signal, pointerArgs)
+      : await this.command(verb, ['-w', window.id, ...options, '--', ...positional], signal);
+    const expectedEvents = pointWheel ? Number(action.deltaX !== 0) + Number(action.deltaY !== 0) : 2 * (action.count ?? 1);
+    if (pointerArgs && (result.performed !== true || result.operation !== verb || result.inputEvents !== expectedEvents)) {
+      fail('invalid_native_response', 'Pointer receipt did not confirm the complete sequence.', { outcome: 'unknown' });
+    }
     if (result.hwnd !== undefined && String(result.hwnd) !== window.id) fail('window_identity_changed', 'Native action receipt targets another window.', { outcome: 'unknown' });
-    return { performed: true, type: action.type, engine: 'winapp', version: pin.version, ...(transport ? { transport } : {}), preparation: progress.preparation, native: result };
+    return { performed: true, type: action.type, engine: pointerArgs ? 'public-win32-sendinput' : 'winapp', version: pointerArgs ? 1 : pin.version, ...(transport ? { transport } : {}), preparation: progress.preparation, native: result };
   }
   async close() {
     if (this.supervisor?.child && this.supervisor.owner) await this.supervisor.release(this.supervisor.owner);

@@ -155,3 +155,26 @@ test('controller refuses a version mismatch by restarting the agent', async () =
     assert.ok(adb.calls.some((c) => c[0] === 'exec' && c[1] === 'kill 7'));
   } finally { phone.close(); fake.server.close(); }
 });
+
+test('pruneFrames deletes only files older than 7 days', () => {
+  const { pruneFrames, FRAME_MAX_AGE_MS } = require('../src/agentic-phone/controller.cjs');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'trace-prune-'));
+  try {
+    const now = Date.now();
+    const old = path.join(dir, 'old.jpg');
+    const fresh = path.join(dir, 'fresh.jpg');
+    fs.writeFileSync(old, 'x');
+    fs.writeFileSync(fresh, 'x');
+    fs.mkdirSync(path.join(dir, 'sub'));
+    const past = new Date(now - FRAME_MAX_AGE_MS - 60_000);
+    fs.utimesSync(old, past, past);
+    fs.utimesSync(path.join(dir, 'sub'), past, past);
+    assert.equal(pruneFrames({ framesDir: dir, now }), 1);
+    assert.equal(fs.existsSync(old), false);
+    assert.equal(fs.existsSync(fresh), true);
+    assert.equal(fs.existsSync(path.join(dir, 'sub')), true, 'directories are kept');
+    assert.equal(pruneFrames({ framesDir: path.join(dir, 'missing'), now }), 0);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

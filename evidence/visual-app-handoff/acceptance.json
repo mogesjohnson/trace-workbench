@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "scope": "items-15-16-owned-registered-winforms-fixture",
+  "status": "pass-with-preserved-failed-attempt",
+  "source": "d64a2bd5b3d46e7bdb655817714536ddad05f980",
+  "startedAt": "2026-11-01T05:03:22.141Z",
+  "finishedAt": "2026-11-01T05:03:49.373Z",
+  "failedReceiptSha256": "a5fcd0f9d0a868e256142bb55197a51c7828466b4aa6b75be491b34a8db43299",
+  "passedReceiptSha256": "f83f693ea410d052c03a286feabf027b256be597cd79104bdbe35a811eadd29d",
+  "originalDriverSha256": "d9c71fc5ba75fcb1ffdb2b3ca251843a0b6a7baeec63bc4f0fc6e2772b98b187",
+  "correctedDriverSha256": "d8be43cabe9c68dec94fbdfb582913b3b175664d5f50751d57f1e5f4d9209283",
+  "fixtureSourceSha256": "b5f4fe913c7e249760808b502c4ef6e10c750c655d8c28c096365dad9ec20a8d",
+  "postFailureCleanupAuditSha256": "bc0fb8c4ad3400e97351e5ffa2e70ca4c2e48b51ba63e1ad9a5f9fe01da79a6f",
+  "attempts": [
+    {
+      "status": "fail",
+      "launchHandoff": "pass",
+      "failure": "Private driver imported image validator from the wrong module.",
+      "initialFixtureExitInspection": "unconfirmed",
+      "laterIndependentInspection": "All five recorded fixture/owner/marker PIDs absent; registration absent, all input up and recovery clear.",
+      "inspectionTimingCause": "not established",
+      "originalReceiptPreserved": true
+    },
+    {
+      "status": "pass",
+      "retry": "one corrective retry after helper import and exit-inspection fixes",
+      "purpose": "Recreate the owned target for unfinished capture verification; preserve the first launch pass.",
+      "productCodeChanged": false,
+      "rootReviewedBothPngs": true,
+      "driverExitCode": 0
+    }
+  ],
+  "display": { "monitors": 1, "width": 2880, "height": 1800, "dpi": 144 },
+  "launch": {
+    "temporaryOwnedRegistrationOnly": true,
+    "coverage": "HKCU/HKLM App Paths, 32/64-bit views; local existing EXE registrations only",
+    "catalogPartial": false,
+    "syntheticAppFoundWithoutWindowBeforeLaunch": true,
+    "exactProcessCreationSessionExecutableWindowHandoff": true,
+    "independentVisibleFixtureStateMatched": true,
+    "runningWindowRelationshipRediscovered": true,
+    "leaseCleanup": "confirmed"
+  },
+  "capture": {
+    "method": "public-win32-printwindow-dwm",
+    "uiaCommandsDisabledAtBackendBoundary": true,
+    "uiaCommandsCalled": 0,
+    "genericOsUiaProxyAvailability": "not queried",
+    "width": 644,
+    "height": 407,
+    "phase1": { "rgb": [25, 55, 95], "sha256": "b1e6eb48c7f462c5fb99a8bec601147e8e894bf6eed538ce0f54516f6472dce8" },
+    "phase2": { "rgb": [30, 105, 55], "sha256": "f7ca91c041e5bc9370207980b2b658eb8a5059b7c36c07cabbaa5fbbc8374451" },
+    "decodedPixelsMatchedIndependentPaintedState": true,
+    "freshImageHashesDiffered": true,
+    "screenshotIdsRejectedForInput": 2
+  },
+  "cleanup": {
+    "session": "confirmed",
+    "connection": "closed",
+    "exactNativeOwnersExited": 2,
+    "exactMarkersExited": 2,
+    "fixtureExited": true,
+    "fixtureExitCode": 0,
+    "registrationAbsent": true,
+    "inputAllUp": true,
+    "recoveryClear": true,
+    "all17RecordedChildDispatchesInNativeJob": true,
+    "all58RetainedSourceHelperFixtureHashesMatched": true
+  },
+  "limits": [
+    "One owned custom WinForms surface. UIA calls were disabled; absence of every OS UIA proxy was not tested.",
+    "PrintWindow support/completeness for arbitrary GPU/protected/noncooperating apps is not established.",
+    "Registered local desktop EXEs only; not packaged/AUMID, Start Menu-only or every installed application.",
+    "Single-instance forwarding and arbitrary application launch/interruption matrices are not live claims.",
+    "Recorded display differs from earlier 1920x1080 evidence; no transition or equivalence claim.",
+    "No native input sent or old host/clipboard/mouse/keyboard acceptance repeated. No merge/release/default changes. Stop before item 17."
+  ]
+}

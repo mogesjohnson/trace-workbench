@@ -12,6 +12,25 @@ const { createAgentClient, AGENT_VERSION } = require('./agent.cjs');
 const REMOTE_DEX = '/data/local/tmp/trace-phone.dex';
 const DEFAULT_DEX = path.join(__dirname, '..', '..', '.runtime', 'phone', 'build', 'classes.dex');
 const DEFAULT_FRAMES = path.join(__dirname, '..', '..', '.runtime', 'phone', 'frames');
+const FRAME_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
+// Deletes regular files directly in framesDir last modified more than maxAgeMs ago and returns
+// how many it removed. trace-phone owns its frames, so it prunes them itself at startup: auto
+// mode denied the same prune as an agent Bash call even with an exact allow rule (A7 C4, 2 Nov 2026).
+function pruneFrames({ framesDir = DEFAULT_FRAMES, maxAgeMs = FRAME_MAX_AGE_MS, now = Date.now() } = {}) {
+  let entries;
+  try { entries = fs.readdirSync(framesDir, { withFileTypes: true }); } catch (error) {
+    if (error.code === 'ENOENT') return 0;
+    throw error;
+  }
+  let removed = 0;
+  for (const entry of entries) {
+    if (!entry.isFile()) continue;
+    const file = path.join(framesDir, entry.name);
+    if (now - fs.statSync(file).mtimeMs > maxAgeMs) { fs.unlinkSync(file); removed += 1; }
+  }
+  return removed;
+}
 
 function createPhoneController({
   adb = createAdbClient(),
@@ -216,4 +235,4 @@ function createPhoneController({
   };
 }
 
-module.exports = { createPhoneController, REMOTE_DEX };
+module.exports = { createPhoneController, pruneFrames, FRAME_MAX_AGE_MS, REMOTE_DEX };

@@ -23,7 +23,7 @@ test('static contract enforces bounded text, identifiers, keys and wheel increme
   for (const key of ['CONTROL+RETURN', 'eSc', 'shift+F12']) assert.equal(parseAction({ type: 'press_key', key }).key, key);
   assert.equal(normalizeKey('CONTROL+RETURN'), 'ctrl+enter');
   assert.equal(normalizeKey('ESC'), 'esc');
-  for (const key of ['INSERT', 'WIN+R', 'ctrl+a enter', 'a'.repeat(101)]) reject({ type: 'press_key', key });
+  for (const key of ['WIN+R', 'ctrl+a enter', 'a'.repeat(101)]) reject({ type: 'press_key', key });
   for (const deltaY of [-2400, -120, 120, 2400]) parseAction({ type: 'scroll', x: 0, y: 0, deltaX: 0, deltaY });
   for (const [deltaX, deltaY] of [[1, 120], [0, 1], [0, 0], [0, 2520]]) reject({ type: 'scroll', x: 0, y: 0, deltaX, deltaY });
   for (const action of [{ type: 'click', x: -1, y: 0 }, { type: 'click', x: 0.5, y: 0 }, { type: 'activate', extra: true }, { type: 'launch_shell' }]) reject(action);
@@ -43,7 +43,7 @@ test('unsupported wheel does not consume the controller observation', async t =>
   const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jVdAAAAAASUVORK5CYII=', 'base64');
   const window = { id: '101', pid: 123, processName: 'fixture', title: 'Test', bounds: { x: 0, y: 0, width: 1, height: 1 } };
   let dispatched = 0;
-  const backend = { async listWindows() { return [window]; }, async observe({ screenshotPath }) { await fs.writeFile(screenshotPath, png); return { window, bounds: window.bounds, elements: [], screenshot: { path: screenshotPath } }; }, async act() { dispatched++; return { performed: true }; } };
+  const backend = { async listWindows() { return [window]; }, async observe({ screenshotPath }) { if (screenshotPath) await fs.writeFile(screenshotPath, png); return { window, bounds: window.bounds, elements: [], screenshot: { path: screenshotPath } }; }, async act() { dispatched++; return { performed: true }; } };
   const indicator = { signal: new AbortController().signal, async start() { return { active: true, monitors: 1, protocol: 1 }; }, assertActive() {}, async stop() {} };
   const lease = { async acquire() {}, async assert() {}, async release() {} };
   const controller = createComputerController({ backend, indicator, lease, runtimeDirectory: directory });

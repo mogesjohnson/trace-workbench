@@ -1,5 +1,9 @@
 # Computer Use method library
 
+Opt-in `createClaudeLifecycle` binds Claude Agent SDK stop callbacks and explicit
+interrupts to one dedicated turn/controller. See [host lifecycle](../../docs/HOST_LIFECYCLE.md)
+for registration, bounded cleanup, clipboard obligations and tested limits.
+
 `require('./src/method/index.cjs')` exports `ComputerMethod`, `ProviderRegistry`, `createTraceProvider`, `createBrowserProvider`, `createApplicationProvider`, `createClipboardProvider`, `createLocalArtifactProvider`, `verifyArtifactHandoff`, and `mapPoint`. This original library composes available providers above the existing six native tools; it introduces no MCP server or application permission tiers. It is an operational coordination layer. A model still plans actions and interprets application state.
 
 Run the portable simulation with `node examples/method/report.cjs`, or the actual owned non-GUI application example with `node examples/method/application.cjs`. Run the method checks with `node --test tests/method*.test.cjs`. Tests distinguish simulated coordination, real in-memory MCP schema/transport, local filesystem identity, owned child processes and optional actual headless browser execution. Native desktop and model-host acceptance remain separate.

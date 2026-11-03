@@ -1,6 +1,6 @@
 # Computer Use
 
-TRACE's `trace-computer` MCP server exposes six tools for a Windows agent: diagnostics, window discovery, session opening, observation, one action, and session closing. The companion [skill](../skills/trace-computer-use/SKILL.md) explains the observe/act workflow.
+TRACE's `trace-computer` MCP server exposes seven tools for a Windows agent: diagnostics, window discovery, application launch, session opening, observation, one action, and session closing. The companion [skill](../skills/trace-computer-use/SKILL.md) explains the observe/act workflow.
 
 ## Install and connect
 
@@ -25,12 +25,13 @@ The configured command is the installed Node executable plus this checkout's abs
 
 ## Use the tools
 
-1. Check `trace_computer_doctor`, then discover windows with `trace_computer_list_windows`.
-2. Open a session for the exact returned `windowId`. A cyan-to-violet screen-edge glow indicates TRACE owns a desktop session. It stays above activated windows until session cleanup.
-3. Observe and inspect the returned PNG and accessibility elements. `accessibilityDepth` (1–32, default 8) reads deeper trees; the response reports the effective depth and truncation, and the action reuses that depth.
+1. Check `trace_computer_doctor`, then discover windows with `trace_computer_list_windows`. Narrow it with `processName` or `title`; tiny, shell and helper windows are omitted unless `verbose` is true. When the app is not running, `trace_computer_launch { app }` starts a registered App Paths name (such as `notepad`) with no session open and returns its windows in the listing form.
+2. Open a session for the exact returned `windowId`. An ID missing from the last listing, such as a just-launched window, is looked up once without a new listing. A cyan-to-violet screen-edge glow indicates TRACE owns a desktop session. It stays above activated windows until session cleanup.
+3. Observe and inspect the returned PNG and accessibility elements. `accessibilityDepth` (1–32, default 8) reads deeper trees; start at 2 and deepen only when needed. The response reports the effective depth and truncation, and the action reuses that depth. The focused control and its ancestors are always included. `rootElementId` limits the tree to one observed element's subtree and `interactiveOnly` to interactive controls; the action reuses both. `screenshot` chooses the image: `full` (default), `scaled` (longest edge at most 1280 px, with `screenshot.scale.factor`; multiply image pixels by it for window coordinates) or `none`. A full-mode observation with `screenshot: "none"` still authorizes one action: dispatch guards use UIA bounds and DWM geometry, not pixels.
 4. Perform one action with that `sessionId` and latest `observationId`. Coordinates are integer pixels relative to the returned image; element bounds are physical screen coordinates.
-5. Inspect the new observation before continuing. `not_dispatched` means the requested input was never sent (any preparatory activation is listed separately); `unknown` means it may have been. After either, observe again before deciding; never replay automatically.
-6. Close the session to release desktop ownership. The target application remains open.
+5. Read the act result before continuing. Since 2.0.0 it is compact by default (`returnObservation: "summary"`): outcome, `nativeResult`, the next `observationId`, and a `summary` with the compact focus, target state, a changed title, the element count and a bounded element diff (`changes`, at most 15 entries per kind). TRACE always re-observes server-side after the action, so that `observationId` authorizes one further action. Request `returnObservation: "full"` for the 1.x result with the complete `observation` (and the image setting of the consumed observation), or `"none"` for only the outcome and `observationId`. Observe again when the summary is not enough. `not_dispatched` means the requested input was never sent (any preparatory activation is listed separately); `unknown` means it may have been. After either, observe again before deciding; never replay automatically.
+6. When `observe` or `act` reports `ownedModal`, the session window is disabled by its own dialog. Observe with `followModal: true` to retarget the session at that dialog under the same lease. When the dialog closes after an action, the result is `target_closed_after_dispatch` with `returnedToOwner: true` and a fresh `observationId` for the owner.
+7. Close the session to release desktop ownership. The target application remains open.
 
 ### Cleanup result contract (V1)
 
@@ -40,19 +41,96 @@ The method adapter requires explicit confirmation, including when connected to a
 
 Cleanup confirmation concerns the owned session and input lifecycle. It does not prove the intended application effect or settle a deferred clipboard transaction. Existing observation freshness, input quarantine and clipboard obligations still apply. The six tools and supported Windows/display scope remain unchanged; the [V1 release notes](RELEASE_1.0.0.md) distinguish candidate readiness from publication.
 
-The server supports activation, coordinate/element clicks, typing, allowed key chords, vertical wheel scrolling, dragging, accessibility invocation and editable values. Actual tested coverage and limitations are recorded in [verification](VERIFICATION.md) and [the specification](../SPEC.md).
+The server supports activation, coordinate/element clicks, typing, allowed key chords, wheel scrolling, dragging, accessibility invocation and editable values. Development extensions for supervised buttons/double-click and opt-in point/horizontal wheel are described below; they are not new published 1.1.0 acceptance. Actual tested coverage and limitations are recorded in [verification](VERIFICATION.md) and [the specification](../SPEC.md).
 
 ### Effective action limits (V1)
 
 Literal text accepts 1–8192 UTF-16 code units; editable values accept 0–8192. Neither accepts NUL. Element IDs accept 1–512 units. Keys accept case-insensitive Ctrl/Control, Alt and Shift chords with letters, digits, F1–F12 and the existing navigation/edit keys; Return maps to Enter. INSERT, Windows-key chords and multi-command key scripts are unsupported. The shared validator applies the same limits to the method adapter, controller and native backend before native helper work.
 
-Wheel input requires `deltaX: 0` and a nonzero `deltaY` in 120-unit steps from -2400 to 2400; positive means down. The requested point selects the smallest enabled onscreen observed element containing it, and the wheel executes at that element's center. This is not exact point scrolling. Unsupported static requests fail before consuming the native observation or method attempt. Current geometry, element, modal and focus checks still run before dispatch; validation does not guarantee target readiness or application effect.
+Omitting wheel `placement` preserves legacy input: `deltaX: 0`, nonzero `deltaY` in 120-unit steps from -2400 to 2400, positive down. Its requested point selects the smallest enabled onscreen observed element; input occurs at the element center. This default is unchanged.
+
+Development item 12 adds `placement: 'point'` with both deltas in bounded 120-unit steps,
+allowing zero on one axis but not both. Positive X is right and positive Y is down.
+One action inserts Y then X at the requested image point, converted to physical screen
+coordinates without replacing it with a UIA element center. A matching element is not
+required, but observation still requires a readable UIA root. This mode requires the
+native supervisor and rebuilt source-matched helpers, with no unsupervised fallback.
+Discover the connected schema and optional `support.actions.scroll.point`; older servers
+reject the field and cannot acquire invented support through the adapter.
+
+Development item 11 adds optional click `button: 'left' | 'right' | 'middle'` and
+`count: 1 | 2`, with count 2 left-only. Omitted/default single-left forms retain old
+paths. New variants require supervision and use one complete native event sequence
+per observation; element targets use their revalidated physical center. See the
+[pointer foundation](POINTER_INPUT.md) for admission, selected-button recovery and limits.
+
+Unsupported static requests reject before consuming observations/attempts. Identity,
+geometry, modal, activation and target-hit guards remain; partial insertion or lost
+receipts remain unknown, without automatic replay. New source/synthetic checks do not
+establish live menu, middle/double-click, two-pane wheel or interruption acceptance.
+
+### Scoped V4 live checkpoint — 31 October 2026
+
+An owner-approved corrected visible-fixture attempt tested cumulative source
+`c61da3aeaecb996857de983e32b0d1b9fe2ed83e`, including items 11/12. Node 26.2.0,
+Windows x64, verified winapp 0.7.1 and one 1920×1080 display at 144 DPI were used.
+Source/runtime hashes matched before/after; root reviewed initial pixels and retained
+before/after frames plus independently published app state.
+
+| Case | Independently checked result | Status |
+|---|---|---|
+| right-menu | Left-pane right count 0→1; actual context menu visible | pass |
+| middle | Left-pane middle count 0→1 | pass |
+| left-double | Double count 0→1; two native downs and ups | pass |
+| left-y-down | Left Y 500→620; other pane unchanged | pass |
+| right-y-up | Right Y 500→380; other pane unchanged | pass |
+| left-x-right / left-x-left | Left X 500→620→500; other pane unchanged | pass |
+| right-xy | Right X 500→620 and Y 380→500 | pass |
+| held-right / held-middle cancellation | Unknown delivery retained; owned child exit and declared release confirmed; independently all-up | pass |
+| distinct fresh right/middle followups | Right-pane selected count 0→1 for each, after cleanup and fresh observation | pass |
+
+Session close, native owner/marker/fixture exits, fixture exit 0, all-up input and clear
+recovery were confirmed. One preparatory fixture activation occurred. No compatible
+old workflow was repeated. Successful private receipt SHA-256:
+`8c2cfeaafe9993ef0cc9e90d93755da1db3371d54881cb19610980fa09d237e3`.
+
+The original and corrective preflights both stopped before session/input because the
+hidden fixture was absent from discovery; both remain blocked. Direct owner approval
+preceded the new visible-fixture attempt. Its private launcher adds a native-visibility
+gate; product code was unchanged between the blocked and successful runs.
+
+Scope limits: live click variants used points; element variants have synthetic routing
+checks. Menu visibility is app-state evidence: the retained root-window PNG omits the
+popup. The element-center contrast is a geometry inference, not an old-wheel rerun.
+Cancellation uses a private held-input replacement through production MCP/controller/
+supervision; this is not every failure cell or interrupted-double acceptance. The driver
+was explicitly interrupted after its saved receipt and confirmed native cleanup because
+terminal stdin stayed open; no natural driver exit is claimed. Publication remains separate.
 
 `trace_computer_doctor.support` declares version 1 of TRACE's wrapper contract for pinned winapp 0.7.1: action forms, limits, key syntax, coordinate origin and observation requirements. It describes intended support, not installed provider identity or successful target control. The diagnostic's existing engine/version and `readiness.native` report the actual backend check; `readiness.target.ready: null` means the target has not been checked.
 
 The method adapter separately reports configured transport/schema compatibility, native runtime readiness and unchecked target readiness. Missing providers retain an unavailable reason. An older server without a support descriptor remains usable under local conservative validation, with support explicitly unknown. Incomplete, contradictory or unsupported descriptors disable the adapter; compatible descriptors expose only the known local contract. This does not install browser, application or artifact providers. JSON Schema string lengths count Unicode code points, so field descriptions declare UTF-16 units and the MCP handler enforces the shared runtime limit before reaching the controller.
 
 The adapter reports the accepted server's observation TTL; the native server enforces it. The method coordinator retains its separate freshness guard. Capability discovery does not certify that an individual capture is still fresh at dispatch.
+
+## V2 compatibility boundary (2.0.0)
+
+Package `2.0.0` changes the default `trace_computer_act` result, which the V1 boundary below treats as a major change ([token cost incident](https://github.com/mogesjohnson/trace-workbench/pull/97), P0-3). The six 1.x tool names, action forms, units, authority, outcome and cleanup meanings are otherwise unchanged, `support.contractVersion` stays 1, and `trace_computer_launch` is added.
+
+- **Act result.** `returnObservation` is `summary` by default. A completed result no longer contains `observation`; it contains `observationId` and `summary` instead, and no image. `returnObservation: "full"` restores the 1.x result. `"none"` returns only `actionId`, `outcome`, `verification` and `observationId`. Not-dispatched and unknown results are unchanged.
+- **Observation image.** `trace_computer_observe` accepts `screenshot: "none" | "scaled" | "full"` (default `full`, so the 1.x form is unchanged). Accessibility mode allows only `none`; screenshot mode does not allow `none`.
+- **Scoped observation.** `trace_computer_observe` accepts `rootElementId` (one subtree) and `interactiveOnly`. Coordinates, bounds and the image stay window-level. Dispatch and the post-action refresh reuse the scope; a refresh whose scope root was removed covers the whole window and reports `scopeLost: true`.
+- **Window listing.** `trace_computer_list_windows` returns `id`, `pid`, `processName`, `title`, `width`, `height` and, when set, `foreground` and `ownerWindowId`. Tiny, shell and helper windows are omitted and counted. `verbose: true` restores every window and every 1.x field. `processName` and `title` filter the list. `open_session` looks up an ID missing from the last listing once.
+- **Closed target.** `target_closed_after_dispatch` reports input that completed before its window closed; it replaces `unknown`/`internal_error` for that case only.
+- **Response size.** Every result carries `_meta["trace/response"].responseBytes`.
+- **Compact doctor (P2-1).** `support` is compact by default: the action names, `detail: "compact"` and `sha256` of the full descriptor (2,431 characters for a ready doctor in the test, against 5,957 before). `verbose: true` returns the full 1.x descriptor. A compact declaration is compatible only when its digest matches the local descriptor; a full one is compared as before.
+- **Opt-in metrics (P2-1).** `trace_computer_observe` returns `metrics` and `_meta["trace/projection"]` only with `metrics: true`; an act refresh follows the consumed observation. See [observation metrics](OBSERVATION_METRICS.md).
+- **Document readback (P2-2).** `documentElementId` reads a `Document`/`Edit` control without an AutomationId (Notepad's RichEdit) through `winapp ui get-value`, after `get-property` confirms the same element, a non-password control and TextPattern support. The text is cut at 4,096 UTF-16 units. The supervisor allow-list gained both read-only verbs, so 2.0 needs `computer setup` rerun.
+- **Launch (P2-3).** `trace_computer_launch { app }` starts an App Paths EXE by name without a shell and returns its windows in the listing form; `open_session` takes their IDs. It holds the desktop lease, so it fails with `desktop_busy` while a session is open. URIs and paths are `application_unsupported`; an `unknown` launch is not repeated automatically (`application_already_attempted`).
+- **Owned modals (P2-4).** `observe` and `act` report `ownedModal` when the session window is disabled by a dialog it owns (same process lifetime). `observe { followModal: true }` retargets the session; when the dialog closes after an action the session returns to the owner (`returnedToOwner: true`).
+- **Discovery.** `trace_computer_doctor` advertises `actResult.returnObservation`, `observationModes.screenshotModes`, `observationScope`, `windowListing` and `responseSize`. Older servers reject the new input fields under their strict schemas.
+
+**Migration.** A client that reads `result.observation` after `trace_computer_act` must pass `returnObservation: "full"`, but only when doctor advertises `actResult.returnObservation` containing `full`. `src/computer/act-compat.cjs` implements this check. The method adapter (`src/method/trace-adapter.cjs`) and the acceptance scripts use it, so they keep their post-action evidence against 2.x servers and stay compatible with 1.x servers. Agents that only need the next `observationId` can use the default. A client that reads identity fields from the window listing passes `verbose: true` once doctor advertises `windowListing.verbose`. A client that reads `support.actions` from doctor passes `verbose: true`, and one that reads `metrics` passes `metrics: true` to observe. The [2.0.0 release notes](RELEASE_2.0.0.md) repeat this.
 
 ## V1 compatibility boundary
 
@@ -67,7 +145,7 @@ Results carry matching JSON text and `structuredContent`. Screenshot metadata in
 
 Native observations authorize one action within the server TTL (default 60 seconds), with target/geometry/focus checks at dispatch. Opt-in immediate read-only method verification can use validated post-action evidence within its stricter age/field/lifecycle policy; it cannot authorize future input. Settled checks, uncertain results and final effect verification require fresh observations. See [the method API](../src/method/README.md) for callback and checkpoint obligations.
 
-Package `1.x` preserves these documented forms and meanings. Additive optional diagnostic/result fields are compatible; clients should tolerate unknown result metadata while requiring known authority and cleanup proof. Removing accepted inputs/tools or changing units, authority, outcome or cleanup meanings requires a new major package version and migration notes. Reject unsupported action/support versions rather than guessing. Schema string lengths count code points; shared runtime UTF-16 validation remains authoritative.
+Package `1.x` preserved these documented forms and meanings; `2.x` keeps them except for the act result described above. Additive optional diagnostic/result fields are compatible; clients should tolerate unknown result metadata while requiring known authority and cleanup proof. Removing accepted inputs/tools or changing units, authority, outcome or cleanup meanings requires a new major package version and migration notes. Reject unsupported action/support versions rather than guessing. Schema string lengths count code points; shared runtime UTF-16 validation remains authoritative.
 
 `support.contractVersion: 1` identifies the declared TRACE action-support descriptor, separately from the package version, MCP protocol version and pinned engine version. Unknown legacy support remains explicitly unknown; contradictory descriptors disable the method route. Internal helpers, transient evidence tokens and native implementation files are not a serialized compatibility surface. Skill guidance is shipped as a manifest-owned bundle; source changes alone do not prove personal installed copies were updated.
 
@@ -101,6 +179,10 @@ Inspection does not clear state. Apply validates recorded process creation/user/
 The [method library](../src/method/README.md) composes these six tools with ready structured-browser, application-recipe and artifact providers. Its canonical guidance is installed as one manifest-owned skill bundle. A supplied Playwright Page and host-specific application ownership inspector remain explicit runtime dependencies; installing instructions alone cannot provide them. Clipboard transactions are explicitly text-only and reject unsupported formats before mutation. Before any native paste, durably defer automatic restoration; acknowledge input quiescence only after owned native cleanup is independently confirmed. Helper EOF or close then preserves recovery instead of exposing private original bytes to an uncertain late paste. Actual paste/restoration acceptance is separate from native input acceptance.
 
 To recover configuration, close the affected host, restore its matching backup, and reconnect. Restore the shared skill and discovery copies together if rolling back. Existing differing entries are reported as conflicts rather than silently replaced.
+
+## Known issue: observation token cost (code red)
+
+Observations and action results are currently too large for sustained agent use: a 3-task desktop run consumed most of a 420k-token context. Causes, measurements and required fixes are in [the incident report](OBSERVATION_TOKEN_COST_INCIDENT.md). Until those fixes land, request the smallest `accessibilityDepth` that contains your target (start at 2) and prefer `mode: "accessibility"` for checks that do not need input authority.
 
 ## Verify
 

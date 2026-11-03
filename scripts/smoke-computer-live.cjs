@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 'use strict';
+const { createActCompat } = require('../src/computer/act-compat.cjs');
 
 // Opt-in acceptance against our own desktop fixture. No unrelated app is opened,
 // controlled, or captured. Without --live this only builds the fixture.
@@ -233,12 +234,13 @@ async function createMcpController(runtimeDirectory, runDirectory) {
       }
       return attach(state);
     };
+    const compat = createActCompat().wrap(call);
     return {
-      doctor: () => call('trace_computer_doctor'),
+      doctor: () => compat('trace_computer_doctor'),
       listWindows: () => call('trace_computer_list_windows'),
       openSession: (args) => call('trace_computer_open_session', args),
       observe: (args) => call('trace_computer_observe', args),
-      act: (args) => call('trace_computer_act', args),
+      act: (args) => compat('trace_computer_act', args),
       closeSession: (args) => call('trace_computer_close_session', args), close,
       protocol: { transport: 'stdio', server: client.getServerVersion(), toolCount: tools.length, toolNames },
     };

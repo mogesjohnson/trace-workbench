@@ -117,7 +117,7 @@ async function controllerFixture(t, act) {
     async listWindows() { return [{ ...win }]; },
     async observe({ screenshotPath, depth }) {
       seen.observeDepths.push(depth);
-      await fs.writeFile(screenshotPath, png);
+      if (screenshotPath) await fs.writeFile(screenshotPath, png);
       return { window: { ...win }, bounds: { ...win.bounds }, elements: [{ id: 'deep', enabled: true }], screenshot: { path: screenshotPath }, depth, truncated: depth < 12 };
     },
     async act(request) { seen.actDepths.push(request.observation.depth); return act(request); },
@@ -135,7 +135,7 @@ test('controller keeps observation depth server-side, reuses it for action and t
   const { controller, session, seen } = await controllerFixture(t, async () => ({ performed: true }));
   const observed = await controller.observe({ ...session, accessibilityDepth: 12 });
   assert.deepEqual(observed.accessibility, { truncated: false, depth: 12 });
-  const result = await controller.act({ ...session, observationId: observed.observationId, action: { type: 'invoke', elementId: 'deep' } });
+  const result = await controller.act({ ...session, observationId: observed.observationId, action: { type: 'invoke', elementId: 'deep' }, returnObservation: 'full' });
   assert.equal(result.outcome, 'completed');
   assert.deepEqual(seen.actDepths, [12]);
   assert.deepEqual(seen.observeDepths, [12, 12]);

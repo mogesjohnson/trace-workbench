@@ -29,7 +29,7 @@ async function fixture(t, overrides = {}, indicatorOverrides = {}, expectedClose
     async doctor() { return { ready: true }; },
     async listWindows() { return [{ ...window }]; },
     async observe({ screenshotPath }) {
-      await fs.writeFile(screenshotPath, png);
+      if (screenshotPath) await fs.writeFile(screenshotPath, png);
       return { window: { ...window }, bounds: { ...window.bounds }, elements: [{ id: 'input', enabled: true }], screenshot: { path: screenshotPath } };
     },
     async act(request) { dispatched.push(request.action); return { performed: true }; },
@@ -54,7 +54,8 @@ async function open(controller) {
 
 test('session requires a discovered unchanged window and returns bounded screenshot evidence', async t => {
   const { controller, backend } = await fixture(t);
-  await assert.rejects(controller.openSession({ windowId: window.id }), { code: 'unknown_window' });
+  // An ID missing from the last listing is looked up once; one that no current window has is rejected.
+  await assert.rejects(controller.openSession({ windowId: '999' }), { code: 'unknown_window' });
   await controller.listWindows();
   backend.listWindows = async () => [{ ...window, pid: 999 }];
   await assert.rejects(controller.openSession({ windowId: window.id }), { code: 'window_changed' });
@@ -71,7 +72,7 @@ test('one action consumes observation and returns a new observation; stale IDs n
   const { controller, dispatched } = await fixture(t);
   const session = await open(controller);
   const observation = await controller.observe(session);
-  const request = { ...session, observationId: observation.observationId, action: { type: 'click', x: 0, y: 0 } };
+  const request = { ...session, observationId: observation.observationId, action: { type: 'click', x: 0, y: 0 }, returnObservation: 'full' };
   const result = await controller.act(request);
   assert.equal(result.outcome, 'completed');
   assert.notEqual(result.observation.observationId, observation.observationId);
@@ -292,7 +293,7 @@ test('doctor and discovery never start a marker and exclude indicator targets', 
   const { controller, backend, indicator } = await fixture(t);
   backend.listWindows = async () => [window, { ...window, id: '202', pid: indicator.pid }, { ...window, id: '303', pid: 888, processName: 'TraceActivityIndicator' }];
   assert.equal((await controller.doctor()).ready, true);
-  assert.deepEqual((await controller.listWindows()).windows, [window]);
+  assert.deepEqual((await controller.listWindows({ verbose: true })).windows, [window]);
   assert.equal(indicator.startCalls, 0);
   await assert.rejects(controller.openSession({ windowId: '303' }), { code: 'unknown_window' });
 });
@@ -351,7 +352,7 @@ test('lost marker prevents subsequent observations and input without clearing th
   assert.deepEqual(dispatched, []);
   // Read-only discovery/doctor remain available for diagnosis and cleanup.
   assert.equal((await controller.doctor()).ready, true);
-  assert.equal((await controller.listWindows()).windows.length, 1);
+  assert.equal((await controller.listWindows({ verbose: true })).windows.length, 1);
   await controller.closeSession(session);
 });
 

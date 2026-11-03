@@ -25,6 +25,10 @@ const STAGE = '/sdcard/Download/trace-install';
 const NODE_BIN = '/opt/node22/bin';
 const END = 'TRACE-INSTALL-END';
 const TERMUX_SHELL = '#!/data/data/com.termux/files/usr/bin/bash';
+// Task A5: the phone's Claude runs headless as `claude remote-control` in this folder, so the owner
+// starts tasks and answers approvals from claude.ai/code or the Claude app. It must be trusted first.
+const RC_DIR = '/root/phone-work';
+const RC_NAME = 's23-trace';
 
 function parseArgs(argv) {
   const opts = { ref: 'HEAD', serial: null, check: false, print: false, timeoutSec: 900 };
@@ -64,6 +68,8 @@ function installScript(sha) {
     'claude mcp remove --scope user trace-phone >/dev/null 2>&1 || true',
     `claude mcp add --scope user trace-phone -- ${NODE_BIN}/node /opt/trace/bin/trace.cjs phone mcp`,
     'node /opt/trace/scripts/configure-phone-permissions.cjs --apply',
+    `mkdir -p ${RC_DIR}`,
+    `node -e 'const fs=require("fs"),f=process.env.HOME+"/.claude.json";const j=JSON.parse(fs.readFileSync(f,"utf8"));j.projects=j.projects||{};j.projects["${RC_DIR}"]={...j.projects["${RC_DIR}"],hasTrustDialogAccepted:true};fs.writeFileSync(f,JSON.stringify(j,null,2))'`,
     'rm -f "$S/src.tar" "$S/classes.dex"',
     checkScript().trimEnd(),
   ].join('\n') + '\n';
@@ -76,14 +82,23 @@ function checkScript() {
   ].join('\n') + '\n';
 }
 
-// Termux:Boot script (task A4). The wake lock keeps Termux and Debian alive with the screen off.
+// Termux:Boot script (tasks A4, A5). The wake lock keeps Termux and Debian alive with the screen off.
+// A5: Remote Control runs as the login's own command (proot ends detached children when a login
+// exits), and that login starts Debian's adb server first so trace-phone has one.
 function bootScript() {
   return [
     TERMUX_SHELL.replace('bash', 'sh'),
     '# Installed by TRACE scripts/install-phone-claude.cjs. Termux:Boot runs it after each boot.',
     'termux-wake-lock',
     `proot-distro login debian -- ${NODE_BIN}/node /opt/trace/scripts/phone-boot-adb.cjs > "$HOME/.trace-boot.log" 2>&1`,
+    remoteControlCommand(),
   ].join('\n') + '\n';
+}
+
+// Termux-side line that starts the headless Remote Control session in the background (task A5).
+function remoteControlCommand() {
+  const inner = `export PATH=${NODE_BIN}:$PATH; adb start-server; adb connect 127.0.0.1:5555; cd ${RC_DIR} && exec claude remote-control --name ${RC_NAME}`;
+  return `nohup proot-distro login debian -- bash -lc '${inner}' > "$HOME/.trace-rc.log" 2>&1 < /dev/null &`;
 }
 
 // Termux-side wrapper: installs the boot script (install only), runs the Debian script and
@@ -165,4 +180,4 @@ function main(argv) {
 if (require.main === module) {
   try { process.exitCode = main(process.argv.slice(2)); } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
-module.exports = { parseArgs, installScript, checkScript, bootScript, termuxRunner, termuxCommand, parseLog, STAGE, END };
+module.exports = { remoteControlCommand, RC_DIR, parseArgs, installScript, checkScript, bootScript, termuxRunner, termuxCommand, parseLog, STAGE, END };

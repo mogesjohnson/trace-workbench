@@ -470,6 +470,23 @@ internal static class SupervisorSelfTest
         Require(InputDeclaration.For("bridge", ["bounds", "1", "2"], [], false).Keys.Length == 0);
         Require(InputDeclaration.For("bridge", ["identity", "1", "2"], [], false).Keys.Length == 0);
         Require(InputDeclaration.For("bridge", ["identities"], [], false).Keys.Length == 0);
+        foreach (var pair in new[] { ("left", 1), ("right", 2), ("middle", 4) })
+        {
+            var declaration = InputDeclaration.For("bridge", ["click", "1", "2", "30", "40", pair.Item1, "1"], [], true);
+            Require(declaration.Keys.SequenceEqual(new[] { pair.Item2 }));
+            Require(InputDeclaration.For("controlled", ["provider", "hold-mouse", "30", "40", pair.Item1], [], true).Keys.SequenceEqual(declaration.Keys));
+            var held = true;
+            var recovered = InputState.ReleaseCore(declaration.Keys, _ => held, key => { Require(key == pair.Item2); held = false; }, _ => { });
+            Require(recovered.Released && !held);
+            Require(!InputState.ReleaseCore(declaration.Keys, _ => true, _ => { }, _ => { }).Released);
+        }
+        Require(InputDeclaration.For("bridge", ["wheel", "1", "2", "30", "40", "120", "-120"], [], true).Keys.Length == 0);
+        foreach (var args in new[] { new[] { "click", "1", "2", "30", "40", "middle", "2" }, new[] { "click", "1", "2", "30", "40", "unknown", "1" } })
+        {
+            var refused = false;
+            try { InputDeclaration.For("bridge", args, [], true); } catch (TraceError) { refused = true; }
+            Require(refused);
+        }
         var rejected = false;
         try { InputDeclaration.For("winapp", ["ui", "send-keys", "--json"], [], false); } catch (TraceError) { rejected = true; }
         Require(rejected);

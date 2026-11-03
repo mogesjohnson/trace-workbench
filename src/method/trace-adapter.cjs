@@ -1,9 +1,10 @@
 'use strict';
 const { digest, fail, text } = require('./shared.cjs');
 const { validateAction: validateNativeAction, safeError } = require('../computer/controller.cjs');
-const { actionSupport, compatibleSupport } = require('../computer/action-contract.cjs');
+const { effectiveSupport } = require('../computer/action-contract.cjs');
 const { validateObservationImages, windowIdentity: identity } = require('./observation-images.cjs');
 const { createPostActionEvidence } = require('./post-action-evidence.cjs');
+const { advertisesFullReturn, advertisesVerboseListing } = require('../computer/act-compat.cjs');
 const { performance } = require('node:perf_hooks');
 const TOOL_NAMES = ['doctor', 'list_windows', 'open_session', 'observe', 'act', 'close_session'].map(s => `trace_computer_${s}`);
 function state(result) {
@@ -19,7 +20,7 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
     || !Number.isInteger(accessibilityDepth) || accessibilityDepth < 1 || accessibilityDepth > 32 || typeof monotonicClock !== 'function') {
     fail('adapter-config', 'Bind a transport, exact environment/app/window and depth 1-32.');
   }
-  let sessionId = null, capture = null, binding = null, supportsDepth = false;
+  let sessionId = null, capture = null, binding = null, supportsDepth = false, fullReturn = false, verboseListing = false;
   let boundWindow = null;
   const seenObservations = new Set();
   let closeFailure = null;
@@ -75,11 +76,14 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
           return diagnostics(false, 'depth-unsupported', 'The live observation schema does not advertise requested depth.');
         }
         const result = await call(0, {}), value = state(result), support = value.support ?? unknownSupport();
-        if (value.support != null && !compatibleSupport(support)) {
+        // 2.x defaults act to a compact summary; post-action evidence needs the full observation.
+        fullReturn = advertisesFullReturn(value); verboseListing = advertisesVerboseListing(value);
+        const declared = value.support != null ? effectiveSupport(support) : null;
+        if (value.support != null && !declared) {
           return diagnostics(false, 'support-unsupported', 'The live server declares an unsupported native action contract.', unknownSupport(), { native: value.ready === true });
         }
-        const effectiveSupport = value.support != null ? actionSupport(support.observation.ttlMs) : support;
-        return diagnostics(result.isError !== true && value.ready === true, value.code || value.error?.code || null, value.reason || value.error?.message || null, effectiveSupport,
+        const supported = declared ?? support;
+        return diagnostics(result.isError !== true && value.ready === true, value.code || value.error?.code || null, value.reason || value.error?.message || null, supported,
           { configured: true, native: result.isError !== true && value.ready === true });
       } catch { return diagnostics(false, 'diagnostics-unavailable', 'TRACE diagnostics could not be read.'); }
     },
@@ -87,7 +91,7 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
       evidenceEpoch++;
       if (!provider.available) fail('provider-unavailable', 'Run successful tool discovery and diagnostics first.');
       if (target.environment !== environment || target.app !== app || (target.windowId && target.windowId !== windowId)) return [];
-      const result = await call(1, {}), value = state(result);
+      const result = await call(1, verboseListing ? { verbose: true } : {}), value = state(result);
       if (result.isError) fail(value.error?.code || 'discovery-failed', 'TRACE window discovery failed.');
       const windows = Array.isArray(value) ? value : value.windows;
       if (!Array.isArray(windows)) fail('invalid-response', 'Expected a window inventory.');
@@ -131,6 +135,7 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
     },
     validateAction({ observationId, payload }) {
       if (!capture || observationId !== capture.observationId) fail('stale-target', 'Validate against the current native capture.');
+      if (payload?.type === 'accessibility_action' && !provider.constraints.nativeSupport.actions?.accessibility_action) fail('unsupported-action', 'The connected server does not advertise named UIA actions.');
       return validateNativeAction(payload, capture);
     },
     async act({ target, observationId, capability, payload }) {
@@ -139,6 +144,7 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
         fail('stale-target', 'One current exact-target native observation is required.');
       }
       assertBoundTarget(target);
+      if (payload?.type === 'accessibility_action') provider.validateAction({ observationId, payload });
       const actionEpoch = ++evidenceEpoch, ownedSession = sessionId, ownedBinding = binding;
       const actionTarget = structuredClone(target);
       const currentAction = () => evidenceEpoch === actionEpoch && sessionId === ownedSession
@@ -147,7 +153,7 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
       let startedAt;
       try { startedAt = monotonicClock(); } catch { startedAt = NaN; }
       let result;
-      try { result = await call(4, { sessionId, observationId, action: payload }); }
+      try { result = await call(4, { sessionId, observationId, action: payload, ...(fullReturn ? { returnObservation: 'full' } : {}) }); }
       catch { return { delivery: 'unknown' }; }
       const value = state(result), recovery = value.error?.recovery;
       const cleanupRequired = value.error?.inputRecoveryRequired === true || value.error?.code === 'input_recovery_required'

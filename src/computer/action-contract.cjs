@@ -6,14 +6,28 @@ const KEY_NAMES = ['ENTER', 'RETURN', 'TAB', 'ESC', 'ESCAPE', 'BACKSPACE', 'DELE
 const MODIFIERS = ['CTRL', 'CONTROL', 'ALT', 'SHIFT'];
 const alternatives = words => words.map(word => word.replace(/[A-Z]/g, letter => `[${letter}${letter.toLowerCase()}]`)).join('|');
 // JSON Schema has no regexp flags; encode case folding in the pattern itself.
-const KEY_PATTERN = `^(?:(?:${alternatives(MODIFIERS)})\\+)*(?:[A-Za-z0-9]|[Ff](?:[1-9]|1[0-2])|${alternatives(KEY_NAMES)})(?![\\s\\S])`;
+const keyPattern = (names, fRange) => `^(?:(?:${alternatives(MODIFIERS)})\\+)*(?:[A-Za-z0-9]|[Ff](?:[1-9]|${fRange})|${alternatives(names)})(?![\\s\\S])`;
+const LEGACY_KEY_PATTERN = keyPattern(KEY_NAMES, '1[0-2]');
+const KEY_ALIASES = Object.freeze({ INSERT: 'insert', SEMICOLON: 'vk=0xba', EQUAL: 'vk=0xbb', PLUS: 'vk=0xbb',
+  COMMA: 'vk=0xbc', MINUS: 'vk=0xbd', PERIOD: 'vk=0xbe', SLASH: 'vk=0xbf', GRAVE: 'vk=0xc0',
+  BRACKETLEFT: 'vk=0xdb', BACKSLASH: 'vk=0xdc', BRACKETRIGHT: 'vk=0xdd', APOSTROPHE: 'vk=0xde',
+  NUMPAD_ADD: 'vk=0x6b', NUMPAD_SUBTRACT: 'vk=0x6d', NUMPAD_MULTIPLY: 'vk=0x6a', NUMPAD_DECIMAL: 'vk=0x6e',
+  ...Object.fromEntries(Array.from({ length: 10 }, (_, n) => [`NUMPAD${n}`, `vk=0x${(0x60 + n).toString(16)}`])) });
+const KEY_PATTERN = keyPattern([...KEY_NAMES, ...Object.keys(KEY_ALIASES)], '1[0-6]');
+const ACCESSIBILITY_ACTIONS = Object.freeze(['expand', 'collapse', 'toggle']);
 const FIELDS = {
-  activate: [], click: ['x', 'y', 'elementId'], type_text: ['text'], press_key: ['key'],
-  scroll: ['x', 'y', 'deltaX', 'deltaY'], drag: ['fromX', 'fromY', 'toX', 'toY'],
+  activate: [], click: ['x', 'y', 'elementId', 'button', 'count'], type_text: ['text'], press_key: ['key'],
+  scroll: ['x', 'y', 'deltaX', 'deltaY', 'placement'], drag: ['fromX', 'fromY', 'toX', 'toY'],
   invoke: ['elementId'], set_value: ['elementId', 'value'],
+  accessibility_action: ['elementId', 'action'],
 };
 const reject = (code, message) => { throw Object.assign(new Error(message), { code, details: { outcome: 'not_dispatched' } }); };
-const normalizeKey = key => key.toLowerCase().split('+').map(token => token === 'control' ? 'ctrl' : token === 'return' ? 'enter' : token).join('+');
+function normalizeKey(key) {
+  const tokens = key.toLowerCase().split('+').map(token => token === 'control' ? 'ctrl' : token === 'return' ? 'enter' : token);
+  const name = tokens.pop(), mapped = KEY_ALIASES[name.toUpperCase()];
+  if (name === 'plus' && !tokens.includes('shift')) tokens.push('shift');
+  return [...tokens, mapped ?? name].join('+');
+}
 
 // Static support checks run before observation consumption or native helper work.
 function parseAction(action) {
@@ -28,6 +42,9 @@ function parseAction(action) {
   };
   switch (action.type) {
     case 'click':
+      if (action.button !== undefined && !['left', 'right', 'middle'].includes(action.button)) reject('unsupported_action', 'Choose left, right or middle.');
+      if (action.count !== undefined && ![1, 2].includes(action.count)) reject('unsupported_action', 'Click count must be 1 or 2.');
+      if (action.count === 2 && (action.button ?? 'left') !== 'left') reject('unsupported_action', 'Double-click supports the left button only.');
       if (action.elementId !== undefined) {
         if (action.x !== undefined || action.y !== undefined) reject('invalid_action', 'Choose elementId or coordinates, not both.');
         text('elementId', LIMITS.elementId);
@@ -41,10 +58,19 @@ function parseAction(action) {
     case 'scroll':
       point('x', 'y');
       if (![action.deltaX, action.deltaY].every(value => Number.isInteger(value) && Math.abs(value) <= LIMITS.wheel)) reject('invalid_action', 'Scroll deltas exceed the supported integer limits.');
+      if (action.placement !== undefined) {
+        if (action.placement !== 'point' || (!action.deltaX && !action.deltaY)
+          || action.deltaX % LIMITS.wheelStep || action.deltaY % LIMITS.wheelStep) reject('unsupported_action', 'Point wheel requires a nonzero pair of bounded 120-unit deltas.');
+        break;
+      }
       if (action.deltaX !== 0 || !action.deltaY || action.deltaY % LIMITS.wheelStep) reject('unsupported_action', 'Use vertical 120-unit wheel notches, positive down; horizontal scroll is unavailable.');
       break;
     case 'drag': point('fromX', 'fromY'); point('toX', 'toY'); break;
     case 'invoke': text('elementId', LIMITS.elementId); break;
+    case 'accessibility_action':
+      text('elementId', LIMITS.elementId);
+      if (!ACCESSIBILITY_ACTIONS.includes(action.action)) reject('unsupported_action', 'Choose an observed named accessibility action.');
+      break;
     case 'set_value': text('elementId', LIMITS.elementId); text('value', LIMITS.text, true); break;
   }
   return { ...action };
@@ -58,6 +84,10 @@ function validateAction(action, observation) {
     if (action[x] >= observation.bounds.width || action[y] >= observation.bounds.height) reject('invalid_coordinates', 'Use integer coordinates inside the observed window.');
   }
   if (action.elementId !== undefined && !(observation.elements ?? []).some(item => item.id === action.elementId && item.enabled !== false)) reject('unknown_element', 'Choose an enabled element from the latest observation.');
+  if (action.type === 'accessibility_action') {
+    const matches = (observation.elements ?? []).filter(item => item.id === action.elementId);
+    if (matches.length !== 1 || !Array.isArray(matches[0].secondaryActions) || !matches[0].secondaryActions.includes(action.action)) reject('unsupported_action', 'This exact control did not offer that action in the observation.');
+  }
   return checked;
 }
 
@@ -68,14 +98,21 @@ function actionSupport(observationTtlMs = 60000) {
     coordinateSpace: 'window-local-physical-pixels', origin: 'validated-intersection-crop',
     actions: {
       activate: { target: 'session-window' },
-      click: { targets: ['point', 'elementId'], button: 'left', count: 1, pointTransport: 'same-point-button-down-up' },
+      click: { targets: ['point', 'elementId'], button: 'left', count: 1, pointTransport: 'same-point-button-down-up',
+        variants: { buttons: ['left', 'right', 'middle'], counts: [1, 2], doubleButton: 'left', transport: 'supervised-public-win32', requiresSupervisor: true } },
       type_text: { minLength: 1, maxLength: LIMITS.text, nul: false },
-      press_key: { pattern: KEY_PATTERN, maxLength: LIMITS.key, caseSensitive: false,
-        modifiers: [...MODIFIERS], namedKeys: [...KEY_NAMES], normalization: { CONTROL: 'ctrl', RETURN: 'enter' } },
+      press_key: { pattern: LEGACY_KEY_PATTERN, maxLength: LIMITS.key, caseSensitive: false,
+        modifiers: [...MODIFIERS], namedKeys: [...KEY_NAMES], normalization: { CONTROL: 'ctrl', RETURN: 'enter' },
+        extended: { pattern: KEY_PATTERN, aliases: { ...KEY_ALIASES }, functionKeys: 16, plusAddsShift: true,
+          semantics: 'physical-virtual-key-layout-dependent', unavailable: ['NUMPAD_DIVIDE', 'NUMPAD_ENTER', 'side-specific modifiers'] } },
       scroll: { deltaX: 0, minDeltaY: -LIMITS.wheel, maxDeltaY: LIMITS.wheel, step: LIMITS.wheelStep,
-        nonzero: true, positive: 'down', target: 'smallest-enabled-onscreen-element-containing-point', placement: 'element-center' },
+        nonzero: true, positive: 'down', target: 'smallest-enabled-onscreen-element-containing-point', placement: 'element-center',
+        point: { maxAbsDelta: LIMITS.wheel, step: LIMITS.wheelStep, nonzeroPair: true, positiveX: 'right', positiveY: 'down',
+          order: ['y', 'x'], placement: 'requested-point', requiresSupervisor: true, transport: 'supervised-public-win32' } },
       drag: { targets: ['fromPoint', 'toPoint'], button: 'left' },
       invoke: { target: 'enabled-elementId' },
+      accessibility_action: { target: 'unique-observed-enabled-elementId', actions: [...ACCESSIBILITY_ACTIONS],
+        requiresObservedAction: true, requiresSupervisor: true, fallback: false },
       set_value: { target: 'enabled-elementId', minLength: 0, maxLength: LIMITS.text, nul: false },
     },
     observation: { defaultDepth: 8, minDepth: 1, maxDepth: 32, ttlMs: observationTtlMs,
@@ -83,16 +120,38 @@ function actionSupport(observationTtlMs = 60000) {
   };
 }
 
-function compatibleSupport(support) {
-  const ttl = support?.observation?.ttlMs;
-  if (!Number.isFinite(ttl) || ttl < 0) return false;
-  const matches = (actual, expected) => {
-    if (expected === null || typeof expected !== 'object') return actual === expected;
-    if (!actual || typeof actual !== 'object' || Array.isArray(actual) !== Array.isArray(expected)) return false;
-    if (Array.isArray(expected) && actual.length !== expected.length) return false;
-    return Object.keys(expected).every(key => Object.hasOwn(actual, key) && matches(actual[key], expected[key]));
-  };
-  return matches(support, actionSupport(ttl));
+// Doctor's default view. The full descriptor (two key regexes, alias table, every action rule)
+// was most of a 6 kB doctor response; the compact view names the actions and carries the full
+// descriptor's digest, so a caller can still check the exact contract without reading it.
+const sorted = value => value === null || typeof value !== 'object' ? value
+  : Array.isArray(value) ? value.map(sorted) : Object.fromEntries(Object.keys(value).sort().map(key => [key, sorted(value[key])]));
+const supportDigest = support => require('node:crypto').createHash('sha256').update(JSON.stringify(sorted(support))).digest('hex');
+function compactSupport(observationTtlMs = 60000) {
+  const { actions, ...rest } = actionSupport(observationTtlMs);
+  return { ...rest, detail: 'compact', sha256: supportDigest(actionSupport(observationTtlMs)), actions: Object.keys(actions),
+    verbose: 'doctor verbose: true lists every rule' };
 }
 
-module.exports = { LIMITS, KEY_PATTERN, normalizeKey, parseAction, validateAction, actionSupport, compatibleSupport };
+// The local descriptor a declared one stands for, or null when the declaration is unsupported.
+// 1.x servers and verbose doctor send the full descriptor, which may lack later optional
+// features; a compact declaration must match the full local descriptor's digest exactly.
+function effectiveSupport(support) {
+  const ttl = support?.observation?.ttlMs;
+  if (!Number.isFinite(ttl) || ttl < 0) return null;
+  const expected = actionSupport(ttl);
+  if (support.detail === 'compact') return support.contractVersion === 1 && support.sha256 === supportDigest(expected) ? expected : null;
+  const matches = (actual, wanted) => {
+    if (wanted === null || typeof wanted !== 'object') return actual === wanted;
+    if (!actual || typeof actual !== 'object' || Array.isArray(actual) !== Array.isArray(wanted)) return false;
+    if (Array.isArray(wanted) && actual.length !== wanted.length) return false;
+    return Object.keys(wanted).every(key => Object.hasOwn(actual, key) && matches(actual[key], wanted[key]));
+  };
+  if (!Object.hasOwn(support?.actions ?? {}, 'accessibility_action')) delete expected.actions.accessibility_action;
+  if (!Object.hasOwn(support?.actions?.click ?? {}, 'variants')) delete expected.actions.click.variants;
+  if (!Object.hasOwn(support?.actions?.scroll ?? {}, 'point')) delete expected.actions.scroll.point;
+  if (!Object.hasOwn(support?.actions?.press_key ?? {}, 'extended')) delete expected.actions.press_key.extended;
+  return matches(support, expected) ? expected : null;
+}
+const compatibleSupport = support => effectiveSupport(support) !== null;
+
+module.exports = { LIMITS, KEY_PATTERN, ACCESSIBILITY_ACTIONS, normalizeKey, parseAction, validateAction, actionSupport, compactSupport, supportDigest, effectiveSupport, compatibleSupport };

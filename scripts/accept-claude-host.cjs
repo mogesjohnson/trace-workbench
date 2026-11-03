@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 'use strict';
+const { createActCompat } = require('../src/computer/act-compat.cjs');
 
 // Opt-in external-host acceptance. Import/--plan never invokes Claude or desktop APIs.
 // The labeled guard keeps the shipped six schemas and forwards to production stdio MCP.
@@ -225,7 +226,8 @@ function createGuard({ target, payload, call, readFixture, record = async () => 
   const guard = { evidence,
     doctor: options => forward('doctor', {}, options),
     async listWindows(options) {
-      const result = await forward('list_windows', {}, options);
+      // The guard binds the exact process generation, which only the verbose listing returns.
+      const result = await forward('list_windows', { verbose: true }, options);
       const matches = result.windows?.filter(item => item.pid === target.pid && item.title === target.title) || [];
       need(matches.length === 1 && !!matches[0].processCreationTime, 'owned_window_unavailable');
       if (window && (matches[0].id !== window.id || matches[0].processCreationTime !== window.processCreationTime)) throw fail('owned_window_changed');
@@ -642,6 +644,7 @@ async function serveGuard(configPath) {
   transport.stderr?.on('data', () => {});
   const common = require('./replacement-acceptance-common.cjs');
   let pid, guard, ownership;
+  const actCompat = createActCompat();
   let journalWrite = Promise.resolve();
   const record = evidence => {
     const bytes = JSON.stringify({ ...evidence, nodePid: process.pid, productionMcpPid: pid, ownership: ownership?.evidence });
@@ -662,8 +665,10 @@ async function serveGuard(configPath) {
     guard = createGuard({ ...config, readFixture: async () => JSON.parse(await fs.readFile(config.fixtureState, 'utf8')), record,
       assertDisplay: async () => compareDisplay(await native(['display']), config.display),
       call: async (name, args, options) => {
+        if (name === 'act') args = actCompat.actArguments(args);
         const response = await client.callTool({ name: `trace_computer_${name}`, arguments: args }, { timeout: 30000, ...(options?.signal ? { signal: options.signal } : {}) });
         const result = upstreamState(response, name);
+        if (name === 'doctor') actCompat.noteDoctor(result);
         if (name === 'open_session') await ownership.opened(result.window);
         if (name === 'close_session' && result.closed === true) await ownership.sessionClosed();
         return result;
