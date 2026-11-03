@@ -1,37 +1,115 @@
-# Token cost fixes — handoff (2 November 2026, session 3)
+# Token cost fixes — handoff (2 November 2026, session 4)
 
 Work for [the token cost incident](https://github.com/mogesjohnson/trace-workbench/pull/97) (`docs/OBSERVATION_TOKEN_COST_INCIDENT.md` on PR #97). The
 owner asked for every issue in PR #97 to be fixed. This file records how far the
 work got and what comes next.
 
-- Branch: `fix/observation-token-cost`, stacked on `feat/v8-claude-lifecycle` @
-  `e762f25` (PR #80 head, the build that was measured). C1 exists only on that
-  stack, so the fixes are stacked on it.
-- Worktree: `trace-workbench-worktrees/token-cost-fixes`, a sibling of the main checkout
-  (`npm ci` already run there).
+- Stack: `feat/v8-claude-lifecycle` @ `e762f25` (PR #80 head, the build that was
+  measured) → PR #98 → PR #99 → PR #100 → PR D. C1 exists only on that stack.
+- Worktrees (siblings of the main checkout, `npm ci` run in each):
+  `trace-workbench-worktrees/token-cost-fixes` (#98), `compact-act` (#99),
+  `p1-scoping` (#100), `p2-followups` (PR D).
 
-## State at handoff (2 November 2026, session 3)
+## State at handoff (2 November 2026, session 4)
 
 - PR #98 (`fix/observation-token-cost`, ready, 4 commits): P0-1, P0-2, P0-5.
-- PR #99 (`fix/compact-act-result`, draft, stacked on #98, 4 commits): P0-3, P0-4, 2.0.0.
-- PR C (`fix/p1-scoping`, draft, stacked on #99, 4 commits including this handoff):
-  P1-1…P1-5. Worktree `trace-workbench-worktrees/p1-scoping` (`npm ci` already run there). Do not add
-  commits; PR D starts a new branch on `fix/p1-scoping`.
-  - Focused suites passed: `v10-p1-scoping` (10 cases), computer-controller,
-    computer-mcp, winapp-backend, v5-hierarchy, v8-focus-path, v9-compact-act,
-    v2-selective-*, method-trace-adapter, accept-claude-host, v1-capabilities,
-    v1-observation-metrics, v8-accessibility-actions, v2-adjacent-identity.
-    `npm run check` passed.
-  - The full `npm test --test-timeout=300000` run was **incomplete**. It had 387
-    passed and 0 failed when the session stopped, with one test process still
-    running. Rerun it at the start of the next session.
-  - Bars: the Save dialog file-name box at depth 2 is 2,267 chars (bar 3,000). A
-    30-window desktop lists in 1,131 chars (bar 2,500).
+- PR #99 (`fix/compact-act-result`, draft, 4 commits): P0-3, P0-4, 2.0.0.
+- PR #100 (`fix/p1-scoping`, draft, 4 commits): P1-1…P1-5. Do not add commits.
+  - Full suite at `85b2219` (`node --test --test-timeout=300000 tests/*.test.cjs`,
+    Node 26.2.0): **693 tests, 688 passed, 0 failed, 5 skipped** (METHOD-BROWSER,
+    which needs `TRACE_PLAYWRIGHT_MODULE`/`TRACE_BROWSER_EXECUTABLE`). Recorded in
+    the PR body.
+  - `accept-replay-workflow` checks that its output does not match `/token/i`. Its
+    output includes the checkout path, so it fails in any worktree whose path
+    contains "token" (`token-cost-fixes`). That is a test artifact.
+- PR D (`fix/p2-followups`, draft, stacked on #100, **2 of 4 commits used**):
+  P2-1 and P2-2 done; P2-3 and P2-4 not started. The next session has 2 commits:
+  one `feat` for P2-3 and P2-4 (with tests) and one `docs` commit for the skill,
+  `docs/COMPUTER_USE.md`, `docs/OBSERVATION_METRICS.md`, `docs/RELEASE_2.0.0.md`
+  and this handoff.
 - The personal skill discovery copies (`~/.claude`, `~/.agents`, `~/.grok`) were
   deliberately **not** synced. The installed `trace-computer` MCP runs from the main
   checkout (pre-2.0), so the new skill text would describe arguments it rejects. A dry
   run of `node scripts/sync-computer-skill.cjs --plan` shows all three as `replace`.
   Apply it once 2.0 is the installed server.
+
+## Done: P2-1 and P2-2 (PR D, commit `c38010e`)
+
+- **P2-1, compact doctor.** `action-contract.cjs` `compactSupport(ttl)` returns the
+  descriptor without `actions` rules: action names, `detail: 'compact'` and
+  `sha256` (sorted-key JSON of the full `actionSupport(ttl)`). `doctor` takes
+  `verbose: true` for the full descriptor (server schema and controller).
+  `effectiveSupport(support)` returns the local full descriptor or null. A compact
+  declaration must match by digest. A full (1.x or verbose) declaration is matched
+  as before, with the four optional features removed when absent.
+  `compatibleSupport()` wraps it. `trace-adapter.cjs` uses it in place of its four
+  `delete` lines.
+  - Bar: a ready doctor (real `WinappBackend.doctor`, fake processes) is **2,313
+    chars** (bar 2,500). Verbose is 6,059. A live read-only doctor against the main
+    checkout's runtime measured the same 2,313 before the supervisor source change.
+  - Headroom is about 190 chars. P2-3/P2-4 doctor fields must stay short.
+- **P2-1, opt-in metrics.** `observe` takes `metrics: true`. The flag is kept on the
+  snapshot, so an act refresh returns metrics only if the consumed observation
+  asked for them. `_meta["trace/projection"]` follows (`server.cjs` emits it only
+  when metrics are present). An observation without metrics is about 700 chars
+  shorter (1,526 vs 2,230 in the test).
+- **P2-2, Notepad readback.** `winapp-backend.cjs` `readDocument`: a `Document`/`Edit`
+  control without an AutomationId goes to `readDocumentValue()`:
+  1. `ui get-property -w <hwnd> -- <slug>` must return the same selector, type and
+     bounds as the observed element (else `stale_element`).
+  2. `IsPassword` must be `"False"` (else `password_or_unknown`).
+  3. At least one TextPattern formatting property (`FontName`, `FontWeight`, …) must
+     not be `"Unavailable"` (else `text_pattern_unavailable`). This matters because
+     get-value falls back to ValuePattern, SelectionPattern and then the Name.
+  4. `ui get-value -w <hwnd> -- <slug>` returns `{ elementId, text }`. The text is
+     cut at 4,096 UTF-16 units without splitting a surrogate pair. Provenance is
+     `winapp-textpattern-value`, and the selection is `selection_unavailable`.
+  - Both verbs are read-only in `command()`. The supervisor allow-list
+    (`native/TraceSupervisor/SessionProcess.cs`) gained them too. The supervisor
+    verifies its build against source hashes, so **2.0 needs `computer setup`
+    rerun** (otherwise doctor reports `supervisor_stale`). Not compiled locally; CI
+    or setup builds it.
+  - Read-only probes on this PC (winapp 0.7.1): get-value JSON is `{elementId, text}`
+    (`text` absent when there is no value). get-property `--json` returns
+    `{elementId, element, properties}`, and the formatting values are `"Unavailable"`
+    without TextPattern. No Notepad window was open, so the RichEdit path has not
+    been seen live.
+- Tests: `tests/v11-p2-followups.test.cjs` has 5 cases (doctor bar, digest
+  compatibility, metrics opt-in, Notepad exact readback, refusals/bounds). Updated
+  for the intended changes: v1-capabilities (verbose doctor), v1-observation-metrics,
+  v2-selective-controller and v5-document (request metrics; the binding-unavailable
+  case uses a `Text` control). `npm run check` and 14 focused suites passed (211
+  tests). The full suite has not been run on PR D.
+
+## Next: P2-3 and P2-4 (design notes, not started)
+
+- **P2-3, launch.** `src/method/installed-applications.cjs` already has a typed
+  launcher. It reads the App Paths catalog through bridge `apps`, spawns the exact
+  registered EXE with `shell: false`, binds the process with bridge `process` and
+  waits for its window. It needs the supervisor lease (`acquire/release/assert`).
+  It is not an MCP tool yet.
+  - A read-only `apps` call on this PC listed 140 registrations, including
+    `notepad` and `firefox`, both under `C:\Program Files\WindowsApps\…`
+    (packaged). Settings is not in App Paths (`ms-settings:` URI).
+  - Unknown: whether a direct spawn of a WindowsApps EXE starts a packaged app
+    correctly, and whether `fs.realpath` can read that path. Both need a live
+    launch, which needs owner approval.
+  - Suggested shape: `trace_computer_launch { app }`. `app` is a catalog name such
+    as `notepad`. The result lists the new window(s) in the default listing form and
+    adds them to `discovered`, so `open_session` follows directly. Settings is
+    reported unsupported unless a URI launcher is added (that would need a bridge
+    rebuild). Check how the lease interacts with an open session first.
+- **P2-4, modal follow.** The incident's Save As was an owned window: from the
+  Notepad session, the target showed `enabled: false`. Suggested approach: when
+  `targetState.enabled === false` after observe/act, list windows once and report
+  `ownedModal: { windowId, … }` for windows whose `ownerWindowId` is the session
+  window (same pid and creation time). Then let the session follow it, for example
+  with `observe { followModal: true }`, which retargets `session.window` under the
+  same lease. When the modal closes (`target_closed_after_dispatch`), return to
+  the owner. Bar: Save As completed without close/re-list/re-open.
+- Each needs a size or behavior test in `tests/v11-p2-followups.test.cjs`.
+- Live checks to ask the owner for (none run): the Notepad readback on a real
+  document, a launch of Notepad/Firefox, and a Save As follow.
 
 ## Done: P1 (PR C, branch `fix/p1-scoping`)
 
@@ -151,19 +229,9 @@ work got and what comes next.
 
 1. ~~P0-5~~ done (see above).
 2. ~~P0-3 and P0-4~~ done in PR B (see below).
-3. ~~P1~~ done in PR C (see above).
-4. **P2.**
-   - P2-1: `metrics` becomes opt-in (an observe argument; tests in v1-observation-metrics,
-     v2-selective-controller and v5-document read `metrics`), and `doctor` prints the
-     key regex once. The doctor was measured at 5,957 chars: `support.actions.press_key`
-     is 2,851 (two regexes, namedKeys, aliases) and `limitations` is 246. Dropping one
-     regex is not enough for the 2,500 bar. Consider a compact default `support` plus
-     `doctor` verbose detail. `compatibleSupport()` compares the whole descriptor to the
-     local `actionSupport()`, so keep 1.x server compatibility in mind.
-   - P2-2: RichEdit readback. Try winapp `get-value` (TextPattern) when the
-     AutomationId binding is missing.
-   - P2-3: launch.
-   - P2-4: modal follow.
+3. ~~P1~~ done in PR #100 (see above).
+4. **P2.** P2-1 and P2-2 are done in PR D (see the top). P2-3 (launch) and P2-4
+   (modal follow) are next; see the design notes at the top.
 5. Then rerun the 16-task head-to-head. TRACE's share must be under 100k tokens.
 
 PR shape (VERSION_CONTROL.md): 2–4 commits per PR. Suggested split: PR A is
