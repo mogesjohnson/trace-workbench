@@ -1,7 +1,7 @@
 # Session handoff, 3 November 2026: 2.0 live checks and PR 104
 
-Paste the prompt below into a fresh Claude Code session started in
-`C:\Users\johns\projects\trace-workbench`.
+Paste the prompt below into a fresh Claude Code session started in the main
+`trace-workbench` checkout.
 
 ---
 
