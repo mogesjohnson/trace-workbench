@@ -201,9 +201,11 @@ Found in the [head-to-head](HEAD_TO_HEAD_2026-11-03.md); fixes are planned for 2
   MCP server keeps the cached release error: `close_session` keeps failing and `launch`
   returns `desktop_busy`. Workaround: reconnect `trace-computer` (`/mcp`) before the
   next session.
-- **G2, keyboard close.** Closing a window with a shortcut (ctrl+shift+w, ctrl+w,
-  alt+f4) returns `unknown` / `input_recovery_required` with native
-  `foreground_unavailable`, and quarantines the session. Workaround: close windows with
+- **G2, keyboard close.** Closing a window with a shortcut (ctrl+shift+w, ctrl+w)
+  returns `unknown` / `input_recovery_required` with native
+  `foreground_unavailable`, and quarantines the session. alt+f4 is different: winapp
+  0.7.1 refuses system-reserved keys before sending anything, and 2.0.0 reports that
+  refusal as `unknown` (`invalid_arguments`) although no input was sent. Workaround: close windows with
   their Close button; Close and Save return `target_closed_after_dispatch`.
 - **G3, packaged apps.** Settings and other packaged apps without an App Paths entry
   cannot be launched (`unknown_application`); `ms-settings:` is refused as
