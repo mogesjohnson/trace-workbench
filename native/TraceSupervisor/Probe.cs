@@ -170,10 +170,11 @@ internal static class ControlledProvider
         var held = new SortedSet<int>();
         switch (args[0])
         {
-            case "hold-mouse" when args.Length == 3 && int.TryParse(args[1], out var x) && int.TryParse(args[2], out var y):
+            case "hold-mouse" when args.Length is 3 or 4 && int.TryParse(args[1], out var x) && int.TryParse(args[2], out var y):
+                var button = InputDeclaration.MouseButton(args.Length == 4 ? args[3] : "left");
                 if (!Native.SetCursorPos(x, y)) throw new TraceError("cursor_rejected", "Windows refused the cursor position.");
-                InputState.Send(InputState.Mouse(Native.MouseLeftDown));
-                held.Add(0x01);
+                InputState.Send(InputState.Mouse(button == 1 ? Native.MouseLeftDown : button == 2 ? 0x0008u : 0x0020u));
+                held.Add(button);
                 break;
             case "hold-keys" when args.Length == 2:
                 foreach (var vk in Keys.Parse(args[1])) { InputState.Send(InputState.Key(vk, false)); held.Add(vk); }

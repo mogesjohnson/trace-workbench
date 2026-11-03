@@ -22,6 +22,8 @@ internal sealed record ProviderSpec(string Path, string Sha256)
 
 internal sealed record InputDeclaration(int[] Keys, int[] Unicode)
 {
+    internal static int MouseButton(string button) => button switch
+    { "left" => 1, "right" => 2, "middle" => 4, _ => throw new TraceError("invalid_arguments", "Unsupported click button.") };
     public static InputDeclaration For(string provider, string[] args, int[] extra, bool mutating)
     {
         if (extra.Length > 254 || extra.Any(key => key is < 1 or > 254 || key is 5 or 6))
@@ -46,15 +48,26 @@ internal sealed record InputDeclaration(int[] Keys, int[] Unicode)
         }
         else if (provider == "bridge")
         {
-            if (args.Length == 0 || !new[] { "info", "identity", "identities", "bounds", "activate" }.Contains(args[0])
-                || mutating != (args[0] == "activate")) throw new TraceError("invalid_arguments", "Only source-owned bridge observation/activation is supported.");
+            var pointer = args.Length == 7 && args[0] is "click" or "wheel";
+            if (args.Length == 0 || (!pointer && !new[] { "info", "identity", "identities", "bounds", "activate" }.Contains(args[0]))
+                || mutating != (args[0] == "activate" || pointer)) throw new TraceError("invalid_arguments", "Unsupported source-owned bridge operation or mutation declaration.");
+            if (pointer && (!long.TryParse(args[1], out var hwnd) || hwnd <= 0 || !uint.TryParse(args[2], out var pid) || pid == 0
+                || !int.TryParse(args[3], out _) || !int.TryParse(args[4], out _))) throw new TraceError("invalid_arguments", "Pointer target and physical coordinates are invalid.");
+            if (pointer && args[0] == "wheel" && (!int.TryParse(args[5], out var dx) || !int.TryParse(args[6], out var dy)
+                || dx is < -2400 or > 2400 || dy is < -2400 or > 2400 || dx % 120 != 0 || dy % 120 != 0 || (dx == 0 && dy == 0)))
+                throw new TraceError("invalid_arguments", "Wheel deltas must use bounded nonzero 120-unit steps.");
+            if (pointer && args[0] == "click")
+            {
+                if (args[6] is not ("1" or "2") || (args[6] == "2" && args[5] != "left")) throw new TraceError("invalid_arguments", "Unsupported click count.");
+                keys.Add(MouseButton(args[5]));
+            }
         }
         else if (provider == "controlled")
         {
             if (!mutating || args.Length < 2 || args[0] != "provider") throw new TraceError("invalid_arguments", "Controlled input must be declared as mutating.");
             switch (args[1])
             {
-                case "hold-mouse" when args.Length == 4: keys.Add(1); break;
+                case "hold-mouse" when args.Length is 4 or 5: keys.Add(MouseButton(args.Length == 5 ? args[4] : "left")); break;
                 case "hold-keys" when args.Length == 3: keys.UnionWith(TraceSupervisor.Keys.Parse(args[2])); break;
                 case "type-hold" when args.Length == 3:
                     foreach (var key in Enumerable.Range(8, 247)) keys.Add(key);

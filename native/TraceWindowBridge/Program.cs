@@ -4,8 +4,8 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 
 // Public Win32/DWM calls only. This bridge reads exact capture geometry and activates one pinned
-// HWND/PID. Emergency recovery only releases the left button after the owned input process exits;
-// it never presses a button, types, captures pixels, launches applications or targets another desktop.
+// HWND/PID. Pointer operations require explicit coordinates, foreground and unobscured target.
+// The controller admits them only through its job-owning supervisor and declared-input recovery.
 internal static class Program
 {
     private static int Main(string[] args)
@@ -15,9 +15,11 @@ internal static class Program
             if (!OperatingSystem.IsWindows()) throw new BridgeException("unsupported_platform", "Windows is required.");
             if (args.Length == 1 && args[0] == "info")
             {
-                Write(new { version = 1, runtime = "net9.0-windows", capabilities = new[] { "identities", "identity", "bounds", "activate", "release-left" } });
+                Write(new { version = 1, runtime = "net9.0-windows", capabilities = new[] { "identities", "identity", "bounds", "activate", "release-left", "click", "wheel", "selftest" } });
                 return 0;
             }
+            if (args.Length == 1 && args[0] == "selftest") { PointerSelfTest(); Write(new { passed = true, inputSent = false }); return 0; }
+            if (args.Length > 0 && args[0] is "click" or "wheel") { Pointer(args); return 0; }
             if (args.Length == 1 && args[0] == "release-left")
             {
                 // Release is intentionally independent of HWND lifetime/foreground. A drag can outlive
@@ -147,6 +149,73 @@ internal static class Program
         if (!IsWindowEnabled(hwnd)) throw new BridgeException("window_blocked", "The selected window is disabled, for example by an owned modal dialog. Select the enabled dialog explicitly.");
     }
 
+    private static Input[] PointerInputs(string verb, string first, string second)
+    {
+        Input Event(uint flags, int data = 0) => new() { Type = 0, Mouse = new MouseInput { Flags = flags, MouseData = unchecked((uint)data) } };
+        if (verb == "click" && int.TryParse(second, out var count) && count is 1 or 2
+            && first is "left" or "right" or "middle" && (count == 1 || first == "left"))
+        {
+            var down = first == "left" ? 0x0002u : first == "right" ? 0x0008u : 0x0020u;
+            return Enumerable.Range(0, count).SelectMany(_ => new[] { Event(down), Event(down << 1) }).ToArray();
+        }
+        if (verb == "wheel" && int.TryParse(first, out var dx) && int.TryParse(second, out var dy)
+            && dx is >= -2400 and <= 2400 && dy is >= -2400 and <= 2400 && dx % 120 == 0 && dy % 120 == 0 && (dx != 0 || dy != 0))
+        {
+            var events = new List<Input>();
+            if (dy != 0) events.Add(Event(0x0800, -dy)); // Public positive Y means down.
+            if (dx != 0) events.Add(Event(0x1000, dx)); // Public positive X means right.
+            return events.ToArray();
+        }
+        throw new BridgeException("invalid_arguments", "Unsupported pointer button/count or wheel units.");
+    }
+    private static void Pointer(string[] args)
+    {
+        if (args.Length != 7 || !long.TryParse(args[1], out var raw) || raw <= 0 || !uint.TryParse(args[2], out var pid) || pid == 0
+            || !int.TryParse(args[3], out var x) || !int.TryParse(args[4], out var y))
+            throw new BridgeException("invalid_arguments", "Pointer operation requires HWND PID physicalX physicalY and two bounded gesture arguments.");
+        var inputs = PointerInputs(args[0], args[5], args[6]);
+        var hwnd = new nint(raw);
+        SetProcessDpiAwarenessContext(new nint(-4));
+        void Ready()
+        {
+            GuardEnabled(hwnd, pid);
+            if (IsIconic(hwnd) || GetForegroundWindow() != hwnd) throw new BridgeException("foreground_not_target", "Pointer target must be foreground and restored.");
+            if (!GetWindowRect(hwnd, out var rect) || x < rect.Left || x >= rect.Right || y < rect.Top || y >= rect.Bottom)
+                throw new BridgeException("invalid_coordinates", "Pointer must remain inside the exact target window.");
+            var hit = WindowFromPoint(new Point { X = x, Y = y });
+            if (hit == 0 || GetAncestor(hit, 2 /* GA_ROOT */) != hwnd) throw new BridgeException("target_occluded", "Another window covers the requested point.");
+        }
+        Ready();
+        if (!SetCursorPos(x, y) || !GetCursorPos(out var cursor) || cursor.X != x || cursor.Y != y)
+            throw new BridgeException("pointer_not_positioned", "Windows did not position the cursor at the requested physical point.");
+        Ready();
+        // One insertion batches both axes or the complete native down/up double-click sequence.
+        // Partial insertion is uncertain; the supervising owner balances the declared button after exit.
+        if (SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<Input>()) != inputs.Length)
+            throw new BridgeException("input_rejected", "Windows accepted only part or none of the pointer sequence.");
+        Write(new { hwnd = raw.ToString(), pid, performed = true, operation = args[0], inputEvents = inputs.Length, method = "public-win32-sendinput" });
+    }
+    private static void PointerSelfTest()
+    {
+        void Require(bool value) { if (!value) throw new BridgeException("selftest_failed", "Pointer contract check failed without input."); }
+        Require(Marshal.SizeOf<Input>() == 40);
+        foreach (var pair in new[] { ("left", 2u), ("right", 8u), ("middle", 32u) })
+        {
+            var events = PointerInputs("click", pair.Item1, "1");
+            Require(events.Length == 2 && events[0].Mouse.Flags == pair.Item2 && events[1].Mouse.Flags == pair.Item2 * 2);
+        }
+        Require(PointerInputs("click", "left", "2").Select(e => e.Mouse.Flags).SequenceEqual(new uint[] { 2, 4, 2, 4 }));
+        var wheel = PointerInputs("wheel", "-120", "240");
+        Require(wheel.Length == 2 && wheel[0].Mouse.Flags == 0x0800 && unchecked((int)wheel[0].Mouse.MouseData) == -240
+            && wheel[1].Mouse.Flags == 0x1000 && unchecked((int)wheel[1].Mouse.MouseData) == -120);
+        foreach (var invalid in new[] { ("click", "middle", "2"), ("click", "left", "3"), ("wheel", "1", "0"), ("wheel", "0", "0"), ("wheel", "2520", "0") })
+        {
+            var rejected = false;
+            try { PointerInputs(invalid.Item1, invalid.Item2, invalid.Item3); } catch (BridgeException) { rejected = true; }
+            Require(rejected);
+        }
+    }
+
     private static void Write(object value) => Console.WriteLine(JsonSerializer.Serialize(value));
     private sealed class BridgeException(string code, string message) : Exception(message) { public string Code { get; } = code; }
     [StructLayout(LayoutKind.Sequential)] private struct Rect
@@ -179,5 +248,9 @@ internal static class Program
     [DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool PeekMessage(out Message message, nint hwnd, uint min, uint max, uint remove);
     [DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool SetProcessDpiAwarenessContext(nint context);
     [DllImport("user32.dll")] private static extern short GetAsyncKeyState(int key);
+    [DllImport("user32.dll")] private static extern nint WindowFromPoint(Point point);
+    [DllImport("user32.dll")] private static extern nint GetAncestor(nint hwnd, uint flags);
+    [DllImport("user32.dll", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool SetCursorPos(int x, int y);
+    [DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool GetCursorPos(out Point point);
     [DllImport("user32.dll", SetLastError = true)] private static extern uint SendInput(uint count, [In] Input[] inputs, int size);
 }
