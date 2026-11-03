@@ -11,6 +11,7 @@ const pin = require('./winapp-pin.json');
 const ROOT = path.resolve(__dirname, '../..');
 const DEFAULT_BINARY = path.join(ROOT, '.runtime', 'winapp', `v${pin.version}`, 'bin', 'winapp.exe');
 const DEFAULT_BRIDGE = path.join(ROOT, '.runtime', 'window-bridge', 'bin', 'TraceWindowBridge.exe');
+const PRUNABLE = new Set(['Group', 'Separator', 'Pane']);
 const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj', 'native/TraceWindowBridge/Capture.cs', 'native/TraceWindowBridge/Applications.cs'];
 
 class BackendError extends Error {
@@ -417,7 +418,7 @@ class WinappBackend {
       : await read(deep, filtered ? undefined : 'Exact target UIA root was not returned.');
     const root = (windowEntry ?? entry).elements[0];
     const flat = [], hierarchy = [], active = new WeakSet();
-    let visited = 0, kept = 0, offscreenOmitted = 0, truncated = false;
+    let visited = 0, kept = 0, offscreenOmitted = 0, pruned = 0, truncated = false;
     // Top-level nodes of a scoped or filtered walk are kept like the root.
     let starts = entry.elements;
     if (interactiveOnly && !scoped && entry.elements[0]?.selector !== root.selector) {
@@ -438,7 +439,7 @@ class WinappBackend {
         active.delete(element);
         return;
       }
-      const nodeId = `n${kept++}`;
+      const nodeId = `n${kept++}`, flatAt = flat.length, hierarchyAt = hierarchy.length;
       const more = element.hasMoreChildren === true;
       if (more) truncated = true;
       if (!element.selector) {
@@ -460,11 +461,17 @@ class WinappBackend {
       }
       for (const child of element.children || []) visit(child, nodeId, nestingDepth + 1);
       active.delete(element);
+      // winapp -i keeps unnamed structural containers. One that kept no descendant and offers no
+      // action carries nothing an agent can use, so it is dropped. Its node ID was the last assigned.
+      if (interactiveOnly && !tops.has(element) && !more && PRUNABLE.has(element.type) && !String(element.name || '').trim()
+        && !element.isInvokable && !element.toggleState && !element.expandState && flat.length + hierarchy.length === flatAt + hierarchyAt + 1) {
+        flat.length = flatAt; hierarchy.length = hierarchyAt; kept--; pruned++;
+      }
     };
     for (const element of starts) visit(element);
     return { bounds: bounds(root), rootSelector: selector(root.selector), elements: flat, hierarchy,
       coordinateSpace: entry.coordinateSpace, depth, truncated, includeOffscreen, offscreenOmitted, nodeCount: kept,
-      ...(scoped ? { rootElementId } : {}), ...(interactiveOnly ? { interactiveOnly: true } : {}) };
+      ...(scoped ? { rootElementId } : {}), ...(interactiveOnly ? { interactiveOnly: true, prunedContainers: pruned } : {}) };
   }
   // The common file dialog (#32770) keeps its own copy of the File name; a UIA ValuePattern write
   // changes the edit text but not that copy, so Save uses the previous name (seen live 2026-11-02).
@@ -569,7 +576,10 @@ class WinappBackend {
   }
   async readDocument(window, signal, elements, elementId) {
     const candidates = elements.filter(element => element.id === elementId);
-    if (candidates.length !== 1) fail(candidates.length ? 'ambiguous_element' : 'stale_element', 'Document target must be a unique currently observed control.');
+    // An ID absent from this observation is usually below the observed depth or outside rootElementId.
+    // The code stays stale_element for compatibility; reason and message name the fix.
+    if (!candidates.length) fail('stale_element', 'documentElementId is not in the tree observed now. Raise accessibilityDepth until the control is listed, or set rootElementId to its parent control, then read again.', { reason: 'not_in_observed_tree' });
+    if (candidates.length !== 1) fail('ambiguous_element', 'Document target must be a unique currently observed control.');
     const element = candidates[0], rect = element.bounds;
     const unavailable = reason => ({ available: false, reason });
     if (!/^[A-Za-z]{1,64}$/.test(element.controlType) || !rect || !['x', 'y', 'width', 'height'].every(key => Number.isFinite(rect[key])) || rect.width <= 0 || rect.height <= 0)

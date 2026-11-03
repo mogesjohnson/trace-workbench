@@ -20,6 +20,7 @@ function safeError(error) {
     ? error.code : 'backend_error', message: String(error.message).slice(0, 1500) };
   if (['unknown', 'not_dispatched'].includes(error.details?.outcome)) result.outcome = error.details.outcome;
   if (error.details?.cleanup === 'unknown') result.cleanup = 'unknown';
+  if (error.details?.reason === 'not_in_observed_tree') result.reason = 'not_in_observed_tree';
   if (Array.isArray(error.cleanupCodes)) result.cleanupCodes = error.cleanupCodes
     .filter(code => typeof code === 'string' && /^[a-z_]{1,64}$/.test(code)).slice(0, 8);
   const recovery = error.details?.recovery;
