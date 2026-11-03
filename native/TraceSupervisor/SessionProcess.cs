@@ -6,18 +6,60 @@ using Microsoft.Win32.SafeHandles;
 
 namespace TraceSupervisor;
 
-internal sealed record ProviderSpec(string Path, string Sha256)
+// A provider is hashed once per session, through a handle that denies writes and deletion. The
+// session holds that handle until it closes, so the content cannot change while it is pinned; each
+// launch then confirms that the path still names the pinned file instead of hashing it again.
+internal sealed class ProviderSpec(string path, string sha256) : IDisposable
 {
-    public void Verify()
+    public string Path { get; } = path;
+    public string Sha256 { get; } = sha256;
+    private SafeFileHandle? pin;
+    private (uint Volume, uint High, uint Low) pinned;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct FileInformation { public uint Attributes, C1, C2, A1, A2, W1, W2, Volume, SizeHigh, SizeLow, Links, IndexHigh, IndexLow; }
+    [DllImport("kernel32.dll", SetLastError = true)] private static extern bool GetFileInformationByHandle(SafeFileHandle file, out FileInformation information);
+    private static (uint, uint, uint) FileId(SafeFileHandle file) => GetFileInformationByHandle(file, out var info)
+        ? (info.Volume, info.IndexHigh, info.IndexLow) : throw new TraceError("provider_invalid", "The provider file identity is unavailable.", Marshal.GetLastWin32Error());
+
+    private void CheckShape()
     {
         if (!System.IO.Path.IsPathFullyQualified(Path) || !File.Exists(Path)
             || (File.GetAttributes(Path) & FileAttributes.ReparsePoint) != 0
             || Sha256.Length != 64 || !Sha256.All(Uri.IsHexDigit))
             throw new TraceError("provider_invalid", "A provider needs an absolute ordinary executable path and SHA-256 identity.");
-        using var file = File.OpenRead(Path);
-        if (!Convert.ToHexString(SHA256.HashData(file)).Equals(Sha256, StringComparison.OrdinalIgnoreCase))
-            throw new TraceError("provider_integrity", "Configured provider content changed.");
     }
+
+    public void Pin()
+    {
+        if (pin is not null) throw new TraceError("provider_invalid", "A provider is pinned once per session.");
+        CheckShape();
+        SafeFileHandle handle;
+        // FileShare.Read fails if a writer already holds the file and refuses any later writer or delete.
+        try { handle = File.OpenHandle(Path, FileMode.Open, FileAccess.Read, FileShare.Read); }
+        catch (IOException) { throw new TraceError("provider_integrity", "The provider is open for writing and cannot be pinned."); }
+        try
+        {
+            using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+            var buffer = new byte[1 << 16];
+            for (long offset = 0, read; (read = RandomAccess.Read(handle, buffer, offset)) > 0; offset += read) hash.AppendData(buffer, 0, (int)read);
+            if (!Convert.ToHexString(hash.GetHashAndReset()).Equals(Sha256, StringComparison.OrdinalIgnoreCase))
+                throw new TraceError("provider_integrity", "Configured provider content changed.");
+            pinned = FileId(handle);
+            pin = handle;
+        }
+        catch { handle.Dispose(); throw; }
+    }
+
+    public void Verify()
+    {
+        if (pin is null || pin.IsClosed) throw new TraceError("provider_invalid", "The provider is not pinned for this session.");
+        CheckShape();
+        using var current = File.OpenHandle(Path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        if (FileId(current) != pinned) throw new TraceError("provider_integrity", "Configured provider content changed.");
+    }
+
+    public void Dispose() { pin?.Dispose(); pin = null; }
 }
 
 internal sealed record InputDeclaration(int[] Keys, int[] Unicode)

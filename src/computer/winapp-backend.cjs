@@ -398,20 +398,24 @@ class WinappBackend {
       || (window.sessionId !== undefined && native.sessionId !== window.sessionId)) fail('window_identity_changed', 'Native window lifetime changed.');
     return { ...window, processCreationTime: native.processCreationTime, sessionId: native.sessionId };
   }
+  // A pinned window (every session window: openWindow records the generation) is checked by the
+  // bridge guard, which proves the HWND still belongs to that process generation and session and
+  // returns the title. A bounds receipt carries the same guarded fields, so a check right after a
+  // bounds read reuses it instead of launching a provider. Every UIA read still rejects a coordinate
+  // space other than physical-screen-pixels before its bounds are used. An unpinned window keeps the
+  // engine's status read, the only check that binds its PID to the process name.
   async identity(window, signal, adjacentBounds) {
     if (!object(window) || !Number.isSafeInteger(window.pid) || window.pid <= 0 || typeof window.processName !== 'string') fail('invalid_window', 'A pinned HWND, PID and process name are required.');
-    const current = await this.command('status', ['-w', id(window.id)], signal);
-    if (id(current.hwnd) !== window.id || current.processId !== window.pid || current.processName !== window.processName) fail('window_identity_changed', 'Window no longer belongs to the selected process.');
-    if (current.coordinateSpace !== 'physical-screen-pixels') fail('coordinate_space', 'Engine coordinate space is not physical-screen-pixels.');
-    // Initial observation supplies a lazy bounds read so status is validated first.
-    const supplied = typeof adjacentBounds === 'function' ? await adjacentBounds() : adjacentBounds;
-    if (adjacentBounds !== undefined && !object(supplied)) fail('invalid_native_response', 'Expected the observation bounds receipt.');
-    if (window.processCreationTime !== undefined) {
-      // Only observe supplies bounds; other identity checks always read independently.
-      const native = adjacentBounds === undefined ? await this.bridge('identity', window, signal) : supplied;
-      if (native.hwnd !== window.id || native.pid !== window.pid || native.processCreationTime !== window.processCreationTime || native.sessionId !== window.sessionId) fail('window_identity_changed', 'The selected process identity changed.');
+    if (adjacentBounds !== undefined && !object(adjacentBounds)) fail('invalid_native_response', 'Expected the observation bounds receipt.');
+    if (window.processCreationTime === undefined) {
+      const current = await this.command('status', ['-w', id(window.id)], signal);
+      if (id(current.hwnd) !== window.id || current.processId !== window.pid || current.processName !== window.processName) fail('window_identity_changed', 'Window no longer belongs to the selected process.');
+      if (current.coordinateSpace !== 'physical-screen-pixels') fail('coordinate_space', 'Engine coordinate space is not physical-screen-pixels.');
+      return { ...window, title: current.windowTitle || '' };
     }
-    return { ...window, title: current.windowTitle || '' };
+    const native = adjacentBounds ?? await this.bridge('identity', window, signal);
+    if (native.hwnd !== window.id || native.pid !== window.pid || native.processCreationTime !== window.processCreationTime || native.sessionId !== window.sessionId) fail('window_identity_changed', 'The selected process identity changed.');
+    return { ...window, title: typeof native.title === 'string' ? native.title : window.title || '' };
   }
   // The tree is serialized once: every selector-backed node is an element carrying its
   // treeNodeId/parentNodeId; `hierarchy` holds only selectorless structural nodes.
@@ -686,19 +690,12 @@ class WinappBackend {
     if (documentElementId !== undefined && (includeScreenshot || selector(documentElementId) !== documentElementId)) fail('invalid_document_request', 'Document reads require accessibility-only observation.');
     if (includeScreenshot && (typeof screenshotPath !== 'string' || !path.isAbsolute(screenshotPath) || path.extname(screenshotPath).toLowerCase() !== '.png')) fail('invalid_screenshot_path', 'An absolute PNG output path is required.');
     if (!includeScreenshot && screenshotPath !== undefined) fail('invalid_screenshot_path', 'A screenshot path is not allowed when capture is omitted.');
-    let initialBounds;
-    const readInitialBounds = () => {
-      if (initialBounds === undefined) {
-        initialBounds = Promise.resolve(measure('geometry', () => this.bridge('bounds', window, signal)));
-        // An injected identity override can start this read and then throw first.
-        // Observe rejection now; normal flow still awaits the original promise.
-        void initialBounds.catch(() => {});
-      }
-      return initialBounds;
-    };
-    await measure('identity', () => this.identity(window, signal, readInitialBounds));
-    // Injected identity implementations may ignore the supplier; still read once.
-    let geometry = await (initialBounds ?? readInitialBounds());
+    // The controller has just run the guard, so the opening bounds receipt re-proves a pinned identity.
+    // An unpinned window is checked by name before its geometry is read.
+    const pinned = window.processCreationTime !== undefined;
+    if (!pinned) await measure('identity', () => this.identity(window, signal));
+    let geometry = await measure('geometry', () => this.bridge('bounds', window, signal));
+    if (pinned) await measure('identity', () => this.identity(window, signal, geometry));
     const restored = geometry.minimized === true;
     if (restored) {
       await measure('restore', () => this.bridge('activate', window, signal));
@@ -754,11 +751,12 @@ class WinappBackend {
     const pointWheel = action.type === 'scroll' && action.placement === 'point';
     if (action.type === 'accessibility_action' && !this.supervisor?.ready) fail('supervision_required', 'Named UIA actions require native supervision.', { outcome: 'not_dispatched' });
     if ((pointerClick || pointWheel) && !this.supervisor?.ready) fail('supervision_required', 'Extended pointer input requires declared-input native supervision.', { outcome: 'not_dispatched' });
-    await this.identity(window, signal);
+    // The controller has just run the guard; the bounds receipt after this read re-proves identity.
     // Reinspect at the server-retained depth and scope so deeply or narrowly observed controls remain targetable.
     const fresh = await this.inspect(window, signal, observation.depth ?? 8, { includeOffscreen: observation.includeOffscreen === true,
       ...(observation.rootElementId !== undefined ? { rootElementId: observation.rootElementId } : {}), interactiveOnly: observation.interactiveOnly === true });
     const geometry = await this.bridge('bounds', window, signal);
+    await this.identity(window, signal, geometry);
     if (geometry.enabled === false) fail('window_blocked', 'The selected window is disabled. Select its enabled dialog explicitly before input.', { outcome: 'not_dispatched' });
     const captured = captureBounds(bounds(geometry.frameBounds), fresh.bounds);
     if (geometry.minimized || !sameBounds(observation.uiaBounds, fresh.bounds) || !sameBounds(observation.frameBounds, geometry.frameBounds) || !sameBounds(observation.nativeWindowBounds, geometry.windowBounds) || !sameBounds(observation.bounds, captured)) fail('window_moved', 'Window moved or resized since observation. Observe again.');

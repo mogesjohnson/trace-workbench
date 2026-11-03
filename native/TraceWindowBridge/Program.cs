@@ -75,9 +75,11 @@ internal static partial class Program
             var owner = GetWindow(hwnd, 4 /* GW_OWNER */);
             if (args[0] == "identity")
             {
+                // The title is read between the two guards, so it belongs to the guarded window.
+                var title = Title(hwnd);
                 Guard(hwnd, pid);
                 Write(new { hwnd = raw.ToString(), pid, processCreationTime = creationTime, sessionId,
-                    ownerWindowId = owner == 0 ? null : owner.ToInt64().ToString(), method = "public-win32-identity" });
+                    ownerWindowId = owner == 0 ? null : owner.ToInt64().ToString(), title, method = "public-win32-identity" });
                 return 0;
             }
             if (args[0] == "activate") Activate(hwnd, pid);
@@ -105,6 +107,14 @@ internal static partial class Program
         if (!IsWindow(hwnd)) throw new BridgeException("window_closed", "The selected window no longer exists.");
         GetWindowThreadProcessId(hwnd, out var actualPid);
         if (actualPid != expectedPid) throw new BridgeException("window_identity_changed", "The window no longer belongs to the selected process.");
+    }
+
+    // For another process's window GetWindowText reads the stored caption and sends no message, so a
+    // hung target cannot block it. A longer caption is cut at 32,767 characters.
+    private static string Title(nint hwnd)
+    {
+        var text = new char[32768];
+        return new string(text, 0, Math.Clamp(GetWindowText(hwnd, text, text.Length), 0, text.Length - 1));
     }
 
     private static object ReadIdentity(nint hwnd, uint pid)
@@ -320,6 +330,7 @@ internal static partial class Program
     [DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool IsWindow(nint hwnd);
     [DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool IsWindowEnabled(nint hwnd);
     [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(nint hwnd, out uint pid);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int GetWindowText(nint hwnd, [Out] char[] text, int count);
     [DllImport("user32.dll")] private static extern nint GetWindow(nint hwnd, uint command);
     [DllImport("user32.dll", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool GetWindowRect(nint hwnd, out Rect rect);
     [DllImport("dwmapi.dll")] private static extern int DwmGetWindowAttribute(nint hwnd, uint attribute, out Rect value, int size);

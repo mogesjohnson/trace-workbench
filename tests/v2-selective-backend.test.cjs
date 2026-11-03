@@ -103,7 +103,7 @@ test('pinned no-image observation validates both bounds receipts and independent
     if (changed === 'none') {
       const result = await observation;
       assert.equal('screenshot' in result, false);
-      assert.deepEqual(calls, ['status', 'bounds', 'inspect:8', 'bounds', 'status', 'status', 'identity', 'inspect:1', 'bounds', 'focus']);
+      assert.deepEqual(calls, ['bounds', 'inspect:8', 'bounds', 'identity', 'inspect:1', 'bounds', 'focus']);
     } else {
       await assert.rejects(observation, { code: 'window_identity_changed' });
       assert.equal(calls.includes('identity'), changed === 'final');
