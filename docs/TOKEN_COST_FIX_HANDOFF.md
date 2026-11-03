@@ -23,6 +23,9 @@ work got and what comes next.
   `verbose`/`metrics`, the `computer setup` rerun), and one clause each in the observe
   (`ownedModal`/`followModal`) and act (`returnedToOwner`) tool descriptions.
 - Full suite on PR E: `node --test --test-timeout=300000 tests/*.test.cjs` (Node 26.2.0): **702 tests, 697 passed, 0 failed, 5 skipped** (METHOD-BROWSER env). `npm run check` passed (151 files).
+- #102's first CI run failed in `verify:archive`: `scripts/verify-archive-install.cjs` expected 6 tools.
+  Commit 4 of #102 sets it (and its test fixture) to 7.
+- **Review and merge: see [the review and merge handoff](TOKEN_COST_REVIEW_AND_MERGE.md).**
 - Next: owner review of the stack #98 → #99 → #100 → #101 → E; the three live checks below
   need owner approval; skill sync after 2.0 is installed; then the 16-task head-to-head.
 

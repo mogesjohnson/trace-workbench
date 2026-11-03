@@ -205,7 +205,7 @@ async function verify({ commit, root = ROOT, platform = process.platform, arch =
     const doctor = JSON.parse(await command('doctor', process.execPath, ['bin/trace.cjs', 'computer', 'doctor'], extracted));
     need(doctor.ready === true && doctor.integrity === 'verified', 'archive_provider_not_ready'); checks.providerReady = true;
     const computer = JSON.parse(await command('computer_mcp', process.execPath, ['scripts/smoke-computer-mcp.cjs'], extracted));
-    need(computer.result === 'pass' && computer.providerReady === true && computer.toolCount === 6 && computer.desktopActions === 0 && computer.modelRequests === 0, 'archive_computer_mcp_unverified');
+    need(computer.result === 'pass' && computer.providerReady === true && computer.toolCount === 7 && computer.desktopActions === 0 && computer.modelRequests === 0, 'archive_computer_mcp_unverified');
     checks.computerMcpTools = 6;
     const analysis = JSON.parse(await command('rea_mcp', process.execPath, ['scripts/smoke-mcp.cjs'], extracted));
     need(analysis.passed === true && analysis.toolCount === 207 && analysis.target?.unchanged === true
