@@ -19,6 +19,8 @@ Engine setup downloads Microsoft winapp CLI `0.7.1`, checks the pinned archive a
 
 Configuration adds `trace-computer` to Codex, Claude Code, Grok Build and Gemini CLI. It preserves unrelated parsed settings and refuses conflicting server entries or skill content. Client settings retain exact-byte `.trace.backup.*` files. Complete skill bundles use per-file ownership hashes and exact backups under the private `.trace/skill-backups` directory outside skill discovery. TOML layout is preserved where possible; inline-table layouts may be normalized. Inspect reported partial progress before retrying a failed write.
 
+**Expected Codex conflict.** Codex adds `enabled = true` to `[mcp_servers.trace-computer]` in `~/.codex/config.toml` when the server is turned on in Codex. Plan, apply and `scripts/sync-computer-skill.cjs` discovery then report Codex as `conflict` with reason `different_server_entry`, because the comparison is exact. If the entry's `command` and `args` match the other clients' `trace-computer` entries, Codex runs the same server. Any agent, Codex or Claude, treats this as expected. It does not remove the key, rewrite the entry or retry apply, and it reports the conflict as harmless. Any other difference in `command` or `args` is a real conflict for the owner to resolve.
+
 Use identical repeated `--client` options with both plan and apply to narrow the scope. Client names are `codex`, `claude_code`, `grok_build`, and `gemini_cli`.
 
 The configured command is the installed Node executable plus this checkout's absolute `bin/trace.cjs computer mcp` path. Keep the checkout and locked dependencies available. Reconnect the host's MCP connection after installation or code updates. The server runs over stdio; it does not supply a reasoning model.
