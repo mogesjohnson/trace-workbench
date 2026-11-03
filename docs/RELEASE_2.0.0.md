@@ -68,9 +68,33 @@ and three task-runs used 420k tokens of context
 - **Response size (P1-5).** Every result carries
   `_meta["trace/response"]`: `responseBytes` (JSON text plus base64 image bytes),
   `jsonTextBytes`, `imageBase64Bytes` and `imageCount`.
+- **Compact doctor (P2-1).** `trace_computer_doctor.support` lists action names with
+  `detail: "compact"` and the `sha256` of the full descriptor (sorted-key JSON). A
+  ready doctor was 2,431 characters in the test (5,957 before; bar 2,500).
+  `verbose: true` returns the full descriptor. Compatibility checks accept a compact
+  declaration only when its digest matches, and compare full (1.x) declarations as before.
+- **Opt-in metrics (P2-1).** `trace_computer_observe` returns `metrics` and
+  `_meta["trace/projection"]` only with `metrics: true`. An act refresh returns them only
+  if the consumed observation asked. An observation without metrics was about 700
+  characters shorter in the test.
+- **Notepad document readback (P2-2).** `documentElementId` now reads a `Document`/`Edit`
+  control without an AutomationId through `winapp ui get-value`. `ui get-property` must
+  first show the same element, `IsPassword: "False"` and at least one TextPattern
+  property, so the read never falls back to a label. Text is cut at 4,096 UTF-16 units.
+- **Launch (P2-3).** New tool `trace_computer_launch { app }` starts a registered App
+  Paths EXE by name (`.exe` optional) with `shell: false` under the desktop lease, and
+  returns its windows in the listing form for `open_session`. It fails with
+  `desktop_busy` while a session is open, `unknown_application` for an unregistered name
+  and `application_unsupported` for URIs and paths. After an `unknown` outcome a
+  relaunch is refused with `application_already_attempted`.
+- **Owned-modal follow (P2-4).** When the session window is disabled, `observe` and `act`
+  report `ownedModal` (a dialog owned by the window, same process lifetime).
+  `observe { followModal: true }` retargets the session under the same lease. When the
+  dialog closes after an action, the session returns to the owner and the result has
+  `returnedToOwner: true` with a fresh `observationId`.
 - **Discovery.** `trace_computer_doctor` reports `actResult` (with
   `closedTargetOutcome`), `observationModes.screenshotModes`, `observationScope`,
-  `windowListing` and `responseSize`.
+  `windowListing`, `responseSize`, `launch` and `ownedModal`.
 - **Earlier token cost fixes in this version.** These are listed separately in their
   own PR:
   - the UIA tree is serialized once
@@ -94,8 +118,13 @@ and three task-runs used 420k tokens of context
    adapter does it itself and the Claude host guard always asks for it.
 5. Treat `target_closed_after_dispatch` like `completed` for delivery: the input was
    sent. Verify the effect in the window or artifact that remains.
-6. Not-dispatched and unknown act results, cleanup results, the six tool names, action
-   forms, units and `support.contractVersion: 1` are unchanged.
+6. If you read `support.actions` from `trace_computer_doctor`, pass `verbose: true`.
+   If you read observation `metrics`, pass `metrics: true` to `trace_computer_observe`.
+7. Rerun `computer setup` after installing 2.0. The supervisor allow-list gained
+   `ui get-value` and `ui get-property`, and doctor reports `supervisor_stale` until the
+   supervisor is rebuilt.
+8. Not-dispatched and unknown act results, cleanup results, the six 1.x tool names,
+   action forms, units and `support.contractVersion: 1` are unchanged.
 
 See the [V2 compatibility boundary](COMPUTER_USE.md#v2-compatibility-boundary-200).
 
@@ -119,6 +148,12 @@ See the [V2 compatibility boundary](COMPUTER_USE.md#v2-compatibility-boundary-20
 - Read-only live checks with winapp 0.7.1 confirmed that subtree slugs equal those of
   a full inspect, that `-i` drops the window root, and that an unresolved selector can
   return the window root.
+- Synthetic MCP tests (`tests/v11-p2-followups.test.cjs`, 9 cases) cover the P2 bars:
+  the ready doctor (2,431 characters, bar 2,500), digest compatibility, opt-in metrics,
+  exact Notepad-shaped RichEdit readback (CRLF, tab, accented text, emoji) with its
+  refusals, the launch result (185 characters), the owned-modal hint (158 characters)
+  and a Save As follow that returns to the owner (425 characters) without re-listing.
+- No live Notepad readback, launch or modal follow has been run.
 - No live desktop measurement and no 16-task head-to-head rerun has been made for
   this candidate.
 - Live acceptance from 1.x is reused at its stated scope. The full-result path that

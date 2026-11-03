@@ -1,4 +1,4 @@
-# Token cost fixes — handoff (2 November 2026, session 5)
+# Token cost fixes — handoff (2 November 2026, session 6)
 
 Work for [the token cost incident](https://github.com/mogesjohnson/trace-workbench/pull/97) (`docs/OBSERVATION_TOKEN_COST_INCIDENT.md` on PR #97). The
 owner asked for every issue in PR #97 to be fixed. This file records how far the
@@ -8,7 +8,26 @@ work got and what comes next.
   measured) → PR #98 → PR #99 → PR #100 → PR D. C1 exists only on that stack.
 - Worktrees (siblings of the main checkout, `npm ci` run in each):
   `trace-workbench-worktrees/token-cost-fixes` (#98), `compact-act` (#99),
-  `p1-scoping` (#100), `p2-followups` (PR D).
+  `p1-scoping` (#100), `p2-followups` (PR D), `p2-docs` (PR E).
+
+## State at handoff (2 November 2026, session 6)
+
+- The owner said "go ahead" without choosing amend or stacked PR, so session 6 took the
+  option that needs no force-push: **PR E** (`fix/p2-docs`, draft, stacked on
+  `fix/p2-followups`, worktree `p2-docs`). PR #101 is unchanged at `94fe068`.
+- PR #101's CI failed at `94fe068`: `scripts/smoke-computer-mcp.cjs` still listed 6 tools.
+  PR E adds `trace_computer_launch` to it; `npm run test:computer:mcp` passed locally.
+  #101's own CI stays red until E is merged into it or the stack merges together.
+- PR E also holds the docs pass: the skill (and its manifest hash), `docs/COMPUTER_USE.md`,
+  `docs/OBSERVATION_METRICS.md`, `docs/RELEASE_2.0.0.md` (P2 changes, migration steps for
+  `verbose`/`metrics`, the `computer setup` rerun), and one clause each in the observe
+  (`ownedModal`/`followModal`) and act (`returnedToOwner`) tool descriptions.
+- Full suite on PR E: `node --test --test-timeout=300000 tests/*.test.cjs` (Node 26.2.0): **702 tests, 697 passed, 0 failed, 5 skipped** (METHOD-BROWSER env). `npm run check` passed (151 files).
+- #102's first CI run failed in `verify:archive`: `scripts/verify-archive-install.cjs` expected 6 tools.
+  Commit 4 of #102 sets it (and its test fixture) to 7.
+- **Review and merge: see [the review and merge handoff](TOKEN_COST_REVIEW_AND_MERGE.md).**
+- Next: owner review of the stack #98 → #99 → #100 → #101 → E; the three live checks below
+  need owner approval; skill sync after 2.0 is installed; then the 16-task head-to-head.
 
 ## State at handoff (2 November 2026, session 4)
 
@@ -279,8 +298,7 @@ work got and what comes next.
 1. ~~P0-5~~ done (see above).
 2. ~~P0-3 and P0-4~~ done in PR B (see below).
 3. ~~P1~~ done in PR #100 (see above).
-4. **P2.** P2-1 and P2-2 are done in PR D (see the top). P2-3 (launch) and P2-4
-   (modal follow) are next; see the design notes at the top.
+4. ~~P2~~ done in PR #101; docs and the smoke-test fix in PR E (session 6).
 5. Then rerun the 16-task head-to-head. TRACE's share must be under 100k tokens.
 
 PR shape (VERSION_CONTROL.md): 2–4 commits per PR. Suggested split: PR A is
