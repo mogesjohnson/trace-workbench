@@ -51,7 +51,7 @@ async function configuration() {
 // One detached native owner per desktop session. The private pipe to this process is its only
 // command channel; public MCP requests never supply executables, provider names or held inputs.
 class NativeSupervisor {
-  constructor({ binaryPath = DEFAULT_SUPERVISOR, spawnImpl = spawn, verify = verifySupervisorFiles, configure = configuration, parentIdentity, onDispatch = () => {}, onTestReleaseReady = () => {}, onStopped = () => {} } = {}) {
+  constructor({ binaryPath = DEFAULT_SUPERVISOR, spawnImpl = spawn, verify = verifySupervisorFiles, configure = configuration, parentIdentity, onDispatch = () => {}, onTestReleaseReady = () => {}, onStopped = () => {}, recoverImpl } = {}) {
     this.binaryPath = binaryPath;
     this.spawnImpl = spawnImpl;
     this.verify = verify;
@@ -68,6 +68,7 @@ class NativeSupervisor {
     this.ready = false;
     this.stopping = false;
     this.releaseErrors = new Map();
+    this.recoverImpl = recoverImpl ?? (mode => recovery(mode, { binaryPath: this.binaryPath }));
     this.abort = new AbortController();
     this.signal = this.abort.signal;
   }
@@ -218,7 +219,7 @@ class NativeSupervisor {
     finally { clearTimeout(timer); }
   }
   async release(sessionId) {
-    if (this.releaseErrors.has(sessionId)) throw this.releaseErrors.get(sessionId);
+    if (this.releaseErrors.has(sessionId)) return this.releaseAfterRecovery(sessionId);
     if (!this.child || this.owner !== sessionId) return;
     this.stopping = true;
     this.ready = false;
@@ -247,6 +248,18 @@ class NativeSupervisor {
       throw error;
     }
     return { cleanup: 'confirmed' };
+  }
+  // A failed release stays cached until durable state proves it resolved, for example by
+  // `computer recover --apply` in another process. Anything less rethrows the original error.
+  async releaseAfterRecovery(sessionId) {
+    const cached = this.releaseErrors.get(sessionId);
+    if (this.child !== null) throw cached;
+    let state;
+    try { state = await this.recoverImpl('--check'); } catch { throw cached; }
+    if (state?.recoveryRequired !== false || state?.ready !== true) throw cached;
+    this.releaseErrors.delete(sessionId);
+    if (this.owner === sessionId) this.owner = null;
+    return { cleanup: 'confirmed', recoveredExternally: true };
   }
   indicator() {
     const native = this;

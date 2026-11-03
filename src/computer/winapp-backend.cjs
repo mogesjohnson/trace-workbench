@@ -12,7 +12,7 @@ const ROOT = path.resolve(__dirname, '../..');
 const DEFAULT_BINARY = path.join(ROOT, '.runtime', 'winapp', `v${pin.version}`, 'bin', 'winapp.exe');
 const DEFAULT_BRIDGE = path.join(ROOT, '.runtime', 'window-bridge', 'bin', 'TraceWindowBridge.exe');
 const PRUNABLE = new Set(['Group', 'Separator', 'Pane']);
-const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj', 'native/TraceWindowBridge/Capture.cs', 'native/TraceWindowBridge/Applications.cs'];
+const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj', 'native/TraceWindowBridge/Capture.cs', 'native/TraceWindowBridge/Applications.cs', 'native/TraceWindowBridge/Packages.cs'];
 
 class BackendError extends Error {
   constructor(code, message, details = {}) {
@@ -265,7 +265,7 @@ class WinappBackend {
   async bridge(verb, window, signal, parameters = []) {
     const pointer = verb === 'click' || verb === 'wheel';
     if (pointer && !this.supervisor?.ready) fail('supervision_required', 'New pointer input requires a ready native owner.', { outcome: 'not_dispatched' });
-    const standalone = ['info', 'apps', 'process'].includes(verb);
+    const standalone = ['info', 'apps', 'process', 'packaged', 'packaged-identities', 'activate-package'].includes(verb);
     const args = standalone ? [verb, ...parameters] : [verb, id(window.id), String(window.pid), ...parameters];
     const mutating = verb === 'activate' || pointer;
     if (this.supervisor && mutating && !this.supervisor.ready) fail('session_stopped', 'A ready native session is required before activation.', { outcome: 'not_dispatched' });
@@ -303,6 +303,8 @@ class WinappBackend {
         const inspected = await this.run(this.supervisor.binaryPath, ['status'], { signal, maxOutputBytes: 32768 });
         supervision = parseJson(inspected.stdout, inspected.stderr, inspected.exitCode);
         if (supervision.recoveryRequired === true) fail('input_recovery_required', 'Durable native recovery is required. Inspect computer recover --check before --apply.');
+        if (this.supervisor.releaseErrors?.size) supervision = { ...supervision, code: 'release_pending_recovery',
+          nextStep: 'A session release failed earlier. Recovery is clear now; close that session to release the desktop.' };
       }
       const runtimes = await this.run('dotnet', ['--list-runtimes'], { signal, maxOutputBytes: 128 * 1024 });
       if (runtimes.exitCode !== 0 || !/^Microsoft\.WindowsDesktop\.App 9\.\d+\.\d+\s+\[/m.test(runtimes.stdout)) fail('indicator_runtime', 'The .NET 9 Windows Desktop runtime is required by the visible activity indicator.');
