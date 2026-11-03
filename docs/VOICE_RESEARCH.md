@@ -109,7 +109,9 @@ Without those lost words, route 2b was word-perfect and base.en misheard "set a"
    `phone-transcribe` with base.en. On the phone it transcribed the jfk sample exactly (11 s of audio
    in 4.2 s, model load included) and the noisy command clips in about 3.6 s each. The
    `phone_transcribe` MCP tool returned the same text from the PC over SSH
-   ([evidence](../evidence/research/a8-phone-transcribe-2026-11-03.json)). Not run yet: a live
+   ([evidence](../evidence/research/a8-phone-transcribe-2026-11-03.json)). small.en is installed
+   too (`install-whisper.sh small.en`): `phone-transcribe -m small.en` got the jfk words exact in
+   about 16.5 s (1.5× real time), on the phone and over SSH from the PC. Not run yet: a live
    `--record` utterance by the owner (microphone stays ask-first) and the call from phone Claude.
 4. claude-voice: add `EXTRA_PREFER_OFFLINE = true` (owner approved). Done 3 Nov 2026 in the
    separate private claude-voice repository (its PR 1). The owner installed the build and spoken
