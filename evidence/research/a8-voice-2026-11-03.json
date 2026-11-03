@@ -1,0 +1,84 @@
+{
+ "observedDate": "2026-11-03",
+ "device": {
+  "model": "SM-S918U (S23 Ultra)",
+  "android": "17",
+  "sdk": 37,
+  "build": "CP2A.260605.016.S918USQU8GZIF",
+  "googleTts": "googletts.google-speech-apk_20260928.02_p0.989914902",
+  "androidSystemIntelligence": "C.8.playstore.oemfull.993387747",
+  "whisperCpp": "1.9.5-dev (482279b), built for arm64, run from adb shell, 4 threads"
+ },
+ "testSet": {
+  "clips": 40,
+  "librispeech_test_clean": 20,
+  "piper_tts_commands_clean": 10,
+  "piper_tts_commands_pink_noise_10db": 10,
+  "total_audio_seconds": 227.1,
+  "format": "16 kHz mono PCM16 WAV",
+  "note": "No owner voice. Commands are synthetic (Piper en_US-lessac, en_GB-alan). Raw audio and per-clip transcripts kept off Git."
+ },
+ "method": {
+  "whisper": "whisper-cli per clip, fresh process (model load included), wall clock from /proc/uptime at 10 ms resolution. small.en run was interrupted by a USB disconnect and resumed; 20 clips in each half.",
+  "android": "Test app trace.a8.stt feeds the WAV to SpeechRecognizer through EXTRA_AUDIO_SOURCE at real time, plus 0.5 s silence; one app launch per clip, 2 s gap. Time is from startListening to onResults, so it includes the clip length. Single-utterance session (EXTRA_SEGMENTED_SESSION false).",
+  "wer": "score.py: lowercase, punctuation stripped, numbers matched as spoken or digit by digit, British spellings folded.",
+  "permission": "Without RECORD_AUDIO the on-device recognizer still worked; the default recognizer returned ERROR_INSUFFICIENT_PERMISSIONS (9) on every clip. RECORD_AUDIO was granted to the test app with owner approval; the microphone was never opened by the app."
+ },
+ "findings": {
+  "fileInputAccepted": "Android 17 accepts audio from a file descriptor (EXTRA_AUDIO_SOURCE) for both on-device and default recognizers.",
+  "offlineFlagUsesOnDeviceModel": "default + EXTRA_PREFER_OFFLINE matched on-device transcripts word for word on 26 of 27 clips; default without the flag matched only 20 of 39.",
+  "longUtterancesCut": "Android routes stop at the first pause in single-utterance mode: 4 (on-device), 4 (default), 8 (default+offline) LibriSpeech clips returned under 70% of the reference words. This drives their LibriSpeech WER, not word accuracy.",
+  "onDeviceReliability": "on-device API (createOnDeviceSpeechRecognizer) failed 13 of 40 clips with ERROR_CLIENT (5) or NO_MATCH (7) even with one launch per clip; default+offline failed 1 of 40."
+ },
+ "airplaneMode": {
+  "clip": "cmd04_clean",
+  "state": "airplane on, Wi-Fi off, ping 8.8.8.8 failed",
+  "results": {
+   "android_ondevice": "ok, same text",
+   "android_default": "ok, same text as on-device (capitalised on-device style; online it returned lowercase server-style text)",
+   "android_default_offline": "ok, same text",
+   "whisper_base.en": "ok"
+  },
+  "note": "First attempt invalid: Samsung kept Wi-Fi on in airplane mode. Networking restored and verified after."
+ },
+ "routes": {
+  "tiny.en": {
+   "all_40": {"WER_librispeech": "4.5%", "WER_piper_clean": "7.6%", "WER_piper_noisy_10db": "11.4%", "WER_ALL": "5.8%", "mean_ms": "1387", "mean_x_realtime": "0.29", "clips": "40"},
+   "commands_20": {"WER_librispeech": "-", "WER_piper_clean": "7.6%", "WER_piper_noisy_10db": "11.4%", "WER_ALL": "9.5%", "mean_ms": "1094", "mean_x_realtime": "0.36", "clips": "20"},
+   "latency_commands": {"median_ms_after_recording_ends": 1095, "note": "batch: starts after the recording ends"}
+  },
+  "base.en": {
+   "all_40": {"WER_librispeech": "3.8%", "WER_piper_clean": "6.3%", "WER_piper_noisy_10db": "7.6%", "WER_ALL": "4.6%", "mean_ms": "2510", "mean_x_realtime": "0.54", "clips": "40"},
+   "commands_20": {"WER_librispeech": "-", "WER_piper_clean": "6.3%", "WER_piper_noisy_10db": "7.6%", "WER_ALL": "7.0%", "mean_ms": "2084", "mean_x_realtime": "0.68", "clips": "20"},
+   "latency_commands": {"median_ms_after_recording_ends": 2070, "note": "batch: starts after the recording ends"}
+  },
+  "small.en-q5_1": {
+   "all_40": {"WER_librispeech": "3.6%", "WER_piper_clean": "3.8%", "WER_piper_noisy_10db": "5.1%", "WER_ALL": "3.8%", "mean_ms": "9675", "mean_x_realtime": "2.21", "clips": "40"},
+   "commands_20": {"WER_librispeech": "-", "WER_piper_clean": "3.8%", "WER_piper_noisy_10db": "5.1%", "WER_ALL": "4.4%", "mean_ms": "9054", "mean_x_realtime": "2.95", "clips": "20"},
+   "latency_commands": {"median_ms_after_recording_ends": 8965, "note": "batch: starts after the recording ends"}
+  },
+  "small.en": {
+   "all_40": {"WER_librispeech": "2.9%", "WER_piper_clean": "3.8%", "WER_piper_noisy_10db": "5.1%", "WER_ALL": "3.3%", "mean_ms": "7378", "mean_x_realtime": "1.71", "clips": "40"},
+   "commands_20": {"WER_librispeech": "-", "WER_piper_clean": "3.8%", "WER_piper_noisy_10db": "5.1%", "WER_ALL": "4.4%", "mean_ms": "7181", "mean_x_realtime": "2.35", "clips": "20"},
+   "latency_commands": {"median_ms_after_recording_ends": 6190, "note": "batch: starts after the recording ends"}
+  },
+  "android_ondevice": {
+   "all_40": {"WER_librispeech": "28.8%", "WER_piper_clean": "2.9%", "WER_piper_noisy_10db": "8.6%", "WER_ALL": "23.4%", "mean_ms": "5037", "mean_x_realtime": "0.92", "clips": "27"},
+   "commands_20": {"WER_librispeech": "-", "WER_piper_clean": "2.9%", "WER_piper_noisy_10db": "8.6%", "WER_ALL": "6.7%", "mean_ms": "3214", "mean_x_realtime": "1.02", "clips": "13"},
+   "latency_commands": {"median_total_ms": 2988, "median_ms_after_audio_end": 124, "note": "streaming: total includes the clip being fed in real time"},
+   "errors_by_code": {"5": 12, "7": 1}
+  },
+  "android_default": {
+   "all_40": {"WER_librispeech": "23.7%", "WER_piper_clean": "5.1%", "WER_piper_noisy_10db": "7.6%", "WER_ALL": "19.2%", "mean_ms": "5305", "mean_x_realtime": "1.00", "clips": "40"},
+   "commands_20": {"WER_librispeech": "-", "WER_piper_clean": "5.1%", "WER_piper_noisy_10db": "7.6%", "WER_ALL": "6.3%", "mean_ms": "3439", "mean_x_realtime": "1.10", "clips": "20"},
+   "latency_commands": {"median_total_ms": 3159, "median_ms_after_audio_end": 184, "note": "streaming: total includes the clip being fed in real time"},
+   "errors_by_code": {}
+  },
+  "android_default_offline": {
+   "all_40": {"WER_librispeech": "31.8%", "WER_piper_clean": "5.1%", "WER_piper_noisy_10db": "7.1%", "WER_ALL": "25.3%", "mean_ms": "4760", "mean_x_realtime": "0.88", "clips": "39"},
+   "commands_20": {"WER_librispeech": "-", "WER_piper_clean": "5.1%", "WER_piper_noisy_10db": "7.1%", "WER_ALL": "6.0%", "mean_ms": "3178", "mean_x_realtime": "1.01", "clips": "19"},
+   "latency_commands": {"median_total_ms": 3007, "median_ms_after_audio_end": 25, "note": "streaming: total includes the clip being fed in real time"},
+   "errors_by_code": {"7": 1}
+  }
+ }
+}
