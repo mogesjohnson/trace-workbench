@@ -180,6 +180,10 @@ The [method library](../src/method/README.md) composes these six tools with read
 
 To recover configuration, close the affected host, restore its matching backup, and reconnect. Restore the shared skill and discovery copies together if rolling back. Existing differing entries are reported as conflicts rather than silently replaced.
 
+## Known issue: observation token cost (code red)
+
+Observations and action results are currently too large for sustained agent use: a 3-task desktop run consumed most of a 420k-token context. Causes, measurements and required fixes are in [the incident report](OBSERVATION_TOKEN_COST_INCIDENT.md). Until those fixes land, request the smallest `accessibilityDepth` that contains your target (start at 2) and prefer `mode: "accessibility"` for checks that do not need input authority.
+
 ## Verify
 
 [Observation metrics and the fixed measurement recipe](OBSERVATION_METRICS.md) describe numeric cost diagnostics. Preparing instrumentation does not establish a latency improvement or start a desktop benchmark.
