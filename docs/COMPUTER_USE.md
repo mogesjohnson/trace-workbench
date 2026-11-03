@@ -27,9 +27,9 @@ The configured command is the installed Node executable plus this checkout's abs
 
 1. Check `trace_computer_doctor`, then discover windows with `trace_computer_list_windows`.
 2. Open a session for the exact returned `windowId`. A cyan-to-violet screen-edge glow indicates TRACE owns a desktop session. It stays above activated windows until session cleanup.
-3. Observe and inspect the returned PNG and accessibility elements. `accessibilityDepth` (1–32, default 8) reads deeper trees; the response reports the effective depth and truncation, and the action reuses that depth.
+3. Observe and inspect the returned PNG and accessibility elements. `accessibilityDepth` (1–32, default 8) reads deeper trees; start at 2 and deepen only when needed. The response reports the effective depth and truncation, and the action reuses that depth. The focused control and its ancestors are always included. `screenshot` chooses the image: `full` (default), `scaled` (longest edge at most 1280 px, with `screenshot.scale.factor`; multiply image pixels by it for window coordinates) or `none`. A full-mode observation with `screenshot: "none"` still authorizes one action: dispatch guards use UIA bounds and DWM geometry, not pixels.
 4. Perform one action with that `sessionId` and latest `observationId`. Coordinates are integer pixels relative to the returned image; element bounds are physical screen coordinates.
-5. Inspect the new observation before continuing. `not_dispatched` means the requested input was never sent (any preparatory activation is listed separately); `unknown` means it may have been. After either, observe again before deciding; never replay automatically.
+5. Read the act result before continuing. Since 2.0.0 it is compact by default (`returnObservation: "summary"`): outcome, `nativeResult`, the next `observationId`, and a `summary` with the compact focus, target state, a changed title, the element count and a bounded element diff (`changes`, at most 15 entries per kind). TRACE always re-observes server-side after the action, so that `observationId` authorizes one further action. Request `returnObservation: "full"` for the 1.x result with the complete `observation` (and the image setting of the consumed observation), or `"none"` for only the outcome and `observationId`. Observe again when the summary is not enough. `not_dispatched` means the requested input was never sent (any preparatory activation is listed separately); `unknown` means it may have been. After either, observe again before deciding; never replay automatically.
 6. Close the session to release desktop ownership. The target application remains open.
 
 ### Cleanup result contract (V1)
@@ -112,6 +112,16 @@ The method adapter separately reports configured transport/schema compatibility,
 
 The adapter reports the accepted server's observation TTL; the native server enforces it. The method coordinator retains its separate freshness guard. Capability discovery does not certify that an individual capture is still fresh at dispatch.
 
+## V2 compatibility boundary (2.0.0)
+
+Package `2.0.0` changes the default `trace_computer_act` result, which the V1 boundary below treats as a major change ([token cost incident](https://github.com/mogesjohnson/trace-workbench/pull/97), P0-3). The six tool names, action forms, units, authority, outcome and cleanup meanings are otherwise unchanged, and `support.contractVersion` stays 1.
+
+- **Act result.** `returnObservation` is `summary` by default. A completed result no longer contains `observation`; it contains `observationId` and `summary` instead, and no image. `returnObservation: "full"` restores the 1.x result. `"none"` returns only `actionId`, `outcome`, `verification` and `observationId`. Not-dispatched and unknown results are unchanged.
+- **Observation image.** `trace_computer_observe` accepts `screenshot: "none" | "scaled" | "full"` (default `full`, so the 1.x form is unchanged). Accessibility mode allows only `none`; screenshot mode does not allow `none`.
+- **Discovery.** `trace_computer_doctor` advertises `actResult.returnObservation` and `observationModes.screenshotModes`. Older servers reject both new fields under their strict schemas.
+
+**Migration.** A client that reads `result.observation` after `trace_computer_act` must pass `returnObservation: "full"`, but only when doctor advertises `actResult.returnObservation` containing `full`. `src/computer/act-compat.cjs` implements this check. The method adapter (`src/method/trace-adapter.cjs`) and the acceptance scripts use it, so they keep their post-action evidence against 2.x servers and stay compatible with 1.x servers. Agents that only need the next `observationId` can use the default. The [2.0.0 release notes](RELEASE_2.0.0.md) repeat this.
+
 ## V1 compatibility boundary
 
 For the development branch's opt-in current-session capture policy, see
@@ -125,7 +135,7 @@ Results carry matching JSON text and `structuredContent`. Screenshot metadata in
 
 Native observations authorize one action within the server TTL (default 60 seconds), with target/geometry/focus checks at dispatch. Opt-in immediate read-only method verification can use validated post-action evidence within its stricter age/field/lifecycle policy; it cannot authorize future input. Settled checks, uncertain results and final effect verification require fresh observations. See [the method API](../src/method/README.md) for callback and checkpoint obligations.
 
-Package `1.x` preserves these documented forms and meanings. Additive optional diagnostic/result fields are compatible; clients should tolerate unknown result metadata while requiring known authority and cleanup proof. Removing accepted inputs/tools or changing units, authority, outcome or cleanup meanings requires a new major package version and migration notes. Reject unsupported action/support versions rather than guessing. Schema string lengths count code points; shared runtime UTF-16 validation remains authoritative.
+Package `1.x` preserved these documented forms and meanings; `2.x` keeps them except for the act result described above. Additive optional diagnostic/result fields are compatible; clients should tolerate unknown result metadata while requiring known authority and cleanup proof. Removing accepted inputs/tools or changing units, authority, outcome or cleanup meanings requires a new major package version and migration notes. Reject unsupported action/support versions rather than guessing. Schema string lengths count code points; shared runtime UTF-16 validation remains authoritative.
 
 `support.contractVersion: 1` identifies the declared TRACE action-support descriptor, separately from the package version, MCP protocol version and pinned engine version. Unknown legacy support remains explicitly unknown; contradictory descriptors disable the method route. Internal helpers, transient evidence tokens and native implementation files are not a serialized compatibility surface. Skill guidance is shipped as a manifest-owned bundle; source changes alone do not prove personal installed copies were updated.
 

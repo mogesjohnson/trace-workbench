@@ -29,7 +29,7 @@ async function fixture(t, overrides = {}, indicatorOverrides = {}, expectedClose
     async doctor() { return { ready: true }; },
     async listWindows() { return [{ ...window }]; },
     async observe({ screenshotPath }) {
-      await fs.writeFile(screenshotPath, png);
+      if (screenshotPath) await fs.writeFile(screenshotPath, png);
       return { window: { ...window }, bounds: { ...window.bounds }, elements: [{ id: 'input', enabled: true }], screenshot: { path: screenshotPath } };
     },
     async act(request) { dispatched.push(request.action); return { performed: true }; },
@@ -71,7 +71,7 @@ test('one action consumes observation and returns a new observation; stale IDs n
   const { controller, dispatched } = await fixture(t);
   const session = await open(controller);
   const observation = await controller.observe(session);
-  const request = { ...session, observationId: observation.observationId, action: { type: 'click', x: 0, y: 0 } };
+  const request = { ...session, observationId: observation.observationId, action: { type: 'click', x: 0, y: 0 }, returnObservation: 'full' };
   const result = await controller.act(request);
   assert.equal(result.outcome, 'completed');
   assert.notEqual(result.observation.observationId, observation.observationId);

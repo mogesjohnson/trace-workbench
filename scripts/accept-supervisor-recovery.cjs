@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 'use strict';
+const { createActCompat } = require('../src/computer/act-compat.cjs');
 
 // Opt-in real recovery matrix. The normal test suite imports only its pure plan/parser helpers.
 // Every held operation crosses the real stdio MCP/server/controller/backend/native-owner path.
@@ -146,7 +147,7 @@ async function connectCell(directory, mode, failure) {
   await client.connect(transport, { timeout: 15000 });
   return { client, transport, controlPath,
     journal: async () => { try { return JSON.parse(await fs.readFile(journalPath, 'utf8')); } catch (error) { if (error.code === 'ENOENT') return { events: [] }; throw error; } },
-    call: async (name, args = {}, options = {}) => stateOf(await client.callTool({ name: `trace_computer_${name}`, arguments: args }, { timeout: 30000, ...options })),
+    call: createActCompat().wrap(async (name, args = {}, options = {}) => stateOf(await client.callTool({ name: `trace_computer_${name}`, arguments: args }, { timeout: 30000, ...options }))),
     async close() { await client.close().catch(() => {}); await transport.close().catch(() => {}); },
   };
 }

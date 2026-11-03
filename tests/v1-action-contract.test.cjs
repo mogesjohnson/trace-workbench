@@ -43,7 +43,7 @@ test('unsupported wheel does not consume the controller observation', async t =>
   const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jVdAAAAAASUVORK5CYII=', 'base64');
   const window = { id: '101', pid: 123, processName: 'fixture', title: 'Test', bounds: { x: 0, y: 0, width: 1, height: 1 } };
   let dispatched = 0;
-  const backend = { async listWindows() { return [window]; }, async observe({ screenshotPath }) { await fs.writeFile(screenshotPath, png); return { window, bounds: window.bounds, elements: [], screenshot: { path: screenshotPath } }; }, async act() { dispatched++; return { performed: true }; } };
+  const backend = { async listWindows() { return [window]; }, async observe({ screenshotPath }) { if (screenshotPath) await fs.writeFile(screenshotPath, png); return { window, bounds: window.bounds, elements: [], screenshot: { path: screenshotPath } }; }, async act() { dispatched++; return { performed: true }; } };
   const indicator = { signal: new AbortController().signal, async start() { return { active: true, monitors: 1, protocol: 1 }; }, assertActive() {}, async stop() {} };
   const lease = { async acquire() {}, async assert() {}, async release() {} };
   const controller = createComputerController({ backend, indicator, lease, runtimeDirectory: directory });
