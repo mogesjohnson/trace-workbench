@@ -18,3 +18,11 @@ test('openPorts finds a listening localhost port and honours skip', async (t) =>
   assert.deepEqual(await openPorts({ from: port - 2, to: port + 2 }), [port]);
   assert.deepEqual(await openPorts({ from: port, to: port, skip: [port] }), []);
 });
+
+test('watcherCommand restarts one detached (exact name, not its own shell) trust watcher from the pushed dex', () => {
+  const { watcherCommand } = require('../scripts/phone-boot-adb.cjs');
+  const cmd = watcherCommand();
+  assert.ok(cmd.startsWith("pkill -f '^tracewifitrust$'; "));
+  assert.ok(cmd.includes('CLASSPATH=/data/local/tmp/trace-wifi.dex nohup app_process / --nice-name=tracewifitrust trace.phone.WifiTrust'));
+  assert.ok(cmd.endsWith('< /dev/null &'));
+});

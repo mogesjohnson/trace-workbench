@@ -5,12 +5,18 @@
 // install-phone-claude.cjs installs). Shizuku turns Wireless debugging on at boot on a trusted
 // Wi-Fi network; this script finds that TLS port on 127.0.0.1 (mDNS does not work inside proot),
 // connects Debian's adb (its key is already paired), reopens port 5555 with `adb tcpip 5555`
-// and connects to 127.0.0.1:5555, so phone Claude reaches the phone as in task A3.
+// and connects to 127.0.0.1:5555, so phone Claude reaches the phone as in task A3. Then it starts
+// the Wi-Fi trust watcher (trace.phone.WifiTrust in the agent dex), which marks each newly joined
+// network "always allow" for Wireless debugging (owner decision, 2 Nov 2026).
 // Usage: node phone-boot-adb.cjs [--wait-sec 300]
 const net = require('node:net');
 const { spawnSync } = require('node:child_process');
 
 const TARGET = '127.0.0.1:5555';
+const DEX = '/opt/trace/.runtime/phone/build/classes.dex';
+const REMOTE_DEX = '/data/local/tmp/trace-wifi.dex';
+const WATCH_LOG = '/data/local/tmp/trace-wifi.log';
+const WATCH_NAME = 'tracewifitrust';
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function adb(...args) {
@@ -63,6 +69,19 @@ function connectFirst(ports) {
   return null;
 }
 
+// Shell command that (re)starts the trust watcher detached from the adb session. The process is
+// named WATCH_NAME, matched as the whole command line (an unanchored -f also matches this command's own shell).
+function watcherCommand() {
+  return `pkill -f '^${WATCH_NAME}$'; CLASSPATH=${REMOTE_DEX} nohup app_process / --nice-name=${WATCH_NAME} trace.phone.WifiTrust`
+    + ` > ${WATCH_LOG} 2>&1 < /dev/null &`;
+}
+
+function startWatcher(log, serial = TARGET) {
+  log(adb('-s', serial, 'push', DEX, REMOTE_DEX));
+  adb('-s', serial, 'shell', watcherCommand());
+  log(`trust watcher: ${adb('-s', serial, 'shell', `pgrep -f '^${WATCH_NAME}$'`) || 'not running'}`);
+}
+
 async function main(argv) {
   const waitIndex = argv.indexOf('--wait-sec');
   const waitSec = waitIndex >= 0 ? Number(argv[waitIndex + 1]) : 300;
@@ -71,7 +90,7 @@ async function main(argv) {
   const deadline = Date.now() + waitSec * 1000;
   while (Date.now() < deadline) {
     adb('connect', TARGET);
-    if (isDevice(TARGET)) { log(`${TARGET} device (port 5555 already open)`); return 0; }
+    if (isDevice(TARGET)) { log(`${TARGET} device (port 5555 already open)`); startWatcher(log); return 0; }
     adb('disconnect', TARGET);
     const ports = await openPorts();
     const tls = connectFirst(ports);
@@ -80,7 +99,7 @@ async function main(argv) {
       log(adb('-s', tls, 'tcpip', '5555'));
       for (let i = 0; i < 10 && !isDevice(TARGET); i += 1) { await sleep(1000); adb('connect', TARGET); }
       adb('disconnect', tls);
-      if (isDevice(TARGET)) { log(`${TARGET} device`); log(adb('devices', '-l')); return 0; }
+      if (isDevice(TARGET)) { log(`${TARGET} device`); log(adb('devices', '-l')); startWatcher(log); return 0; }
       log(`${TARGET} not reachable after tcpip`);
     } else {
       log(`no adb port among ${ports.length} open ports; waiting for Wireless debugging`);
@@ -94,4 +113,4 @@ async function main(argv) {
 if (require.main === module) {
   main(process.argv.slice(2)).then((code) => { process.exitCode = code; }, (error) => { console.error(error); process.exitCode = 1; });
 }
-module.exports = { parseDevices, openPorts, TARGET };
+module.exports = { parseDevices, openPorts, watcherCommand, TARGET };
