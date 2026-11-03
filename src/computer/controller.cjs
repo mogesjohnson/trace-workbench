@@ -157,6 +157,23 @@ const launchName = value => String(value).toLowerCase().replace(/\.exe$/, '');
 // Live 2026-11-03: a window listing takes about 0.7 s and a handed-off window can take several
 // seconds to appear, so launch uses the launcher's largest allowed deadline.
 const LAUNCH_TIMEOUT_MS = 15000;
+// Packaged apps launch by AUMID. Friendly names are a fixed map; each is verified against the
+// package catalog before activation. Protocol pages are an exact ms-settings: allowlist.
+const SETTINGS_AUMID = 'windows.immersivecontrolpanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel';
+const PACKAGED_NAMES = new Map([['settings', SETTINGS_AUMID]]);
+const AUMID = /^[A-Za-z0-9.-]{3,50}_[a-z0-9]{13}![A-Za-z][A-Za-z0-9.-]{0,63}$/;
+const SETTINGS_PAGES = Object.freeze(['display', 'sound', 'notifications', 'power', 'storage', 'about', 'bluetooth',
+  'network-status', 'personalization', 'dateandtime', 'windowsupdate']);
+function packagedTarget(app) {
+  const page = /^ms-settings:(.*)$/i.exec(app);
+  if (page) {
+    if (!SETTINGS_PAGES.includes(page[1])) throw fail('application_unsupported', `Only these ms-settings: pages launch: ${SETTINGS_PAGES.join(', ')}. Other URIs and paths are unsupported.`);
+    return { aumid: SETTINGS_AUMID, uri: `ms-settings:${page[1]}`, name: `ms-settings:${page[1]}` };
+  }
+  if (AUMID.test(app)) return { aumid: app, name: app.toLowerCase() };
+  const known = PACKAGED_NAMES.get(app.toLowerCase());
+  return known ? { aumid: known, name: app.toLowerCase() } : null;
+}
 
 function createComputerController(options = {}) {
   const captureKeepLast = parseCaptureKeepLast(options.captureKeepLast === undefined ? process.env.TRACE_CAPTURE_KEEP_LAST : options.captureKeepLast);
@@ -179,6 +196,21 @@ function createComputerController(options = {}) {
   const uncertainLaunches = new Set();
   const createApplications = options.createApplications ?? (() => require('../method/installed-applications.cjs')
     .createInstalledApplications({ backend, lease, timeoutMs: LAUNCH_TIMEOUT_MS }));
+  const createPackaged = options.createPackagedApplications ?? (() => require('../method/packaged-applications.cjs')
+    .createPackagedApplications({ backend, lease, timeoutMs: LAUNCH_TIMEOUT_MS }));
+  async function launchPackaged(target, signal) {
+    if (uncertainLaunches.has(target.name)) throw fail('application_already_attempted', 'The last launch of this app had an unknown outcome. List windows instead of relaunching.');
+    const result = await createPackaged().launch({ aumid: target.aumid, ...(target.uri ? { uri: target.uri } : {}) }, { signal });
+    if (result.outcome === 'unknown') uncertainLaunches.add(target.name);
+    if (result.outcome !== 'launched') {
+      return { outcome: result.outcome, app: target.name, ...(result.code ? { code: result.code } : {}), ...(result.cleanup ? { cleanup: result.cleanup } : {}),
+        nextStep: result.outcome === 'unknown' ? 'The app may have started. List windows before deciding; it is not relaunched automatically.'
+          : result.code === 'already_running' ? 'The app is already open and was not touched. TRACE does not adopt windows it did not start.' : 'Nothing was started.' };
+    }
+    for (const window of result.windows) discovered.set(window.id, window);
+    return { outcome: 'launched', app: target.name, pid: result.process.pid, ...(result.ownership === 'handed-off' ? { handedOff: true } : {}),
+      windows: result.windows.map(listedWindow), cleanup: result.cleanup };
+  }
 
   function queued(work, callOptions = {}, allowClosed = false) {
     const signal = callOptions.signal ? AbortSignal.any([callOptions.signal, shutdown.signal]) : shutdown.signal;
@@ -382,7 +414,7 @@ function createComputerController(options = {}) {
           actResult: { returnObservation: [...RETURN_OBSERVATIONS], default: 'summary', diffLimit: DIFF_LIMIT, closedTargetOutcome: 'target_closed_after_dispatch' },
           windowListing: { verbose: true, filters: ['processName', 'title'], defaultOmits: ['tiny', 'shell', 'untitled-frame'] },
           responseSize: { meta: 'trace/response', field: 'responseBytes' },
-          launch: { catalog: 'app-paths', shell: false, uri: false }, ownedModal: { follow: 'followModal', returnOnClose: true },
+          launch: { catalog: ['app-paths', 'packaged'], shell: false, uri: 'allowlist' }, ownedModal: { follow: 'followModal', returnOnClose: true },
           captureRetention: { mode: captureKeepLast ? 'keep-last' : 'preserve', keepLast: captureKeepLast,
             scope: 'validated-current-session-captures', onClose: captureKeepLast ? 'remove-tracked' : 'preserve' }, readiness: {
           native: { ready: result.ready === true, code: result.code || null, reason: result.reason || null },
@@ -559,9 +591,11 @@ function createComputerController(options = {}) {
     launch({ app } = {}, callOptions) {
       return queued(async signal => {
         if (typeof app !== 'string' || !app) throw fail('invalid_argument', 'app must be an application name such as notepad.');
-        if (app.includes(':') || /[\\/]/.test(app)) throw fail('application_unsupported', 'Only App Paths EXE names launch; URIs (such as ms-settings:) and paths are unsupported.');
-        if (!LAUNCH_NAME.test(app)) throw fail('invalid_argument', 'app must be an application name such as notepad.');
+        const packaged = packagedTarget(app);
+        if (!packaged && (app.includes(':') || /[\\/]/.test(app))) throw fail('application_unsupported', 'Only App Paths EXE names, packaged apps (settings or an AUMID) and allowlisted ms-settings: pages launch; other URIs and paths are unsupported.');
+        if (!packaged && !LAUNCH_NAME.test(app)) throw fail('invalid_argument', 'app must be an application name such as notepad.');
         if (sessions.size) throw fail('desktop_busy', 'Close the open session before launching; a launch holds the desktop lease.');
+        if (packaged) return launchPackaged(packaged, signal);
         const wanted = launchName(app);
         if (uncertainLaunches.has(wanted)) throw fail('application_already_attempted', 'The last launch of this app had an unknown outcome. List windows instead of relaunching.');
         const catalog = createApplications();
