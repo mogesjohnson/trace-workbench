@@ -4,9 +4,9 @@
 
 Shared tools that give agents abilities beyond written instructions.
 
-**Version:** [`1.1.0`](https://github.com/mogesjohnson/trace-workbench/releases/tag/v1.1.0) · **Status:** Published for the declared Windows scope
+**Version:** [`2.0.0`](https://github.com/mogesjohnson/trace-workbench/releases/tag/v2.0.0) · **Status:** Published for the declared Windows scope
 
-**Release candidate: `2.0.0`** makes the act result compact by default (a major version under the V1 boundary), adds optional observation images, scoped observations, trimmed window listings, launch and owned-modal follow. [Candidate notes](docs/RELEASE_2.0.0.md) carry the migration steps, the [3 November head-to-head](docs/HEAD_TO_HEAD_2026-11-03.md) (6/8, about 94k context tokens) and known limits G1–G4. Final-main CI, exact archive and publication remain pending; this is not a published update.
+**2.0.0 published, 3 November:** makes the act result compact by default (a major version under the V1 boundary), adds optional observation images, scoped observations, trimmed window listings, launch and owned-modal follow. [Release notes](docs/RELEASE_2.0.0.md) carry the migration steps, the [3 November head-to-head](docs/HEAD_TO_HEAD_2026-11-03.md) (6/8, about 94k context tokens) and known limits G1–G4. The [publication receipt](evidence/release-2.0.0/publication.json) binds source `9886a6b`, passing final-main CI, exact archive and five verified assets.
 
 **1.1.0 published, 31 October:** selective observation modes, scoped provider/I/O reductions, numeric profile reports and opt-in capture retention. [Release notes](docs/RELEASE_1.1.0.md) record the diagnostic profile and compatibility limits. The [publication receipt](evidence/release-1.1.0/publication.json) binds source `ccf8734`, passing final-main CI, exact archive and five verified assets. No comparative speedup is claimed.
 
