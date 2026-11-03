@@ -149,6 +149,7 @@ internal sealed class SupervisorSession : IDisposable
         if (stopCode is not null) throw new TraceError("session_stopped", "The native session is stopped.");
         if (!root.TryGetProperty("providers", out var entries) || entries.ValueKind != JsonValueKind.Object)
             throw new TraceError("provider_invalid", "Verified provider identities are required.");
+        ReleasePins();
         foreach (var name in new[] { "winapp", "bridge", "indicator" })
         {
             if (!entries.TryGetProperty(name, out var spec)) throw new TraceError("provider_invalid", "The fixed provider set is incomplete.");
@@ -156,15 +157,15 @@ internal sealed class SupervisorSession : IDisposable
             var expected = name switch { "winapp" => "winapp.exe", "bridge" => "TraceWindowBridge.exe", _ => "TraceActivityIndicator.exe" };
             if (!Path.GetFileName(provider.Path).Equals(expected, StringComparison.OrdinalIgnoreCase))
                 throw new TraceError("provider_invalid", "Only the pinned engine and source-owned helpers may be configured.");
-            provider.Verify();
             providers[name] = provider;
+            provider.Pin();
         }
         allowControlled = root.TryGetProperty("allowControlled", out var controlled) && controlled.ValueKind == JsonValueKind.True;
         recoveryFault = RecoveryFaultSpec.Parse(root, allowControlled);
         if (allowControlled)
         {
             var path = Environment.ProcessPath ?? throw new TraceError("self_unknown", "The controlled provider path is unavailable.");
-            providers["controlled"] = new ProviderSpec(path, Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))));
+            (providers["controlled"] = new ProviderSpec(path, Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))))).Pin();
         }
         lease = Lease.TryAcquire(Lease.PipeName());
         if (lease == 0) throw new TraceError("desktop_busy", "Another TRACE controller owns the desktop.");
@@ -390,7 +391,15 @@ internal sealed class SupervisorSession : IDisposable
         {
             escape?.Dispose(); escape = null;
             if (lease != 0) { Native.CloseHandle(lease); lease = 0; }
+            ReleasePins();
         }
+    }
+
+    // Closes the deny-write provider handles; an operation never outlives CloseCore's await above.
+    private void ReleasePins()
+    {
+        foreach (var provider in providers.Values) provider.Dispose();
+        providers.Clear();
     }
 
     public void Dispose()
@@ -458,6 +467,35 @@ internal sealed record RecoveryFaultSpec(string Token)
 
 internal static class SupervisorSelfTest
 {
+    // A pinned provider refuses writes, deletion and renames; a swap under a moved folder is refused or detected.
+    private static void PinSelfTest(Action<bool> require)
+    {
+        var folder = Path.Combine(Path.GetTempPath(), $"trace-pin-{Guid.NewGuid():N}");
+        var file = Path.Combine(Directory.CreateDirectory(folder).FullName, "provider.exe");
+        byte[] content = [1, 2, 3];
+        File.WriteAllBytes(file, content);
+        static bool Refused(Action action) { try { action(); return false; } catch (Exception error) when (error is IOException or UnauthorizedAccessException) { return true; } }
+        static string? Code(Action action) { try { action(); return null; } catch (TraceError error) { return error.Code; } }
+        try
+        {
+            using var spec = new ProviderSpec(file, Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(content)));
+            require(Code(spec.Verify) == "provider_invalid");
+            spec.Pin(); spec.Verify();
+            require(Refused(() => File.OpenWrite(file).Dispose()) && Refused(() => File.Delete(file)) && Refused(() => File.Move(file, file + ".moved")));
+            if (!Refused(() => Directory.Move(folder, folder + "-moved")))
+            {
+                File.WriteAllBytes(Path.Combine(Directory.CreateDirectory(folder).FullName, "provider.exe"), content);
+                require(Code(spec.Verify) == "provider_integrity");
+            }
+            using var wrong = new ProviderSpec(file, new string('0', 64));
+            require(Code(wrong.Pin) == "provider_integrity");
+        }
+        finally
+        {
+            foreach (var path in new[] { folder, folder + "-moved" }) if (Directory.Exists(path)) Directory.Delete(path, true);
+        }
+    }
+
     public static object Run()
     {
         static void Require(bool condition) { if (!condition) throw new TraceError("selftest_failed", "A non-input supervisor contract check failed."); }
@@ -516,6 +554,7 @@ internal static class SupervisorSelfTest
         now = 0; polls = 0;
         Require(InputState.AwaitForeground(() => 7, _ => polls++, () => now, 25, 1000) == 0 && polls == 0);
         Require(InputState.ForegroundPollMs == 25 && InputState.ForegroundWaitCapMs == 1000);
+        PinSelfTest(Require);
         var serialized = JsonSerializer.Serialize(new RecoveryRecord(1, "test", self, self, [1, 0xA2], [97], "intent", "test"));
         var restored = JsonSerializer.Deserialize<RecoveryRecord>(serialized)!;
         Require(restored.Supervisor == self && restored.Child == self && restored.Keys.SequenceEqual(new[] { 1, 0xA2 }) && restored.Unicode.SequenceEqual(new[] { 97 }));
