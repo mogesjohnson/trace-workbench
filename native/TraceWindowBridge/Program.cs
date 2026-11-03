@@ -17,10 +17,12 @@ internal static partial class Program
             if (!OperatingSystem.IsWindows()) throw new BridgeException("unsupported_platform", "Windows is required.");
             if (args.Length == 1 && args[0] == "info")
             {
-                Write(new { version = 1, runtime = "net9.0-windows", capabilities = new[] { "identities", "identity", "bounds", "activate", "release-left", "click", "wheel", "document", "capture", "selftest" } });
+                Write(new { version = 1, runtime = "net9.0-windows", capabilities = new[] { "identities", "identity", "bounds", "activate", "release-left", "click", "wheel", "document", "capture", "apps", "process", "selftest" } });
                 return 0;
             }
-            if (args.Length == 1 && args[0] == "selftest") { PointerSelfTest(); DocumentSelfTest(); CaptureSelfTest(); Write(new { passed = true, inputSent = false }); return 0; }
+            if (args.Length == 1 && args[0] == "selftest") { PointerSelfTest(); DocumentSelfTest(); CaptureSelfTest(); ApplicationSelfTest(); Write(new { passed = true, inputSent = false }); return 0; }
+            if (args.Length == 1 && args[0] == "apps") { InstalledApplications(); return 0; }
+            if (args.Length > 0 && args[0] == "process") { ReadProcess(args); return 0; }
             if (args.Length > 0 && args[0] == "capture") { CaptureWindow(args); return 0; }
             if (args.Length > 0 && args[0] == "document") { ReadDocument(args); return 0; }
             if (args.Length > 0 && args[0] is "click" or "wheel") { Pointer(args); return 0; }
@@ -109,9 +111,10 @@ internal static partial class Program
         var created = process.StartTime.ToFileTimeUtc().ToString();
         var session = process.SessionId;
         var owner = GetWindow(hwnd, 4 /* GW_OWNER */);
+        string? executable = null; try { executable = process.MainModule?.FileName; } catch (Exception error) when (error is System.ComponentModel.Win32Exception or InvalidOperationException) { }
         Guard(hwnd, pid);
         return new { hwnd = hwnd.ToInt64().ToString(), pid, processCreationTime = created, sessionId = session,
-            ownerWindowId = owner == 0 ? null : owner.ToInt64().ToString(), method = "public-win32-identity" };
+            ownerWindowId = owner == 0 ? null : owner.ToInt64().ToString(), executable, method = "public-win32-identity" };
     }
 
     private static void Activate(nint hwnd, uint pid)
