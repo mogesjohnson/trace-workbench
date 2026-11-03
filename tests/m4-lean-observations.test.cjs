@@ -91,14 +91,29 @@ test('M4 bar: Firefox at depth 6 is at most 9,000 chars, keeps the page Document
   assert.ok(linksValid(lean));
 });
 
-test('M4 bar: Save As at depth 8 is at most 10,000 chars without scroll parts, row fields or combo arrows', async t => {
+// Owner decision, 3 November: the Save As bar is one unscoped depth-3 interactiveOnly read, the
+// skill's starting depth. A whole-dialog depth-8 read grows by about 175 characters per row.
+test('M4 bar: Save As at depth 3 is at most 10,000 chars', async t => {
+  const h = await harness(t, trees.saveAs());
+  const lean = await h.observe({ accessibilityDepth: 3, interactiveOnly: true });
+  console.log(`M4 Save As d3: interactiveOnly ${chars(lean)} chars, ${lean.elements.length} elements (bar 10000)`);
+  assert.ok(chars(lean) <= 10000, `interactiveOnly was ${chars(lean)} chars`);
+  for (const [type, name] of [['Button', 'Save'], ['Button', 'Cancel'], ['ComboBox', 'File name:']]) assert.equal(named(lean, type, name).length, 1, `${type} ${name}`);
+  assert.ok(linksValid(lean));
+});
+
+test('M4: Save As at depth 8 drops scroll parts, row fields, combo arrows and duplicate group headers', async t => {
   const h = await harness(t, trees.saveAs());
   const full = await h.observe({ accessibilityDepth: 8 });
   const lean = await h.observe({ accessibilityDepth: 8, interactiveOnly: true });
-  console.log(`M4 Save As d8: full ${chars(full)} chars, interactiveOnly ${chars(lean)} chars, ${lean.elements.length} elements (bar 10000)`);
+  console.log(`M4 Save As d8: full ${chars(full)} chars, interactiveOnly ${chars(lean)} chars, ${lean.elements.length} elements`);
   assert.ok(chars(full) > 20000, 'the fixture is at the measured scale');
-  assert.ok(chars(lean) <= 10000, `interactiveOnly was ${chars(lean)} chars`);
   assert.equal(lean.elements.filter(element => element.controlType === 'ListItem').length, 4);
+  // Each date group appears once and offers collapse itself; the header's Collapse Group button goes.
+  const groups = lean.elements.filter(element => element.controlType === 'Group');
+  assert.deepEqual(groups.map(group => group.name), ['Yesterday', 'Last week', 'Last month']);
+  assert.ok(groups.every(group => group.secondaryActions?.includes('collapse')));
+  assert.equal(named(lean, 'Button', 'Collapse Group').length, 0);
   assert.equal(lean.elements.filter(element => element.controlType === 'TreeItem').length, 8);
   for (const [type, name] of [['Edit', 'File name:'], ['Edit', 'Search Box'], ['Button', 'Save'], ['Button', 'Cancel'], ['ComboBox', 'Save as type:']])
     assert.equal(named(lean, type, name).length, 1, `${type} ${name}`);
@@ -108,6 +123,24 @@ test('M4 bar: Save As at depth 8 is at most 10,000 chars without scroll parts, r
   const rows = new Set(lean.elements.filter(element => element.controlType === 'ListItem').map(element => element.treeNodeId));
   assert.ok(!lean.elements.some(element => rows.has(element.parentNodeId)), 'row fields are dropped');
   assert.ok(linksValid(lean));
+});
+
+// The duplicate rule is narrow: only a Group whose nearest kept ancestor is a Group with the same
+// name and expand state. A same-named folder inside a folder, or a same-named Group with another
+// state, stays.
+test('M4: the duplicate Group rule keeps nested same-named TreeItems and Groups whose state differs', async t => {
+  const t0 = trees.saveAs();
+  const n = (type, name, o = {}, children = []) => ({ type, name, isEnabled: true, isOffscreen: false, x: 20, y: 20, width: 40, height: 20,
+    selector: `${type.slice(0, 3).toLowerCase()}-${name.toLowerCase().replace(/W+/g, '')}-${o.id}`, ...(o.exp ? { expandState: o.exp } : {}), children });
+  t0.children.push(n('Tree', 'Extra', { id: 'a001' }, [n('TreeItem', 'Reports', { id: 'a002', exp: 'expanded' }, [n('TreeItem', 'Reports', { id: 'a003', exp: 'expanded' })]),
+    n('Group', 'Pinned', { id: 'a004', exp: 'expanded' }, [n('Group', 'Pinned', { id: 'a005', exp: 'collapsed' }, [n('Button', 'Pin', { id: 'a006' })]),
+      n('Group', 'Pinned', { id: 'a007' }, [n('Button', 'Unpin', { id: 'a008' })])])]));
+  const h = await harness(t, t0);
+  const lean = await h.observe({ accessibilityDepth: 8, interactiveOnly: true });
+  assert.equal(named(lean, 'TreeItem', 'Reports').length, 2);
+  assert.equal(named(lean, 'Group', 'Pinned').length, 2, 'the outer Group and the one with another expand state');
+  assert.equal(named(lean, 'Button', 'Pin').length, 1);
+  assert.equal(named(lean, 'Button', 'Unpin').length, 1, 'a stateless Group is not a duplicate, so its Button stays');
 });
 
 test('M4: the lean format omits className and default enabled, offscreen and secondaryActions, and still acts', async t => {
@@ -142,9 +175,10 @@ test('M4: rootElementId with interactiveOnly filters the subtree and never calls
   assert.equal(scoped.elements[0].id, list.id);
   assert.equal(scoped.accessibility.rootElementId, list.id);
   assert.equal(scoped.accessibility.interactiveOnly, true);
-  // Group headers keep their own Name field; the rows' fields are dropped.
-  assert.deepEqual([...new Set(scoped.elements.slice(1).map(element => element.controlType))].sort(), ['Button', 'Edit', 'ListItem', 'SplitButton']);
-  assert.equal(scoped.elements.filter(element => element.controlType === 'Edit').length, 2);
+  // Each expandable date group stays once and keeps its header's Name field; the rows' fields are dropped.
+  assert.deepEqual([...new Set(scoped.elements.slice(1).map(element => element.controlType))].sort(), ['Button', 'Edit', 'Group', 'ListItem', 'SplitButton']);
+  assert.equal(scoped.elements.filter(element => element.controlType === 'Group').length, 3);
+  assert.equal(scoped.elements.filter(element => element.controlType === 'Edit').length, 3);
   assert.equal(scoped.elements.filter(element => element.controlType === 'ListItem').length, 4);
   assert.ok(linksValid(scoped));
   assert.ok(!h.state.calls.some(args => args.includes('-i')));

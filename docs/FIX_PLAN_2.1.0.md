@@ -270,6 +270,15 @@ TRACE now filters the normal tree instead of using `-i`, with the rules in
 [COMPUTER_USE.md](COMPUTER_USE.md). Items 1 and 2 are replaced by that filter; items 3
 and 4 stand. Fixture results: Firefox 7,624, Save As 9,449, Notepad keeps `Text editor`.
 
+**Live recheck and second owner decision, 3 November.** Live, Notepad and Firefox passed
+(Firefox 7,781), but Save As followed at depth 8 measured 11,925: each date group appeared twice,
+as the group and its `UIGroupHeader`. The owner chose a narrow rule plus a new bar. A Group with
+the same name and expand state as its nearest kept Group is dropped, with that header's Buttons.
+The rule covers Group nodes only and never matches on a localized name. The Save As bar is now one
+unscoped `interactiveOnly` read at depth 3, at most 10,000 characters, which is the depth the
+skill recommends. A whole-dialog read at depth 8 is reported but has no bar, because it grows
+about 175 characters per row. Fixture results: Save As depth 3 4,440, depth 8 10,060.
+
 ## M5. TRACE rerun and 2.1.0 release
 
 1. Bump to `2.1.0` (package and lockfile) and write `docs/RELEASE_2.1.0.md`: changes,

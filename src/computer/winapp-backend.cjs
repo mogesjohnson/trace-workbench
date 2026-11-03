@@ -15,21 +15,30 @@ const DEFAULT_BRIDGE = path.join(ROOT, '.runtime', 'window-bridge', 'bin', 'Trac
 // expand state. isInvokable counts only outside STRUCTURAL: Gecko reports it on every node.
 // Parts whose action the parent already offers are dropped: a ScrollBar with its line and page
 // buttons, the Edit and Text fields inside a list, tree or data item (Explorer lists a Name, Date
-// modified, Type and Size field per row), and a ComboBox's own Open button.
+// modified, Type and Size field per row), and a ComboBox's own Open button. Explorer also lists
+// each file group twice, as the group and its header: a Group with the same name and expand state
+// as its nearest kept Group is dropped, with the header's Buttons, because the kept Group already
+// offers expand and collapse. The rule never matches on a localized name such as Collapse Group.
 const INTERACTIVE_TYPES = new Set(['Button', 'SplitButton', 'MenuItem', 'ComboBox', 'Edit', 'Hyperlink', 'TabItem', 'ListItem', 'TreeItem',
   'CheckBox', 'RadioButton', 'Slider', 'Spinner', 'DataItem', 'HeaderItem', 'Document']);
 const ITEM_TYPES = new Set(['ListItem', 'TreeItem', 'DataItem']);
 const STRUCTURAL_TYPES = new Set(['Window', 'Pane', 'Group', 'Separator', 'TitleBar', 'MenuBar', 'Menu', 'ToolBar', 'Tab', 'List', 'Tree',
   'Table', 'DataGrid', 'StatusBar', 'Header', 'Text', 'Image']);
-// `within` is what the walk is inside: 'skip' (a ScrollBar), 'item', or the type of the kept parent.
+// `within` is what the walk is inside: 'skip' (a ScrollBar), 'item', 'header' (a dropped duplicate
+// Group), or the type of the kept parent.
 function interactiveNode(element, within) {
   if (within === 'skip' || element.type === 'Separator' || element.type === 'ScrollBar') return false;
+  if (within === 'header' && element.type === 'Button') return false;
   if (within === 'item' && (element.type === 'Edit' || element.type === 'Text')) return false;
   if (within === 'ComboBox' && element.type === 'Button') return false;
   if (INTERACTIVE_TYPES.has(element.type) || element.hasMoreChildren === true) return true;
   if (element.type === 'Text') return typeof element.value === 'string' && element.value.trim() !== '';
   return ['on', 'off', 'indeterminate'].includes(element.toggleState) || ['expanded', 'collapsed'].includes(element.expandState)
     || (element.isInvokable === true && !STRUCTURAL_TYPES.has(element.type));
+}
+function duplicateGroup(element, keptParent) {
+  return element.type === 'Group' && keptParent?.type === 'Group' && typeof element.name === 'string' && element.name !== ''
+    && element.name === keptParent.name && ['expanded', 'collapsed'].includes(element.expandState) && element.expandState === keptParent.expandState;
 }
 const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj', 'native/TraceWindowBridge/Capture.cs', 'native/TraceWindowBridge/Applications.cs', 'native/TraceWindowBridge/Packages.cs'];
 
@@ -440,17 +449,19 @@ class WinappBackend {
     const starts = entry.elements, tops = new Set(scoped ? starts : [starts[0]]);
     const inside = (element, within) => within === 'skip' || within === 'item' ? within
       : element.type === 'ScrollBar' ? 'skip' : ITEM_TYPES.has(element.type) ? 'item' : element.type;
-    const visit = (element, parentNodeId = null, nestingDepth = 0, within = undefined) => {
+    // keptParent is the nearest kept ancestor's raw node, for the duplicate Group rule.
+    const visit = (element, parentNodeId = null, nestingDepth = 0, within = undefined, keptParent = null) => {
       if (!object(element) || active.has(element)) fail('invalid_native_response', 'UIA tree contains an invalid node or cycle.');
       if (visited >= 10000 || nestingDepth > 32) fail('native_output_limit', 'UIA tree exceeds its node/depth bounds.');
       if (element.children != null && !Array.isArray(element.children)) fail('invalid_native_response', 'UIA children must be an array.');
       active.add(element);
       visited++;
       const offscreen = !includeOffscreen && element.isOffscreen === true;
-      if ((offscreen || (interactiveOnly && !interactiveNode(element, within))) && !tops.has(element)) {
+      const duplicate = interactiveOnly && !offscreen && duplicateGroup(element, keptParent);
+      if ((offscreen || (interactiveOnly && (duplicate || !interactiveNode(element, within)))) && !tops.has(element)) {
         if (offscreen) offscreenOmitted++; else filteredOut++;
-        const below = interactiveOnly && (within === 'skip' || element.type === 'ScrollBar') ? 'skip' : within;
-        for (const child of element.children || []) visit(child, parentNodeId, nestingDepth + 1, below);
+        const below = interactiveOnly && (within === 'skip' || element.type === 'ScrollBar') ? 'skip' : duplicate ? 'header' : within;
+        for (const child of element.children || []) visit(child, parentNodeId, nestingDepth + 1, below, keptParent);
         active.delete(element);
         return;
       }
@@ -474,7 +485,7 @@ class WinappBackend {
         if ([element.x, element.y, element.width, element.height].every(Number.isFinite) && element.width > 0 && element.height > 0) item.bounds = bounds(element);
         flat.push({ ...item, treeNodeId: nodeId, parentNodeId, ...(more ? { hasMoreChildren: true } : {}) });
       }
-      for (const child of element.children || []) visit(child, nodeId, nestingDepth + 1, interactiveOnly ? inside(element, within) : undefined);
+      for (const child of element.children || []) visit(child, nodeId, nestingDepth + 1, interactiveOnly ? inside(element, within) : undefined, element);
       active.delete(element);
     };
     for (const element of starts) visit(element);

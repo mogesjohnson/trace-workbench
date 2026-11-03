@@ -104,7 +104,9 @@ function firefox() {
 // The Save As common dialog (#32770) followed from Notepad, depth 8, in details view. Its
 // structure follows the head-to-head observation of 3 November 2026: Explorer lists a Name, Date
 // modified, Type and Size Edit field (class UIProperty) under each row, and every scroll bar
-// carries line and page buttons. The folder holds the recorded four files in two groups.
+// carries line and page buttons. The folder holds the recorded four files in three date groups.
+// The live recheck of 3 November showed each group twice: the group and its UIGroupHeader, both
+// expanded, the header holding a Collapse Group button and a Name field.
 function saveAs() {
   start(9, 0, 1100, 700);
   const b = (name, o = {}) => n('Button', name, { inv: true, ...o });
@@ -113,8 +115,9 @@ function saveAs() {
   const folder = (name, o = {}) => n('TreeItem', name, { exp: 'collapsed', ...o }, [n('Image', ''), n('Text', name)]);
   const file = i => n('ListItem', `Quarterly report draft ${i + 1}.txt`, { c: 'UIItem' }, [n('Image', ''),
     prop('Name', `Quarterly report draft ${i + 1}.txt`), prop('Date modified', '02/11/2026 14:05'), prop('Type', 'Text Document'), prop('Size', '4 KB')]);
-  const group = (name, files) => n('Group', name, { c: 'UIGroupItem' }, [
-    n('Group', name, { c: 'UIGroupHeader' }, [b('Collapse Group', { c: 'UIExpandoButton' }), prop('Name', name)]), ...files]);
+  const group = (name, files) => n('Group', name, { c: 'UIGroupItem', exp: 'expanded' }, [
+    n('Group', name, { c: 'UIGroupHeader', exp: 'expanded' }, [b('Collapse Group', { a: 'UIGroupButton', c: 'UIExpandoButton' }),
+      n('Edit', 'Name', { a: 'System.ItemNameDisplay', c: 'UIProperty' })]), ...files]);
   const combo = (name, a, c, kids = []) => n('ComboBox', name, { a, c, exp: 'collapsed' }, [...kids, b('Open')]);
   return framed(n('Window', 'Save as', { c: '#32770' }, [
     n('Pane', '', { c: 'DUIViewWndClassName' }, [
@@ -132,7 +135,7 @@ function saveAs() {
         n('Header', 'Header', { c: 'UIViewHeader' }, [n('SplitButton', 'Name', { inv: true, c: 'UIColumnHeader' }), b('Filter dropdown', { c: 'Button' }),
           n('SplitButton', 'Date modified', { inv: true, c: 'UIColumnHeader' }), b('Filter dropdown', { c: 'Button' }),
           n('SplitButton', 'Type', { inv: true, c: 'UIColumnHeader' })]),
-        group('Last week', times(2, file)), group('Last month', times(2, i => file(i + 2)))])]),
+        group('Yesterday', [file(0)]), group('Last week', times(2, i => file(i + 1))), group('Last month', [file(3)])])]),
       n('Pane', '', { c: 'DUIViewWndClassName' }, [
         combo('File name:', 'FileNameControlHost', 'AppControlHost', [n('Edit', 'File name:', { a: '1001', c: 'Edit', val: '*.txt' })]),
         combo('Save as type:', 'FileTypeControlHost', 'AppControlHost'),
