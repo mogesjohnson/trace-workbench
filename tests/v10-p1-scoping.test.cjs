@@ -89,6 +89,7 @@ function fakeWinapp(state) {
       const tops = [cut(start, depth)];
       return json(wrap(args.includes('-i') ? collapse(tops) : tops));
     }
+    if (args[1] === 'send-keys' && state.keyError) return { stdout: '', stderr: JSON.stringify({ error: { code: 'invalid_arguments', message: state.keyError } }), exitCode: 1 };
     if (args[1] === 'send-keys' || args[1] === 'set-value' || args[1] === 'invoke') { state.dispatched.push(args[1]); state.afterDispatch?.(); return json({ hwnd: 1234 }); }
     return json({ hwnd: 1234 });
   };
@@ -310,4 +311,25 @@ test('P1-5: every result reports responseBytes in _meta, and doctor advertises i
   const doctor = (await h.call('doctor')).structuredContent;
   assert.deepEqual(doctor.responseSize, { meta: 'trace/response', field: 'responseBytes' });
   assert.deepEqual(doctor.observationScope, { rootElementId: true, interactiveOnly: true });
+});
+
+test('G2 follow-up: a system key winapp refuses before sending is not_dispatched; other argument errors stay unknown', async t => {
+  const h = await harness(t);
+  const sessionId = await session(h);
+  const press = async () => {
+    const observation = (await h.call('observe', { sessionId, screenshot: 'none', accessibilityDepth: 2 })).structuredContent;
+    return (await h.call('act', { sessionId, observationId: observation.observationId, action: { type: 'press_key', key: 'alt+f4' } })).structuredContent;
+  };
+  // The message winapp 0.7.1 emitted live on 3 November 2026 (PR 114).
+  h.state.keyError = 'Refusing to synthesize system-reserved key(s) via --via send-input: alt+f4. These act on the OS/shell rather than just the target app. Pass --allow-system-keys to opt in.';
+  const refused = await press();
+  assert.equal(refused.outcome, 'not_dispatched', JSON.stringify(refused));
+  assert.equal(refused.error.code, 'invalid_arguments');
+  assert.notEqual(refused.error.inputRecoveryRequired, true);
+  assert.deepEqual(h.state.dispatched, []);
+  // The session stays usable after a refusal.
+  h.state.keyError = undefined;
+  assert.equal((await press()).outcome, 'completed');
+  h.state.keyError = 'Unknown key token.';
+  assert.equal((await press()).outcome, 'unknown');
 });
