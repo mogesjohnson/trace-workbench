@@ -9,3 +9,5 @@ Reuse passed checks at their demonstrated scope. Before repeating a check, ident
 Read [RULES.md](RULES.md) before implementation and [VERSION_CONTROL.md](VERSION_CONTROL.md) before branching, committing, or opening a PR. For setup or client configuration, read [docs/SETUP.md](docs/SETUP.md). For upstream changes or attribution, read [docs/PROVENANCE.md](docs/PROVENANCE.md).
 
 Read [SPEC.md](SPEC.md) before planning, implementing or reviewing a milestone; use its case deliverables, evidence contract and stop conditions to decide completion. For Computer Use setup, actions, or recovery, read [docs/COMPUTER_USE.md](docs/COMPUTER_USE.md).
+
+Session workflow: at the start and end of every session (handoff file, next-session prompt, final message), follow `SessionWorkFlows.md` in the parent `projects/` folder, outside this repo.
