@@ -12,7 +12,8 @@ const { StdioClientTransport } = require("@modelcontextprotocol/client/stdio");
 const ROOT = path.resolve(__dirname, "..");
 const TOOLS = [
   "trace_computer_act", "trace_computer_close_session", "trace_computer_doctor",
-  "trace_computer_list_windows", "trace_computer_observe", "trace_computer_open_session",
+  "trace_computer_launch", "trace_computer_list_windows", "trace_computer_observe",
+  "trace_computer_open_session",
 ];
 
 function reportPath(argv) {
