@@ -25,7 +25,40 @@ internal static class InputState
     // https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-getasynckeystate
     // Prove the calling thread shares the ordinary active desktop, and that UIPI does not hide the
     // foreground process, before using an all-zero observation as cleanup evidence.
-    public static void EnsureObservable()
+    public static void EnsureObservable() => EnsureObservable(false);
+
+    // A keyboard close (ctrl+w, alt+f4) leaves no foreground window for a moment after the owned
+    // child exits. On the post-dispatch release path only, wait up to ForegroundWaitCapMs for any
+    // foreground, then run every check below unchanged. A foreground still absent keeps the error.
+    public const int ForegroundPollMs = 25, ForegroundWaitCapMs = 1000;
+
+    public static long EnsureObservable(bool waitForForeground)
+    {
+        long waited = 0;
+        if (waitForForeground)
+        {
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            waited = AwaitForeground(Native.GetForegroundWindow, Thread.Sleep, () => clock.ElapsedMilliseconds, ForegroundPollMs, ForegroundWaitCapMs);
+        }
+        EnsureObservableCore();
+        return waited;
+    }
+
+    // Injectable clock/sleep/foreground primitives allow the bounded wait to be tested with no OS input.
+    // Returns the milliseconds waited until a nonzero foreground appeared, or the elapsed time at the
+    // cap; the caller's unchanged checks then decide observability.
+    internal static long AwaitForeground(Func<nint> foreground, Action<int> sleep, Func<long> elapsedMs, int pollMs, int capMs)
+    {
+        while (foreground() == 0)
+        {
+            var elapsed = elapsedMs();
+            if (elapsed >= capMs) return elapsed;
+            sleep((int)Math.Min(pollMs, capMs - elapsed));
+        }
+        return elapsedMs();
+    }
+
+    private static void EnsureObservableCore()
     {
         static string DesktopName(nint handle)
         {
@@ -148,10 +181,11 @@ internal static class InputState
     };
 
     // Sends an up event only for listed keys/buttons that are down, then re-reads global state.
-    public static ReleaseResult Release(IEnumerable<int> candidates)
+    public static ReleaseResult Release(IEnumerable<int> candidates, bool waitForForeground = false)
     {
-        EnsureObservable();
-        return ReleaseCore(candidates, IsDown, vk => Send(Up(vk)), _ => { Thread.Sleep(40); EnsureObservable(); });
+        var waited = EnsureObservable(waitForForeground);
+        return ReleaseCore(candidates, IsDown, vk => Send(Up(vk)), _ => { Thread.Sleep(40); waited += EnsureObservable(waitForForeground); })
+            with { ForegroundWaitMs = waited };
     }
 
     // Injectable state/release primitives allow bounded recovery and failure tests with zero OS input.
@@ -170,20 +204,23 @@ internal static class InputState
         return new ReleaseResult(attempted.ToArray(), remaining);
     }
 
-    public static ReleaseResult ReleaseDeclared(IEnumerable<int> candidates, IEnumerable<int> unicode)
+    // waitForForeground is set only by the post-dispatch release in SupervisorSession.FinishInput.
+    public static ReleaseResult ReleaseDeclared(IEnumerable<int> candidates, IEnumerable<int> unicode, bool waitForForeground = false)
     {
-        EnsureObservable();
+        var waited = EnsureObservable(waitForForeground);
         // Unicode packet downs have no distinct async VK state per UTF-16 unit. Balance each declared
         // unit after process exit, then independently inspect all declared keyboard/button state.
         foreach (var value in unicode.Distinct()) Send(new Native.Input { Type = Native.InputKeyboard,
             Data = new Native.InputUnion { Keyboard = new Native.KeyboardInput { Scan = (ushort)value, Flags = Native.KeyUnicode | Native.KeyUp } } });
-        return Release(candidates);
+        var result = Release(candidates, waitForForeground);
+        return result with { ForegroundWaitMs = result.ForegroundWaitMs + waited };
     }
 }
 
 internal sealed record ReleaseResult(int[] Attempted, int[] RemainingDown)
 {
     public bool Released => RemainingDown.Length == 0;
+    public long ForegroundWaitMs { get; init; }
 }
 
 internal sealed class TraceError(string code, string message, int? win32Error = null) : Exception(message)
