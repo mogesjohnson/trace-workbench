@@ -60,19 +60,21 @@ function createInstalledApplications({ backend = new WinappBackend(), lease = ba
     if (typeof appId !== 'string' || !/^app:[a-f0-9]{64}$/.test(appId) || !apps.has(appId)) fail('unknown_application', 'Choose an ID from the current application catalog.');
     if (attempted.has(appId)) fail('application_already_attempted', 'Inspect the previous launch; no automatic replay is permitted.');
     if (!lease?.acquire || !lease?.release || !lease?.assert) fail('supervision_required', 'App launch needs native desktop ownership.');
-    busy = true; const owner = randomUUID(); let acquired = false, child, result;
+    busy = true; const owner = randomUUID(); let acquired = false, child, result, deadline;
     try {
       await verify(); const app = apps.get(appId), native = inventory(await backend.bridge('apps', null, signal));
       if (!native.applications.some(row => row.registration === app.registration && row.executable === app.registeredPath)) fail('application_changed', 'Registration changed before launch.');
       const actual = await file(app.registeredPath);
       if (canonical(actual.executable) !== canonical(app.executable) || actual.fingerprint !== app.fingerprint) fail('application_changed', 'Executable changed before launch.');
       await lease.acquire(owner); acquired = true; await lease.assert(owner);
-      const active = AbortSignal.any([...(signal ? [signal] : []), ...(lease.signal ? [lease.signal] : []), AbortSignal.timeout(timeoutMs)]);
-      active.throwIfAborted();
+      const held = AbortSignal.any([...(signal ? [signal] : []), ...(lease.signal ? [lease.signal] : [])]);
       // Single-instance apps (Notepad 11, a running Firefox) hand the start to another process and
-      // the spawned one exits. Only windows absent from this snapshot can be a handoff.
+      // the spawned one exits. Only windows absent from this snapshot can be a handoff. A listing
+      // takes about a second live, so the snapshot is taken before the launch deadline starts.
       const windowKey = window => `${window.id}:${window.pid}:${window.processCreationTime ?? ''}`;
-      const before = new Set((await backend.listWindows({ signal: active })).map(windowKey));
+      const before = new Set((await backend.listWindows({ signal: held })).map(windowKey));
+      deadline = AbortSignal.timeout(timeoutMs);
+      const active = AbortSignal.any([held, deadline]);
       active.throwIfAborted(); attempted.add(appId);
       child = spawnImpl(app.executable, [], { shell: false, windowsHide: false, cwd: path.dirname(app.executable), stdio: 'ignore' });
       child.on('error', () => {});
@@ -137,7 +139,7 @@ function createInstalledApplications({ backend = new WinappBackend(), lease = ba
       const owned = ownership === 'handed-off' ? { pid: candidates[0].pid, processCreationTime: candidates[0].processCreationTime, sessionId: candidates[0].sessionId, executable: candidates[0].executable } : process;
       result = { outcome: 'launched', appId, process: owned, windows: handoff, ownership, ...(ownership === 'handed-off' ? { spawnedPid: child.pid } : {}), applicationClosed: false };
     } catch (error) {
-      const code = typeof error.code === 'string' ? error.code : error.name === 'TimeoutError' ? 'application_timeout' : error.name === 'AbortError' ? 'cancelled' : 'application_launch_failed';
+      const code = deadline?.aborted && !signal?.aborted && !lease.signal?.aborted ? 'application_timeout' : typeof error.code === 'string' ? error.code : error.name === 'TimeoutError' ? 'application_timeout' : error.name === 'AbortError' ? 'cancelled' : 'application_launch_failed';
       result = { outcome: child?.pid ? 'unknown' : 'not_dispatched', appId, code,
         ...(child?.pid ? { pid: child.pid } : {}), applicationClosed: false };
     } finally {

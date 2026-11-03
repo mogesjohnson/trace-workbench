@@ -154,6 +154,9 @@ const modalSummary = window => ({ windowId: window.id, title: listedWindow(windo
 // Launch names come from the App Paths catalog: an EXE name, `.exe` optional, without a path or URI.
 const LAUNCH_NAME = /^[A-Za-z0-9][A-Za-z0-9 ._+-]{0,63}$/;
 const launchName = value => String(value).toLowerCase().replace(/\.exe$/, '');
+// Live 2026-11-03: a window listing takes about 0.7 s and a handed-off window can take several
+// seconds to appear, so launch uses the launcher's largest allowed deadline.
+const LAUNCH_TIMEOUT_MS = 15000;
 
 function createComputerController(options = {}) {
   const captureKeepLast = parseCaptureKeepLast(options.captureKeepLast === undefined ? process.env.TRACE_CAPTURE_KEEP_LAST : options.captureKeepLast);
@@ -175,7 +178,7 @@ function createComputerController(options = {}) {
   // Apps whose last launch outcome was unknown are never relaunched automatically.
   const uncertainLaunches = new Set();
   const createApplications = options.createApplications ?? (() => require('../method/installed-applications.cjs')
-    .createInstalledApplications({ backend, lease }));
+    .createInstalledApplications({ backend, lease, timeoutMs: LAUNCH_TIMEOUT_MS }));
 
   function queued(work, callOptions = {}, allowClosed = false) {
     const signal = callOptions.signal ? AbortSignal.any([callOptions.signal, shutdown.signal]) : shutdown.signal;

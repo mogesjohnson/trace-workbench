@@ -89,7 +89,9 @@ and three task-runs used 420k tokens of context
   relaunch is refused with `application_already_attempted`. Single-instance apps
   (Notepad 11, a running Firefox) hand the start to another process; a window that is
   new since a pre-launch snapshot and whose executable resolves to the registered EXE
-  is then returned with `handedOff: true`. Anything less stays `unknown`.
+  is then returned with `handedOff: true`. Anything less stays `unknown`. The snapshot
+  is taken before the launch deadline starts, and the deadline is 15 seconds; its expiry
+  is reported as `application_timeout`.
 - **File dialog File name.** `set_value` on the common file dialog's File name box
   (`Edit` 1001 under `FileNameControlHost` in a `#32770` window) is refused as
   `not_dispatched`: the dialog keeps its own copy of the name and would save under the
@@ -170,7 +172,15 @@ See the [V2 compatibility boundary](COMPUTER_USE.md#v2-compatibility-boundary-20
   - Launching Notepad and Firefox started both apps but reported `unknown` (`cancelled`
     and `window_bridge_failed`) because each handed off to another process. This led
     to the handoff rule above.
-- The two fixes above have synthetic tests only; their live recheck is pending.
+- Live recheck on 3 November 2026, through an MCP client against the fix branch:
+  - `set_value` on the Save As File name box returned `not_dispatched` (473-character
+    response); Cancel returned the session to Notepad.
+  - With the first 5-second deadline, which also covered the snapshot, both launches
+    timed out although the new windows appeared. A window listing took 0.6 to 0.9
+    seconds.
+  - With the snapshot moved before the deadline and a 15-second deadline, Notepad
+    returned `launched` with `handedOff: true` in 5.5 seconds and Firefox in 6.6
+    seconds, each with its new window (about 210-character responses).
 - No live desktop measurement and no 16-task head-to-head rerun has been made for
   this candidate.
 - Live acceptance from 1.x is reused at its stated scope. The full-result path that
