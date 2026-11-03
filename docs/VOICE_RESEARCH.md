@@ -66,6 +66,25 @@ when the network is up; this is inferred from output, not from packet capture.
 `ERROR_INSUFFICIENT_PERMISSIONS` (or busy right after one) on every clip until the test app was granted `RECORD_AUDIO`
 (owner-approved; the app never opened the microphone).
 
+## Owner-voice check (3 Nov 2026)
+
+The owner recorded the five prompted commands below with `termux-microphone-record` on the S23
+([evidence](../evidence/research/a8-voice-owner-2026-11-03.json)). The audio stayed on the phone,
+only transcript text left it, and the clips were deleted after scoring. **Other people were talking
+in the background**, so treat these numbers as a noisy-room reading; re-run in a quiet room and
+replace this section if the numbers need to be firmer.
+
+| Route | WER (5 clips) | Failures |
+| --- | --- | --- |
+| 2b. Android default + `EXTRA_PREFER_OFFLINE` (Wi-Fi on) | 13.9% | 0 / 5 |
+| 4. whisper.cpp base.en | 25.0% | 0 / 5 |
+
+Both routes dropped the same opening words on three clips ("turn on", "send a", "summarize"), so
+most of the error is the clip start, not the recognizer: the recording script prompted before
+`termux-microphone-record` had started. A re-run should start the recorder first, then prompt.
+Without those lost words, route 2b was word-perfect and base.en misheard "set a" as "that" and
+"a" as "the". The ranking holds: route 2b stays the live route on a real voice and mic.
+
 ## Recommendation
 
 - **Live tasks spoken to the phone: route 2b**, the default recognizer with
@@ -81,9 +100,11 @@ when the network is up; this is inferred from output, not from packet capture.
 
 ## Still open
 
-1. Owner-voice check: record 3 to 5 owner phrases with `termux-microphone-record` (ask first,
-   files stay on the phone) and confirm route 2b and base.en hold up on a real voice and mic.
-2. Confirm route 2b keeps audio local while online with a traffic check, if that guarantee is
-   needed beyond the output match above.
-3. Then build `phone_transcribe` or a script (A8 follow-up): whisper.cpp in Debian needs a build
-   there (it was built for Android here) or the arm64 binary copied in.
+1. Optional quiet-room re-run of the owner-voice check, with the recorder started before the
+   prompt; it replaces the section above.
+2. Traffic capture for route 2b: not needed. The owner accepted the output match above as enough
+   (3 Nov 2026); the "on-device" claim stays labelled as inferred, not captured.
+3. `phone_transcribe` (A8 follow-up): build whisper.cpp inside the Debian proot (owner decision,
+   3 Nov 2026; Debian has gcc, g++ and make but no cmake) and ship base.en as the default model.
+4. claude-voice: add `EXTRA_PREFER_OFFLINE = true` (owner approved). claude-voice is a local folder
+   without Git, so the change is made there and is not part of this repository.
