@@ -30,7 +30,7 @@ async function fixture(t) {
 
 test('controller describes declared support independently of native and target readiness', async () => {
   const controller = createComputerController({ backend: { doctor: async () => ({ ready: false, code: 'engine_missing', reason: 'missing' }) }, observationTtlMs: 12345 });
-  const result = await controller.doctor();
+  const result = await controller.doctor({ verbose: true });
   assert.deepEqual(result.support, actionSupport(12345));
   assert.deepEqual(result.readiness.native, { ready: false, code: 'engine_missing', reason: 'missing' });
   assert.equal(result.readiness.target.ready, null); assert.equal(typeof result.readiness.target.reason, 'string');

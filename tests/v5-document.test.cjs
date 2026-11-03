@@ -16,7 +16,7 @@ test('document target binding is unique and missing metadata never falls back to
   backend.bridge=async(...args)=>{calls.push(args);return empty();};
   await assert.rejects(backend.readDocument(window,null,[],'doc'),{code:'stale_element'});
   await assert.rejects(backend.readDocument(window,null,[element,element],'doc'),{code:'ambiguous_element'});
-  const unavailable=await backend.readDocument(window,null,[{...element,automationId:''}],'doc');
+  const unavailable=await backend.readDocument(window,null,[{...element,automationId:'',controlType:'Text'}],'doc');
   assert.equal(unavailable.document.reason,'binding_unavailable'); assert.equal(calls.length,0);
   assert.equal((await backend.readDocument(window,null,[element],'doc')).document.text,'');
   assert.deepEqual(calls[0].slice(0,3),['document',window,null]);
@@ -80,7 +80,7 @@ test('connected MCP document observations are image-free evidence, revoke author
   assert.equal((await controller.act({...session,observationId:full.observationId,action:{type:'activate'}})).outcome,'completed');
   assert.equal(calls.some(c=>c[0]==='document'),false);
   full=await controller.observe(session);
-  const observed=await call({mode:'accessibility',documentElementId:'doc'}), result=observed.structuredContent;
+  const observed=await call({mode:'accessibility',documentElementId:'doc',metrics:true}), result=observed.structuredContent;
   assert.notEqual(observed.isError,true);assert.equal(observed.content.some(c=>c.type==='image'),false);
   assert.equal(result.documentRead.document.text,'synthetic-private-content');
   assert.equal(result.accessibility.hierarchy[0].elementId,'doc');assert.equal(result.actionable,false);

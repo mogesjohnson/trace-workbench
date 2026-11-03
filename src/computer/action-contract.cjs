@@ -120,21 +120,38 @@ function actionSupport(observationTtlMs = 60000) {
   };
 }
 
-function compatibleSupport(support) {
+// Doctor's default view. The full descriptor (two key regexes, alias table, every action rule)
+// was most of a 6 kB doctor response; the compact view names the actions and carries the full
+// descriptor's digest, so a caller can still check the exact contract without reading it.
+const sorted = value => value === null || typeof value !== 'object' ? value
+  : Array.isArray(value) ? value.map(sorted) : Object.fromEntries(Object.keys(value).sort().map(key => [key, sorted(value[key])]));
+const supportDigest = support => require('node:crypto').createHash('sha256').update(JSON.stringify(sorted(support))).digest('hex');
+function compactSupport(observationTtlMs = 60000) {
+  const { actions, ...rest } = actionSupport(observationTtlMs);
+  return { ...rest, detail: 'compact', sha256: supportDigest(actionSupport(observationTtlMs)), actions: Object.keys(actions),
+    verbose: 'doctor verbose: true lists every rule' };
+}
+
+// The local descriptor a declared one stands for, or null when the declaration is unsupported.
+// 1.x servers and verbose doctor send the full descriptor, which may lack later optional
+// features; a compact declaration must match the full local descriptor's digest exactly.
+function effectiveSupport(support) {
   const ttl = support?.observation?.ttlMs;
-  if (!Number.isFinite(ttl) || ttl < 0) return false;
-  const matches = (actual, expected) => {
-    if (expected === null || typeof expected !== 'object') return actual === expected;
-    if (!actual || typeof actual !== 'object' || Array.isArray(actual) !== Array.isArray(expected)) return false;
-    if (Array.isArray(expected) && actual.length !== expected.length) return false;
-    return Object.keys(expected).every(key => Object.hasOwn(actual, key) && matches(actual[key], expected[key]));
-  };
+  if (!Number.isFinite(ttl) || ttl < 0) return null;
   const expected = actionSupport(ttl);
+  if (support.detail === 'compact') return support.contractVersion === 1 && support.sha256 === supportDigest(expected) ? expected : null;
+  const matches = (actual, wanted) => {
+    if (wanted === null || typeof wanted !== 'object') return actual === wanted;
+    if (!actual || typeof actual !== 'object' || Array.isArray(actual) !== Array.isArray(wanted)) return false;
+    if (Array.isArray(wanted) && actual.length !== wanted.length) return false;
+    return Object.keys(wanted).every(key => Object.hasOwn(actual, key) && matches(actual[key], wanted[key]));
+  };
   if (!Object.hasOwn(support?.actions ?? {}, 'accessibility_action')) delete expected.actions.accessibility_action;
   if (!Object.hasOwn(support?.actions?.click ?? {}, 'variants')) delete expected.actions.click.variants;
   if (!Object.hasOwn(support?.actions?.scroll ?? {}, 'point')) delete expected.actions.scroll.point;
   if (!Object.hasOwn(support?.actions?.press_key ?? {}, 'extended')) delete expected.actions.press_key.extended;
-  return matches(support, expected);
+  return matches(support, expected) ? expected : null;
 }
+const compatibleSupport = support => effectiveSupport(support) !== null;
 
-module.exports = { LIMITS, KEY_PATTERN, ACCESSIBILITY_ACTIONS, normalizeKey, parseAction, validateAction, actionSupport, compatibleSupport };
+module.exports = { LIMITS, KEY_PATTERN, ACCESSIBILITY_ACTIONS, normalizeKey, parseAction, validateAction, actionSupport, compactSupport, supportDigest, effectiveSupport, compatibleSupport };

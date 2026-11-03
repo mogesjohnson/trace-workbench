@@ -233,7 +233,7 @@ class WinappBackend {
     this.inputRecoveryRequired = null;
   }
   async command(verb, args, signal) {
-    const mutating = !['list-windows', 'status', 'inspect', 'get-focused', 'screenshot'].includes(verb);
+    const mutating = !['list-windows', 'status', 'inspect', 'get-focused', 'get-property', 'get-value', 'screenshot'].includes(verb);
     if (verb === 'screenshot') count('captureRequests');
     if (this.supervisor) {
       if (this.supervisor.ready) {
@@ -562,10 +562,15 @@ class WinappBackend {
     if (candidates.length !== 1) fail(candidates.length ? 'ambiguous_element' : 'stale_element', 'Document target must be a unique currently observed control.');
     const element = candidates[0], rect = element.bounds;
     const unavailable = reason => ({ available: false, reason });
-    if (typeof element.automationId !== 'string' || !element.automationId || element.automationId.length > 512
-      || typeof element.className !== 'string' || element.className.length > 512 || !/^[A-Za-z]{1,64}$/.test(element.controlType)
-      || !rect || !['x', 'y', 'width', 'height'].every(key => Number.isFinite(rect[key])) || rect.width <= 0 || rect.height <= 0)
+    if (!/^[A-Za-z]{1,64}$/.test(element.controlType) || !rect || !['x', 'y', 'width', 'height'].every(key => Number.isFinite(rect[key])) || rect.width <= 0 || rect.height <= 0)
       return { elementId, document: unavailable('binding_unavailable'), selection: unavailable('binding_unavailable') };
+    if (typeof element.automationId !== 'string' || !element.automationId || element.automationId.length > 512
+      || typeof element.className !== 'string' || element.className.length > 512) {
+      // The bridge binds by AutomationId. Notepad's RichEdit document has none, so its text is read
+      // through the engine's own selector instead.
+      if (['Document', 'Edit'].includes(element.controlType)) return this.readDocumentValue(window, signal, element);
+      return { elementId, document: unavailable('binding_unavailable'), selection: unavailable('binding_unavailable') };
+    }
     const result = await this.bridge('document', window, signal,
       [element.automationId, element.controlType, element.className, ...['x', 'y', 'width', 'height'].map(key => String(rect[key]))]);
     const invalid = () => fail('invalid_native_response', 'Invalid bounded TextPattern response.');
@@ -585,6 +590,31 @@ class WinappBackend {
     };
     if (result.method !== 'managed-uia-textpattern') invalid();
     return { elementId, provenance: result.method, document: read(result.document, false), selection: read(result.selection, true) };
+  }
+  // TextPattern readback by engine selector, for documents without an AutomationId. get-value falls
+  // back to ValuePattern, SelectionPattern and finally the Name (a label), so it runs only after
+  // get-property shows that the exact observed control answers TextPattern and is not a password
+  // field. This path cannot read the selection.
+  async readDocumentValue(window, signal, element) {
+    const elementId = element.id, slug = selector(elementId);
+    const unavailable = reason => ({ available: false, reason });
+    const result = document => ({ elementId, provenance: 'winapp-textpattern-value', document, selection: unavailable('selection_unavailable') });
+    const invalid = () => fail('invalid_native_response', 'Invalid document value response.');
+    const read = await this.command('get-property', ['-w', id(window.id), '--', slug], signal);
+    const node = read?.element, properties = read?.properties;
+    if (!object(node) || !object(properties) || read.elementId !== slug) invalid();
+    if (node.selector !== slug || (node.type || 'Unknown') !== element.controlType
+      || ![node.x, node.y, node.width, node.height].every(Number.isFinite) || !sameBounds(bounds(node), element.bounds)) fail('stale_element', 'The document control changed after the observation.');
+    if (properties.IsPassword !== 'False') return result(unavailable('password_or_unknown'));
+    // Whole-document formatting is read through TextPattern; every value is "Unavailable" without it.
+    const formatting = ['FontName', 'FontSize', 'FontWeight', 'ForegroundColor', 'IsItalic', 'StrikethroughStyle'];
+    if (!formatting.some(name => typeof properties[name] === 'string' && properties[name] !== 'Unavailable')) return result(unavailable('text_pattern_unavailable'));
+    const value = await this.command('get-value', ['-w', id(window.id), '--', slug], signal);
+    if (!object(value) || value.elementId !== slug || typeof value.text !== 'string') invalid();
+    let text = value.text.slice(0, 4096);
+    const last = text.charCodeAt(text.length - 1);
+    if (text.length < value.text.length && last >= 0xd800 && last <= 0xdbff) text = text.slice(0, -1);
+    return result({ available: true, text, truncated: text.length < value.text.length });
   }
   async observeVisual({ window, screenshotPath, signal }) {
     if (typeof screenshotPath !== 'string' || !path.isAbsolute(screenshotPath) || path.extname(screenshotPath).toLowerCase() !== '.png') fail('invalid_screenshot_path', 'An absolute PNG output path is required.');

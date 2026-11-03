@@ -6,7 +6,7 @@ const path = require('node:path');
 const { randomUUID, createHash } = require('node:crypto');
 const { DesktopLease } = require('./lease.cjs');
 const { ActivityIndicator } = require('./activity-indicator.cjs');
-const { validateAction, actionSupport } = require('./action-contract.cjs');
+const { validateAction, actionSupport, compactSupport } = require('./action-contract.cjs');
 const { createObservationMetrics, measure, count } = require('./observation-metrics.cjs');
 const { parseCaptureKeepLast, createCaptureRetention } = require('./capture-retention.cjs');
 const { downscalePng, DEFAULT_MAX_EDGE } = require('./png-scale.cjs');
@@ -220,7 +220,7 @@ function createComputerController(options = {}) {
     // No typed text, values, screenshots, or full window inventory in the journal.
     await fs.appendFile(path.join(session.directory, 'events.jsonl'), `${JSON.stringify({ at: new Date(now()).toISOString(), sessionId: session.id, ...event })}\n`);
   }
-  async function observeInternal(session, signal, { depth = DEFAULT_DEPTH, mode = 'full', documentElementId, includeOffscreen = false, screenshot = mode === 'accessibility' ? 'none' : 'full', screenshotPreference = screenshot, scope = {} } = {}) {
+  async function observeInternal(session, signal, { depth = DEFAULT_DEPTH, mode = 'full', documentElementId, includeOffscreen = false, screenshot = mode === 'accessibility' ? 'none' : 'full', screenshotPreference = screenshot, scope = {}, metrics: reportMetrics = false } = {}) {
     // A valid selective read revokes input authority even if readiness/capture fails.
     if (mode !== 'full') session.observation = null;
     const metrics = createObservationMetrics({ clock: options.metricsClock,
@@ -228,7 +228,9 @@ function createComputerController(options = {}) {
     observedBefore = true;
     return metrics.run(async () => {
       const result = await measure('observation', () => observeMeasured(session, signal, depth, mode, documentElementId, includeOffscreen, screenshot, screenshotPreference, scope));
-      result.metrics = metrics.snapshot();
+      // Stage timings are diagnostics, so they are returned only on request.
+      if (reportMetrics) result.metrics = metrics.snapshot();
+      if (session.observation?.id === result.observationId) session.observation.snapshot.metrics = reportMetrics;
       return result;
     });
   }
@@ -326,10 +328,12 @@ function createComputerController(options = {}) {
   }
 
   return {
-    doctor(callOptions) {
+    // `verbose` travels with the call options, like the listing filters.
+    doctor(callOptions = {}) {
       return queued(async signal => {
+        if (callOptions.verbose !== undefined && typeof callOptions.verbose !== 'boolean') throw fail('invalid_argument', 'verbose must be a boolean.');
         const result = await backend.doctor({ signal });
-        return { ...result, support: actionSupport(observationTtlMs),
+        return { ...result, support: callOptions.verbose ? actionSupport(observationTtlMs) : compactSupport(observationTtlMs),
           observationModes: { default: 'full', actionable: ['full'], evidenceOnly: ['accessibility', 'screenshot'], screenshotRequiresReadableUiaRoot: false,
             screenshotModes: { values: [...SCREENSHOT_MODES], default: 'full', actionableWithout: true, scaledMaxEdge: DEFAULT_MAX_EDGE } },
           observationScope: { rootElementId: true, interactiveOnly: true },
@@ -397,7 +401,7 @@ function createComputerController(options = {}) {
         }
       }, callOptions);
     },
-    observe({ sessionId, accessibilityDepth, mode, documentElementId, includeOffscreen, screenshot, rootElementId, interactiveOnly }, callOptions) {
+    observe({ sessionId, accessibilityDepth, mode, documentElementId, includeOffscreen, screenshot, rootElementId, interactiveOnly, metrics }, callOptions) {
       return queued(async signal => {
         const session = getSession(sessionId);
         const depth = validateDepth(accessibilityDepth), checkedMode = validateObservationMode(mode);
@@ -405,9 +409,10 @@ function createComputerController(options = {}) {
           || !documentElementId || documentElementId.length > 512 || documentElementId.startsWith('-') || /[\u0000-\u001f]/.test(documentElementId)))
           throw fail('invalid_document_request', 'documentElementId requires accessibility mode and a valid observed element ID.');
         if (includeOffscreen !== undefined && typeof includeOffscreen !== 'boolean') throw fail('invalid_observation', 'includeOffscreen must be a boolean.');
+        if (metrics !== undefined && typeof metrics !== 'boolean') throw fail('invalid_observation', 'metrics must be a boolean.');
         const screenshotMode = validateScreenshot(screenshot, checkedMode);
         const scope = validateScope(rootElementId, interactiveOnly, checkedMode);
-        const result = await observeInternal(session, signal, { depth, mode: checkedMode, documentElementId, includeOffscreen: includeOffscreen === true, screenshot: screenshotMode, scope });
+        const result = await observeInternal(session, signal, { depth, mode: checkedMode, documentElementId, includeOffscreen: includeOffscreen === true, screenshot: screenshotMode, scope, metrics: metrics === true });
         return retainCapture(session, result, signal);
       }, callOptions);
     },
@@ -441,7 +446,7 @@ function createComputerController(options = {}) {
           // `full` returns it; it keeps the consumed observation's depth, offscreen, scope and image setting.
           const snapshot = observation.snapshot;
           const refresh = scope => observeInternal(session, signal, { depth: snapshot.depth, mode: 'full',
-            includeOffscreen: snapshot.includeOffscreen === true, scope,
+            includeOffscreen: snapshot.includeOffscreen === true, scope, metrics: snapshot.metrics === true,
             screenshot: returnObservation === 'full' ? snapshot.screenshotPreference ?? 'full' : 'none',
             screenshotPreference: snapshot.screenshotPreference ?? 'full' });
           const scope = { ...(snapshot.rootElementId === undefined ? {} : { rootElementId: snapshot.rootElementId }), ...(snapshot.interactiveOnly ? { interactiveOnly: true } : {}) };

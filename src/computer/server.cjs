@@ -132,7 +132,7 @@ function createComputerServer({ controller, onError = () => {} } = {}) {
         // UTF-16 unit limit before crossing the controller boundary as well.
         if (method === "act") args = { ...args, action: parseAction(args.action) };
         // listWindows takes its filters with the call options.
-        const result = method === "doctor" ? await controller.doctor({ signal })
+        const result = method === "doctor" ? await controller.doctor({ ...args, signal })
           : method === "listWindows" ? await controller.listWindows({ ...args, signal })
           : await controller[method](args, { signal });
         controllerReturned = true;
@@ -146,8 +146,8 @@ function createComputerServer({ controller, onError = () => {} } = {}) {
     });
   }
 
-  register("trace_computer_doctor", "Check desktop provider and TRACE readiness without changing the desktop.",
-    z.strictObject({}), "doctor", readOnly);
+  register("trace_computer_doctor", "Check desktop provider and TRACE readiness without changing the desktop. support is compact (action names and the sha256 of the full descriptor) unless verbose is true.",
+    z.strictObject({ verbose: z.boolean().optional().describe('Return the full action support descriptor.') }), "doctor", readOnly);
   register("trace_computer_list_windows", "List desktop windows as id, pid, processName, title and size. Tiny, shell and helper windows are omitted (counted in omitted) unless verbose is true; verbose also returns every identity field. processName (exact, .exe optional) and title (substring) narrow the list; both ignore case.",
     z.strictObject({ verbose: z.boolean().optional(), processName: z.string().min(1).max(256).optional(), title: z.string().min(1).max(256).optional() }), "listWindows", readOnly);
   register("trace_computer_open_session", "Claim the desktop input lease for one window ID. An ID missing from the last listing (a just-launched window or a new dialog) is looked up once, so no new listing is needed. A session does not authorize acting on another window.",
@@ -158,7 +158,8 @@ function createComputerServer({ controller, onError = () => {} } = {}) {
       includeOffscreen: z.boolean().optional().describe('Include offscreen UIA nodes (default false; omitted nodes are counted in accessibility.offscreenOmitted).'),
       screenshot: z.enum(['none', 'scaled', 'full']).optional().describe('Image to return: none, scaled (longest edge at most 1280 px) or full. Default full; accessibility mode allows only none, screenshot mode not none.'),
       rootElementId: elementId.optional().describe('Observe only this observed element and its descendants.'),
-      interactiveOnly: z.boolean().optional().describe('Keep only interactive controls, each under its nearest kept ancestor.') })
+      interactiveOnly: z.boolean().optional().describe('Keep only interactive controls, each under its nearest kept ancestor.'),
+      metrics: z.boolean().optional().describe('Return stage timings and byte counts (default false).') })
       .refine(args => args.documentElementId === undefined || args.mode === 'accessibility',
         { message: 'documentElementId requires accessibility mode.', path: ['documentElementId'] })
       .refine(args => args.screenshot === undefined || (args.mode === 'accessibility' ? args.screenshot === 'none' : !(args.mode === 'screenshot' && args.screenshot === 'none')),

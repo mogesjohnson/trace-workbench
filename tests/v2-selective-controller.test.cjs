@@ -48,7 +48,7 @@ test('selective observations expose only requested evidence and never authorize 
   assert.equal(Object.hasOwn(full, 'mode'), false);
   const sessionDirectory = path.join(f.directory, 'sessions', session.sessionId);
   const filesBefore = await fs.readdir(sessionDirectory);
-  const a11y = await c.observe({ ...session, mode: 'accessibility', accessibilityDepth: 12 });
+  const a11y = await c.observe({ ...session, mode: 'accessibility', accessibilityDepth: 12, metrics: true });
   assert.notEqual(a11y.observationId, full.observationId);
   assert.equal(a11y.mode, 'accessibility'); assert.equal(a11y.actionable, false);
   assert.equal(a11y.accessibility.depth, 12); assert.equal(a11y.elements[0].id, 'button');
@@ -128,12 +128,12 @@ test('real backend and controller combine selective capture with bounded PNG rea
   });
   await controller.listWindows();
   const session = await controller.openSession({ windowId: pinned.id });
-  const a11y = await controller.observe({ ...session, mode: 'accessibility' });
+  const a11y = await controller.observe({ ...session, mode: 'accessibility', metrics: true });
   assert.equal(a11y.actionable, false);
   assert.equal(calls.includes('screenshot'), false);
   assert.equal(a11y.metrics.stages.backendPngRead, undefined);
   assert.equal(a11y.metrics.stages.fileRead, undefined);
-  const full = await controller.observe(session);
+  const full = await controller.observe({ ...session, metrics: true });
   assert.equal(calls.filter(verb => verb === 'screenshot').length, 1);
   assert.equal(full.metrics.bytes.backendPngRead, 33);
   assert.equal(full.metrics.bytes.controllerPngRead, png.length);
