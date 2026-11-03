@@ -6,6 +6,7 @@
 
 const { McpServer } = require('@modelcontextprotocol/server');
 const { StdioServerTransport } = require('@modelcontextprotocol/server/stdio');
+const { execFile } = require('node:child_process');
 const { z } = require('zod');
 const { version } = require('../../package.json');
 
@@ -85,9 +86,38 @@ function errorResult(error) {
   return { isError: true, content: [{ type: 'text', text: JSON.stringify(state) }], structuredContent: state };
 }
 
+const TRANSCRIBE_MODELS = ['tiny.en', 'base.en', 'small.en'];
+
+/**
+ * Default transcriber: runs phone-transcribe (scripts/phone, installed in the phone's Debian) on the
+ * machine this server runs on. TRACE_PHONE_TRANSCRIBE overrides the command as a JSON array, e.g.
+ * ["ssh","phone","proot-distro","login","debian","--","phone-transcribe"] from a PC.
+ */
+function commandTranscriber({ command = process.env.TRACE_PHONE_TRANSCRIBE } = {}) {
+  let argv = ['phone-transcribe'];
+  if (command) {
+    try { argv = JSON.parse(command); } catch { argv = null; }
+    if (!Array.isArray(argv) || !argv.length || !argv.every((part) => typeof part === 'string' && part)) {
+      throw new TypeError('TRACE_PHONE_TRANSCRIBE must be a JSON array of non-empty strings');
+    }
+  }
+  return ({ path, model, timeoutMs }) => new Promise((resolve, reject) => {
+    const args = [...argv.slice(1), '--json', '--model', model, '--', path];
+    execFile(argv[0], args, { timeout: timeoutMs, maxBuffer: 1 << 20, windowsHide: true }, (error, stdout, stderr) => {
+      if (error) {
+        const detail = String(stderr || '').trim().split('\n').pop() || error.message;
+        reject(new Error(`phone-transcribe failed: ${detail}`));
+        return;
+      }
+      const line = String(stdout).trim().split('\n').pop();
+      try { resolve(JSON.parse(line)); } catch { reject(new Error('phone-transcribe returned no JSON')); }
+    });
+  });
+}
+
 const readOnly = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false };
 
-function createPhoneServer({ controller, onError = () => {}, stopOnClose = true } = {}) {
+function createPhoneServer({ controller, transcribe, onError = () => {}, stopOnClose = true } = {}) {
   for (const method of ['connect', 'screen', 'wait', 'act', 'ui', 'find', 'release', 'logcat', 'stop', 'close']) {
     if (typeof controller?.[method] !== 'function') throw new TypeError(`Phone controller requires ${method}()`);
   }
@@ -173,6 +203,18 @@ function createPhoneServer({ controller, onError = () => {}, stopOnClose = true 
     z.strictObject({ lines: z.number().int().min(1).max(5000).optional(), filter: z.string().max(256).regex(/^[\w.*:\s-]+$/).optional() }),
     async (args) => result({ log: await controller.logcat(args) }), readOnly);
 
+  register('phone_transcribe',
+    'Transcribe a recording to text with whisper.cpp on the phone (A8 route 4; audio stays on the phone). path is a file on the machine that runs phone-transcribe (wav, m4a, ogg, mp3). base.en is the default; small.en is more accurate and about 3x slower. Does not record: the microphone is ask-first.',
+    z.strictObject({ path: text(4096), model: z.enum(TRANSCRIBE_MODELS).optional(),
+      timeoutMs: z.number().int().min(1000).max(600000).optional() }),
+    async ({ path, model = 'base.en', timeoutMs = 120000 }) => {
+      transcribe ??= commandTranscriber();
+      const out = await transcribe({ path, model, timeoutMs });
+      if (typeof out?.text !== 'string') throw new Error('phone-transcribe returned no text');
+      return result({ text: out.text, model: out.model ?? model, audioSeconds: out.audioSeconds ?? null,
+        elapsedSeconds: out.elapsedSeconds ?? null });
+    }, readOnly);
+
   return server;
 }
 
@@ -195,4 +237,4 @@ async function runPhoneServer(options = {}) {
   return server;
 }
 
-module.exports = { createPhoneServer, runPhoneServer, toControllerAction, KEYS };
+module.exports = { createPhoneServer, runPhoneServer, toControllerAction, commandTranscriber, KEYS };

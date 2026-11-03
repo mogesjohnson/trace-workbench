@@ -1,0 +1,48 @@
+{
+ "observedDate": "2026-11-03",
+ "device": "SM-S918U (S23 Ultra), Termux -> proot-distro Debian 13.7 (aarch64), 6 cores reported",
+ "build": {
+  "script": "scripts/phone/install-whisper.sh",
+  "whisperTag": "v1.9.5",
+  "whisperCommit": "d1be6fde11ac6e0407606b4e42fe72d34add8037",
+  "versionString": "whisper.cpp version: 1.9.5-dev",
+  "toolchain": "Debian gcc 14.2.0-19, cmake 3.31.6 (apt); Termux PATH entries removed for the build",
+  "whisperCliSha256": "1ea7a34dd7a9d6ecb3e7c54e1f7c1e666dc4c8d3adcafa9fd5b8303dc73ca8de",
+  "models": {"ggml-base.en.bin": "a03779c86df3323075f5e796cb2ce5029f00ec8869eee3fdfb897afe36c6d002",
+             "ggml-small.en.bin": "c6138d6d58ecc8322097e0f987c32f1be8bb0a18532a3f88f734d1bbf9c41e5d"},
+  "rerun": "Second run of install-whisper.sh on the built tree finished and reinstalled phone-transcribe (idempotent).",
+  "smallEnInstall": "install-whisper.sh small.en on the built tree: downloaded the 465 MB model in 28 s, rebuilt nothing, reinstalled phone-transcribe"
+ },
+ "runs": [
+  {"via": "phone-transcribe in Debian", "input": "whisper.cpp samples/jfk.mp3", "model": "base.en",
+   "text": "And so my fellow Americans, ask not what your country can do for you, ask what you can do for your country.", "exact": true},
+  {"via": "phone-transcribe --json in Debian", "input": "whisper.cpp samples/jfk.wav", "model": "base.en",
+   "audioSeconds": 11.0, "elapsedSeconds": 4.21, "exact": true},
+  {"via": "phone-transcribe --json in Debian", "input": "A8 clip cmd00_noisy (synthetic voice + noise)", "model": "base.en",
+   "reference": "open termux and run the phone bench", "text": "Open Turmox and run the phone bench.", "audioSeconds": 2.86, "elapsedSeconds": 3.55},
+  {"via": "phone-transcribe --json in Debian", "input": "A8 clip cmd03_noisy (synthetic voice + noise)", "model": "base.en",
+   "reference": "pull the latest changes and run the tests", "text": "Pull the latest changes and run the tests.", "audioSeconds": 3.45, "elapsedSeconds": 3.66},
+  {"via": "phone_transcribe MCP tool on the PC, TRACE_PHONE_TRANSCRIBE = ssh over adb forward into Debian", "input": "jfk.wav", "model": "base.en",
+   "audioSeconds": 11, "elapsedSeconds": 4.19, "exact": true},
+  {"via": "phone_transcribe MCP tool on the PC, same route", "input": "cmd03_noisy", "model": "base.en",
+   "text": "Pull the latest changes and run the tests.", "audioSeconds": 3.45, "elapsedSeconds": 3.64},
+  {"via": "phone-transcribe --json in Debian", "input": "whisper.cpp samples/jfk.wav", "model": "small.en",
+   "text": "And so, my fellow Americans, ask not what your country can do for you. Ask what you can do for your country.", "audioSeconds": 11.0, "elapsedSeconds": 16.31, "exact": true, "exactNote": "words exact; punctuation differs from base.en"},
+  {"via": "phone-transcribe --json in Debian (repeat)", "input": "whisper.cpp samples/jfk.wav", "model": "small.en",
+   "audioSeconds": 11.0, "elapsedSeconds": 16.68, "exact": true},
+  {"via": "phone-transcribe in Debian", "input": "whisper.cpp samples/jfk.mp3", "model": "small.en",
+   "text": "And so, my fellow Americans, ask not what your country can do for you. Ask what you can do for your country.", "exact": true},
+  {"via": "PC: ssh phone proot-distro login debian -- phone-transcribe --json -m small.en (the TRACE_PHONE_TRANSCRIBE route)", "input": "jfk.wav", "model": "small.en",
+   "audioSeconds": 11.0, "elapsedSeconds": 16.86, "exact": true}
+ ],
+ "errors": {
+  "missingModel": "small.en not installed (checked before it was downloaded) -> exit 2 with the download command",
+  "missingFile": "exit 2, 'no such file'"
+ },
+ "notRun": [
+  "phone-transcribe --record (live microphone): needs the owner speaking at the phone; recording stays ask-first under A1",
+  "tiny.en through phone-transcribe: not downloaded (not requested)",
+  "phone_transcribe from a phone-side Claude session (A3 path)"
+ ],
+ "note": "elapsedSeconds includes model load (fresh whisper-cli process per call). Audio stayed on the phone; only text left it. Test clips were removed from the phone after the runs."
+}
