@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# phone-transcribe: speech to text on the phone with whisper.cpp (A8 route 4).
+# Runs inside the Termux -> proot Debian install made by install-whisper.sh. Audio stays on the phone.
+#
+#   phone-transcribe [options] FILE      transcribe a recording (wav, m4a, ogg, mp3, ...)
+#   phone-transcribe [options] --record SECONDS
+#                                        record the microphone, then transcribe (A1: ask first)
+# Options:
+#   -m, --model NAME   tiny.en | base.en (default) | small.en, or a path to a ggml model file
+#   -t, --threads N    whisper threads (default 4)
+#   --json             print {"text","model","audioSeconds","elapsedSeconds"} instead of plain text
+#   --keep DIR         with --record, keep the recording in DIR (default: deleted after use)
+#   -h, --help
+set -euo pipefail
+
+ROOT="${WHISPER_ROOT:-/opt/whisper.cpp}"
+CLI="$ROOT/build/bin/whisper-cli"
+model="base.en"; threads=4; json=0; record=""; keep=""; input=""
+
+usage() { sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; }
+die() { echo "phone-transcribe: $*" >&2; exit 2; }
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -m|--model) model="${2:?}"; shift 2 ;;
+    -t|--threads) threads="${2:?}"; shift 2 ;;
+    --json) json=1; shift ;;
+    --record) record="${2:?}"; shift 2 ;;
+    --keep) keep="${2:?}"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    --) shift; input="${1:-}"; break ;;
+    -*) die "unknown option $1" ;;
+    *) input="$1"; shift ;;
+  esac
+done
+
+case "$model" in
+  */*|*.bin) model_file="$model" ;;
+  tiny.en|base.en|small.en) model_file="$ROOT/models/ggml-$model.bin" ;;
+  *) die "model must be tiny.en, base.en, small.en or a model file path" ;;
+esac
+[ -x "$CLI" ] || die "whisper-cli not found at $CLI; run install-whisper.sh"
+[ -f "$model_file" ] || die "model not found: $model_file (download: sh $ROOT/models/download-ggml-model.sh $model)"
+[[ "$threads" =~ ^[0-9]+$ ]] || die "--threads must be a number"
+command -v ffmpeg >/dev/null || die "ffmpeg not found (in Termux: pkg install ffmpeg)"
+
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+
+if [ -n "$record" ]; then
+  [ -z "$input" ] || die "give a FILE or --record, not both"
+  [[ "$record" =~ ^[0-9]+$ ]] && [ "$record" -ge 1 ] && [ "$record" -le 120 ] || die "--record takes 1 to 120 seconds"
+  command -v termux-microphone-record >/dev/null || die "termux-microphone-record not found (Termux:API)"
+  # Termux:API writes the file, so it must be a path Termux can reach: use the Termux home.
+  dir="${keep:-/data/data/com.termux/files/home/.cache/phone-transcribe}"
+  mkdir -p "$dir"
+  input="$dir/rec-$(date +%Y%m%d-%H%M%S).m4a"
+  termux-microphone-record -q >/dev/null 2>&1 || true
+  termux-microphone-record -f "$input" -l "$record" -r 16000 -c 1 >/dev/null
+  # Prompt only once the recorder has started, so the first words are not lost (owner-voice check, 3 Nov 2026).
+  for _ in $(seq 1 30); do [ -s "$input" ] && break; sleep 0.1; done
+  echo "SPEAK NOW (${record}s)" >&2
+  sleep "$record"; sleep 0.5
+  termux-microphone-record -q >/dev/null 2>&1 || true
+  [ -s "$input" ] || die "recording failed: $input is empty (microphone permission for Termux:API?)"
+  [ -n "$keep" ] || trap 'rm -rf "$work"; rm -f "$input"' EXIT
+fi
+
+[ -n "$input" ] || { usage >&2; exit 2; }
+[ -f "$input" ] || die "no such file: $input"
+
+wav="$work/in.wav"
+ffmpeg -nostdin -loglevel error -y -i "$input" -ar 16000 -ac 1 -c:a pcm_s16le "$wav" || die "ffmpeg could not read $input"
+bytes=$(stat -c %s "$wav")
+audio=$(awk -v b="$bytes" 'BEGIN { printf "%.2f", (b - 44) / 32000 }')
+
+start=$(date +%s.%N)
+"$CLI" -m "$model_file" -t "$threads" -nt -np -f "$wav" > "$work/out.txt" 2> "$work/err.txt" \
+  || { cat "$work/err.txt" >&2; die "whisper-cli failed"; }
+end=$(date +%s.%N)
+text=$(tr '\n' ' ' < "$work/out.txt" | sed 's/  */ /g; s/^ //; s/ $//')
+elapsed=$(awk -v a="$start" -v b="$end" 'BEGIN { printf "%.2f", b - a }')
+
+if [ "$json" = 1 ]; then
+  esc=$(printf '%s' "$text" | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/\\t/g')
+  name=$(basename "$model_file" .bin); name=${name#ggml-}
+  printf '{"text":"%s","model":"%s","audioSeconds":%s,"elapsedSeconds":%s}\n' "$esc" "$name" "$audio" "$elapsed"
+else
+  printf '%s\n' "$text"
+fi
