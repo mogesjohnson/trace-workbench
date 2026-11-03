@@ -11,7 +11,26 @@ const pin = require('./winapp-pin.json');
 const ROOT = path.resolve(__dirname, '../..');
 const DEFAULT_BINARY = path.join(ROOT, '.runtime', 'winapp', `v${pin.version}`, 'bin', 'winapp.exe');
 const DEFAULT_BRIDGE = path.join(ROOT, '.runtime', 'window-bridge', 'bin', 'TraceWindowBridge.exe');
-const PRUNABLE = new Set(['Group', 'Separator', 'Pane']);
+// interactiveOnly keeps these control types, Text that carries a value, and nodes with a toggle or
+// expand state. isInvokable counts only outside STRUCTURAL: Gecko reports it on every node.
+// Parts whose action the parent already offers are dropped: a ScrollBar with its line and page
+// buttons, the Edit and Text fields inside a list, tree or data item (Explorer lists a Name, Date
+// modified, Type and Size field per row), and a ComboBox's own Open button.
+const INTERACTIVE_TYPES = new Set(['Button', 'SplitButton', 'MenuItem', 'ComboBox', 'Edit', 'Hyperlink', 'TabItem', 'ListItem', 'TreeItem',
+  'CheckBox', 'RadioButton', 'Slider', 'Spinner', 'DataItem', 'HeaderItem', 'Document']);
+const ITEM_TYPES = new Set(['ListItem', 'TreeItem', 'DataItem']);
+const STRUCTURAL_TYPES = new Set(['Window', 'Pane', 'Group', 'Separator', 'TitleBar', 'MenuBar', 'Menu', 'ToolBar', 'Tab', 'List', 'Tree',
+  'Table', 'DataGrid', 'StatusBar', 'Header', 'Text', 'Image']);
+// `within` is what the walk is inside: 'skip' (a ScrollBar), 'item', or the type of the kept parent.
+function interactiveNode(element, within) {
+  if (within === 'skip' || element.type === 'Separator' || element.type === 'ScrollBar') return false;
+  if (within === 'item' && (element.type === 'Edit' || element.type === 'Text')) return false;
+  if (within === 'ComboBox' && element.type === 'Button') return false;
+  if (INTERACTIVE_TYPES.has(element.type) || element.hasMoreChildren === true) return true;
+  if (element.type === 'Text') return typeof element.value === 'string' && element.value.trim() !== '';
+  return ['on', 'off', 'indeterminate'].includes(element.toggleState) || ['expanded', 'collapsed'].includes(element.expandState)
+    || (element.isInvokable === true && !STRUCTURAL_TYPES.has(element.type));
+}
 const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj', 'native/TraceWindowBridge/Capture.cs', 'native/TraceWindowBridge/Applications.cs', 'native/TraceWindowBridge/Packages.cs'];
 
 class BackendError extends Error {
@@ -390,58 +409,52 @@ class WinappBackend {
   // Offscreen nodes are omitted unless requested; kept descendants attach to the
   // nearest kept ancestor. The root is always kept.
   // Scoping: `rootElementId` walks only that element's subtree (winapp's selector argument) and
-  // `interactiveOnly` uses winapp -i, which nests the full tree before collapsing non-interactive
-  // nodes, so survivors keep their nearest interactive ancestor. Both can drop the window root, so
-  // a depth-1 read supplies it: bounds, the capture selector and the movement guards stay
-  // window-level, and the window root stays the first element unless a subtree is requested.
+  // `interactiveOnly` reads the same tree and keeps only interactiveNode() nodes; survivors attach to
+  // their nearest kept ancestor. TRACE filters instead of winapp -i, because -i drops Documents and
+  // keeps every Gecko node. A subtree drops the window root, so a depth-1 read supplies it: bounds,
+  // the capture selector and the movement guards stay window-level, and the window root stays the
+  // first element unless a subtree is requested.
   async inspect(window, signal, depth = 8, { includeOffscreen = false, rootElementId, interactiveOnly = false } = {}) {
-    const scoped = rootElementId !== undefined, filtered = scoped || interactiveOnly;
+    const scoped = rootElementId !== undefined;
     const read = async (args, missing) => {
       const result = await this.command('inspect', ['-w', id(window.id), ...args], signal);
       const entry = result.windows?.find(candidate => String(candidate.hwnd) === window.id);
       if (!entry || entry.coordinateSpace !== 'physical-screen-pixels' || !Array.isArray(entry.elements) || (missing && !entry.elements.length)) fail('invalid_native_response', missing || 'Exact target UIA root was not returned.');
       return entry;
     };
-    const windowEntry = filtered ? await read(['--depth', '1'], 'Exact target UIA root was not returned.') : null;
+    const windowEntry = scoped ? await read(['--depth', '1'], 'Exact target UIA root was not returned.') : null;
     // winapp 0.7.1 can answer an unresolved selector with the window root, or fail with a generic
-    // error. A subtree read therefore counts only when its single top node is the requested
-    // element. -i can collapse a non-interactive scope root, so that case checks it separately.
+    // error. A subtree read therefore counts only when its single top node is the requested element.
     const scopeLost = () => fail('element_not_found', 'The scope root is not in this window now. Observe without rootElementId.');
-    const scopedRead = async (args, verify) => {
-      let entry;
-      try { entry = await read([...args, '--', selector(rootElementId)]); }
+    const deep = ['--depth', String(depth)];
+    let entry;
+    if (scoped) {
+      try { entry = await read([...deep, '--', selector(rootElementId)]); }
       catch (error) { if (signal?.aborted || !['element_not_found', 'stale_element', 'internal_error'].includes(error.code)) throw error; scopeLost(); }
-      if (verify && (entry.elements.length !== 1 || entry.elements[0]?.selector !== rootElementId)) scopeLost();
-      return entry;
-    };
-    if (scoped && interactiveOnly) await scopedRead(['--depth', '1'], true);
-    const deep = ['--depth', String(depth), ...(interactiveOnly ? ['-i'] : [])];
-    const entry = scoped ? await scopedRead(deep, !interactiveOnly)
-      : await read(deep, filtered ? undefined : 'Exact target UIA root was not returned.');
+      if (entry.elements.length !== 1 || entry.elements[0]?.selector !== rootElementId) scopeLost();
+    } else entry = await read(deep, 'Exact target UIA root was not returned.');
     const root = (windowEntry ?? entry).elements[0];
     const flat = [], hierarchy = [], active = new WeakSet();
-    let visited = 0, kept = 0, offscreenOmitted = 0, pruned = 0, truncated = false;
-    // Top-level nodes of a scoped or filtered walk are kept like the root.
-    let starts = entry.elements;
-    if (interactiveOnly && !scoped && entry.elements[0]?.selector !== root.selector) {
-      // The window root itself was collapsed by -i: keep it and hang the interactive nodes under it.
-      const { children, hasMoreChildren, ...windowRoot } = root;
-      starts = [{ ...windowRoot, children: entry.elements }];
-    }
-    const tops = new Set(scoped ? starts : [starts[0]]);
-    const visit = (element, parentNodeId = null, nestingDepth = 0) => {
+    let visited = 0, kept = 0, offscreenOmitted = 0, filteredOut = 0, truncated = false;
+    // The top node of a walk (window root or scope root) is always kept.
+    const starts = entry.elements, tops = new Set(scoped ? starts : [starts[0]]);
+    const inside = (element, within) => within === 'skip' || within === 'item' ? within
+      : element.type === 'ScrollBar' ? 'skip' : ITEM_TYPES.has(element.type) ? 'item' : element.type;
+    const visit = (element, parentNodeId = null, nestingDepth = 0, within = undefined) => {
       if (!object(element) || active.has(element)) fail('invalid_native_response', 'UIA tree contains an invalid node or cycle.');
       if (visited >= 10000 || nestingDepth > 32) fail('native_output_limit', 'UIA tree exceeds its node/depth bounds.');
       if (element.children != null && !Array.isArray(element.children)) fail('invalid_native_response', 'UIA children must be an array.');
       active.add(element);
       visited++;
-      if (!includeOffscreen && element.isOffscreen === true && !tops.has(element)) {
-        offscreenOmitted++;
-        for (const child of element.children || []) visit(child, parentNodeId, nestingDepth + 1);
+      const offscreen = !includeOffscreen && element.isOffscreen === true;
+      if ((offscreen || (interactiveOnly && !interactiveNode(element, within))) && !tops.has(element)) {
+        if (offscreen) offscreenOmitted++; else filteredOut++;
+        const below = interactiveOnly && (within === 'skip' || element.type === 'ScrollBar') ? 'skip' : within;
+        for (const child of element.children || []) visit(child, parentNodeId, nestingDepth + 1, below);
         active.delete(element);
         return;
       }
-      const nodeId = `n${kept++}`, flatAt = flat.length, hierarchyAt = hierarchy.length;
+      const nodeId = `n${kept++}`;
       const more = element.hasMoreChildren === true;
       if (more) truncated = true;
       if (!element.selector) {
@@ -461,19 +474,13 @@ class WinappBackend {
         if ([element.x, element.y, element.width, element.height].every(Number.isFinite) && element.width > 0 && element.height > 0) item.bounds = bounds(element);
         flat.push({ ...item, treeNodeId: nodeId, parentNodeId, ...(more ? { hasMoreChildren: true } : {}) });
       }
-      for (const child of element.children || []) visit(child, nodeId, nestingDepth + 1);
+      for (const child of element.children || []) visit(child, nodeId, nestingDepth + 1, interactiveOnly ? inside(element, within) : undefined);
       active.delete(element);
-      // winapp -i keeps unnamed structural containers. One that kept no descendant and offers no
-      // action carries nothing an agent can use, so it is dropped. Its node ID was the last assigned.
-      if (interactiveOnly && !tops.has(element) && !more && PRUNABLE.has(element.type) && !String(element.name || '').trim()
-        && !element.isInvokable && !element.toggleState && !element.expandState && flat.length + hierarchy.length === flatAt + hierarchyAt + 1) {
-        flat.length = flatAt; hierarchy.length = hierarchyAt; kept--; pruned++;
-      }
     };
     for (const element of starts) visit(element);
     return { bounds: bounds(root), rootSelector: selector(root.selector), elements: flat, hierarchy,
       coordinateSpace: entry.coordinateSpace, depth, truncated, includeOffscreen, offscreenOmitted, nodeCount: kept,
-      ...(scoped ? { rootElementId } : {}), ...(interactiveOnly ? { interactiveOnly: true, prunedContainers: pruned } : {}) };
+      ...(scoped ? { rootElementId } : {}), ...(interactiveOnly ? { interactiveOnly: true, filteredOut } : {}) };
   }
   // The common file dialog (#32770) keeps its own copy of the File name; a UIA ValuePattern write
   // changes the edit text but not that copy, so Save uses the previous name (seen live 2026-11-02).

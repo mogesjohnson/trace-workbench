@@ -167,7 +167,7 @@ test('P1-1: a scope root missing from the window fails closed, and one removed b
   assert.equal(next.structuredContent.outcome, 'completed', text(next));
 });
 
-test('P1-1: interactiveOnly uses winapp -i, keeps the window root and is reused at dispatch', async t => {
+test('P1-1: interactiveOnly filters in TRACE, keeps the window root and is reused at dispatch', async t => {
   const h = await harness(t);
   const sessionId = await session(h);
   const plain = (await h.call('observe', { sessionId, screenshot: 'none', accessibilityDepth: 3 })).structuredContent;
@@ -181,7 +181,9 @@ test('P1-1: interactiveOnly uses winapp -i, keeps the window root and is reused 
   assert.ok(value.elements.length < plain.elements.length);
   h.state.calls.length = 0;
   await h.call('act', { sessionId, observationId: value.observationId, action: { type: 'invoke', elementId: 'btn-save' }, returnObservation: 'none' });
-  assert.ok(inspects(h.state.calls).filter(args => args.includes('--depth') && args[args.indexOf('--depth') + 1] === '3').every(args => args.includes('-i')));
+  // Dispatch re-reads at the observed depth without winapp -i (TRACE filters, M4).
+  const reads = inspects(h.state.calls).filter(args => args.includes('--depth') && args[args.indexOf('--depth') + 1] === '3');
+  assert.ok(reads.length > 0 && !h.state.calls.some(args => args.includes('-i')));
   // Screenshot mode has no tree to scope.
   const rejected = await h.call('observe', { sessionId, mode: 'screenshot', interactiveOnly: true });
   assert.equal(rejected.isError, true);

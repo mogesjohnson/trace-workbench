@@ -89,6 +89,15 @@ function compactFocus(focused) {
   return { hasFocus: true, elementId: focused.elementId ?? null, name: short(focused.name), controlType: focused.controlType, ...(focused.binding ? { binding: focused.binding } : {}) };
 }
 // A bounded element diff between the consumed observation and the fresh one, keyed by element ID.
+// interactiveOnly returns a leaner element: no className, and enabled, offscreen and
+// secondaryActions only when they differ from true, false and []. Missing means the default.
+// The server-side snapshot keeps every field for dispatch and stale checks.
+function leanElement({ className, ...item }) {
+  if (item.enabled === true) delete item.enabled;
+  if (item.offscreen === false) delete item.offscreen;
+  if (Array.isArray(item.secondaryActions) && !item.secondaryActions.length) delete item.secondaryActions;
+  return item;
+}
 function elementDiff(before = [], after = []) {
   const old = new Map(), now = new Map();
   for (const item of before) if (!old.has(item.id)) old.set(item.id, item);
@@ -360,7 +369,7 @@ function createComputerController(options = {}) {
     }
     const result = {
       sessionId: session.id, observationId, window: snapshot.window, bounds,
-      elements: snapshot.elements ?? [], observedAt: new Date(observedAtMs).toISOString(),
+      elements: interactiveOnly ? (snapshot.elements ?? []).map(leanElement) : snapshot.elements ?? [], observedAt: new Date(observedAtMs).toISOString(),
       coordinateSpace: 'window-local-physical-pixels', captureMethod: snapshot.captureMethod ?? 'native-window',
       accessibility: { truncated: snapshot.truncated === true, depth: snapshot.depth,
         ...(Number.isInteger(snapshot.offscreenOmitted) && snapshot.offscreenOmitted > 0 ? { offscreenOmitted: snapshot.offscreenOmitted } : {}),
@@ -654,4 +663,4 @@ function createComputerController(options = {}) {
   };
 }
 
-module.exports = { createComputerController, defaultRuntimeDirectory, validateAction, validateDepth, validateScreenshot, elementDiff, safeError, listingNoise, listedWindow };
+module.exports = { createComputerController, leanElement, defaultRuntimeDirectory, validateAction, validateDepth, validateScreenshot, elementDiff, safeError, listingNoise, listedWindow };
