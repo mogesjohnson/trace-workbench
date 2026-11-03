@@ -9,12 +9,12 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { Client, InMemoryTransport } = require('@modelcontextprotocol/client');
-const { createPhoneServer, toControllerAction, KEYS } = require('../src/phone/server.cjs');
+const { createPhoneServer, toControllerAction, commandTranscriber, KEYS } = require('../src/phone/server.cjs');
 const { createPhoneController } = require('../src/phone/controller.cjs');
 const { newest, compare } = require('../scripts/build-phone-agent.cjs');
 const { fakeAgent, fakeAdb, tempDir, hello, jpeg } = require('./fixtures/phone-fakes.cjs');
 
-const TOOLS = ['phone_act', 'phone_connect', 'phone_logcat', 'phone_screen', 'phone_ui', 'phone_wait'];
+const TOOLS = ['phone_act', 'phone_connect', 'phone_logcat', 'phone_screen', 'phone_transcribe', 'phone_ui', 'phone_wait'];
 
 function agentHandler() {
   let hash = 'h1';
@@ -30,14 +30,14 @@ function agentHandler() {
   };
 }
 
-async function connection(t, { adbOptions } = {}) {
+async function connection(t, { adbOptions, transcribe } = {}) {
   const fake = await fakeAgent(agentHandler());
   const dir = tempDir();
   const dexPath = path.join(dir, 'classes.dex');
   fs.writeFileSync(dexPath, 'dex');
   const adb = fakeAdb(fake.port, adbOptions);
   const controller = createPhoneController({ adb, dexPath, framesDir: path.join(dir, 'frames') });
-  const server = createPhoneServer({ controller });
+  const server = createPhoneServer({ controller, transcribe });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await server.connect(serverTransport);
   const client = new Client({ name: 'trace-phone-test', version: '1.0.0' });
@@ -49,12 +49,12 @@ async function connection(t, { adbOptions } = {}) {
 
 const images = (result) => result.content.filter((c) => c.type === 'image');
 
-test('phone server lists exactly the six phone tools with read-only hints where safe', async (t) => {
+test('phone server lists exactly the seven phone tools with read-only hints where safe', async (t) => {
   const { client } = await connection(t);
   const { tools } = await client.listTools();
   assert.deepEqual(tools.map((tool) => tool.name).sort(), TOOLS);
   const hints = Object.fromEntries(tools.map((tool) => [tool.name, tool.annotations?.readOnlyHint]));
-  assert.deepEqual(hints, { phone_act: false, phone_connect: false, phone_logcat: true, phone_screen: true, phone_ui: true, phone_wait: true });
+  assert.deepEqual(hints, { phone_act: false, phone_connect: false, phone_logcat: true, phone_screen: true, phone_transcribe: true, phone_ui: true, phone_wait: true });
 });
 
 test('phone_connect picks the only USB device and starts the agent', async (t) => {
@@ -168,6 +168,37 @@ test('build helpers pick the newest SDK platform and build-tools that contain th
     assert.ok(compare([37, 0, 0], [36, 1]) > 0);
     assert.ok(compare([36], [36, 0, 1]) < 0);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('phone_transcribe defaults to base.en and reports transcriber failures as tool errors', async (t) => {
+  const calls = [];
+  const transcribe = async (request) => {
+    calls.push(request);
+    if (request.path.endsWith('missing.wav')) throw new Error('phone-transcribe failed: no such file');
+    return { text: 'open termux and run the phone bench', model: request.model, audioSeconds: 2.86, elapsedSeconds: 3.55 };
+  };
+  const { call } = await connection(t, { transcribe });
+  const ok = await call('phone_transcribe', { path: '/root/clip.m4a' });
+  assert.equal(ok.isError, undefined);
+  assert.deepEqual(ok.structuredContent, { text: 'open termux and run the phone bench', model: 'base.en', audioSeconds: 2.86, elapsedSeconds: 3.55 });
+  assert.deepEqual(calls[0], { path: '/root/clip.m4a', model: 'base.en', timeoutMs: 120000 });
+  const failed = await call('phone_transcribe', { path: '/root/missing.wav', model: 'small.en' });
+  assert.equal(failed.isError, true);
+  assert.match(failed.structuredContent.error.message, /no such file/);
+  const rejected = await call('phone_transcribe', { path: '/root/clip.m4a', model: 'large-v3' });
+  assert.equal(rejected.isError, true);
+  assert.equal(calls.length, 2);
+});
+
+test('commandTranscriber passes --json, the model and the path, and reads the last JSON line', async () => {
+  const echo = 'const a = process.argv.slice(1); if (a.includes("bad.wav")) { console.error("phone-transcribe: no such file: bad.wav"); process.exit(2); }'
+    + ' console.log("log line"); console.log(JSON.stringify({ text: a.join(" "), model: "base.en", audioSeconds: 1, elapsedSeconds: 0.5 }));';
+  const transcribe = commandTranscriber({ command: JSON.stringify([process.execPath, '-e', echo, '--']) });
+  const out = await transcribe({ path: 'a b.wav', model: 'tiny.en', timeoutMs: 10000 });
+  assert.equal(out.text, '--json --model tiny.en -- a b.wav');
+  await assert.rejects(transcribe({ path: 'bad.wav', model: 'base.en', timeoutMs: 10000 }), /phone-transcribe failed: phone-transcribe: no such file: bad\.wav/);
+  assert.throws(() => commandTranscriber({ command: 'phone-transcribe --json' }), /JSON array/);
+  assert.throws(() => commandTranscriber({ command: '[]' }), /JSON array/);
 });
 
 test('phone CLI prints help and rejects unknown commands without touching adb', () => {
