@@ -21,6 +21,9 @@ function safeError(error) {
   if (['unknown', 'not_dispatched'].includes(error.details?.outcome)) result.outcome = error.details.outcome;
   if (error.details?.cleanup === 'unknown') result.cleanup = 'unknown';
   if (error.details?.reason === 'not_in_observed_tree') result.reason = 'not_in_observed_tree';
+  const delivery = error.details?.textDelivery;
+  if (delivery?.status === 'missing' && Number.isInteger(delivery.prefixFound) && delivery.prefixFound >= 0)
+    result.textDelivery = { status: 'missing', prefixFound: delivery.prefixFound, ...(delivery.unchanged === true ? { unchanged: true } : {}) };
   if (Array.isArray(error.cleanupCodes)) result.cleanupCodes = error.cleanupCodes
     .filter(code => typeof code === 'string' && /^[a-z_]{1,64}$/.test(code)).slice(0, 8);
   const recovery = error.details?.recovery;
@@ -89,15 +92,26 @@ function compactFocus(focused) {
   return { hasFocus: true, elementId: focused.elementId ?? null, name: short(focused.name), controlType: focused.controlType, ...(focused.binding ? { binding: focused.binding } : {}) };
 }
 // A bounded element diff between the consumed observation and the fresh one, keyed by element ID.
-// interactiveOnly returns a leaner element: no className, and enabled, offscreen and
-// secondaryActions only when they differ from true, false and []. Missing means the default.
-// The server-side snapshot keeps every field for dispatch and stale checks.
+// interactiveOnly returns a leaner element: no className, no automationId when it equals the
+// element ID, and enabled, offscreen and secondaryActions only when they differ from true, false
+// and []. Missing means the default. The server-side snapshot keeps every field for dispatch and
+// stale checks.
 function leanElement({ className, ...item }) {
+  if (item.automationId === item.id) delete item.automationId;
   if (item.enabled === true) delete item.enabled;
   if (item.offscreen === false) delete item.offscreen;
   if (Array.isArray(item.secondaryActions) && !item.secondaryActions.length) delete item.secondaryActions;
   return item;
 }
+// The lean window keeps what names the target; open_session already returned its full identity
+// and the top-level bounds carry its geometry. The server-side snapshot keeps every field.
+function leanWindow(window) {
+  if (!window) return window;
+  const { id, pid, processName, title } = window;
+  return { id, pid, processName, title };
+}
+// The lean target state drops its constant provenance; the server-side snapshot keeps it.
+function leanTargetState({ provenance, ...state }) { return state; }
 function elementDiff(before = [], after = []) {
   const old = new Map(), now = new Map();
   for (const item of before) if (!old.has(item.id)) old.set(item.id, item);
@@ -368,7 +382,7 @@ function createComputerController(options = {}) {
       count('base64', screenshot.data.length);
     }
     const result = {
-      sessionId: session.id, observationId, window: snapshot.window, bounds,
+      sessionId: session.id, observationId, window: interactiveOnly ? leanWindow(snapshot.window) : snapshot.window, bounds,
       elements: interactiveOnly ? (snapshot.elements ?? []).map(leanElement) : snapshot.elements ?? [], observedAt: new Date(observedAtMs).toISOString(),
       coordinateSpace: 'window-local-physical-pixels', captureMethod: snapshot.captureMethod ?? 'native-window',
       accessibility: { truncated: snapshot.truncated === true, depth: snapshot.depth,
@@ -376,8 +390,8 @@ function createComputerController(options = {}) {
         ...(rootElementId === undefined ? {} : { rootElementId }), ...(interactiveOnly ? { interactiveOnly: true } : {}),
         ...(Array.isArray(snapshot.hierarchy) && snapshot.hierarchy.length ? { hierarchy: snapshot.hierarchy } : {}) },
       ...(documentElementId === undefined ? {} : { documentRead: snapshot.documentRead }),
-      focused: snapshot.focused ? { ...snapshot.focused } : { available: false, code: 'focus_unavailable' },
-      targetState: snapshot.targetState ?? { available: false },
+      focused: !snapshot.focused ? { available: false, code: 'focus_unavailable' } : interactiveOnly ? compactFocus(snapshot.focused) : { ...snapshot.focused },
+      targetState: !snapshot.targetState ? { available: false } : interactiveOnly ? leanTargetState(snapshot.targetState) : snapshot.targetState,
       ...(snapshot.restoredFromMinimized === true ? { preparation: [{ step: 'restore', status: 'restored' }] } : {}),
       ...(screenshot ? { screenshot } : {}),
     };
@@ -663,4 +677,4 @@ function createComputerController(options = {}) {
   };
 }
 
-module.exports = { createComputerController, leanElement, defaultRuntimeDirectory, validateAction, validateDepth, validateScreenshot, elementDiff, safeError, listingNoise, listedWindow };
+module.exports = { createComputerController, leanElement, leanWindow, defaultRuntimeDirectory, validateAction, validateDepth, validateScreenshot, elementDiff, safeError, listingNoise, listedWindow };
