@@ -1,4 +1,4 @@
-# Token cost fixes — handoff (2 November 2026, session 4)
+# Token cost fixes — handoff (2 November 2026, session 5)
 
 Work for [the token cost incident](https://github.com/mogesjohnson/trace-workbench/pull/97) (`docs/OBSERVATION_TOKEN_COST_INCIDENT.md` on PR #97). The
 owner asked for every issue in PR #97 to be fixed. This file records how far the
@@ -22,11 +22,60 @@ work got and what comes next.
   - `accept-replay-workflow` checks that its output does not match `/token/i`. Its
     output includes the checkout path, so it fails in any worktree whose path
     contains "token" (`token-cost-fixes`). That is a test artifact.
-- PR D (`fix/p2-followups`, draft, stacked on #100, **2 of 4 commits used**):
-  P2-1 and P2-2 done; P2-3 and P2-4 not started. The next session has 2 commits:
-  one `feat` for P2-3 and P2-4 (with tests) and one `docs` commit for the skill,
-  `docs/COMPUTER_USE.md`, `docs/OBSERVATION_METRICS.md`, `docs/RELEASE_2.0.0.md`
-  and this handoff.
+- PR #101 (`fix/p2-followups`, draft, stacked on #100, **4 of 4 commits used**):
+  P2-1…P2-4 are implemented and tested. Commit 4 holds this handoff and the source-guard
+  count fix (`tests/native-supervisor-contract.test.cjs` now expects 7 `register` calls).
+  The docs pass (skill, `docs/COMPUTER_USE.md`, `docs/OBSERVATION_METRICS.md`,
+  `docs/RELEASE_2.0.0.md`) has no commit left. Session 5's force-push amend was refused by
+  the auto-mode classifier, so **ask the owner**: approve amending commit 4 with
+  `--force-with-lease`, or put the docs in a stacked PR E. Do not add a fifth commit.
+  - The full-suite result for `e79caee` goes in the #101 body. See "Full suite" below.
+  - The body must also say that 2.0 needs `computer setup` rerun (the supervisor allow-list changed).
+
+## Done: P2-3 and P2-4 (PR #101, commit `e79caee`, session 5)
+
+- **P2-3, launch.** `trace_computer_launch { app }` (registered only when the controller has
+  `launch`, so fake controllers in older tests still list 6 tools). `controller.launch`:
+  - takes an App Paths name, case-insensitive with `.exe` optional. A `:` or a path separator
+    gives `application_unsupported`, so `ms-settings:` (Settings) is reported as unsupported.
+  - Lease: the launcher acquires the same lease as a session (the supervisor: one native owner
+    per controller). It refuses a launch with `desktop_busy` before discovery if a session is open.
+  - `discover({ match })` (new option in `installed-applications.cjs`) verifies only the named
+    registration. No match: `unknown_application`. If the registration exists but its EXE was
+    skipped (realpath/stat failed), the message names WindowsApps.
+  - Result: `{ outcome, app, pid, windows: [listedWindow…], cleanup }` (185 chars in the test).
+    The windows go into `discovered`, so `open_session` takes them with no new listing.
+  - An `unknown` outcome adds the name to `uncertainLaunches`, which refuses a relaunch with
+    `application_already_attempted`. After a verified launch or `not_dispatched`, a deliberate
+    relaunch is allowed. A fresh launcher is created for each call.
+  - Not known live: whether a direct spawn of a packaged WindowsApps EXE (Notepad, Firefox)
+    activates the app, and whether `fs.realpath` can read that path. Firefox may also hand off
+    to an existing instance and exit, which gives `unknown`/`application_timeout`.
+- **P2-4, modal follow.** `ownedModals()` lists windows once and keeps those whose
+  `ownerWindowId` is the session window, with the same pid and process creation time, excluding noise.
+  - `observe` and `act` add `ownedModal: { windowId, title, width, height, hint }` (158 chars)
+    when `targetState.enabled === false`.
+  - `observe { followModal: true }` retargets `session.window` under the same lease, pushes the
+    owner onto `session.owners` (so a nested confirm works) and records `modal_followed`.
+    With no modal it fails with `no_owned_modal`.
+  - When an act's target closes and an owner is stacked, the session pops back to the owner and
+    observes it. The result is `target_closed_after_dispatch` with `returnedToOwner: true`, a
+    fresh `observationId` and a compact summary (425 chars).
+  - Doctor adds `launch` and `ownedModal` fields: 2,431 chars (bar 2,500, about 70 chars left).
+- Tests: 4 new cases in `tests/v11-p2-followups.test.cjs` (9 in total), all passed. `npm run check`
+  passed. These focused suites passed: computer-mcp, claude-lifecycle, computer-controller,
+  v7-installed-applications, v9-compact-act, v1-capabilities, v2-selective-mcp and v10-p1-scoping.
+- Not yet updated: the server act/observe descriptions mention neither `ownedModal` nor
+  `returnedToOwner`. Add a short clause in the docs pass (watch tool-description size).
+- Live checks to propose to the owner (none run): Notepad readback on a real document, a launch of
+  Notepad/Firefox, and a Save As follow in Notepad.
+
+## Full suite
+
+- At `e79caee` (`node --test --test-timeout=300000 tests/*.test.cjs`, Node 26.2.0): 702 tests,
+  696 passed, 1 failed, 5 skipped (METHOD-BROWSER env). The failure was the production-source
+  guard counting 6 tools. Commit 4 updates it to 7, and that file then passed 19/19. The suite
+  has not been rerun after the fix; only that one file changed.
 - The personal skill discovery copies (`~/.claude`, `~/.agents`, `~/.grok`) were
   deliberately **not** synced. The installed `trace-computer` MCP runs from the main
   checkout (pre-2.0), so the new skill text would describe arguments it rejects. A dry
