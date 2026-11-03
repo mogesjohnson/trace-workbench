@@ -22,6 +22,7 @@ Done when `phone_connect` returns a `serial` and an `agent` with a `pid`.
 3. `phone_act` performs one action (tap, long_press, swipe, key, text, set_text, scroll, focus), waits on the phone until the screen is stable, and returns the new frame in the same call. Read that frame as the evidence for the step; `met:false` means the screen never settled within `timeoutMs`.
 4. `phone_wait` waits without link traffic for `until:"change"` (after something slow, such as a load) or `until:"stable"`.
 5. `phone_logcat` returns recent log lines; use a filterspec such as `ActivityManager:I *:S` to keep it short.
+6. `phone_transcribe` turns a recording into text with whisper.cpp on the phone (`base.en` by default, about 0.4x real time plus model load). It needs `scripts/phone/install-whisper.sh` run once in the phone's Debian. `path` is a file where `phone-transcribe` runs. From a PC, set `TRACE_PHONE_TRANSCRIBE` to a JSON argv that reaches Debian, such as `["ssh","phone","proot-distro","login","debian","--","phone-transcribe"]`. It never records: recording the microphone (`phone-transcribe --record SECONDS`) is ask-first.
 
 Coordinates default to `space:"image"`: pixels of the last returned frame. Use `space:"device"` only with bounds from `phone_ui` or other physical-pixel sources.
 

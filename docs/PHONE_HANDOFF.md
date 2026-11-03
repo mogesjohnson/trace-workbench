@@ -269,6 +269,7 @@ program, the typed command goes to that program.
 |---|---|---|
 | install `e227f4a` (`/opt/trace` had no ref) | pass | npm ci 175 packages in 18 s; `trace-phone ✔ Connected` |
 | rerun on this PR's docs commit (new ref) | pass | ref updated; `--check` shows the new ref and `✔ Connected`; staged archive and dex removed |
+| update `5613c91` to main `803fdc2` (3 Nov 2026, after the src/agentic-phone move) | pass | 41 s; npm ci 175 packages in 21 s; dex 25124 bytes; A2 profile no changes; `--check` shows `803fdc2` and `✔ Connected` |
 
 ## Task A3 phone Claude smoke test (1 November 2026, device run, owner-approved)
 
