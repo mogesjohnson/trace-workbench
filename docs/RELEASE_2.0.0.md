@@ -86,7 +86,16 @@ and three task-runs used 420k tokens of context
   returns its windows in the listing form for `open_session`. It fails with
   `desktop_busy` while a session is open, `unknown_application` for an unregistered name
   and `application_unsupported` for URIs and paths. After an `unknown` outcome a
-  relaunch is refused with `application_already_attempted`.
+  relaunch is refused with `application_already_attempted`. Single-instance apps
+  (Notepad 11, a running Firefox) hand the start to another process; a window that is
+  new since a pre-launch snapshot and whose executable resolves to the registered EXE
+  is then returned with `handedOff: true`. Anything less stays `unknown`. The snapshot
+  is taken before the launch deadline starts, and the deadline is 15 seconds; its expiry
+  is reported as `application_timeout`.
+- **File dialog File name.** `set_value` on the common file dialog's File name box
+  (`Edit` 1001 under `FileNameControlHost` in a `#32770` window) is refused as
+  `not_dispatched`: the dialog keeps its own copy of the name and would save under the
+  previous one. Type the name instead.
 - **Owned-modal follow (P2-4).** When the session window is disabled, `observe` and `act`
   report `ownedModal` (a dialog owned by the window, same process lifetime).
   `observe { followModal: true }` retargets the session under the same lease. When the
@@ -153,7 +162,25 @@ See the [V2 compatibility boundary](COMPUTER_USE.md#v2-compatibility-boundary-20
   exact Notepad-shaped RichEdit readback (CRLF, tab, accented text, emoji) with its
   refusals, the launch result (185 characters), the owned-modal hint (158 characters)
   and a Save As follow that returns to the owner (425 characters) without re-listing.
-- No live Notepad readback, launch or modal follow has been run.
+- Live checks on 2 November 2026 (Notepad 11.2607.14.0, Firefox 159, winapp 0.7.1):
+  - Notepad readback of a real document returned its 19 characters exactly; the
+    editor-scoped response was about 1.3 KB.
+  - A Save As follow, including a nested Confirm Save As, returned to the owner each time
+    with `returnedToOwner: true`; the typed file name saved and was verified on disk.
+  - `set_value` on the File name box reported `completed` and read back the new path,
+    but Save used the previous name. This led to the File name refusal above.
+  - Launching Notepad and Firefox started both apps but reported `unknown` (`cancelled`
+    and `window_bridge_failed`) because each handed off to another process. This led
+    to the handoff rule above.
+- Live recheck on 3 November 2026, through an MCP client against the fix branch:
+  - `set_value` on the Save As File name box returned `not_dispatched` (473-character
+    response); Cancel returned the session to Notepad.
+  - With the first 5-second deadline, which also covered the snapshot, both launches
+    timed out although the new windows appeared. A window listing took 0.6 to 0.9
+    seconds.
+  - With the snapshot moved before the deadline and a 15-second deadline, Notepad
+    returned `launched` with `handedOff: true` in 5.5 seconds and Firefox in 6.6
+    seconds, each with its new window (about 210-character responses).
 - No live desktop measurement and no 16-task head-to-head rerun has been made for
   this candidate.
 - Live acceptance from 1.x is reused at its stated scope. The full-result path that
