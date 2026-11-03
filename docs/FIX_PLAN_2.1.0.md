@@ -261,6 +261,15 @@ back.
 
 **Done when:** the bars pass in tests and live once, and CI is green.
 
+**Owner decision and implementation, 3 November.** A live capture showed that winapp `-i`
+drops Documents and that Gecko reports `isInvokable` on every node, so item 2 pruned
+nothing in Firefox. Filtering in TRACE alone left Firefox at 10,839 characters. The owner
+approved a lean element format for `interactiveOnly`: no `className`, and `enabled`,
+`offscreen` and `secondaryActions` only when they are not `true`, `false` and `[]`.
+TRACE now filters the normal tree instead of using `-i`, with the rules in
+[COMPUTER_USE.md](COMPUTER_USE.md). Items 1 and 2 are replaced by that filter; items 3
+and 4 stand. Fixture results: Firefox 7,624, Save As 9,449, Notepad keeps `Text editor`.
+
 ## M5. TRACE rerun and 2.1.0 release
 
 1. Bump to `2.1.0` (package and lockfile) and write `docs/RELEASE_2.1.0.md`: changes,
