@@ -126,19 +126,19 @@ function createComputerController(options = {}) {
     // No typed text, values, screenshots, or full window inventory in the journal.
     await fs.appendFile(path.join(session.directory, 'events.jsonl'), `${JSON.stringify({ at: new Date(now()).toISOString(), sessionId: session.id, ...event })}\n`);
   }
-  async function observeInternal(session, signal, depth = DEFAULT_DEPTH, mode = 'full') {
+  async function observeInternal(session, signal, depth = DEFAULT_DEPTH, mode = 'full', documentElementId) {
     // A valid selective read revokes input authority even if readiness/capture fails.
     if (mode !== 'full') session.observation = null;
     const metrics = createObservationMetrics({ clock: options.metricsClock,
       sample: observedBefore ? 'later-controller-attempt' : 'first-controller-attempt' });
     observedBefore = true;
     return metrics.run(async () => {
-      const result = await measure('observation', () => observeMeasured(session, signal, depth, mode));
+      const result = await measure('observation', () => observeMeasured(session, signal, depth, mode, documentElementId));
       result.metrics = metrics.snapshot();
       return result;
     });
   }
-  async function observeMeasured(session, signal, depth, mode) {
+  async function observeMeasured(session, signal, depth, mode, documentElementId) {
     signal = markedSignal(signal);
     await lease.assert(session.id);
     await measure('identity', () => currentWindow(session, signal));
@@ -146,7 +146,8 @@ function createComputerController(options = {}) {
     const observationId = randomUUID();
     const screenshotPath = mode === 'accessibility' ? undefined : path.join(session.directory, `${observationId}.png`);
     const snapshot = await measure('backend', () => backend.observe({ window: session.window, screenshotPath, signal, depth,
-      ...(mode === 'accessibility' ? { includeScreenshot: false } : {}) }));
+      ...(mode === 'accessibility' ? { includeScreenshot: false } : {}),
+      ...(documentElementId === undefined ? {} : { documentElementId }) }));
     // The effective depth stays server-side with the observation; actions cannot replace it.
     snapshot.depth = Number.isInteger(snapshot.depth) ? snapshot.depth : depth;
     if (!identityMatches(snapshot.window, session.window)) throw fail('window_changed', 'Observation returned a different window identity.');
@@ -176,6 +177,7 @@ function createComputerController(options = {}) {
       coordinateSpace: 'window-local-physical-pixels', captureMethod: snapshot.captureMethod ?? 'native-window',
       accessibility: { truncated: snapshot.truncated === true, depth: snapshot.depth,
         ...(Array.isArray(snapshot.hierarchy) ? { hierarchy: snapshot.hierarchy } : {}) },
+      ...(documentElementId === undefined ? {} : { documentRead: snapshot.documentRead }),
       focused: snapshot.focused ? { ...snapshot.focused } : { available: false, code: 'focus_unavailable' },
       targetState: snapshot.targetState ?? { available: false },
       ...(snapshot.restoredFromMinimized === true ? { preparation: [{ step: 'restore', status: 'restored' }] } : {}),
@@ -263,10 +265,14 @@ function createComputerController(options = {}) {
         }
       }, callOptions);
     },
-    observe({ sessionId, accessibilityDepth, mode }, callOptions) {
+    observe({ sessionId, accessibilityDepth, mode, documentElementId }, callOptions) {
       return queued(async signal => {
         const session = getSession(sessionId);
-        const result = await observeInternal(session, signal, validateDepth(accessibilityDepth), validateObservationMode(mode));
+        const depth = validateDepth(accessibilityDepth), checkedMode = validateObservationMode(mode);
+        if (documentElementId !== undefined && (checkedMode !== 'accessibility' || typeof documentElementId !== 'string'
+          || !documentElementId || documentElementId.length > 512 || documentElementId.startsWith('-') || /[\u0000-\u001f]/.test(documentElementId)))
+          throw fail('invalid_document_request', 'documentElementId requires accessibility mode and a valid observed element ID.');
+        const result = await observeInternal(session, signal, depth, checkedMode, documentElementId);
         return retainCapture(session, result, signal);
       }, callOptions);
     },

@@ -18,3 +18,23 @@ Hierarchy is structure, not document text or selected text. The separate opt-in
 document reader must distinguish empty, unavailable and truncated evidence and
 must not substitute labels for content. No new input authority follows from it.
 Focused synthetic hierarchy checks do not establish broader live app coverage.
+
+For a document read, first obtain the control's `elementId`, then call
+`trace_computer_observe` with `mode: "accessibility"` and
+`documentElementId: "<observed ID>"`. The fresh tree must contain that exact ID
+once. The native reader requires a unique AutomationId/type/class/bounds binding;
+missing metadata returns `binding_unavailable`. Ambiguous or stale targets reject.
+
+The `documentRead` result contains `document` and `selection`, each with an
+explicit `available` flag. Available document text has `text` and `truncated`;
+available selection has up to four `{text, truncated}` ranges plus a range-count
+`truncated` flag. Empty strings/ranges are valid evidence, never an unavailable
+marker. See [native limits](DOCUMENT_READER.md). Content is returned only on this
+opt-in request and is not journaled. Ordinary observation/action refreshes do not
+read document content. The read revokes any prior full observation's authority,
+including on provider failure, and its new observation ID cannot authorize input.
+
+The [owned-fixture receipt](../evidence/keyboard-accessibility/acceptance.json)
+records scoped live hierarchy, bounded document/selection, empty, password and
+unsupported-control checks. It includes independent state/cleanup and explicit
+coverage limits; it does not establish support across arbitrary applications.
