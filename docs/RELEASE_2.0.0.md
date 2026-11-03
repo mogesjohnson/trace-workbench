@@ -1,10 +1,10 @@
 # TRACE Workbench 2.0.0 (candidate, unpublished)
 
-**Status: candidate on a stacked development branch. Not published.** The owner
-approved a major version on 2 November 2026 so `trace_computer_act` can return a
-compact result by default. Publication follows the [release procedure](RELEASE_PROCEDURE.md)
-and needs explicit owner approval. The published release is still
-[1.1.0](RELEASE_1.1.0.md).
+**Status: candidate on `main`. Not published.** The owner approved a major version on
+2 November 2026 so `trace_computer_act` can return a compact result by default.
+Publication follows the [release procedure](RELEASE_PROCEDURE.md) and needs explicit
+owner approval. The published release is still [1.1.0](RELEASE_1.1.0.md). Fixes for the
+known limits below are planned for 2.1.0 ([plan](FIX_PLAN_2.1.0.md)).
 
 ## Why
 
@@ -181,7 +181,30 @@ See the [V2 compatibility boundary](COMPUTER_USE.md#v2-compatibility-boundary-20
   - With the snapshot moved before the deadline and a 15-second deadline, Notepad
     returned `launched` with `handedOff: true` in 5.5 seconds and Firefox in 6.6
     seconds, each with its new window (about 210-character responses).
-- No live desktop measurement and no 16-task head-to-head rerun has been made for
-  this candidate.
+- Head-to-head on 3 November 2026 against agent-desktop 1.0.2, 4 tasks × 2 runs
+  ([results](HEAD_TO_HEAD_2026-11-03.md)): both tools passed 6/8. Notepad text, Save As
+  and Firefox passed in every run; Settings failed in every run (G3 below). TRACE used
+  about 94k context tokens (upper bound), 68 calls and 151,697 response characters;
+  three task-runs had cost 420k tokens on 2 November.
 - Live acceptance from 1.x is reused at its stated scope. The full-result path that
   acceptance scripts request is unchanged.
+
+## Known limits
+
+Found in the [head-to-head](HEAD_TO_HEAD_2026-11-03.md); fixes are planned for 2.1.0.
+
+- **G1, session stuck after recovery.** After `computer recover --apply`, the running
+  MCP server keeps the cached release error: `close_session` keeps failing and `launch`
+  returns `desktop_busy`. Workaround: reconnect `trace-computer` (`/mcp`) before the
+  next session.
+- **G2, keyboard close.** Closing a window with a shortcut (ctrl+shift+w, ctrl+w,
+  alt+f4) returns `unknown` / `input_recovery_required` with native
+  `foreground_unavailable`, and quarantines the session. Workaround: close windows with
+  their Close button; Close and Save return `target_closed_after_dispatch`.
+- **G3, packaged apps.** Settings and other packaged apps without an App Paths entry
+  cannot be launched (`unknown_application`); `ms-settings:` is refused as
+  `application_unsupported`. No workaround inside TRACE.
+- **G4, `interactiveOnly` size.** `interactiveOnly` drops Notepad's `Document` editor
+  and keeps empty groups and separators: a Save As followed at depth 8 was 20,882
+  characters and a Firefox window at depth 6 was 18,094. Workaround: observe at depth
+  2–3 with `rootElementId`; a document read needs depth 2 or more.

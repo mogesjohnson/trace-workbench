@@ -12,7 +12,7 @@ Keep one implementation commit, one verification commit, and one documentation c
 
 ## Versions and releases
 
-A `2.0.0` candidate is in development on a stacked branch. It makes the act result compact by default, which needs a major version under the V1 boundary. Its [candidate release notes](docs/RELEASE_2.0.0.md) carry the migration notes. It is not published.
+The release candidate is `2.0.0` on `main`. It makes the act result compact by default, which needs a major version under the V1 boundary. Its [candidate release notes](docs/RELEASE_2.0.0.md) carry the migration notes, the head-to-head result and known limits G1–G4. It is not published: final-main CI, exact archive, reviewed assets and owner approval remain required. Fixes for the known limits are planned as `2.1.0`.
 
 The published package is `1.1.0`, covering additive selective observation modes, scoped observation cost reductions, numeric reporting and opt-in current-session capture retention. [Release notes](docs/RELEASE_1.1.0.md) preserve compatibility and evidence limits. Tag `v1.1.0` pins tested source `ccf8734`; the [publication receipt](evidence/release-1.1.0/publication.json) binds final-main CI, exact archive and five verified assets. Later receipt/documentation commits do not replace that archive.
 
