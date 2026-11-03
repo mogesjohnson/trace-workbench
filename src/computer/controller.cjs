@@ -69,6 +69,16 @@ function validateScreenshot(screenshot, mode) {
   if (mode === 'screenshot' && screenshot === 'none') throw fail('invalid_observation', 'Screenshot mode requires an image.');
   return screenshot;
 }
+const validElementId = value => typeof value === 'string' && value.length > 0 && value.length <= 512 && !value.startsWith('-') && !/[\u0000-\u001f]/.test(value);
+// rootElementId observes one subtree of the window; interactiveOnly keeps interactive controls
+// (and truncation markers) under their nearest kept ancestor. Neither applies to screenshot mode.
+function validateScope(rootElementId, interactiveOnly, mode) {
+  if (rootElementId === undefined && interactiveOnly === undefined) return {};
+  if (mode === 'screenshot') throw fail('invalid_observation', 'Screenshot mode has no accessibility tree to scope.');
+  if (rootElementId !== undefined && !validElementId(rootElementId)) throw fail('invalid_observation', 'rootElementId must be an observed element ID.');
+  if (interactiveOnly !== undefined && typeof interactiveOnly !== 'boolean') throw fail('invalid_observation', 'interactiveOnly must be a boolean.');
+  return { ...(rootElementId === undefined ? {} : { rootElementId }), ...(interactiveOnly ? { interactiveOnly: true } : {}) };
+}
 const RETURN_OBSERVATIONS = ['full', 'summary', 'none'];
 const DIFF_LIMIT = 15;
 const short = value => { const text = String(value ?? ''); return text.length > 80 ? `${text.slice(0, 79)}…` : text; };
@@ -102,6 +112,39 @@ function actSummary(before, fresh) {
   return { elementCount: fresh.elements?.length ?? 0, focused: compactFocus(fresh.focused),
     ...(titleChanged ? { titleChanged: true, title: short(fresh.window?.title) } : {}),
     targetState: fresh.targetState, changes: elementDiff(before.elements, fresh.elements) };
+}
+
+// The default listing drops windows an agent cannot use: tiny or zero-size helpers, cloaked shell
+// hosts (lock screen, touch keyboard, Start, Search, notification surfaces), explorer helper
+// classes and untitled UWP frames. `verbose` lists everything with every identity field.
+const SHELL_PROCESSES = new Set(['lockapp', 'textinputhost', 'shellexperiencehost', 'startmenuexperiencehost', 'searchhost']);
+const SHELL_CLASSES = new Set(['ThumbnailDeviceHelperWnd', 'EdgeUiInputTopWndClass', 'Windows.Internal.Shell.TabProxyWindow',
+  'Shell_TrayWnd', 'Shell_SecondaryTrayWnd', 'Progman', 'WorkerW']);
+const MIN_LISTED_EDGE = 8;
+function listingNoise(window) {
+  if (!(window.bounds?.width >= MIN_LISTED_EDGE && window.bounds?.height >= MIN_LISTED_EDGE)) return 'tiny';
+  if (SHELL_PROCESSES.has(String(window.processName).toLowerCase()) || SHELL_CLASSES.has(window.className)) return 'shell';
+  if (window.className === 'ApplicationFrameWindow' && !window.title) return 'untitled-frame';
+  return null;
+}
+// Executable paths, process creation times and session IDs stay server-side for identity checks.
+function listedWindow(window) {
+  const title = String(window.title ?? '');
+  return { id: window.id, pid: window.pid, processName: window.processName, title: title.length > 160 ? `${title.slice(0, 159)}…` : title,
+    width: window.bounds?.width ?? null, height: window.bounds?.height ?? null,
+    ...(window.foreground === true ? { foreground: true } : {}), ...(window.ownerWindowId ? { ownerWindowId: window.ownerWindowId } : {}),
+    ...(window.identity?.available === false ? { identity: window.identity } : {}) };
+}
+const LIST_TEXT_LIMIT = 256;
+function validateListing({ verbose, processName, title } = {}) {
+  if (verbose !== undefined && typeof verbose !== 'boolean') throw fail('invalid_argument', 'verbose must be a boolean.');
+  for (const [name, value] of [['processName', processName], ['title', title]]) {
+    if (value !== undefined && (typeof value !== 'string' || !value || value.length > LIST_TEXT_LIMIT)) throw fail('invalid_argument', `${name} must be a non-empty string of at most ${LIST_TEXT_LIMIT} characters.`);
+  }
+  const wantedProcess = processName?.toLowerCase().replace(/\.exe$/, ''), wantedTitle = title?.toLowerCase();
+  return { verbose: verbose === true, filtered: processName !== undefined,
+    matches: window => (wantedProcess === undefined || String(window.processName).toLowerCase() === wantedProcess)
+      && (wantedTitle === undefined || String(window.title ?? '').toLowerCase().includes(wantedTitle)) };
 }
 
 function createComputerController(options = {}) {
@@ -169,23 +212,27 @@ function createComputerController(options = {}) {
     }
     return current;
   }
+  async function targetClosed(session, signal) {
+    if (typeof backend.targetClosed !== 'function') return false;
+    try { return await backend.targetClosed(session.window, { signal }) === true; } catch { return false; }
+  }
   async function record(session, event) {
     // No typed text, values, screenshots, or full window inventory in the journal.
     await fs.appendFile(path.join(session.directory, 'events.jsonl'), `${JSON.stringify({ at: new Date(now()).toISOString(), sessionId: session.id, ...event })}\n`);
   }
-  async function observeInternal(session, signal, { depth = DEFAULT_DEPTH, mode = 'full', documentElementId, includeOffscreen = false, screenshot = mode === 'accessibility' ? 'none' : 'full', screenshotPreference = screenshot } = {}) {
+  async function observeInternal(session, signal, { depth = DEFAULT_DEPTH, mode = 'full', documentElementId, includeOffscreen = false, screenshot = mode === 'accessibility' ? 'none' : 'full', screenshotPreference = screenshot, scope = {} } = {}) {
     // A valid selective read revokes input authority even if readiness/capture fails.
     if (mode !== 'full') session.observation = null;
     const metrics = createObservationMetrics({ clock: options.metricsClock,
       sample: observedBefore ? 'later-controller-attempt' : 'first-controller-attempt' });
     observedBefore = true;
     return metrics.run(async () => {
-      const result = await measure('observation', () => observeMeasured(session, signal, depth, mode, documentElementId, includeOffscreen, screenshot, screenshotPreference));
+      const result = await measure('observation', () => observeMeasured(session, signal, depth, mode, documentElementId, includeOffscreen, screenshot, screenshotPreference, scope));
       result.metrics = metrics.snapshot();
       return result;
     });
   }
-  async function observeMeasured(session, signal, depth, mode, documentElementId, includeOffscreen, screenshotMode, screenshotPreference) {
+  async function observeMeasured(session, signal, depth, mode, documentElementId, includeOffscreen, screenshotMode, screenshotPreference, { rootElementId, interactiveOnly = false }) {
     signal = markedSignal(signal);
     await lease.assert(session.id);
     await measure('identity', () => currentWindow(session, signal, mode === 'screenshot'));
@@ -197,10 +244,14 @@ function createComputerController(options = {}) {
       ...(!capture ? { includeScreenshot: false } : {}),
       ...(mode === 'screenshot' ? { visualOnly: true } : {}),
       ...(includeOffscreen ? { includeOffscreen: true } : {}),
+      ...(rootElementId === undefined ? {} : { rootElementId }), ...(interactiveOnly ? { interactiveOnly: true } : {}),
       ...(documentElementId === undefined ? {} : { documentElementId }) }));
     // The effective depth stays server-side with the observation; actions cannot replace it.
     snapshot.depth = Number.isInteger(snapshot.depth) ? snapshot.depth : depth;
     snapshot.includeOffscreen = includeOffscreen;
+    // The scope is retained the same way, so dispatch and the post-action refresh reuse it.
+    if (rootElementId === undefined) delete snapshot.rootElementId; else snapshot.rootElementId = rootElementId;
+    snapshot.interactiveOnly = interactiveOnly;
     // What the caller asked for, kept for a later act with returnObservation: full.
     snapshot.screenshotPreference = screenshotPreference;
     if (!identityMatches(snapshot.window, session.window)) throw fail('window_changed', 'Observation returned a different window identity.');
@@ -236,6 +287,7 @@ function createComputerController(options = {}) {
       coordinateSpace: 'window-local-physical-pixels', captureMethod: snapshot.captureMethod ?? 'native-window',
       accessibility: { truncated: snapshot.truncated === true, depth: snapshot.depth,
         ...(Number.isInteger(snapshot.offscreenOmitted) && snapshot.offscreenOmitted > 0 ? { offscreenOmitted: snapshot.offscreenOmitted } : {}),
+        ...(rootElementId === undefined ? {} : { rootElementId }), ...(interactiveOnly ? { interactiveOnly: true } : {}),
         ...(Array.isArray(snapshot.hierarchy) && snapshot.hierarchy.length ? { hierarchy: snapshot.hierarchy } : {}) },
       ...(documentElementId === undefined ? {} : { documentRead: snapshot.documentRead }),
       focused: snapshot.focused ? { ...snapshot.focused } : { available: false, code: 'focus_unavailable' },
@@ -280,7 +332,10 @@ function createComputerController(options = {}) {
         return { ...result, support: actionSupport(observationTtlMs),
           observationModes: { default: 'full', actionable: ['full'], evidenceOnly: ['accessibility', 'screenshot'], screenshotRequiresReadableUiaRoot: false,
             screenshotModes: { values: [...SCREENSHOT_MODES], default: 'full', actionableWithout: true, scaledMaxEdge: DEFAULT_MAX_EDGE } },
-          actResult: { returnObservation: [...RETURN_OBSERVATIONS], default: 'summary', diffLimit: DIFF_LIMIT },
+          observationScope: { rootElementId: true, interactiveOnly: true },
+          actResult: { returnObservation: [...RETURN_OBSERVATIONS], default: 'summary', diffLimit: DIFF_LIMIT, closedTargetOutcome: 'target_closed_after_dispatch' },
+          windowListing: { verbose: true, filters: ['processName', 'title'], defaultOmits: ['tiny', 'shell', 'untitled-frame'] },
+          responseSize: { meta: 'trace/response', field: 'responseBytes' },
           captureRetention: { mode: captureKeepLast ? 'keep-last' : 'preserve', keepLast: captureKeepLast,
             scope: 'validated-current-session-captures', onClose: captureKeepLast ? 'remove-tracked' : 'preserve' }, readiness: {
           native: { ready: result.ready === true, code: result.code || null, reason: result.reason || null },
@@ -288,17 +343,29 @@ function createComputerController(options = {}) {
         } };
       }, callOptions);
     },
-    listWindows(callOptions) {
+    // Listing options travel with the call options: { signal, verbose, processName, title }.
+    listWindows(callOptions = {}) {
       return queued(async signal => {
+        const listing = validateListing(callOptions);
         const windows = targetWindows(await backend.listWindows({ signal }));
+        // Every listed target stays selectable, including ones a filter or the default view hides.
         discovered = new Map(windows.map(window => [window.id, window]));
-        return { windows };
+        const wanted = windows.filter(listing.matches);
+        if (listing.verbose) return { windows: wanted };
+        // An explicit process filter is a deliberate choice, so the noise filter does not apply.
+        const shown = listing.filtered ? wanted : wanted.filter(window => !listingNoise(window));
+        const omitted = wanted.length - shown.length;
+        return { windows: shown.map(listedWindow), ...(omitted ? { omitted, hint: 'verbose: true also lists tiny, shell and helper windows.' } : {}) };
       }, callOptions);
     },
     openSession({ windowId }, callOptions) {
       return queued(async signal => {
-        const selected = discovered.get(windowId);
-        if (!selected) throw fail('unknown_window', 'Select a windowId returned by list_windows.');
+        // A window that appeared after the last listing (a just-launched app or a new dialog) is
+        // looked up server-side once, so the caller need not list again.
+        if (!discovered.has(windowId)) discovered = new Map(targetWindows(await backend.listWindows({ signal })).map(window => [window.id, window]));
+        const listed = discovered.get(windowId);
+        if (!listed) throw fail('unknown_window', 'No current window has this windowId. Choose one from list_windows.');
+        const { className, foreground, ...selected } = listed;
         if (selected.identity?.available === false) throw fail('window_identity_unavailable', 'The selected window identity could not be inspected. Choose an available target.');
         const open = backend.openWindow ?? backend.currentWindow;
         const current = open ? await open.call(backend, selected, { signal })
@@ -330,7 +397,7 @@ function createComputerController(options = {}) {
         }
       }, callOptions);
     },
-    observe({ sessionId, accessibilityDepth, mode, documentElementId, includeOffscreen, screenshot }, callOptions) {
+    observe({ sessionId, accessibilityDepth, mode, documentElementId, includeOffscreen, screenshot, rootElementId, interactiveOnly }, callOptions) {
       return queued(async signal => {
         const session = getSession(sessionId);
         const depth = validateDepth(accessibilityDepth), checkedMode = validateObservationMode(mode);
@@ -339,7 +406,8 @@ function createComputerController(options = {}) {
           throw fail('invalid_document_request', 'documentElementId requires accessibility mode and a valid observed element ID.');
         if (includeOffscreen !== undefined && typeof includeOffscreen !== 'boolean') throw fail('invalid_observation', 'includeOffscreen must be a boolean.');
         const screenshotMode = validateScreenshot(screenshot, checkedMode);
-        const result = await observeInternal(session, signal, { depth, mode: checkedMode, documentElementId, includeOffscreen: includeOffscreen === true, screenshot: screenshotMode });
+        const scope = validateScope(rootElementId, interactiveOnly, checkedMode);
+        const result = await observeInternal(session, signal, { depth, mode: checkedMode, documentElementId, includeOffscreen: includeOffscreen === true, screenshot: screenshotMode, scope });
         return retainCapture(session, result, signal);
       }, callOptions);
     },
@@ -363,26 +431,44 @@ function createComputerController(options = {}) {
         signal.throwIfAborted();
         const actionId = randomUUID();
         await record(session, { type: 'action_started', actionId, observationId, actionType: checked.type });
-        let nativeCompleted = false;
+        let nativeCompleted = false, nativeResult;
         try {
           signal.throwIfAborted();
           indicator.assertActive();
-          const nativeResult = await backend.act({ window: session.window, observation: observation.snapshot, action: checked, signal });
+          nativeResult = await backend.act({ window: session.window, observation: observation.snapshot, action: checked, signal });
           nativeCompleted = true;
           // The fresh observation always runs server-side so the next action has authority. Only
-          // `full` returns it; it keeps the consumed observation's depth, offscreen and image setting.
-          const fresh = await observeInternal(session, signal, { depth: observation.snapshot.depth, mode: 'full',
-            includeOffscreen: observation.snapshot.includeOffscreen === true,
-            screenshot: returnObservation === 'full' ? observation.snapshot.screenshotPreference ?? 'full' : 'none',
-            screenshotPreference: observation.snapshot.screenshotPreference ?? 'full' });
+          // `full` returns it; it keeps the consumed observation's depth, offscreen, scope and image setting.
+          const snapshot = observation.snapshot;
+          const refresh = scope => observeInternal(session, signal, { depth: snapshot.depth, mode: 'full',
+            includeOffscreen: snapshot.includeOffscreen === true, scope,
+            screenshot: returnObservation === 'full' ? snapshot.screenshotPreference ?? 'full' : 'none',
+            screenshotPreference: snapshot.screenshotPreference ?? 'full' });
+          const scope = { ...(snapshot.rootElementId === undefined ? {} : { rootElementId: snapshot.rootElementId }), ...(snapshot.interactiveOnly ? { interactiveOnly: true } : {}) };
+          let fresh, scopeLost = false;
+          try { fresh = await refresh(scope); }
+          catch (error) {
+            // The action can remove its own scope root (a closed pane or dialog). Refresh the whole
+            // window once instead; the input has already been sent.
+            if (scope.rootElementId === undefined || error.code !== 'element_not_found' || signal.aborted) throw error;
+            const { rootElementId, ...unscoped } = scope;
+            fresh = await refresh(unscoped); scopeLost = true;
+          }
           await record(session, { type: 'action_completed', actionId, observationId: fresh.observationId });
           await retainCapture(session, fresh, signal);
-          const completed = { actionId, outcome: 'completed', verification: 'fresh_observation' };
+          const completed = { actionId, outcome: 'completed', verification: 'fresh_observation', ...(scopeLost ? { scopeLost: true } : {}) };
           if (returnObservation === 'full') return { ...completed, nativeResult, observation: fresh };
           if (returnObservation === 'none') return { ...completed, observationId: fresh.observationId };
           return { ...completed, nativeResult, observationId: fresh.observationId, summary: actSummary(observation.result, fresh) };
         } catch (error) {
           session.observation = null;
+          // Input was sent and the refresh failed because the window itself is gone (Save, Close, OK).
+          // This is a distinct, expected outcome rather than an internal error.
+          if (nativeCompleted && !signal.aborted && !safeError(error).inputRecoveryRequired && await targetClosed(session, signal)) {
+            await record(session, { type: 'action_target_closed', actionId }).catch(() => {});
+            return { actionId, outcome: 'target_closed_after_dispatch', verification: 'window_closed', nativeResult,
+              nextStep: 'The input was sent and the session window then closed. Close this session; list windows to continue in another window.' };
+          }
           const outcome = !nativeCompleted && error.details?.outcome === 'not_dispatched' ? 'not_dispatched' : 'unknown';
           await record(session, { type: outcome === 'not_dispatched' ? 'action_not_dispatched' : 'action_unknown', actionId, errorCode: error.code ?? 'backend_error' }).catch(() => {});
           const projected = safeError(error);
@@ -434,4 +520,4 @@ function createComputerController(options = {}) {
   };
 }
 
-module.exports = { createComputerController, defaultRuntimeDirectory, validateAction, validateDepth, validateScreenshot, elementDiff, safeError };
+module.exports = { createComputerController, defaultRuntimeDirectory, validateAction, validateDepth, validateScreenshot, elementDiff, safeError, listingNoise, listedWindow };

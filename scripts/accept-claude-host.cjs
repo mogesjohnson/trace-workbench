@@ -226,7 +226,8 @@ function createGuard({ target, payload, call, readFixture, record = async () => 
   const guard = { evidence,
     doctor: options => forward('doctor', {}, options),
     async listWindows(options) {
-      const result = await forward('list_windows', {}, options);
+      // The guard binds the exact process generation, which only the verbose listing returns.
+      const result = await forward('list_windows', { verbose: true }, options);
       const matches = result.windows?.filter(item => item.pid === target.pid && item.title === target.title) || [];
       need(matches.length === 1 && !!matches[0].processCreationTime, 'owned_window_unavailable');
       if (window && (matches[0].id !== window.id || matches[0].processCreationTime !== window.processCreationTime)) throw fail('owned_window_changed');

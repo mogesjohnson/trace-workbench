@@ -171,7 +171,7 @@ test('doctor advertises the act result and screenshot options; compat requests f
   const c = await connection(t);
   const doctorResult = await c.call('doctor'); assert.notEqual(doctorResult.isError, true);
   const doctor = doctorResult.structuredContent;
-  assert.deepEqual(doctor.actResult, { returnObservation: ['full', 'summary', 'none'], default: 'summary', diffLimit: 15 });
+  assert.deepEqual(doctor.actResult, { returnObservation: ['full', 'summary', 'none'], default: 'summary', diffLimit: 15, closedTargetOutcome: 'target_closed_after_dispatch' });
   assert.deepEqual(doctor.observationModes.screenshotModes, { values: ['none', 'scaled', 'full'], default: 'full', actionableWithout: true, scaledMaxEdge: 1280 });
   assert.equal(advertisesFullReturn(doctor), true);
   assert.equal(advertisesFullReturn({ ready: true }), false);
