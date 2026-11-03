@@ -1,5 +1,7 @@
 # Claude continuation and Codex review handoff
 
+**Latest, 3 November 2026:** start with [the fixes handoff](SESSION_HANDOFF_2026-11-03-fixes.md): release 2.0.0, then the 2.1.0 milestones in [the fix plan](FIX_PLAN_2.1.0.md). The sections below are historical.
+
 **Current continuation, 23 October 2026 UTC:** Codex owns the remaining work. Draft PR 17 adds archive verification on PR 16; `codex/live-acceptance-results` carries the latest live evidence and Claude forwarding fix. Typing quarantine passed. Claude supplemental attempt 1 discovered both skills and typed correctly but remains blocked on recovery completion and client-state writes. Glow amended budget is exhausted. Clipboard recovery is protected after a guarded restoration refusal. Use [current status](GAP_CLOSURE_STATUS.md) and [the dashboard](GAP_CLOSURE_PROGRESS.html). No new Claude coding session is required. Any optional Claude review should be read-only; concurrent code edits and Claude processes during announced host tests would invalidate the evidence.
 
 The instructions below preserve the historical 22 October pause/upload handoff. That pause was revoked by the owner's later continuation request. This is unfinished work, not a release or full parity claim.
