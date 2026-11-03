@@ -302,6 +302,8 @@ class WinappBackend {
         const inspected = await this.run(this.supervisor.binaryPath, ['status'], { signal, maxOutputBytes: 32768 });
         supervision = parseJson(inspected.stdout, inspected.stderr, inspected.exitCode);
         if (supervision.recoveryRequired === true) fail('input_recovery_required', 'Durable native recovery is required. Inspect computer recover --check before --apply.');
+        if (this.supervisor.releaseErrors?.size) supervision = { ...supervision, code: 'release_pending_recovery',
+          nextStep: 'A session release failed earlier. Recovery is clear now; close that session to release the desktop.' };
       }
       const runtimes = await this.run('dotnet', ['--list-runtimes'], { signal, maxOutputBytes: 128 * 1024 });
       if (runtimes.exitCode !== 0 || !/^Microsoft\.WindowsDesktop\.App 9\.\d+\.\d+\s+\[/m.test(runtimes.stdout)) fail('indicator_runtime', 'The .NET 9 Windows Desktop runtime is required by the visible activity indicator.');

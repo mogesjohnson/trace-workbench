@@ -208,7 +208,7 @@ function createComputerController(options = {}) {
     const errors = [];
     // The operation queue has already drained native input/recovery before this runs.
     try { await indicator.stop(); } catch (error) { errors.push(error); }
-    try { await lease.release(session.id); sessions.delete(session.id); } catch (error) { errors.push(error); }
+    try { session.released = await lease.release(session.id); sessions.delete(session.id); } catch (error) { errors.push(error); }
     if (errors.length) {
       const error = errors.find(item => item.details?.recovery || item.details?.inputRecoveryRequired || item.code === 'input_recovery_required') || errors[0];
       error.details = { ...error.details, cleanup: 'unknown' };
@@ -587,7 +587,8 @@ function createComputerController(options = {}) {
         const session = getSession(sessionId);
         session.observation = null;
         const captureRetention = await cleanupSession(session);
-        return { sessionId, closed: true, cleanup: 'confirmed', ...(captureRetention ? { captureRetention } : {}) };
+        return { sessionId, closed: true, cleanup: 'confirmed', ...(session.released?.recoveredExternally ? { recoveredExternally: true } : {}),
+          ...(captureRetention ? { captureRetention } : {}) };
       }, callOptions);
     },
     close() {
