@@ -175,3 +175,130 @@ test('P2-2: no label fallback, password refusal, a changed control and the 4,096
   read = (await readDocument(h, await session(h))).structuredContent.documentRead;
   assert.equal(read.document.text, 'a'.repeat(4095)); assert.equal(read.document.truncated, true);
 });
+
+// P2-3 and P2-4 run against a controller-level fake desktop: a Notepad owner, an owned Save As
+// modal that disables it while open, and an App Paths catalog for the launcher.
+const { EventEmitter } = require('node:events');
+const { createInstalledApplications } = require('../src/method/installed-applications.cjs');
+const MODAL = { id: '5678', pid: 456, processName: 'Notepad', title: 'Save as', processCreationTime: '100', sessionId: 1, ownerWindowId: '1234' };
+async function desktop(t) {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'trace-p2-desk-'));
+  const executable = path.join(directory, 'notepad.exe');
+  await fs.writeFile(executable, 'synthetic executable');
+  const state = { modal: false, launched: false, spawns: [], listings: 0, fault: null };
+  const launched = { ...window, id: '9000', pid: 400, processCreationTime: '300', executable };
+  const sized = item => ({ ...item, bounds: { x: null, y: null, width: item.id === MODAL.id ? 600 : 1200, height: 400 } });
+  const live = () => [window, ...(state.modal ? [MODAL] : []), ...(state.launched ? [launched] : [])].map(sized);
+  const closed = () => Object.assign(new Error('closed'), { code: 'window_closed' });
+  const backend = {
+    async listWindows() { state.listings++; return live(); },
+    async currentWindow(target) { if (!live().some(item => item.id === target.id)) throw closed(); return { ...target }; },
+    async currentVisualWindow(target) { return this.currentWindow(target); },
+    async targetClosed(target) { return !live().some(item => item.id === target.id); },
+    async observe({ window: target }) {
+      if (!live().some(item => item.id === target.id)) throw closed();
+      const isModal = target.id === MODAL.id;
+      return { window: { ...target }, bounds: { x: 0, y: 0, width: isModal ? 600 : 1200, height: 400 }, depth: 2,
+        elements: [{ id: isModal ? 'btn-save' : 'mnu-file', name: isModal ? 'Save' : 'File', controlType: 'Button', enabled: true, bounds: { x: 1, y: 1, width: 20, height: 20 } }],
+        focused: { available: true, hasFocus: false }, targetState: { enabled: isModal || !state.modal, minimized: false, foreground: true } };
+    },
+    // activate on the owner stands in for File > Save as; on the modal, for Save.
+    async act({ window: target }) { state.modal = target.id !== MODAL.id; return { dispatched: true }; },
+    async bridge(verb, _window, _signal, args) {
+      if (verb === 'apps') return { applications: [{ name: 'notepad.exe', executable, registration: 'App Paths/notepad.exe' },
+        { name: 'firefox.exe', executable: path.join(directory, 'WindowsApps', 'firefox.exe'), registration: 'App Paths/firefox.exe' }], coverage: 'App Paths', partial: false, issues: [] };
+      assert.equal(verb, 'process'); assert.deepEqual(args, ['400']);
+      return { pid: 400, processCreationTime: '300', sessionId: 1, executable };
+    },
+  };
+  const lease = { owner: null, signal: new AbortController().signal,
+    async acquire(owner) { if (this.owner) throw Object.assign(new Error('busy'), { code: 'desktop_busy' }); this.owner = owner; },
+    async assert(owner) { if (this.owner !== owner) throw Object.assign(new Error('lost'), { code: 'lease_lost' }); },
+    async release(owner) { if (this.owner === owner) this.owner = null; } };
+  const spawnImpl = (file, args, options) => {
+    state.spawns.push({ file, args, shell: options.shell });
+    const child = new EventEmitter(); child.pid = 400; child.unref = () => {};
+    queueMicrotask(() => { if (state.fault !== 'no-window') state.launched = true; child.emit('spawn'); });
+    return child;
+  };
+  const controller = createComputerController({ backend, lease, runtimeDirectory: directory, observationTtlMs: 60000,
+    indicator: { signal: new AbortController().signal, start: async () => ({ active: true }), assertActive() {}, stop: async () => {} },
+    createApplications: () => createInstalledApplications({ backend, lease, spawnImpl, verify: async () => {}, timeoutMs: 300 }) });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  const server = createComputerServer({ controller }); await server.connect(serverTransport);
+  const client = new Client({ name: 'trace-p2-desk', version: '1.0.0' }); await client.connect(clientTransport);
+  t.after(async () => { await client.close(); await server.close(); await fs.rm(directory, { recursive: true, force: true }); });
+  const call = (name, args = {}) => client.callTool({ name: `trace_computer_${name}`, arguments: args });
+  return { call, state, executable };
+}
+const errorCode = result => JSON.parse(text(result)).error.code;
+
+test('P2-3 bar: launch starts the registered EXE without a shell, and open_session takes its window directly', async t => {
+  const d = await desktop(t);
+  const result = await d.call('launch', { app: 'Notepad' });
+  assert.equal(result.structuredContent.outcome, 'launched', text(result));
+  assert.deepEqual(d.state.spawns, [{ file: d.executable, args: [], shell: false }]);
+  assert.deepEqual(result.structuredContent.windows.map(item => item.id), ['9000']);
+  assert.equal(result.structuredContent.windows[0].executable, undefined);
+  console.log(`P2-3: launch result ${text(result).length} chars`);
+  assert.ok(text(result).length < 500, `launch result was ${text(result).length} chars`);
+  const listings = d.state.listings;
+  const opened = await d.call('open_session', { windowId: '9000' });
+  assert.equal(opened.isError, undefined, text(opened));
+  assert.equal(d.state.listings, listings, 'open_session needed no new listing');
+  // The lease has one owner: a launch with a session open is refused before anything starts.
+  assert.equal(errorCode(await d.call('launch', { app: 'notepad.exe' })), 'desktop_busy');
+  assert.equal(d.state.spawns.length, 1);
+  await d.call('close_session', { sessionId: opened.structuredContent.sessionId });
+  assert.equal((await d.call('launch', { app: 'notepad.exe' })).structuredContent.outcome, 'launched', 'a deliberate relaunch after success is allowed');
+});
+
+test('P2-3: URIs, paths and unverifiable packaged EXEs are reported; an unknown outcome is not relaunched', async t => {
+  const d = await desktop(t);
+  const code = async app => errorCode(await d.call('launch', { app }));
+  assert.equal(await code('ms-settings:'), 'application_unsupported');
+  assert.equal(await code('C:\\Windows\\notepad.exe'), 'application_unsupported');
+  assert.equal(await code('calc'), 'unknown_application');
+  const firefox = JSON.parse(text(await d.call('launch', { app: 'firefox' }))).error;
+  assert.equal(firefox.code, 'unknown_application'); assert.match(firefox.message, /WindowsApps/);
+  d.state.fault = 'no-window';
+  const unknown = await d.call('launch', { app: 'notepad' });
+  assert.equal(unknown.structuredContent.outcome, 'unknown'); assert.equal(unknown.structuredContent.code, 'application_timeout');
+  assert.equal(await code('notepad'), 'application_already_attempted');
+  assert.equal(d.state.spawns.length, 1);
+});
+
+test('P2-4 bar: Save As is completed in its owned modal without close, re-list or re-open', async t => {
+  const d = await desktop(t);
+  await d.call('list_windows');
+  const { sessionId } = (await d.call('open_session', { windowId: '1234' })).structuredContent;
+  const first = await d.call('observe', { sessionId, screenshot: 'none', accessibilityDepth: 2 });
+  // File > Save as: the owner becomes disabled, and the act result names the modal that did it.
+  const opened = await d.call('act', { sessionId, observationId: first.structuredContent.observationId, action: { type: 'activate' } });
+  assert.equal(opened.structuredContent.summary.targetState.enabled, false);
+  assert.equal(opened.structuredContent.ownedModal.windowId, MODAL.id, text(opened));
+  const inModal = await d.call('observe', { sessionId, screenshot: 'none', accessibilityDepth: 2, followModal: true });
+  assert.equal(inModal.structuredContent.window.id, MODAL.id, text(inModal));
+  assert.equal(inModal.structuredContent.sessionId, sessionId);
+  const saved = await d.call('act', { sessionId, observationId: inModal.structuredContent.observationId, action: { type: 'activate' } });
+  assert.equal(saved.structuredContent.outcome, 'target_closed_after_dispatch', text(saved));
+  assert.equal(saved.structuredContent.returnedToOwner, true);
+  assert.equal(saved.structuredContent.summary.targetState.enabled, true);
+  console.log(`P2-4: modal report ${JSON.stringify(opened.structuredContent.ownedModal).length} chars; return ${text(saved).length} chars`);
+  // The returned observation authorizes the next action in the owner, in the same session.
+  const next = await d.call('act', { sessionId, observationId: saved.structuredContent.observationId, action: { type: 'activate' }, returnObservation: 'none' });
+  assert.equal(next.structuredContent.outcome, 'completed', text(next));
+  assert.equal(next.structuredContent.ownedModal.windowId, MODAL.id);
+});
+
+test('P2-4: following needs an owned modal, and a window from another process lifetime is not reported', async t => {
+  const d = await desktop(t);
+  await d.call('list_windows');
+  const { sessionId } = (await d.call('open_session', { windowId: '1234' })).structuredContent;
+  assert.equal(errorCode(await d.call('observe', { sessionId, followModal: true, screenshot: 'none' })), 'no_owned_modal');
+  MODAL.processCreationTime = '999'; t.after(() => { MODAL.processCreationTime = '100'; });
+  d.state.modal = true;
+  const observed = await d.call('observe', { sessionId, screenshot: 'none' });
+  assert.equal(observed.structuredContent.targetState.enabled, false);
+  assert.equal(observed.structuredContent.ownedModal, undefined);
+});

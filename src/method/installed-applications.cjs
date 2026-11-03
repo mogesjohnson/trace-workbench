@@ -26,7 +26,8 @@ function createInstalledApplications({ backend = new WinappBackend(), lease = ba
       || value.issues.some(issue => typeof issue !== 'string' || issue.length > 1024)) fail('invalid_app_catalog', 'Malformed native application inventory.');
     return value;
   }
-  async function discover({ signal } = {}) {
+  // `match` narrows discovery to matching registrations, so one launch does not verify the whole catalog.
+  async function discover({ signal, match } = {}) {
     if (busy) fail('application_busy', 'A launch or discovery is already in flight.');
     busy = true; apps.clear();
     try {
@@ -35,6 +36,7 @@ function createInstalledApplications({ backend = new WinappBackend(), lease = ba
       for (const row of native.applications) {
         signal?.throwIfAborted();
         if (!row || typeof row.name !== 'string' || typeof row.registration !== 'string' || row.registration.length > 1024) fail('invalid_app_catalog', 'Malformed registration evidence.');
+        if (match && !match(row)) continue;
         let actual; try { actual = await file(row.executable); } catch { skipped++; continue; }
         const appId = `app:${digest(canonical(actual.executable) + ':' + actual.fingerprint)}`;
         if (next.has(appId)) continue;

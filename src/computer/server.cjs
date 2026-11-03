@@ -159,7 +159,8 @@ function createComputerServer({ controller, onError = () => {} } = {}) {
       screenshot: z.enum(['none', 'scaled', 'full']).optional().describe('Image to return: none, scaled (longest edge at most 1280 px) or full. Default full; accessibility mode allows only none, screenshot mode not none.'),
       rootElementId: elementId.optional().describe('Observe only this observed element and its descendants.'),
       interactiveOnly: z.boolean().optional().describe('Keep only interactive controls, each under its nearest kept ancestor.'),
-      metrics: z.boolean().optional().describe('Return stage timings and byte counts (default false).') })
+      metrics: z.boolean().optional().describe('Return stage timings and byte counts (default false).'),
+      followModal: z.boolean().optional().describe('Retarget the session at the owned modal reported as ownedModal; it returns to the owner when the modal closes.') })
       .refine(args => args.documentElementId === undefined || args.mode === 'accessibility',
         { message: 'documentElementId requires accessibility mode.', path: ['documentElementId'] })
       .refine(args => args.screenshot === undefined || (args.mode === 'accessibility' ? args.screenshot === 'none' : !(args.mode === 'screenshot' && args.screenshot === 'none')),
@@ -170,6 +171,8 @@ function createComputerServer({ controller, onError = () => {} } = {}) {
     z.strictObject({ sessionId: id, observationId: id, action: actionSchema,
       returnObservation: z.enum(['full', 'summary', 'none']).optional().describe('full, summary (default) or none.') }), "act",
     { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true });
+  if (typeof controller.launch === "function") register("trace_computer_launch", "Start a registered application by its App Paths name (such as notepad; .exe optional) without a shell, and return its new windows in the list_windows form; open_session accepts their IDs directly. Close any open session first. URIs (such as ms-settings:) and paths are unsupported. An unknown outcome is never relaunched automatically.",
+    z.strictObject({ app: z.string().min(1).max(64) }), "launch", { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true });
   register("trace_computer_close_session", "Release this session's desktop lease without closing the target application.",
     z.strictObject({ sessionId: id }), "closeSession", { ...sessionMutation, idempotentHint: true });
 
