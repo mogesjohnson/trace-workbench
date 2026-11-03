@@ -741,7 +741,7 @@ class WinappBackend {
     try { return await this.dispatch(request, progress); }
     catch (error) {
       const failure = error instanceof BackendError ? error : new BackendError(error?.code || 'backend_error', String(error?.message || 'Native action failed.'), error?.details ?? {});
-      const provenNativeRejection = failure.details?.nativeSupervision === true && failure.details?.outcome === 'not_dispatched';
+      const provenNativeRejection = (failure.details?.nativeSupervision === true || failure.details?.refusedBeforeSend === true) && failure.details?.outcome === 'not_dispatched';
       failure.details = { ...failure.details, outcome: progress.primary && !provenNativeRejection ? 'unknown' : 'not_dispatched', preparation: progress.preparation };
       throw failure;
     }
@@ -857,8 +857,18 @@ class WinappBackend {
       if (!focused.elementId) fail('focus_not_acquired', 'Keyboard focus could not be bound to an observed control inside the exact selected window.');
     }
     progress.primary = true;
-    const result = pointerArgs ? await this.bridge(verb, window, signal, pointerArgs)
-      : await this.command(verb, ['-w', window.id, ...options, '--', ...positional], signal);
+    let result;
+    try {
+      result = pointerArgs ? await this.bridge(verb, window, signal, pointerArgs)
+        : await this.command(verb, ['-w', window.id, ...options, '--', ...positional], signal);
+    } catch (error) {
+      // winapp 0.7.1 refuses system-reserved combos (alt+f4, win+<key>, ctrl+alt+del) during
+      // argument checks and exits before sending any input (UiSendKeysCommand), so nothing was sent.
+      if (verb === 'send-keys' && error.code === 'invalid_arguments' && /^Refusing to synthesize /.test(error.message)) {
+        error.details = { ...error.details, outcome: 'not_dispatched', refusedBeforeSend: true };
+      }
+      throw error;
+    }
     const expectedEvents = pointWheel ? Number(action.deltaX !== 0) + Number(action.deltaY !== 0) : 2 * (action.count ?? 1);
     if (pointerArgs && (result.performed !== true || result.operation !== verb || result.inputEvents !== expectedEvents)) {
       fail('invalid_native_response', 'Pointer receipt did not confirm the complete sequence.', { outcome: 'unknown' });

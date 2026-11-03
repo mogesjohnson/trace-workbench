@@ -134,7 +134,8 @@ closed-window path (`controller.cjs`, around line 520) only applies when the err
 **Change.**
 
 1. **Confirm the cause first.** Log the time from dispatch to a nonzero foreground for
-   ctrl+shift+w in Firefox and alt+f4 in Notepad.
+   ctrl+shift+w in Firefox and ctrl+w in Notepad. (alt+f4 never reaches this path: winapp
+   0.7.1 refuses system-reserved keys before sending; see the M2 live result on PR 114.)
 2. **Wait briefly for the foreground.** In `EnsureObservable`, or only on the post-dispatch
    release path, poll `GetForegroundWindow()` every 25 ms for a bounded time (proposed
    1,000 ms) while it returns 0. Then run the existing checks unchanged:
@@ -163,7 +164,9 @@ closed-window path (`controller.cjs`, around line 520) only applies when the err
 **Live check:**
 
 - Firefox: ctrl+shift+w.
-- Notepad: ctrl+w on the last tab, then alt+f4 on a fresh window.
+- Notepad: ctrl+w on the last tab. (alt+f4 was planned here; winapp 0.7.1 refuses it
+  before sending, so it was replaced by the Close button, and the refusal now reports
+  `not_dispatched`.)
 - All on windows TRACE launched. Each must return `target_closed_after_dispatch`, leave
   no recovery record (`recover --check` clean) and keep doctor ready.
 
