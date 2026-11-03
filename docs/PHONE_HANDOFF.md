@@ -413,6 +413,7 @@ watcher with `tests/fixtures/WifiTrustTest.java` (skips without a JDK and Androi
 | 3 Nov, `5613c91`: joining MogesAIGirlfriend5 → network trusted, no dialog tap | **fail** (two causes below; the owner tapped Allow once) |
 | 3 Nov 00:52, `948dfac` watcher started by the owner: first round logs `allowed 12:36:aa:0d:52:a6 "MogesAIGirlfriend5" (3-arg)`; the keystore lists `12:36:aa:0d:52:a6` / `"MogesAIGirlfriend5"`; `is_trusted_network=true`; adbd not restarted (STIME 23:30:01) | pass |
 | fixed watcher: switching to 2.4 GHz and back to 5 GHz shows no dialog | **not_run** |
+| 3 Nov 12:59, eduroam `74:9e:75:2f:b8:a3` (not listed, but `is_trusted_network=true` by SSID): restarted watcher logs `allowed 74:9e:75:2f:b8:a3 "eduroam" (3-arg)` on its first round; the keystore lists it | pass |
 
 Findings:
 - `pkill -f trace.phone.WifiTrust` also matches the `sh -c` running it, so it kills itself before
@@ -436,5 +437,9 @@ Findings:
 - On eduroam the trusted list holds BSSID `…34:d3` but the phone is trusted on `…90:53`, so SDK 37
   seems to match on SSID too. TODO(verify). With the list check the watcher adds `…90:53` once
   there, which only adds trust.
+- Gap: the watcher does not survive an adbd restart. On 3 November adbd restarted at 12:35:24
+  without a reboot (uptime 23 h; cause unknown), and the watcher was gone with no log line. Only
+  `phone-boot-adb.cjs` starts it, so a mid-session adbd restart leaves the phone unwatched until
+  it is started again.
 - Limit: nothing runs before adb is up, so a reboot straight onto a never-joined network still
   shows the system dialog once.
