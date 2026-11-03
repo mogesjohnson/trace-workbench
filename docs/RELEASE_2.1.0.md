@@ -3,8 +3,8 @@
 **Status: a candidate on `main`, not published.** It fixes known limits G1–G5 of
 [2.0.0](RELEASE_2.0.0.md), following the [2.1.0 fix plan](FIX_PLAN_2.1.0.md). Published
 2.0.0 and its assets remain available. The TRACE-only rerun of the head-to-head (plan M5,
-step 3) has not been run yet; its result will be added under
-[Verification scope](#verification-scope) before publication.
+step 3) passed 8/8 task-runs but missed its context and response-size bars; see
+[Verification scope](#verification-scope). It is not ready for publication.
 
 ## Why
 
@@ -105,10 +105,17 @@ changed, and doctor reports `supervisor_stale` until they are rebuilt. Then reco
   - **Speed** ([after-metrics](https://github.com/mogesjohnson/trace-workbench/pull/118#issuecomment-6615832191)):
     Notepad depth 2 median 1,700 ms (was 2,916). Save As depth 3 `interactiveOnly`
     median 2,248 ms (was 2,758). 8 provider calls.
-- **TRACE-only head-to-head rerun (M5): not run yet.** It covers 4 tasks × 2 in one
-  fresh session. Its bars are 8/8 pass, no MCP restart, context under 60k tokens and
-  response text under 100,000 characters. agent-desktop 1.0.2 is unchanged, so its
-  3 November results are reused.
+- **TRACE-only head-to-head rerun (M5;
+  [report](HEAD_TO_HEAD_2026-11-03-RERUN.md)).** It ran 4 tasks × 2 in one fresh
+  session on main `b938941`. agent-desktop 1.0.2 is unchanged, so its 3 November
+  results are reused.
+  - 8/8 task-runs passed, including Settings 2/2. Run 1 task 1 needed a corrective
+    type (see Known limits).
+  - There was no MCP restart. The deliberate ctrl+shift+w close returned
+    `target_closed_after_dispatch`.
+  - **Two bars were missed.** Context was about 74k tokens (bar 60k). Response text was
+    107,192 characters (bar 100,000); on 3 November it was 151,697.
+  - The first observe on the fresh server took 1,232 ms with no `native_timeout`.
 
 ## Known limits
 
@@ -122,5 +129,10 @@ changed, and doctor reports `supervisor_stale` until they are rebuilt. Then reco
   `TraceWindowBridge.dll` is still checked only by setup and doctor.
 - **Unexplained `native_timeout`.** On 3 November, the first MCP session after a
   launch failed two depth-2 observes with `native_timeout`. Three later
-  launch–observe–close rounds in one server process did not reproduce it, so the cause
-  is unknown. A cold server process was not retested.
+  launch–observe–close rounds in one server process did not reproduce it. In the M5
+  rerun, the cold server's first observe was fine, but one `type_text` with a trailing
+  newline into the Firefox URL bar returned `native_timeout` with nothing typed. The
+  cause is unknown.
+- **`type_text` can report `completed` for partial input.** In the M5 rerun, Notepad
+  received 16 of 19 characters while the act returned `completed`. The act does not
+  compare typed text, so read text back with `documentElementId` where it matters.
