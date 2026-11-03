@@ -34,7 +34,7 @@ internal sealed record InputDeclaration(int[] Keys, int[] Unicode)
         {
             if (args.Length < 3 || args[0] != "ui" || args[2] != "--json") throw new TraceError("invalid_arguments", "Only the pinned engine UI protocol is supported.");
             var verb = args[1];
-            var read = new[] { "list-windows", "status", "inspect", "get-focused", "screenshot" }.Contains(verb);
+            var read = new[] { "list-windows", "status", "inspect", "get-focused", "get-property", "get-value", "screenshot" }.Contains(verb);
             var write = new[] { "click", "drag", "send-keys", "scroll", "invoke", "set-value" }.Contains(verb);
             if ((!read && !write) || write != mutating) throw new TraceError("invalid_arguments", "Provider verb and mutation declaration disagree.");
             if (verb is "click" or "drag") keys.Add(1);

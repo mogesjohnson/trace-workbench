@@ -1,7 +1,7 @@
 'use strict';
 const { digest, fail, text } = require('./shared.cjs');
 const { validateAction: validateNativeAction, safeError } = require('../computer/controller.cjs');
-const { actionSupport, compatibleSupport } = require('../computer/action-contract.cjs');
+const { effectiveSupport } = require('../computer/action-contract.cjs');
 const { validateObservationImages, windowIdentity: identity } = require('./observation-images.cjs');
 const { createPostActionEvidence } = require('./post-action-evidence.cjs');
 const { advertisesFullReturn, advertisesVerboseListing } = require('../computer/act-compat.cjs');
@@ -78,15 +78,12 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
         const result = await call(0, {}), value = state(result), support = value.support ?? unknownSupport();
         // 2.x defaults act to a compact summary; post-action evidence needs the full observation.
         fullReturn = advertisesFullReturn(value); verboseListing = advertisesVerboseListing(value);
-        if (value.support != null && !compatibleSupport(support)) {
+        const declared = value.support != null ? effectiveSupport(support) : null;
+        if (value.support != null && !declared) {
           return diagnostics(false, 'support-unsupported', 'The live server declares an unsupported native action contract.', unknownSupport(), { native: value.ready === true });
         }
-        const effectiveSupport = value.support != null ? actionSupport(support.observation.ttlMs) : support;
-        if (value.support != null && !Object.hasOwn(support.actions, 'accessibility_action')) delete effectiveSupport.actions.accessibility_action;
-        if (value.support != null && !Object.hasOwn(support.actions.click, 'variants')) delete effectiveSupport.actions.click.variants;
-        if (value.support != null && !Object.hasOwn(support.actions.scroll, 'point')) delete effectiveSupport.actions.scroll.point;
-        if (value.support != null && !Object.hasOwn(support.actions.press_key, 'extended')) delete effectiveSupport.actions.press_key.extended;
-        return diagnostics(result.isError !== true && value.ready === true, value.code || value.error?.code || null, value.reason || value.error?.message || null, effectiveSupport,
+        const supported = declared ?? support;
+        return diagnostics(result.isError !== true && value.ready === true, value.code || value.error?.code || null, value.reason || value.error?.message || null, supported,
           { configured: true, native: result.isError !== true && value.ready === true });
       } catch { return diagnostics(false, 'diagnostics-unavailable', 'TRACE diagnostics could not be read.'); }
     },

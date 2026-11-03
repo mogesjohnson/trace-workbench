@@ -1,6 +1,6 @@
 # Computer Use
 
-TRACE's `trace-computer` MCP server exposes six tools for a Windows agent: diagnostics, window discovery, session opening, observation, one action, and session closing. The companion [skill](../skills/trace-computer-use/SKILL.md) explains the observe/act workflow.
+TRACE's `trace-computer` MCP server exposes seven tools for a Windows agent: diagnostics, window discovery, application launch, session opening, observation, one action, and session closing. The companion [skill](../skills/trace-computer-use/SKILL.md) explains the observe/act workflow.
 
 ## Install and connect
 
@@ -25,12 +25,13 @@ The configured command is the installed Node executable plus this checkout's abs
 
 ## Use the tools
 
-1. Check `trace_computer_doctor`, then discover windows with `trace_computer_list_windows`. Narrow it with `processName` or `title`; tiny, shell and helper windows are omitted unless `verbose` is true.
+1. Check `trace_computer_doctor`, then discover windows with `trace_computer_list_windows`. Narrow it with `processName` or `title`; tiny, shell and helper windows are omitted unless `verbose` is true. When the app is not running, `trace_computer_launch { app }` starts a registered App Paths name (such as `notepad`) with no session open and returns its windows in the listing form.
 2. Open a session for the exact returned `windowId`. An ID missing from the last listing, such as a just-launched window, is looked up once without a new listing. A cyan-to-violet screen-edge glow indicates TRACE owns a desktop session. It stays above activated windows until session cleanup.
 3. Observe and inspect the returned PNG and accessibility elements. `accessibilityDepth` (1–32, default 8) reads deeper trees; start at 2 and deepen only when needed. The response reports the effective depth and truncation, and the action reuses that depth. The focused control and its ancestors are always included. `rootElementId` limits the tree to one observed element's subtree and `interactiveOnly` to interactive controls; the action reuses both. `screenshot` chooses the image: `full` (default), `scaled` (longest edge at most 1280 px, with `screenshot.scale.factor`; multiply image pixels by it for window coordinates) or `none`. A full-mode observation with `screenshot: "none"` still authorizes one action: dispatch guards use UIA bounds and DWM geometry, not pixels.
 4. Perform one action with that `sessionId` and latest `observationId`. Coordinates are integer pixels relative to the returned image; element bounds are physical screen coordinates.
 5. Read the act result before continuing. Since 2.0.0 it is compact by default (`returnObservation: "summary"`): outcome, `nativeResult`, the next `observationId`, and a `summary` with the compact focus, target state, a changed title, the element count and a bounded element diff (`changes`, at most 15 entries per kind). TRACE always re-observes server-side after the action, so that `observationId` authorizes one further action. Request `returnObservation: "full"` for the 1.x result with the complete `observation` (and the image setting of the consumed observation), or `"none"` for only the outcome and `observationId`. Observe again when the summary is not enough. `not_dispatched` means the requested input was never sent (any preparatory activation is listed separately); `unknown` means it may have been. After either, observe again before deciding; never replay automatically.
-6. Close the session to release desktop ownership. The target application remains open.
+6. When `observe` or `act` reports `ownedModal`, the session window is disabled by its own dialog. Observe with `followModal: true` to retarget the session at that dialog under the same lease. When the dialog closes after an action, the result is `target_closed_after_dispatch` with `returnedToOwner: true` and a fresh `observationId` for the owner.
+7. Close the session to release desktop ownership. The target application remains open.
 
 ### Cleanup result contract (V1)
 
@@ -114,7 +115,7 @@ The adapter reports the accepted server's observation TTL; the native server enf
 
 ## V2 compatibility boundary (2.0.0)
 
-Package `2.0.0` changes the default `trace_computer_act` result, which the V1 boundary below treats as a major change ([token cost incident](https://github.com/mogesjohnson/trace-workbench/pull/97), P0-3). The six tool names, action forms, units, authority, outcome and cleanup meanings are otherwise unchanged, and `support.contractVersion` stays 1.
+Package `2.0.0` changes the default `trace_computer_act` result, which the V1 boundary below treats as a major change ([token cost incident](https://github.com/mogesjohnson/trace-workbench/pull/97), P0-3). The six 1.x tool names, action forms, units, authority, outcome and cleanup meanings are otherwise unchanged, `support.contractVersion` stays 1, and `trace_computer_launch` is added.
 
 - **Act result.** `returnObservation` is `summary` by default. A completed result no longer contains `observation`; it contains `observationId` and `summary` instead, and no image. `returnObservation: "full"` restores the 1.x result. `"none"` returns only `actionId`, `outcome`, `verification` and `observationId`. Not-dispatched and unknown results are unchanged.
 - **Observation image.** `trace_computer_observe` accepts `screenshot: "none" | "scaled" | "full"` (default `full`, so the 1.x form is unchanged). Accessibility mode allows only `none`; screenshot mode does not allow `none`.
@@ -122,9 +123,14 @@ Package `2.0.0` changes the default `trace_computer_act` result, which the V1 bo
 - **Window listing.** `trace_computer_list_windows` returns `id`, `pid`, `processName`, `title`, `width`, `height` and, when set, `foreground` and `ownerWindowId`. Tiny, shell and helper windows are omitted and counted. `verbose: true` restores every window and every 1.x field. `processName` and `title` filter the list. `open_session` looks up an ID missing from the last listing once.
 - **Closed target.** `target_closed_after_dispatch` reports input that completed before its window closed; it replaces `unknown`/`internal_error` for that case only.
 - **Response size.** Every result carries `_meta["trace/response"].responseBytes`.
+- **Compact doctor (P2-1).** `support` is compact by default: the action names, `detail: "compact"` and `sha256` of the full descriptor (2,431 characters for a ready doctor in the test, against 5,957 before). `verbose: true` returns the full 1.x descriptor. A compact declaration is compatible only when its digest matches the local descriptor; a full one is compared as before.
+- **Opt-in metrics (P2-1).** `trace_computer_observe` returns `metrics` and `_meta["trace/projection"]` only with `metrics: true`; an act refresh follows the consumed observation. See [observation metrics](OBSERVATION_METRICS.md).
+- **Document readback (P2-2).** `documentElementId` reads a `Document`/`Edit` control without an AutomationId (Notepad's RichEdit) through `winapp ui get-value`, after `get-property` confirms the same element, a non-password control and TextPattern support. The text is cut at 4,096 UTF-16 units. The supervisor allow-list gained both read-only verbs, so 2.0 needs `computer setup` rerun.
+- **Launch (P2-3).** `trace_computer_launch { app }` starts an App Paths EXE by name without a shell and returns its windows in the listing form; `open_session` takes their IDs. It holds the desktop lease, so it fails with `desktop_busy` while a session is open. URIs and paths are `application_unsupported`; an `unknown` launch is not repeated automatically (`application_already_attempted`).
+- **Owned modals (P2-4).** `observe` and `act` report `ownedModal` when the session window is disabled by a dialog it owns (same process lifetime). `observe { followModal: true }` retargets the session; when the dialog closes after an action the session returns to the owner (`returnedToOwner: true`).
 - **Discovery.** `trace_computer_doctor` advertises `actResult.returnObservation`, `observationModes.screenshotModes`, `observationScope`, `windowListing` and `responseSize`. Older servers reject the new input fields under their strict schemas.
 
-**Migration.** A client that reads `result.observation` after `trace_computer_act` must pass `returnObservation: "full"`, but only when doctor advertises `actResult.returnObservation` containing `full`. `src/computer/act-compat.cjs` implements this check. The method adapter (`src/method/trace-adapter.cjs`) and the acceptance scripts use it, so they keep their post-action evidence against 2.x servers and stay compatible with 1.x servers. Agents that only need the next `observationId` can use the default. A client that reads identity fields from the window listing passes `verbose: true` once doctor advertises `windowListing.verbose`. The [2.0.0 release notes](RELEASE_2.0.0.md) repeat this.
+**Migration.** A client that reads `result.observation` after `trace_computer_act` must pass `returnObservation: "full"`, but only when doctor advertises `actResult.returnObservation` containing `full`. `src/computer/act-compat.cjs` implements this check. The method adapter (`src/method/trace-adapter.cjs`) and the acceptance scripts use it, so they keep their post-action evidence against 2.x servers and stay compatible with 1.x servers. Agents that only need the next `observationId` can use the default. A client that reads identity fields from the window listing passes `verbose: true` once doctor advertises `windowListing.verbose`. A client that reads `support.actions` from doctor passes `verbose: true`, and one that reads `metrics` passes `metrics: true` to observe. The [2.0.0 release notes](RELEASE_2.0.0.md) repeat this.
 
 ## V1 compatibility boundary
 

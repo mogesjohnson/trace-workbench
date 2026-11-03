@@ -118,7 +118,9 @@ test('controlled substitution uses native ownership once and retains original ca
 test('acceptance private config does not add parameters or tools to the production MCP source', () => {
   const fs = require('node:fs');
   const source = fs.readFileSync(path.join(__dirname, '../src/computer/server.cjs'), 'utf8');
-  assert.equal((source.match(/register\("trace_computer_/g) || []).length, 6);
+  // Six session tools plus trace_computer_launch (P2-3), which is registered only with a launch-capable controller.
+  assert.equal((source.match(/register\("trace_computer_/g) || []).length, 7);
+  assert.equal((source.match(/register\("trace_computer_launch"/g) || []).length, 1);
   assert.equal(/allowControlled|operationTimeoutMs|hold-mouse|type-hold/.test(source), false);
 });
 

@@ -55,7 +55,7 @@ test('controller publishes observation metrics for first and action refresh capt
   const controller = createComputerController({ backend, indicator, lease, runtimeDirectory: directory, now: () => wall, metricsClock: () => tick++ });
   t.after(async () => { await controller.close(); await fs.rm(directory, { recursive: true, force: true }); });
   await controller.listWindows(); const session = await controller.openSession({ windowId: window.id });
-  const first = await controller.observe(session);
+  const first = await controller.observe({ ...session, metrics: true });
   assert.equal(first.observedAt, new Date(wall).toISOString());
   assert.equal(first.metrics.sample, 'first-controller-attempt');
   for (const phase of ['observation', 'identity', 'backend', 'fileStat', 'fileRead', 'hashEncode', 'journal']) assert.equal(first.metrics.stages[phase].calls, 1, phase);

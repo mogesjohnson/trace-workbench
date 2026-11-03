@@ -85,7 +85,7 @@ async function fixture(directory, options = {}) {
     if (args[0] === 'scripts/setup-computer.cjs') return { stdout: JSON.stringify({ installed: true, integrity: 'verified',
       bridge: { built: true }, activityIndicator: { built: true }, supervisor: { built: true }, clipboard: { built: true, clipboardContentsRead: false, clipboardContentsChanged: false } }) };
     if (args[0] === 'bin/trace.cjs') return { stdout: JSON.stringify({ ready: !options.notReady, integrity: 'verified' }) };
-    if (args[0] === 'scripts/smoke-computer-mcp.cjs') return { stdout: JSON.stringify({ result: 'pass', providerReady: true, toolCount: 6, desktopActions: 0, modelRequests: 0 }) };
+    if (args[0] === 'scripts/smoke-computer-mcp.cjs') return { stdout: JSON.stringify({ result: 'pass', providerReady: true, toolCount: 7, desktopActions: 0, modelRequests: 0 }) };
     if (args[0] === 'scripts/smoke-mcp.cjs') return { stdout: JSON.stringify({ passed: true, toolCount: 207, target: { unchanged: true }, limits: { paidCalls: 0, modelClientTests: 0, executedTargetCode: false } }) };
     throw Error('Unexpected command');
   };

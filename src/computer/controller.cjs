@@ -6,7 +6,7 @@ const path = require('node:path');
 const { randomUUID, createHash } = require('node:crypto');
 const { DesktopLease } = require('./lease.cjs');
 const { ActivityIndicator } = require('./activity-indicator.cjs');
-const { validateAction, actionSupport } = require('./action-contract.cjs');
+const { validateAction, actionSupport, compactSupport } = require('./action-contract.cjs');
 const { createObservationMetrics, measure, count } = require('./observation-metrics.cjs');
 const { parseCaptureKeepLast, createCaptureRetention } = require('./capture-retention.cjs');
 const { downscalePng, DEFAULT_MAX_EDGE } = require('./png-scale.cjs');
@@ -147,6 +147,14 @@ function validateListing({ verbose, processName, title } = {}) {
       && (wantedTitle === undefined || String(window.title ?? '').toLowerCase().includes(wantedTitle)) };
 }
 
+// An owned window of the session window, from the same process lifetime: the modal that disables it.
+const ownsModal = (owner, window) => window.ownerWindowId === owner.id && window.pid === owner.pid
+  && window.processCreationTime === owner.processCreationTime && !listingNoise(window) && window.identity?.available !== false;
+const modalSummary = window => ({ windowId: window.id, title: listedWindow(window).title, width: window.bounds?.width ?? null, height: window.bounds?.height ?? null });
+// Launch names come from the App Paths catalog: an EXE name, `.exe` optional, without a path or URI.
+const LAUNCH_NAME = /^[A-Za-z0-9][A-Za-z0-9 ._+-]{0,63}$/;
+const launchName = value => String(value).toLowerCase().replace(/\.exe$/, '');
+
 function createComputerController(options = {}) {
   const captureKeepLast = parseCaptureKeepLast(options.captureKeepLast === undefined ? process.env.TRACE_CAPTURE_KEEP_LAST : options.captureKeepLast);
   const backend = options.backend ?? new (require('./winapp-backend.cjs').WinappBackend)();
@@ -164,6 +172,10 @@ function createComputerController(options = {}) {
   let closed = false;
   let closePromise;
   let observedBefore = false;
+  // Apps whose last launch outcome was unknown are never relaunched automatically.
+  const uncertainLaunches = new Set();
+  const createApplications = options.createApplications ?? (() => require('../method/installed-applications.cjs')
+    .createInstalledApplications({ backend, lease }));
 
   function queued(work, callOptions = {}, allowClosed = false) {
     const signal = callOptions.signal ? AbortSignal.any([callOptions.signal, shutdown.signal]) : shutdown.signal;
@@ -216,11 +228,38 @@ function createComputerController(options = {}) {
     if (typeof backend.targetClosed !== 'function') return false;
     try { return await backend.targetClosed(session.window, { signal }) === true; } catch { return false; }
   }
+  // Lists once and returns the session window's owned modals, which also become selectable.
+  async function ownedModals(session, signal) {
+    try {
+      const windows = targetWindows(await backend.listWindows({ signal }));
+      for (const window of windows) discovered.set(window.id, window);
+      return windows.filter(window => ownsModal(session.window, window));
+    } catch (error) { if (signal.aborted) throw error; return []; }
+  }
+  async function reportModal(session, result, signal) {
+    if (result?.targetState?.enabled !== false) return result;
+    const modals = await ownedModals(session, signal);
+    if (modals.length) result.ownedModal = { ...modalSummary(modals[0]), ...(modals.length > 1 ? { count: modals.length } : {}),
+      hint: 'Observe with followModal: true to work in it; the session returns here when it closes.' };
+    return result;
+  }
+  // Retargets the session at its owned modal under the same lease; the owner is kept for the return.
+  async function followModal(session, signal) {
+    const [modal] = await ownedModals(session, signal);
+    if (!modal) throw fail('no_owned_modal', 'The session window has no owned modal window to follow.');
+    const { className, foreground, ...selected } = modal;
+    const open = backend.openWindow ?? backend.currentWindow;
+    const current = open ? await open.call(backend, selected, { signal }) : selected;
+    if (!identityMatches(selected, current)) throw fail('window_changed', 'The owned modal changed. Observe again.');
+    session.owners = [...(session.owners ?? []), session.window];
+    session.window = current; session.observation = null;
+    await record(session, { type: 'modal_followed', windowId: current.id, pid: current.pid });
+  }
   async function record(session, event) {
     // No typed text, values, screenshots, or full window inventory in the journal.
     await fs.appendFile(path.join(session.directory, 'events.jsonl'), `${JSON.stringify({ at: new Date(now()).toISOString(), sessionId: session.id, ...event })}\n`);
   }
-  async function observeInternal(session, signal, { depth = DEFAULT_DEPTH, mode = 'full', documentElementId, includeOffscreen = false, screenshot = mode === 'accessibility' ? 'none' : 'full', screenshotPreference = screenshot, scope = {} } = {}) {
+  async function observeInternal(session, signal, { depth = DEFAULT_DEPTH, mode = 'full', documentElementId, includeOffscreen = false, screenshot = mode === 'accessibility' ? 'none' : 'full', screenshotPreference = screenshot, scope = {}, metrics: reportMetrics = false } = {}) {
     // A valid selective read revokes input authority even if readiness/capture fails.
     if (mode !== 'full') session.observation = null;
     const metrics = createObservationMetrics({ clock: options.metricsClock,
@@ -228,7 +267,9 @@ function createComputerController(options = {}) {
     observedBefore = true;
     return metrics.run(async () => {
       const result = await measure('observation', () => observeMeasured(session, signal, depth, mode, documentElementId, includeOffscreen, screenshot, screenshotPreference, scope));
-      result.metrics = metrics.snapshot();
+      // Stage timings are diagnostics, so they are returned only on request.
+      if (reportMetrics) result.metrics = metrics.snapshot();
+      if (session.observation?.id === result.observationId) session.observation.snapshot.metrics = reportMetrics;
       return result;
     });
   }
@@ -326,16 +367,19 @@ function createComputerController(options = {}) {
   }
 
   return {
-    doctor(callOptions) {
+    // `verbose` travels with the call options, like the listing filters.
+    doctor(callOptions = {}) {
       return queued(async signal => {
+        if (callOptions.verbose !== undefined && typeof callOptions.verbose !== 'boolean') throw fail('invalid_argument', 'verbose must be a boolean.');
         const result = await backend.doctor({ signal });
-        return { ...result, support: actionSupport(observationTtlMs),
+        return { ...result, support: callOptions.verbose ? actionSupport(observationTtlMs) : compactSupport(observationTtlMs),
           observationModes: { default: 'full', actionable: ['full'], evidenceOnly: ['accessibility', 'screenshot'], screenshotRequiresReadableUiaRoot: false,
             screenshotModes: { values: [...SCREENSHOT_MODES], default: 'full', actionableWithout: true, scaledMaxEdge: DEFAULT_MAX_EDGE } },
           observationScope: { rootElementId: true, interactiveOnly: true },
           actResult: { returnObservation: [...RETURN_OBSERVATIONS], default: 'summary', diffLimit: DIFF_LIMIT, closedTargetOutcome: 'target_closed_after_dispatch' },
           windowListing: { verbose: true, filters: ['processName', 'title'], defaultOmits: ['tiny', 'shell', 'untitled-frame'] },
           responseSize: { meta: 'trace/response', field: 'responseBytes' },
+          launch: { catalog: 'app-paths', shell: false, uri: false }, ownedModal: { follow: 'followModal', returnOnClose: true },
           captureRetention: { mode: captureKeepLast ? 'keep-last' : 'preserve', keepLast: captureKeepLast,
             scope: 'validated-current-session-captures', onClose: captureKeepLast ? 'remove-tracked' : 'preserve' }, readiness: {
           native: { ready: result.ready === true, code: result.code || null, reason: result.reason || null },
@@ -397,7 +441,7 @@ function createComputerController(options = {}) {
         }
       }, callOptions);
     },
-    observe({ sessionId, accessibilityDepth, mode, documentElementId, includeOffscreen, screenshot, rootElementId, interactiveOnly }, callOptions) {
+    observe({ sessionId, accessibilityDepth, mode, documentElementId, includeOffscreen, screenshot, rootElementId, interactiveOnly, metrics, followModal: follow }, callOptions) {
       return queued(async signal => {
         const session = getSession(sessionId);
         const depth = validateDepth(accessibilityDepth), checkedMode = validateObservationMode(mode);
@@ -405,9 +449,13 @@ function createComputerController(options = {}) {
           || !documentElementId || documentElementId.length > 512 || documentElementId.startsWith('-') || /[\u0000-\u001f]/.test(documentElementId)))
           throw fail('invalid_document_request', 'documentElementId requires accessibility mode and a valid observed element ID.');
         if (includeOffscreen !== undefined && typeof includeOffscreen !== 'boolean') throw fail('invalid_observation', 'includeOffscreen must be a boolean.');
+        if (metrics !== undefined && typeof metrics !== 'boolean') throw fail('invalid_observation', 'metrics must be a boolean.');
         const screenshotMode = validateScreenshot(screenshot, checkedMode);
         const scope = validateScope(rootElementId, interactiveOnly, checkedMode);
-        const result = await observeInternal(session, signal, { depth, mode: checkedMode, documentElementId, includeOffscreen: includeOffscreen === true, screenshot: screenshotMode, scope });
+        if (follow !== undefined && typeof follow !== 'boolean') throw fail('invalid_observation', 'followModal must be a boolean.');
+        if (follow) { const marked = markedSignal(signal); await lease.assert(session.id); await followModal(session, marked); }
+        const result = await observeInternal(session, signal, { depth, mode: checkedMode, documentElementId, includeOffscreen: includeOffscreen === true, screenshot: screenshotMode, scope, metrics: metrics === true });
+        await reportModal(session, result, signal);
         return retainCapture(session, result, signal);
       }, callOptions);
     },
@@ -441,7 +489,7 @@ function createComputerController(options = {}) {
           // `full` returns it; it keeps the consumed observation's depth, offscreen, scope and image setting.
           const snapshot = observation.snapshot;
           const refresh = scope => observeInternal(session, signal, { depth: snapshot.depth, mode: 'full',
-            includeOffscreen: snapshot.includeOffscreen === true, scope,
+            includeOffscreen: snapshot.includeOffscreen === true, scope, metrics: snapshot.metrics === true,
             screenshot: returnObservation === 'full' ? snapshot.screenshotPreference ?? 'full' : 'none',
             screenshotPreference: snapshot.screenshotPreference ?? 'full' });
           const scope = { ...(snapshot.rootElementId === undefined ? {} : { rootElementId: snapshot.rootElementId }), ...(snapshot.interactiveOnly ? { interactiveOnly: true } : {}) };
@@ -457,15 +505,34 @@ function createComputerController(options = {}) {
           await record(session, { type: 'action_completed', actionId, observationId: fresh.observationId });
           await retainCapture(session, fresh, signal);
           const completed = { actionId, outcome: 'completed', verification: 'fresh_observation', ...(scopeLost ? { scopeLost: true } : {}) };
+          await reportModal(session, fresh, signal);
+          const modal = fresh.ownedModal ? { ownedModal: fresh.ownedModal } : {};
           if (returnObservation === 'full') return { ...completed, nativeResult, observation: fresh };
-          if (returnObservation === 'none') return { ...completed, observationId: fresh.observationId };
-          return { ...completed, nativeResult, observationId: fresh.observationId, summary: actSummary(observation.result, fresh) };
+          if (returnObservation === 'none') return { ...completed, observationId: fresh.observationId, ...modal };
+          return { ...completed, nativeResult, observationId: fresh.observationId, summary: actSummary(observation.result, fresh), ...modal };
         } catch (error) {
           session.observation = null;
           // Input was sent and the refresh failed because the window itself is gone (Save, Close, OK).
           // This is a distinct, expected outcome rather than an internal error.
           if (nativeCompleted && !signal.aborted && !safeError(error).inputRecoveryRequired && await targetClosed(session, signal)) {
             await record(session, { type: 'action_target_closed', actionId }).catch(() => {});
+            // A followed modal closed: the session returns to the window that owned it.
+            const owner = session.owners?.at(-1);
+            if (owner) {
+              session.owners = session.owners.slice(0, -1); session.window = owner;
+              const snapshot = observation.snapshot;
+              const fresh = await observeInternal(session, signal, { depth: snapshot.depth, mode: 'full', includeOffscreen: snapshot.includeOffscreen === true,
+                metrics: snapshot.metrics === true, screenshot: returnObservation === 'full' ? snapshot.screenshotPreference ?? 'full' : 'none',
+                screenshotPreference: snapshot.screenshotPreference ?? 'full' });
+              await record(session, { type: 'modal_returned', windowId: owner.id, observationId: fresh.observationId });
+              await retainCapture(session, fresh, signal);
+              await reportModal(session, fresh, signal);
+              const returned = { actionId, outcome: 'target_closed_after_dispatch', verification: 'window_closed', returnedToOwner: true, windowId: owner.id };
+              if (returnObservation === 'full') return { ...returned, nativeResult, observation: fresh };
+              return { ...returned, observationId: fresh.observationId, ...(fresh.ownedModal ? { ownedModal: fresh.ownedModal } : {}),
+                ...(returnObservation === 'summary' ? { nativeResult, summary: { elementCount: fresh.elements.length, focused: compactFocus(fresh.focused),
+                  title: short(fresh.window?.title), targetState: fresh.targetState } } : {}) };
+            }
             return { actionId, outcome: 'target_closed_after_dispatch', verification: 'window_closed', nativeResult,
               nextStep: 'The input was sent and the session window then closed. Close this session; list windows to continue in another window.' };
           }
@@ -482,6 +549,33 @@ function createComputerController(options = {}) {
             ? 'Input is quarantined. Check the owned input process and button state before restarting TRACE; observation alone does not clear this condition.'
             : 'Observe the window before deciding whether to retry. The input may have occurred.' };
         }
+      }, callOptions);
+    },
+    // Starts a registered App Paths EXE directly (shell: false) and returns its windows, which open_session
+    // accepts without a new listing. The launch holds the desktop lease, so no session may be open.
+    launch({ app } = {}, callOptions) {
+      return queued(async signal => {
+        if (typeof app !== 'string' || !app) throw fail('invalid_argument', 'app must be an application name such as notepad.');
+        if (app.includes(':') || /[\\/]/.test(app)) throw fail('application_unsupported', 'Only App Paths EXE names launch; URIs (such as ms-settings:) and paths are unsupported.');
+        if (!LAUNCH_NAME.test(app)) throw fail('invalid_argument', 'app must be an application name such as notepad.');
+        if (sessions.size) throw fail('desktop_busy', 'Close the open session before launching; a launch holds the desktop lease.');
+        const wanted = launchName(app);
+        if (uncertainLaunches.has(wanted)) throw fail('application_already_attempted', 'The last launch of this app had an unknown outcome. List windows instead of relaunching.');
+        const catalog = createApplications();
+        const listed = await catalog.discover({ signal, match: row => launchName(row.name) === wanted });
+        const matches = listed.applications.filter(item => launchName(item.name) === wanted);
+        if (!matches.length) throw fail('unknown_application', listed.skipped
+          ? 'This app is registered, but its EXE cannot be verified (packaged apps under WindowsApps may be unreadable).'
+          : 'No App Paths registration has this name.');
+        if (matches.length > 1) throw fail('ambiguous_application', 'Several registered EXEs have this name.');
+        const result = await catalog.launch(matches[0].appId, { signal });
+        if (result.outcome === 'unknown') uncertainLaunches.add(wanted);
+        if (result.outcome !== 'launched') {
+          return { outcome: result.outcome, app: wanted, ...(result.code ? { code: result.code } : {}), ...(result.cleanup ? { cleanup: result.cleanup } : {}),
+            nextStep: result.outcome === 'unknown' ? 'The app may have started. List windows before deciding; it is not relaunched automatically.' : 'Nothing was started.' };
+        }
+        for (const window of result.windows) discovered.set(window.id, window);
+        return { outcome: 'launched', app: wanted, pid: result.process.pid, windows: result.windows.map(listedWindow), cleanup: result.cleanup };
       }, callOptions);
     },
     closeSession({ sessionId }, callOptions) {
