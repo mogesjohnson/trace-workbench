@@ -346,6 +346,14 @@ class WinappBackend {
     return enriched;
   }
   currentWindow(window, { signal } = {}) { return this.identity(window, signal); }
+  openWindow(window, options) { return this.currentVisualWindow(window, options); }
+  async currentVisualWindow(window, { signal } = {}) {
+    const native = await this.bridge('identity', window, signal);
+    if (typeof native.processCreationTime !== 'string' || !/^\d+$/.test(native.processCreationTime) || !Number.isInteger(native.sessionId)
+      || (window.processCreationTime !== undefined && native.processCreationTime !== window.processCreationTime)
+      || (window.sessionId !== undefined && native.sessionId !== window.sessionId)) fail('window_identity_changed', 'Native window lifetime changed.');
+    return { ...window, processCreationTime: native.processCreationTime, sessionId: native.sessionId };
+  }
   async identity(window, signal, adjacentBounds) {
     if (!object(window) || !Number.isSafeInteger(window.pid) || window.pid <= 0 || typeof window.processName !== 'string') fail('invalid_window', 'A pinned HWND, PID and process name are required.');
     const current = await this.command('status', ['-w', id(window.id)], signal);
@@ -449,7 +457,30 @@ class WinappBackend {
     if (result.method !== 'managed-uia-textpattern') invalid();
     return { elementId, provenance: result.method, document: read(result.document, false), selection: read(result.selection, true) };
   }
-  async observe({ window, screenshotPath, signal, depth = 8, includeScreenshot = true, documentElementId }) {
+  async observeVisual({ window, screenshotPath, signal }) {
+    if (typeof screenshotPath !== 'string' || !path.isAbsolute(screenshotPath) || path.extname(screenshotPath).toLowerCase() !== '.png') fail('invalid_screenshot_path', 'An absolute PNG output path is required.');
+    await this.currentVisualWindow(window, { signal });
+    let geometry = await this.bridge('bounds', window, signal);
+    const restored = geometry.minimized === true;
+    if (restored) { await this.bridge('activate', window, signal); geometry = await this.settledBounds(window, signal); }
+    const frame = bounds(geometry.frameBounds), outer = bounds(geometry.windowBounds);
+    const capture = await this.bridge('capture', window, signal, [screenshotPath]);
+    if (capture.method !== 'public-win32-printwindow-dwm' || capture.uiaRequired !== false
+      || path.resolve(capture.filePath || '') !== screenshotPath || !sameBounds(capture.bounds, frame)) fail('invalid_capture', 'Native visual capture provenance differs.');
+    const png = await readPngHeader(screenshotPath); count('backendPngRead', png.length);
+    const size = pngSize(png);
+    if (size.width !== capture.width || size.height !== capture.height || size.width !== frame.width || size.height !== frame.height) fail('capture_mismatch', 'Native PNG dimensions differ from exact DWM frame.');
+    const current = await this.currentVisualWindow(window, { signal }), after = await this.bridge('bounds', window, signal);
+    if (after.processCreationTime !== current.processCreationTime || after.sessionId !== current.sessionId) fail('window_identity_changed', 'Native lifetime changed after visual capture.');
+    if (after.minimized || !sameBounds(after.frameBounds, frame) || !sameBounds(after.windowBounds, outer)) fail('window_moved', 'Window moved during visual observation.');
+    return { window: { ...current, bounds: frame }, bounds: frame, elements: [],
+      focused: { available: false, code: 'visual_only' },
+      targetState: { enabled: after.enabled, minimized: after.minimized, foreground: after.foreground, provenance: 'public-win32-dwm' },
+      restoredFromMinimized: restored, captureMethod: capture.method, screenshot: { path: screenshotPath, mimeType: 'image/png', ...size } };
+  }
+  async observe({ window, screenshotPath, signal, depth = 8, includeScreenshot = true, documentElementId, visualOnly = false }) {
+    if (typeof visualOnly !== 'boolean' || (visualOnly && (!includeScreenshot || documentElementId !== undefined))) fail('invalid_observation', 'Visual-only capture cannot include document reads or omit PNG.');
+    if (visualOnly) return this.observeVisual({ window, screenshotPath, signal });
     if (typeof includeScreenshot !== 'boolean') fail('invalid_observation', 'includeScreenshot must be a boolean.');
     if (documentElementId !== undefined && (includeScreenshot || selector(documentElementId) !== documentElementId)) fail('invalid_document_request', 'Document reads require accessibility-only observation.');
     if (includeScreenshot && (typeof screenshotPath !== 'string' || !path.isAbsolute(screenshotPath) || path.extname(screenshotPath).toLowerCase() !== '.png')) fail('invalid_screenshot_path', 'An absolute PNG output path is required.');
