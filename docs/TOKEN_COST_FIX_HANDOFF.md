@@ -1,4 +1,4 @@
-# Token cost fixes — handoff (2 November 2026)
+# Token cost fixes — handoff (2 November 2026, session 3)
 
 Work for [the token cost incident](https://github.com/mogesjohnson/trace-workbench/pull/97) (`docs/OBSERVATION_TOKEN_COST_INCIDENT.md` on PR #97). The
 owner asked for every issue in PR #97 to be fixed. This file records how far the
@@ -10,21 +10,56 @@ work got and what comes next.
 - Worktree: `trace-workbench-worktrees/token-cost-fixes`, a sibling of the main checkout
   (`npm ci` already run there).
 
-## State at handoff (2 November 2026, session 2)
+## State at handoff (2 November 2026, session 3)
 
-- PR #98 (`fix/observation-token-cost`, head `b88fd81`, 4 commits): P0-1, P0-2 and P0-5.
-  Marked ready for review at the owner's request, although #80 is unmerged.
-  Full `npm test`: 669/670 in its worktree. The one failure is an environment
-  artifact: an `accept-replay-workflow` test asserts no `/token/i` in a checkpoint
-  that contains the worktree path `token-cost-fixes`, and it passes 23/23 through a
-  path without "token". `npm run check` passed.
-- PR #99 (`fix/compact-act-result`, draft, stacked on #98, 4 commits): P0-3, P0-4 and
-  the 2.0.0 candidate. Full `npm test` 678/678 (5 skipped) and `npm run check` passed.
-- Once, `tests/prepare-acceptance-anchor.test.cjs` hung during a full run under
-  load. It passed alone (9/9) and on reruns. Use `--test-timeout` for full runs.
-- Next: PR C (P1-1…P1-5) as a new worktree and branch stacked on
-  `fix/compact-act-result`, then PR D (P2). Each fix needs a size test against the
-  incident bar.
+- PR #98 (`fix/observation-token-cost`, ready, 4 commits): P0-1, P0-2, P0-5.
+- PR #99 (`fix/compact-act-result`, draft, stacked on #98, 4 commits): P0-3, P0-4, 2.0.0.
+- PR C (`fix/p1-scoping`, draft, stacked on #99, 4 commits including this handoff):
+  P1-1…P1-5. Worktree `trace-workbench-worktrees/p1-scoping` (`npm ci` already run there). Do not add
+  commits; PR D starts a new branch on `fix/p1-scoping`.
+  - Focused suites passed: `v10-p1-scoping` (10 cases), computer-controller,
+    computer-mcp, winapp-backend, v5-hierarchy, v8-focus-path, v9-compact-act,
+    v2-selective-*, method-trace-adapter, accept-claude-host, v1-capabilities,
+    v1-observation-metrics, v8-accessibility-actions, v2-adjacent-identity.
+    `npm run check` passed.
+  - The full `npm test --test-timeout=300000` run was **incomplete**. It had 387
+    passed and 0 failed when the session stopped, with one test process still
+    running. Rerun it at the start of the next session.
+  - Bars: the Save dialog file-name box at depth 2 is 2,267 chars (bar 3,000). A
+    30-window desktop lists in 1,131 chars (bar 2,500).
+- The personal skill discovery copies (`~/.claude`, `~/.agents`, `~/.grok`) were
+  deliberately **not** synced. The installed `trace-computer` MCP runs from the main
+  checkout (pre-2.0), so the new skill text would describe arguments it rejects. A dry
+  run of `node scripts/sync-computer-skill.cjs --plan` shows all three as `replace`.
+  Apply it once 2.0 is the installed server.
+
+## Done: P1 (PR C, branch `fix/p1-scoping`)
+
+- **P1-1.** `inspect()` takes `{ rootElementId, interactiveOnly }`.
+  - A depth-1 window read supplies the root (bounds, capture selector, movement guard).
+  - winapp 0.7.1 can answer an unresolved selector with the window root, or with
+    `internal_error`, so a subtree counts only when its single top node is the
+    requested slug. With `-i`, an extra depth-1 scoped read checks the scope root.
+    Otherwise TRACE fails with `element_not_found`.
+  - `-i` drops the window root, so in unscoped `interactiveOnly` TRACE re-adds it as
+    the first element.
+  - `mergeFocusPath` anchors at the scope root.
+  - The controller retains `rootElementId`/`interactiveOnly` on the snapshot. Dispatch
+    and the act refresh reuse them. If the scope root vanishes after an action, one
+    unscoped refresh runs and reports `scopeLost: true`.
+- **P1-2.** `listingNoise()`: windows under 8 px, shell processes, explorer helper
+  classes and untitled ApplicationFrameWindow. `listedWindow()` trims fields;
+  `verbose` returns everything. winapp gives no cloaked or tool-window flag; adding
+  one would need a native bridge rebuild (`DWMWA_CLOAKED`).
+- **P1-3.** `processName`/`title` filters. `discovered` keeps every listed window.
+  `open_session` looks up an unknown ID once. `act-compat` `listArguments` adds
+  `verbose` after doctor advertises `windowListing.verbose`; trace-adapter does the
+  same, and the Claude host guard always sends it.
+- **P1-4.** `backend.targetClosed()` (bridge `bounds` → `window_closed` /
+  `window_identity_changed`) yields `target_closed_after_dispatch`, journal type
+  `action_target_closed`.
+- **P1-5.** `_meta["trace/response"]` on every result. The skill, manifest, docs and
+  release notes are updated.
 
 ## Done: P0-1 and P0-2 (commit on this branch)
 
@@ -116,25 +151,15 @@ work got and what comes next.
 
 1. ~~P0-5~~ done (see above).
 2. ~~P0-3 and P0-4~~ done in PR B (see below).
-3. **P1.**
-   - P1-1: `rootElementId` uses the inspect selector argument, and
-     `interactiveOnly` uses `-i`. The dispatch re-inspection must reuse the same
-     scope.
-   - P1-2: `list_windows` filters 1×1, zero-size, LockApp, TextInputHost and
-     cloaked/tool windows by default, with `verbose` as the opt-in. Drop
-     `executable` and `processCreationTime` from the default output but keep them
-     server-side for identity.
-   - P1-3: `processName`/`title` filter, and `open_session` accepts an id from the
-     last listing.
-   - P1-4: `target_closed_after_dispatch` outcome when the window is gone after
-     native completion in `act`. At present this is `internal_error`.
-   - P1-5: `responseBytes` in `_meta`, plus a skill rule in
-     `skills/trace-computer-use/SKILL.md` (keep the discovery copies in sync;
-     `tests/skill-sync.test.cjs`). The skill should also explain the 2.0 act summary,
-     `returnObservation` and `screenshot: none|scaled`. That was left for P1-5 so the
-     skill bundle and its manifest change only once.
+3. ~~P1~~ done in PR C (see above).
 4. **P2.**
-   - P2-1: `metrics` becomes opt-in, and `doctor` prints the key regex once.
+   - P2-1: `metrics` becomes opt-in (an observe argument; tests in v1-observation-metrics,
+     v2-selective-controller and v5-document read `metrics`), and `doctor` prints the
+     key regex once. The doctor was measured at 5,957 chars: `support.actions.press_key`
+     is 2,851 (two regexes, namedKeys, aliases) and `limitations` is 246. Dropping one
+     regex is not enough for the 2,500 bar. Consider a compact default `support` plus
+     `doctor` verbose detail. `compatibleSupport()` compares the whole descriptor to the
+     local `actionSupport()`, so keep 1.x server compatibility in mind.
    - P2-2: RichEdit readback. Try winapp `get-value` (TextPattern) when the
      AutomationId binding is missing.
    - P2-3: launch.
