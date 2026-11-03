@@ -104,7 +104,13 @@ Without those lost words, route 2b was word-perfect and base.en misheard "set a"
    prompt; it replaces the section above.
 2. Traffic capture for route 2b: not needed. The owner accepted the output match above as enough
    (3 Nov 2026); the "on-device" claim stays labelled as inferred, not captured.
-3. `phone_transcribe` (A8 follow-up): build whisper.cpp inside the Debian proot (owner decision,
-   3 Nov 2026; Debian has gcc, g++ and make but no cmake) and ship base.en as the default model.
-4. claude-voice: add `EXTRA_PREFER_OFFLINE = true` (owner approved). claude-voice is a local folder
-   without Git, so the change is made there and is not part of this repository.
+3. `phone_transcribe` (A8 follow-up): **built 3 Nov 2026.** `scripts/phone/install-whisper.sh`
+   builds whisper.cpp v1.9.5 in the Debian proot with Debian's own gcc and cmake (apt) and installs
+   `phone-transcribe` with base.en. On the phone it transcribed the jfk sample exactly (11 s of audio
+   in 4.2 s, model load included) and the noisy command clips in about 3.6 s each. The
+   `phone_transcribe` MCP tool returned the same text from the PC over SSH
+   ([evidence](../evidence/research/a8-phone-transcribe-2026-11-03.json)). Not run yet: a live
+   `--record` utterance by the owner (microphone stays ask-first) and the call from phone Claude.
+4. claude-voice: add `EXTRA_PREFER_OFFLINE = true` (owner approved). Done 3 Nov 2026 in the
+   separate private claude-voice repository (its PR 1). The owner installed the build and spoken
+   commands worked; recognition with the network off has not been tested.
