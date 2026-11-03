@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "version": "2.0.0",
+  "status": "published",
+  "releaseId": 432897481,
+  "releaseUrl": "https://github.com/mogesjohnson/trace-workbench/releases/tag/v2.0.0",
+  "publishedAt": "2026-11-03T15:45:39Z",
+  "tag": "v2.0.0",
+  "sourceCommit": "9886a6ba68f5a764a58529298c6ce5f799f2ae54",
+  "ci": {
+    "url": "https://github.com/mogesjohnson/trace-workbench/actions/runs/41665541754",
+    "head": "9886a6ba68f5a764a58529298c6ce5f799f2ae54",
+    "conclusion": "success"
+  },
+  "archive": {
+    "sourceCommit": "9886a6ba68f5a764a58529298c6ce5f799f2ae54",
+    "file": "trace-workbench-2.0.0-source.zip",
+    "sha256": "888bc8ef20b3850f8ad08bb5825e91eb34f96e26547bf73a20b2be4ca1bfd607",
+    "bytes": 24173415,
+    "retainedRequirementHashesVerified": 8,
+    "referenceHashesVerified": 11,
+    "reproductionTimezone": "UTC"
+  },
+  "assets": [
+    {
+      "name": "trace-workbench-2.0.0-source.zip",
+      "bytes": 24173415,
+      "sha256": "888bc8ef20b3850f8ad08bb5825e91eb34f96e26547bf73a20b2be4ca1bfd607",
+      "id": 706142428
+    },
+    {
+      "name": "acceptance-manifest.json",
+      "bytes": 6777,
+      "sha256": "b0f6b806cc06880f2efdee3bf68fcea4bd6079da16be75de17eccc0e6d34f7b7",
+      "id": 706142426
+    },
+    {
+      "name": "distribution-receipt.json",
+      "bytes": 3641,
+      "sha256": "43b78c5e43dd7bd09c5c1ec519aa2df17d0dbdb3a18306f4ce4628c7ab403dc3",
+      "id": 706142423
+    },
+    {
+      "name": "RELEASE_NOTES.md",
+      "bytes": 14074,
+      "sha256": "a572dc11477c369c93a3390de83b9bdc1961287a2d118648c9d99cd4fa0a7d7d",
+      "id": 706142424
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 365,
+      "sha256": "96c4be48d6a7e848cd887a02c000bfe4922aaa4b90b06e641fb111e4d9867f07",
+      "id": 706142430
+    }
+  ],
+  "independentDownloadedHashesVerified": true,
+  "publicTagAndAssetMetadataVerified": true,
+  "ownerApproval": {
+    "source": "direct-owner",
+    "reply": "all aprroved 1-4",
+    "scope": "Tag v2.0.0 on 9886a6b, create the GitHub release with the five assets, re-verify downloaded hashes, open this publication PR"
+  },
+  "mergedPrs": [
+    107,
+    108
+  ],
+  "limits": "Known limits G1-G4 from the 3 November head-to-head (stuck session after recover --apply, keyboard close, packaged-app launch, interactiveOnly size) remain, with workarounds in the release notes; fixes planned for 2.1.0. Compatible 1.x live acceptance reused at its stated scope. No desktop work for publication."
+}
