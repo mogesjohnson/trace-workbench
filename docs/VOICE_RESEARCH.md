@@ -13,8 +13,10 @@ A8 done-when ("a recommended route with measured numbers") is not met until thos
 | SoC, RAM, CPUs online | SM8550, 11.3 GB, 6 | `getprop ro.soc.model`, `/proc/meminfo`, `nproc` |
 | Default recognizer | `com.google.android.tts/…GoogleTTSRecognitionService` | `settings get secure voice_recognition_service` |
 | On-device recognizer service | `com.google.android.as` `AiAiSpeechRecognitionService` present | `dumpsys package` (handoff 10) |
+| On-device recognizer config | `com.google.android.as/…AiAiSpeechRecognitionService`, set by an overlay (the `framework-res.apk` base value is empty) | `cmd overlay lookup android android:string/config_defaultOnDeviceSpeechRecognitionService` (3 Nov 2026) |
 | Termux:API | app installed; `termux-speech-to-text`, `termux-microphone-record` present | `dumpsys package com.termux.api`, Termux `pkg` (handoff 10) |
-| Debian (proot) speech tools | none: python3 only, no whisper.cpp, ffmpeg or sox | handoff 10 inventory |
+| Termux:API from Debian | works: the Termux bin dir is on Debian's `PATH`, and `termux-battery-status` run in Debian returned its JSON (rc 0) | Debian diag script over Termux (3 Nov 2026) |
+| Debian (proot) speech tools | none: python3 only, no whisper.cpp, ffmpeg or sox. Has git, make, gcc, g++, curl; no cmake. 13 GB free | handoff 10 inventory; Debian diag (3 Nov 2026) |
 
 The owner's existing `claude-voice` project already does voice end to end: the Android app
 `com.claudevoice.listen` uses `SpeechRecognizer.createSpeechRecognizer` with
@@ -27,8 +29,8 @@ bridge takes text only.
 | Route | Where audio goes | Setup cost | Latency / accuracy | Notes |
 | --- | --- | --- | --- | --- |
 | 1. Android recognizer, default (as claude-voice does today) | May go to Google servers: no offline flag is set. TODO(verify) | none, already built | not_run | Streams partial results; good for live dictation. |
-| 2. Android on-device recognizer (`createOnDeviceSpeechRecognizer`, SDK 31+) | Stays on the phone (Android's documented contract). TODO(verify) on this device | small change to claude-voice | not_run | Same API as route 1; `isOnDeviceRecognitionAvailable` must return true. TODO(verify) |
-| 3. Termux:API `termux-speech-to-text` | Uses the default recognizer, so same as route 1. TODO(verify) | none, callable from Termux; from Debian only if the Termux bin dir is reachable. TODO(verify) | not_run | Cheapest baseline for a session: one shell command returns text. Live utterance only, no file input. |
+| 2. Android on-device recognizer (`createOnDeviceSpeechRecognizer`, SDK 31+) | Stays on the phone (Android's documented contract). TODO(verify) on this device | small change to claude-voice | not_run | Same API as route 1. The device names an on-device service (Device facts), so `isOnDeviceRecognitionAvailable` should return true; the call itself is not_run. |
+| 3. Termux:API `termux-speech-to-text` | Uses the default recognizer, so same as route 1. TODO(verify) | none: callable from Termux and from Debian (Termux:API from Debian works, Device facts) | not_run | Cheapest baseline for a session: one shell command returns text. Live utterance only, no file input. |
 | 4. whisper.cpp in Debian on a recording (`termux-microphone-record`) | Stays on the phone | build whisper.cpp and a model in proot (no ffmpeg yet; needs WAV 16 kHz) | not_run; CPU only, expect seconds per utterance with a small model. TODO(verify) | Only route that transcribes existing recordings, which A8 also asks for. |
 
 ## Recommendation (provisional, pending the voice runs)
