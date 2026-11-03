@@ -168,6 +168,10 @@ Each fix needs a test that measures response size. These numbers are the bar.
 TRACE's share must stay under **100k tokens** of context, about one quarter of what
 3 task-runs cost today.
 
+**Rerun result, 3 November 2026:** met. TRACE 2.0.0 used about 94k tokens (an upper
+bound) for its 8 task-runs; both tools passed 6/8 and both failed Settings. See
+[the head-to-head](HEAD_TO_HEAD_2026-11-03.md) and [the fix plan](FIX_PLAN_2.1.0.md).
+
 ## Evidence and logs
 
 - Sanitized per-call measurements (committed):
