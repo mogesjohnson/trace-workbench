@@ -49,13 +49,13 @@ test('controller publishes observation metrics for first and action refresh capt
   let tick = 0, wall = 1000;
   const indicator = { pid: 999, signal: new AbortController().signal, async start() { return { active: true, monitors: 1, protocol: 1 }; }, assertActive() {}, async stop() {} };
   const backend = { async listWindows() { return [window]; }, async observe({ screenshotPath }) {
-    await fs.writeFile(screenshotPath, png); return { window, bounds: window.bounds, elements: [{ id: 'secret-element' }], screenshot: { path: screenshotPath } };
+    if (screenshotPath) await fs.writeFile(screenshotPath, png); return { window, bounds: window.bounds, elements: [{ id: 'secret-element' }], screenshot: { path: screenshotPath } };
   }, async act() { return { performed: true }; } };
   const lease = { async acquire() {}, async assert() {}, async release() {} };
   const controller = createComputerController({ backend, indicator, lease, runtimeDirectory: directory, now: () => wall, metricsClock: () => tick++ });
   t.after(async () => { await controller.close(); await fs.rm(directory, { recursive: true, force: true }); });
   await controller.listWindows(); const session = await controller.openSession({ windowId: window.id });
-  const first = await controller.observe(session);
+  const first = await controller.observe({ ...session, metrics: true });
   assert.equal(first.observedAt, new Date(wall).toISOString());
   assert.equal(first.metrics.sample, 'first-controller-attempt');
   for (const phase of ['observation', 'identity', 'backend', 'fileStat', 'fileRead', 'hashEncode', 'journal']) assert.equal(first.metrics.stages[phase].calls, 1, phase);
@@ -64,7 +64,7 @@ test('controller publishes observation metrics for first and action refresh capt
   assert.equal(first.metrics.bytes.base64, png.toString('base64').length);
   assert.doesNotMatch(JSON.stringify(first.metrics), /secret|iVBOR/);
   wall++;
-  const result = await controller.act({ ...session, observationId: first.observationId, action: { type: 'activate' } });
+  const result = await controller.act({ ...session, observationId: first.observationId, action: { type: 'activate' }, returnObservation: 'full' });
   assert.equal(result.outcome, 'completed');
   assert.equal(result.observation.observedAt, new Date(wall).toISOString());
   assert.equal(result.observation.metrics.sample, 'later-controller-attempt');

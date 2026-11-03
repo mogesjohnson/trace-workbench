@@ -310,7 +310,8 @@ internal sealed class SupervisorSession : IDisposable
                 return new { attempted = false, released = false, processExitConfirmed = false, reason = "process_exit_unconfirmed",
                     childPid = record.Child?.Pid, childCreated = record.Child?.Created.ToString(), declaredKeysDown = Array.Empty<int>() };
             }
-            var released = InputState.ReleaseDeclared(record.Keys, record.Unicode);
+            // Post-dispatch only: a keyboard close may leave no foreground for a moment (bounded wait).
+            var released = InputState.ReleaseDeclared(record.Keys, record.Unicode, waitForForeground: true);
             if (released.Released)
             {
                 if (allowControlled && provider == "controlled" && recoveryFault is not null && !recoveryFaultConsumed
@@ -319,6 +320,7 @@ internal sealed class SupervisorSession : IDisposable
                 RecoveryStore.Clear(sessionKey);
                 return new { attempted = true, released = true, processExitConfirmed = true, method = "declared-sendinput", reason,
                     childPid = record.Child?.Pid, childCreated = record.Child?.Created.ToString(), declaredKeysDown = released.RemainingDown,
+                    foregroundWaitMs = released.ForegroundWaitMs,
                     stopCleanupMs = physicalStopAtTicks > 0 ? (double?)Math.Round(Stopwatch.GetElapsedTime(physicalStopAtTicks).TotalMilliseconds, 3) : null };
             }
             RecoveryStore.Write(record with { Phase = "quarantined", Reason = "input_release_unconfirmed" });
@@ -470,6 +472,23 @@ internal static class SupervisorSelfTest
         Require(InputDeclaration.For("bridge", ["bounds", "1", "2"], [], false).Keys.Length == 0);
         Require(InputDeclaration.For("bridge", ["identity", "1", "2"], [], false).Keys.Length == 0);
         Require(InputDeclaration.For("bridge", ["identities"], [], false).Keys.Length == 0);
+        foreach (var pair in new[] { ("left", 1), ("right", 2), ("middle", 4) })
+        {
+            var declaration = InputDeclaration.For("bridge", ["click", "1", "2", "30", "40", pair.Item1, "1"], [], true);
+            Require(declaration.Keys.SequenceEqual(new[] { pair.Item2 }));
+            Require(InputDeclaration.For("controlled", ["provider", "hold-mouse", "30", "40", pair.Item1], [], true).Keys.SequenceEqual(declaration.Keys));
+            var held = true;
+            var recovered = InputState.ReleaseCore(declaration.Keys, _ => held, key => { Require(key == pair.Item2); held = false; }, _ => { });
+            Require(recovered.Released && !held);
+            Require(!InputState.ReleaseCore(declaration.Keys, _ => true, _ => { }, _ => { }).Released);
+        }
+        Require(InputDeclaration.For("bridge", ["wheel", "1", "2", "30", "40", "120", "-120"], [], true).Keys.Length == 0);
+        foreach (var args in new[] { new[] { "click", "1", "2", "30", "40", "middle", "2" }, new[] { "click", "1", "2", "30", "40", "unknown", "1" } })
+        {
+            var refused = false;
+            try { InputDeclaration.For("bridge", args, [], true); } catch (TraceError) { refused = true; }
+            Require(refused);
+        }
         var rejected = false;
         try { InputDeclaration.For("winapp", ["ui", "send-keys", "--json"], [], false); } catch (TraceError) { rejected = true; }
         Require(rejected);
@@ -485,6 +504,18 @@ internal static class SupervisorSelfTest
         Require(!failed.Released && rounds == 2 && failed.RemainingDown.SequenceEqual(new[] { 1 }));
         var noRelease = InputState.ReleaseCore([1], _ => false, _ => throw new InvalidOperationException(), _ => { });
         Require(noRelease.Released && noRelease.Attempted.Length == 0);
+        // Bounded post-dispatch foreground wait on a simulated clock: no OS input or sleep.
+        long now = 0; var polls = 0;
+        var returned = InputState.AwaitForeground(() => now >= 200 ? 7 : 0, ms => { polls++; now += ms; }, () => now,
+            InputState.ForegroundPollMs, InputState.ForegroundWaitCapMs);
+        Require(returned == 200 && polls == 8);
+        now = 0; polls = 0;
+        var missing = InputState.AwaitForeground(() => 0, ms => { polls++; now += ms; }, () => now,
+            InputState.ForegroundPollMs, InputState.ForegroundWaitCapMs);
+        Require(missing == 1000 && polls == 40);
+        now = 0; polls = 0;
+        Require(InputState.AwaitForeground(() => 7, _ => polls++, () => now, 25, 1000) == 0 && polls == 0);
+        Require(InputState.ForegroundPollMs == 25 && InputState.ForegroundWaitCapMs == 1000);
         var serialized = JsonSerializer.Serialize(new RecoveryRecord(1, "test", self, self, [1, 0xA2], [97], "intent", "test"));
         var restored = JsonSerializer.Deserialize<RecoveryRecord>(serialized)!;
         Require(restored.Supervisor == self && restored.Child == self && restored.Keys.SequenceEqual(new[] { 1, 0xA2 }) && restored.Unicode.SequenceEqual(new[] { 97 }));

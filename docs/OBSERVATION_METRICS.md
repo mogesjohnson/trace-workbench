@@ -1,6 +1,6 @@
 # Observation cost measurements (V1 development)
 
-Successful native observations expose `metrics`; action refreshes expose the same object under `observation.metrics`. These are diagnostics, never observation authority, effect proof or an input retry decision. Observation timestamps, TTL, identity/geometry checks and native supervision remain unchanged.
+Since 2.0.0, metrics are opt-in: pass `metrics: true` to `trace_computer_observe`. Successful native observations then expose `metrics`, and an action refresh exposes the same object under `observation.metrics` only when the consumed observation asked for them. Without the flag an observation omits `metrics` and `_meta['trace/projection']` (about 700 characters less in the 2.0 test). These are diagnostics, never observation authority, effect proof or an input retry decision. Observation timestamps, TTL, identity/geometry checks and native supervision remain unchanged.
 
 ## What is measured
 
@@ -13,7 +13,7 @@ Successful native observations expose `metrics`; action refreshes expose the sam
 - Helper startup, isolated provider execution, wire transport, client latency and model time are explicitly unavailable in observation metrics. Ignore timing samples with `counts.invalidTimingSamples`; nonfinite/backward injected clock values cannot be treated as real zero-duration work.
 - A failed full observation retains its existing error rather than publishing partial metrics. A caught optional-focus failure can appear as a failed nested span in an otherwise successful observation.
 
-MCP observations also provide `_meta['trace/projection']` when projection instrumentation is present. Its duration covers server projection and the one existing text serialization. `jsonTextBytes` measures that text; `imageBase64Bytes` measures the image strings. They exclude metadata/envelope overhead and duplicated structured serialization, so they are not total wire bytes. Text/structured state and image indexes are unchanged. Client/network/model time is outside this boundary.
+MCP observations that request metrics also provide `_meta['trace/projection']` when projection instrumentation is present. Its duration covers server projection and the one existing text serialization. `jsonTextBytes` measures that text; `imageBase64Bytes` measures the image strings. They exclude metadata/envelope overhead and duplicated structured serialization, so they are not total wire bytes. Text/structured state and image indexes are unchanged. Client/network/model time is outside this boundary.
 
 Metrics accept only fixed labels and finite bounded numbers. They record no arguments, paths, window inventory, titles, typed text, clipboard data, errors, image contents or hashes. Source PNGs and ordinary observation state retain their existing separate privacy obligations. Metrics are not automatically written to a new log or uploaded.
 
@@ -21,7 +21,7 @@ Metrics accept only fixed labels and finite bounded numbers. They record no argu
 
 Actual desktop measurement needs a separately scheduled owned-window slot; preparing this guide does not run one.
 
-1. Record exact source/runtime/engine versions, fixture state, display geometry/DPI/topology and observation depth in a sanitized manifest. Pin these for all comparisons. Distinguish built/pinned source from the source actually loaded by the client server.
+1. Pass `metrics: true` on every measured observation (2.0.0 and later). Record exact source/runtime/engine versions, fixture state, display geometry/DPI/topology and observation depth in a sanitized manifest. Pin these for all comparisons. Distinguish built/pinned source from the source actually loaded by the client server.
 2. Use one owned synthetic fixture already foreground, restored and idle. Keep its content, size and focus unchanged. Do not reuse unrelated app inventories or private screenshots as benchmark artifacts.
 3. Start a fresh controller, open its exact target once, and collect one first observation plus three later observations at the same depth. No mutation, export, recovery test or old acceptance rerun is required. Stop on targeting, capture or cleanup uncertainty; record the failed prerequisite instead of expanding the campaign.
 4. Store only each result's numeric metrics, projection metadata, sample label and pass/fail status. Do not save the full tool result, screenshot, title or target/session IDs into the performance report. Record actual cache/app initialization conditions separately; do not relabel first/later as cold/warm proof.

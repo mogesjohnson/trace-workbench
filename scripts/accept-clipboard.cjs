@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 'use strict';
+const { createActCompat } = require('../src/computer/act-compat.cjs');
 
 // Opt-in acceptance only. Import/--plan never launches a process or reads the clipboard.
 // Initial/final clipboard metadata lives only in runCase's closure, never in a receipt.
@@ -272,13 +273,15 @@ async function connectProduction(runtimeDirectory, pinnedDisplay, signal) {
     requireThat(JSON.stringify(tools.tools.map(item => item.name).sort()) === JSON.stringify([
       'trace_computer_act', 'trace_computer_close_session', 'trace_computer_doctor',
       'trace_computer_list_windows', 'trace_computer_observe', 'trace_computer_open_session']), 'mcp_tools_mismatch');
+    const actCompat = createActCompat();
     return {
       async call(name, args = {}) {
-        if (name === 'act') compareDisplay(await command(['display']), pinnedDisplay);
+        if (name === 'act') { compareDisplay(await command(['display']), pinnedDisplay); args = actCompat.actArguments(args); }
         const response = await client.callTool({ name: `trace_computer_${name}`, arguments: args },
           { timeout: 30000, ...(name === 'close_session' ? {} : { signal }) });
         const state = stateOf(response);
         if (response.isError) throw failure(codeOf(state.error));
+        if (name === 'doctor') actCompat.noteDoctor(state);
         if (name === 'open_session') {
           sessionOpened = true;
           chain = await common.readChain(owned());

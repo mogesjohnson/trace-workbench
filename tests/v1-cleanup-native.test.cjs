@@ -11,7 +11,8 @@ const { createComputerServer } = require('../src/computer/server.cjs');
 const { TOOL_NAMES } = require('../src/method/index.cjs');
 
 function owner({ ack = { closed: true, cleanup: 'confirmed' }, destroyed = false, rejection, exit = { code: 0, signal: null } } = {}) {
-  const native = new NativeSupervisor();
+  // Durable recovery stays required, so a failed release must stay latched (M1 releases only once it clears).
+  const native = new NativeSupervisor({ recoverImpl: async () => ({ recoveryRequired: true, ready: false }) });
   native.child = { stdin: { destroyed, end() {} } };
   native.owner = 'session'; native.ready = true;
   native.request = async () => { if (rejection) throw rejection; return ack; };

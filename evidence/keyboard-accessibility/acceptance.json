@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "scope": "items-13-14-owned-wpf-fixture",
+  "status": "pass",
+  "startedAt": "2026-11-01T03:46:36.924Z",
+  "finishedAt": "2026-11-01T03:48:40.331Z",
+  "source": "75f00cc010429eef31b26dbf8ab53872de3ad281",
+  "privateReceiptSha256": "67311ca19b7e010309225dd44dc7be7043b2c3cfbfd6f22168f4e5256b02f66b",
+  "privateDriverSha256": "a4de95eea1c096d7f71727fd2ab5dbd10fc2fa20a6c77115b37f55b5002f0300",
+  "fixtureSourceSha256": "b2303e5bbc55582baf3bb6e7a4d7bd5353960e5905a3b6694e9ed12869206a9a",
+  "provider": { "name": "winapp", "version": "0.7.1", "transport": "send-input" },
+  "display": { "monitors": 1, "width": 1920, "height": 1080, "dpi": 144 },
+  "preconditions": {
+    "freshOwnerReadiness": true,
+    "nativeVisibilityAndProcessLifetimeMatched": true,
+    "doctorReady": true,
+    "allInputUpAndRecoveryClear": true,
+    "intendedFocusConfirmed": true,
+    "rootReviewedInitialAndSixPostActionPngs": true,
+    "hashedSourceBridgeSupervisorFixtureAndDisplayUnchanged": true
+  },
+  "keyboard": {
+    "verification": "independent fixture key events; physical virtual keys, not rendered characters",
+    "cases": [
+      { "key": "INSERT", "virtualKey": 45, "status": "pass" },
+      { "key": "SEMICOLON", "virtualKey": 186, "status": "pass" },
+      { "key": "PLUS", "virtualKey": 187, "shift": true, "status": "pass" },
+      { "key": "NUMPAD_ADD", "virtualKey": 107, "status": "pass" },
+      { "key": "F16", "virtualKey": 127, "status": "pass" },
+      { "key": "1", "virtualKey": 49, "status": "pass" }
+    ],
+    "numpad1": { "status": "skipped", "reason": "Existing NumLock was off; no lock-state change was made." }
+  },
+  "accessibility": {
+    "duplicateLabelsWithDistinctParents": "pass",
+    "document": { "available": true, "utf16Units": 4096, "truncated": true, "matchedIndependentPrefix": true },
+    "selection": { "available": true, "ranges": 1, "utf16Units": 18, "matchedIndependentSelection": true },
+    "emptyDocument": { "available": true, "utf16Units": 0, "truncated": false },
+    "password": { "available": false, "reason": "password_or_unknown" },
+    "unsupportedButton": { "available": false, "reason": "text_pattern_unavailable" },
+    "readOnlyStateUnchanged": true,
+    "documentReadPngs": 0,
+    "readObservationIdsRejectedForInput": 4,
+    "documentContentAbsentFromJournal": true
+  },
+  "cleanup": {
+    "session": "confirmed",
+    "connection": "closed",
+    "exactNativeOwnerExited": true,
+    "exactMarkerExited": true,
+    "fixtureExited": true,
+    "fixtureExitCode": 0,
+    "driverExitCode": 0,
+    "inputAllUp": true,
+    "recoveryClear": true
+  },
+  "limits": [
+    "One owned WPF fixture and the recorded display/layout; not arbitrary app, layout or monitor acceptance.",
+    "NUMPAD1 live delivery was skipped; normalization remains synthetically checked. NUMPAD_ADD versus OEM PLUS was live verified.",
+    "Selection overflow was not live tested; surrogate clipping, response bounds and ambiguous/missing binding use focused checks.",
+    "No new interruption matrix, host, clipboard, mouse or export acceptance; compatible earlier results are reused.",
+    "No merge, release, installed skill/settings update or default runtime replacement. Stop before item 15."
+  ]
+}

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 'use strict';
+const { createActCompat } = require('../src/computer/act-compat.cjs');
 
 // A new focused case preserving both failed A32-PROBE attempts. This checks the missing focused
 // typing precondition and the production native owner; it does not pass the full recovery matrix.
@@ -72,7 +73,7 @@ async function run(reportDirectory, { regression = false } = {}) {
     assert.equal(before.text, '');
     const dispatches = [];
     const native = new NativeSupervisor({ configure: async () => ({ ...await configuration(), allowControlled: true }), onDispatch: item => dispatches.push(item) });
-    controller = createComputerController({ backend: new WinappBackend({ supervisor: native }), runtimeDirectory: path.join(directory, 'runtime') });
+    controller = createActCompat().wrapController(createComputerController({ backend: new WinappBackend({ supervisor: native }), runtimeDirectory: path.join(directory, 'runtime') }));
     assert.equal((await controller.doctor()).ready, true);
     const windows = await controller.listWindows();
     const target = windows.windows.find(item => item.pid === fixture.pid && item.title === `TRACE Computer Fixture — ${runId}`);

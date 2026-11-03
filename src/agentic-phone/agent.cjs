@@ -1,6 +1,6 @@
 'use strict';
 
-// Client for the on-device trace-phone agent (native/TracePhoneAgent).
+// Client for the on-device trace-phone agent (src/agentic-phone/native).
 // Framing: request = u32be length + JSON; reply = u32be length + JSON header,
 // then u32be length + binary payload. Requests are answered in order.
 

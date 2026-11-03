@@ -15,7 +15,7 @@ Both skills are selected; neither configuration nor a fixture test establishes e
 
 | Skill | Purpose | Current status |
 | --- | --- | --- |
-| [TRACE Phone](skills/trace-phone/SKILL.md) | Control an Android phone over adb (Wi-Fi or USB) through an on-device agent: scaled screenshots, accessibility nodes, act-then-settle, logcat. | Agent build, adb-server client, controller and MCP server (`trace-workbench phone mcp`, six tools) pass fake-adb/fake-agent tests. Owner-approved agent runs over USB are recorded in [the phone handoff](docs/PHONE_HANDOFF.md); the MCP server has not yet driven a real phone, and Wi-Fi and on-phone (Termux) links are unmeasured. |
+| [TRACE Phone](skills/trace-phone/SKILL.md) | Control an Android phone over adb (Wi-Fi or USB) through an on-device agent: scaled screenshots, accessibility nodes, act-then-settle, logcat. | Agent build, adb-server client and controller ([`src/agentic-phone/`](src/agentic-phone/README.md)) and MCP server (`trace-workbench phone mcp`, six tools) pass fake-adb/fake-agent tests. Owner-approved agent runs over USB are recorded in [the phone handoff](docs/PHONE_HANDOFF.md); the MCP server has not yet driven a real phone, and Wi-Fi and on-phone (Termux) links are unmeasured. |
 
 ## Future skills under review
 

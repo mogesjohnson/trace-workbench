@@ -1,7 +1,7 @@
 'use strict';
 
 // MCP server for TRACE Phone: drives one Android phone through the on-device
-// trace-phone agent (src/phone/controller.cjs). Frames are returned as MCP image
+// trace-phone agent (src/agentic-phone/controller.cjs). Frames are returned as MCP image
 // content only when the screen changed; every frame is also saved locally.
 
 const { McpServer } = require('@modelcontextprotocol/server');
@@ -219,10 +219,18 @@ function createPhoneServer({ controller, transcribe, onError = () => {}, stopOnC
 }
 
 async function runPhoneServer(options = {}) {
-  const controller = options.controller ?? require('./controller.cjs').createPhoneController();
+  const phone = require('../agentic-phone/controller.cjs');
+  const controller = options.controller ?? phone.createPhoneController();
   const onError = options.onError ?? ((error) => {
     process.stderr.write(`TRACE Phone: ${error instanceof Error ? error.message : 'Server error'}\n`);
   });
+  // A7 C4: trace-phone prunes its own frames older than 7 days; agent Bash deletes are denied.
+  if (!options.controller) {
+    try {
+      const removed = phone.pruneFrames();
+      if (removed) process.stderr.write(`TRACE Phone: pruned ${removed} frame(s) older than 7 days\n`);
+    } catch (error) { onError(error); }
+  }
   const server = createPhoneServer({ controller, onError });
   const shutdown = () => { void server.close().catch(onError); };
   process.once('SIGINT', shutdown);
