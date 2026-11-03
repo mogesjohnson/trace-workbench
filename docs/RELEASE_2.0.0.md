@@ -1,10 +1,14 @@
-# TRACE Workbench 2.0.0 (candidate, unpublished)
+# TRACE Workbench 2.0.0
 
-**Status: candidate on `main`. Not published.** The owner approved a major version on
-2 November 2026 so `trace_computer_act` can return a compact result by default.
-Publication follows the [release procedure](RELEASE_PROCEDURE.md) and needs explicit
-owner approval. The published release is still [1.1.0](RELEASE_1.1.0.md). Fixes for the
-known limits below are planned for 2.1.0 ([plan](FIX_PLAN_2.1.0.md)).
+**Published 3 November 2026 with direct owner approval.**
+[Download v2.0.0](https://github.com/mogesjohnson/trace-workbench/releases/tag/v2.0.0).
+The [publication receipt](../evidence/release-2.0.0/publication.json) binds merged source
+`9886a6b`, passing final-main Windows CI, exact archive installation/rollback and five
+independently downloaded and hash-verified assets. The bundled notes and companion
+manifests keep their prepublication snapshot. The owner approved a major version on
+2 November 2026 so `trace_computer_act` can return a compact result by default. Published
+[1.1.0](RELEASE_1.1.0.md) and its assets remain available. Fixes for the known limits
+below are planned for 2.1.0 ([plan](FIX_PLAN_2.1.0.md)).
 
 ## Why
 
