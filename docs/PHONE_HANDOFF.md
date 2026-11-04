@@ -389,31 +389,65 @@ The phone session followed `AUTONOMOUS_SESSION.md` and posted this notification:
   showed 0 old frames, 22 total, and the dummy frame gone. Notification:
   `pass old=0 total=22 planted=gone`.
 
-## Wi-Fi trust watcher (2 November 2026, device run on eduroam only)
+## Wi-Fi trust watcher (2 November 2026; SDK 37 fix 3 November 2026)
 
 Owner decision, 2 November 2026: every Wi-Fi network the phone joins is trusted for Wireless
 debugging ([policy exception](PHONE_AUTONOMY_POLICY.md)). `trace.phone.WifiTrust`, in the agent
 dex, is the watcher. `scripts/phone-boot-adb.cjs` starts it once `127.0.0.1:5555` is up: it pushes
 the dex to `/data/local/tmp/trace-wifi.dex` and runs it under `app_process` as the shell user,
 named `tracewifitrust` and logging to `/data/local/tmp/trace-wifi.log`. Every 5 s the watcher reads
-`dumpsys adb`. When `is_trusted_network=false`, it takes the BSSID from `cmd wifi status` and calls
-`IAdbManager.allowWirelessDebugging(true, bssid)`, the call behind the dialog's "Always allow on
-this network". It never turns Wireless debugging off, removes networks or pairs devices.
+`dumpsys adb` and `cmd wifi status`. It acts when the current BSSID (from `cmd wifi status`, else
+`network_bssid`) is not in the trusted list of the `dumpsys adb` keystore dump, or when
+`is_trusted_network=false`. It then calls `IAdbManager.allowWirelessDebugging(true, bssid, ssid)`,
+the SDK 37 signature, with the SSID quoted as Android stores it (`"MogesAIGirlfriend5"`), or
+`allowWirelessDebugging(true, bssid)` (AOSP) when the 3-argument one is missing. A message that
+repeats every round, such as an error, is logged once. It never turns Wireless debugging off,
+removes networks or pairs devices. Host checks: `tests/phone-wifi-trust.test.cjs` compiles the
+watcher with `tests/fixtures/WifiTrustTest.java` (skips without a JDK and Android SDK).
 
-| Check (S23, eduroam, USB) | Result |
+| Check (S23, USB) | Result |
 |---|---|
-| `dumpsys adb` prints `is_trusted_network=true` and `network_bssid`; `cmd wifi status` prints `BSSID: <mac>` | pass |
-| watcher starts, logs `trust watcher started, every 5 s` | pass |
-| starting it again leaves one process (`pgrep -f '^tracewifitrust$'`) | pass |
-| joining a new network (hotspot) → network trusted, no dialog tap | **not_run** (no hotspot) |
+| eduroam: `dumpsys adb` prints `is_trusted_network=true` and `network_bssid`; `cmd wifi status` prints `BSSID: <mac>` | pass |
+| eduroam: watcher starts, logs `trust watcher started, every 5 s` | pass |
+| eduroam: starting it again leaves one process (`pgrep -f '^tracewifitrust$'`) | pass |
+| 3 Nov, `5613c91`: joining MogesAIGirlfriend5 (5 GHz, `12:36:aa:0d:52:a6`) does not restart the watcher or adbd (same pid, adbd STIME unchanged) | pass |
+| 3 Nov, `5613c91`: joining MogesAIGirlfriend5 → network trusted, no dialog tap | **fail** (two causes below; the owner tapped Allow once) |
+| 3 Nov 00:52, `948dfac` watcher started by the owner: first round logs `allowed 12:36:aa:0d:52:a6 "MogesAIGirlfriend5" (3-arg)`; the keystore lists `12:36:aa:0d:52:a6` / `"MogesAIGirlfriend5"`; `is_trusted_network=true`; adbd not restarted (STIME 23:30:01) | pass |
+| fixed watcher: switching to 2.4 GHz and back to 5 GHz shows no dialog | **not_run** |
+| 3 Nov 12:59, eduroam `74:9e:75:2f:b8:a3` (not listed, but `is_trusted_network=true` by SSID): restarted watcher logs `allowed 74:9e:75:2f:b8:a3 "eduroam" (3-arg)` on its first round; the keystore lists it | pass |
 
 Findings:
 - `pkill -f trace.phone.WifiTrust` also matches the `sh -c` running it, so it kills itself before
   starting the watcher. `pkill -x` does not work either: the process's kernel name is `main`.
   The script matches the whole command line instead, `^tracewifitrust$`.
+- Hotspot cause 1: while the "Allow wireless debugging?" dialog (systemui
+  `WifiDebuggingActivity`) is up, `dumpsys adb` shows a stale `is_trusted_network=true` and an
+  empty `network_bssid`, so a trigger on `is_trusted_network=false` never fires. After Allow once
+  it shows `network_bssid=12:36:aa:0d:52:a6`, `network_ssid="MogesAIGirlfriend5"`,
+  `is_trusted_network=false`. Fix: the trusted-list check.
+- Hotspot cause 2: `allowWirelessDebugging(boolean, String)` throws `NoSuchMethodException` on SDK
+  37; reflection lists `allowWirelessDebugging(boolean, String, String)`. AOSP `main` still has
+  the 2-argument AIDL (`alwaysAllow, bssid`), so the third argument is a Samsung/SDK 37 addition.
+  The order `(alwaysAllow, bssid, ssid)` is confirmed by the device run: the new keystore entry
+  holds the BSSID and the quoted SSID in the right fields. The old watcher logged this error every
+  5 s.
+- The trusted list is in the keystore dump (binary ABX) before `adb_wifi={`: the `wifiAP` section
+  lists `bssid` then `ssid` per network, the SSID in quotes (`"eduroam"`, `"Thomas and Caden"`).
+  Base64 adb keys contain no colons, so every MAC before `adb_wifi={` is a trusted BSSID. Each band
+  of a dual-band router has its own BSSID and counts as a separate network.
 - On eduroam the trusted list holds BSSID `…34:d3` but the phone is trusted on `…90:53`, so SDK 37
-  seems to match on SSID too. TODO(verify).
-- The `allowWirelessDebugging` call itself is unverified on SDK 37 (it only runs on an untrusted
-  network). TODO(verify) with the hotspot test.
+  seems to match on SSID too. TODO(verify). With the list check the watcher adds `…90:53` once
+  there, which only adds trust.
+- adbd restart: the watcher runs in adbd's cgroup (`/proc/<pid>/cgroup` shows
+  `/system/uid_0/pid_<adbd>`), and Android kills that cgroup when adbd restarts, so neither `nohup`
+  nor `setsid` keeps it alive. On 3 November adbd restarted at 12:35:24 without a reboot (uptime
+  23 h; cause unknown), and the watcher was gone with no log line. Fix: the boot script also starts
+  `phone-boot-adb.cjs --keep-alive` in the background, after Remote Control. Every 30 s it checks
+  that `127.0.0.1:5555` is a device (reconnecting the way boot does, including `adb tcpip 5555`)
+  and that the watcher runs, and starts it again if not. It logs only changes to
+  `~/.trace-keepalive.log` in Termux, and a pid file (`/tmp/trace-keepalive.pid` in Debian) keeps
+  one copy. Device check **not_run**: it needs a reinstall (`install-phone-claude.cjs`) and a
+  reboot, then an adbd restart. Limit: if Wireless debugging is off after the restart (for example,
+  on an untrusted network) it can only wait.
 - Limit: nothing runs before adb is up, so a reboot straight onto a never-joined network still
   shows the system dialog once.
