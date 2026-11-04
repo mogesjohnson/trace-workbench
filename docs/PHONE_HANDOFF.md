@@ -418,8 +418,12 @@ watcher with `tests/fixtures/WifiTrustTest.java` (skips without a JDK and Androi
 | 4 Nov 09:28, main `60825a7`, joining eduroam `74:9e:75:2f:f6:23` (a BSSID not trusted before): after the adbd restart at 09:28:31 the restarted watcher logs `allowed 74:9e:75:2f:f6:23 "eduroam" (3-arg)` at 09:28:51; `dumpsys adb` shows `is_trusted_network=true`; logcat has no `WifiDebuggingActivity` (no dialog); at 09:38 the PC, also on eduroam, connects with `adb connect 10.104.39.123:5555` (the phone's new address; the home address 10.0.0.151 no longer answers) | pass |
 | 3 Nov 23:11, `8d386a9` after reinstall and reboot: `adb tcpip 5555` restarts adbd and kills the watcher; the keep-alive starts it again 28 s later under the new adbd | pass |
 | 4 Nov 09:28, main `60825a7` after reinstall and reboot on eduroam: Termux:Boot starts the watcher, one process; first round logs `allowed 74:9e:75:2f:f6:23 "eduroam" (3-arg)` (a BSSID not seen before) | pass |
+| 4 Nov 10:53, main `60825a7`, joining `"healthnutnutrition"` (`06:01:21:32:bc:52`, 5 GHz, never joined before, neither SSID nor BSSID trusted): the system logs `Displaying auth prompt` at 10:53:33; the watcher logs `allowed 06:01:21:32:bc:52 "healthnutnutrition" (3-arg)` at 10:53:36 with no tap; wireless adb starts; `is_trusted_network=true`; one watcher process | pass |
+| 4 Nov 10:53, same join: no pop-up | **fail**: `WifiDebuggingActivity` opens on join, before the watcher's next round, and stays on screen after the network is trusted (still `mCurrentFocus` at 10:55). On networks already trusted by SSID (eduroam) it never opens |
+| 4 Nov, same network: PC connects over Wi-Fi | **not_run**: the network isolates clients (ping from the PC is `Destination host unreachable`; `adb connect` times out) |
 
 Findings:
+- On a network trusted by neither SSID nor BSSID, the watcher trusts it within one round, but the system pop-up it raced stays open. Closing it without denying needs an owner decision: Back or Cancel may call `denyWirelessDebugging`. On that network `settings get global adb_wifi_enabled` returned `0` while wireless adb was running; cause unknown, TODO(verify).
 - `pkill -f trace.phone.WifiTrust` also matches the `sh -c` running it, so it kills itself before
   starting the watcher. `pkill -x` does not work either: the process's kernel name is `main`.
   The script matches the whole command line instead, `^tracewifitrust$`.
