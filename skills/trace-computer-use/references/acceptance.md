@@ -27,7 +27,7 @@ Keep the canonical skill and its declared references together. The ownership man
 
 The synchronizer upgrades recognized legacy single-file TRACE instructions and clean manifest-owned bundles. Modified managed files and collisions with user-owned paths remain conflicts. Unrelated files and client settings must survive. Use a saved synchronization/configuration receipt with the synchronizer's `--rollback` operation to restore owned changes; a concurrent edit blocks rollback instead of overwriting the new content.
 
-A Codex `trace-computer` entry that differs only by `enabled = true` is an expected `different_server_entry` conflict: Codex writes that key itself when the server is turned on. Confirm its `command` and `args` match the other clients' entries, leave it unchanged, and report it as harmless. Any other difference is a real conflict for the owner.
+Codex writes `enabled = true` into its `trace-computer` entry when the server is turned on. Plan, apply and skill sync ignore that key for Codex and report `unchanged`. `enabled = false` or any other difference is a real `different_server_entry` conflict for the owner.
 
 Source validation and temporary-home installer tests do not establish that each live model host discovered the bundle. Reconnect the host as required and verify its actual discovered instructions and referenced files before claiming live installation acceptance.
 
