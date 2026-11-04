@@ -415,6 +415,7 @@ watcher with `tests/fixtures/WifiTrustTest.java` (skips without a JDK and Androi
 | 3 Nov 00:52, `948dfac` watcher started by the owner: first round logs `allowed 12:36:aa:0d:52:a6 "MogesAIGirlfriend5" (3-arg)`; the keystore lists `12:36:aa:0d:52:a6` / `"MogesAIGirlfriend5"`; `is_trusted_network=true`; adbd not restarted (STIME 23:30:01) | pass |
 | fixed watcher: switching to 2.4 GHz and back to 5 GHz shows no dialog | **not_run** |
 | 3 Nov 12:59, eduroam `74:9e:75:2f:b8:a3` (not listed, but `is_trusted_network=true` by SSID): restarted watcher logs `allowed 74:9e:75:2f:b8:a3 "eduroam" (3-arg)` on its first round; the keystore lists it | pass |
+| 4 Nov 09:28, main `60825a7`, joining eduroam `74:9e:75:2f:f6:23` (a BSSID not trusted before): after the adbd restart at 09:28:31 the restarted watcher logs `allowed 74:9e:75:2f:f6:23 "eduroam" (3-arg)` at 09:28:51; `dumpsys adb` shows `is_trusted_network=true`; logcat has no `WifiDebuggingActivity` (no dialog); at 09:38 the PC, also on eduroam, connects with `adb connect 10.104.39.123:5555` (the phone's new address; the home address 10.0.0.151 no longer answers) | pass |
 | 3 Nov 23:11, `8d386a9` after reinstall and reboot: `adb tcpip 5555` restarts adbd and kills the watcher; the keep-alive starts it again 28 s later under the new adbd | pass |
 
 Findings:
@@ -455,8 +456,9 @@ Findings:
   check. `~/.trace-keepalive.log` is in Termux's home folder and cannot be read over adb. Limit: if Wireless debugging is off after the restart (for example,
   on an untrusted network) it can only wait.
 - adbd restarts without a reboot happen often, at irregular times. On 4 November logcat (history
-  from 08:22) showed adbd starts at 08:50:59 and 08:52:49, then none for 8 minutes, then adb went
-  offline again at about 09:02. Each restart used to wipe `trace-wifi.log`, because the watcher's
+  from 08:22) showed adbd starts at 08:50:59 and 08:52:49, then none until 09:21:07, 09:21:57,
+  09:22:28 and 09:28:31, the last four around the phone's move from home Wi-Fi to eduroam (joined
+  09:19). Unplugging and replugging USB did not restart adbd. Each restart used to wipe `trace-wifi.log`, because the watcher's
   output was redirected with `>`. The watcher now appends with `>>`, so events from before a
   restart survive. When the log passes 64 KiB at a restart, it moves to `trace-wifi.log.1`. To see
   when adbd started, run `logcat -d -b all -v time | grep 'wifi_init: Expecting'`, which prints one
