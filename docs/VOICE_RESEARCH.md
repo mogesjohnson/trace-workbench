@@ -123,8 +123,10 @@ Without those lost words, route 2b was word-perfect and base.en misheard "set a"
    exact, in 20.7 s ([evidence](../evidence/research/a8-phone-claude-transcribe-2026-11-04.json)).
    That is 5 times the 3 Nov time; an SSH re-run right after took 15.3 s while the phone had 10.5 of
    11 GB RAM and 6.4 GB swap in use. A follow-up the same day found no heat or frequency limit and
-   Termux confined to cores 0-2, the slow cores, the likely cause; a run in `top-app` is still
-   untested ([evidence](../evidence/research/phone-transcribe-slowdown-2026-11-04.json)).
+   Termux confined to cores 0-2, the slow cores
+   ([evidence](../evidence/research/phone-transcribe-slowdown-2026-11-04.json)). A placement test
+   then confirmed it: about 4.2 s with Termux on screen, 14.6 s back in `/moderate`
+   ([evidence](../evidence/research/phone-transcribe-topapp-2026-11-04.json)).
 4. claude-voice: add `EXTRA_PREFER_OFFLINE = true` (owner approved). Done 3 Nov 2026 in the
    separate private claude-voice repository (its PR 1). The owner installed the build and spoken
    commands worked. Network-off test, 3 Nov 2026 (owner approved): Wi-Fi and mobile data

@@ -408,6 +408,18 @@ only cores 0-2, the slow cores. `top-app` allows 0-7. This is the likely cause o
 but no run in `top-app` was timed and the 3 Nov placement was not recorded.
 [Evidence](../evidence/research/phone-transcribe-slowdown-2026-11-04.json).
 
+Placement test, 4 November 2026: **pass**. With Termux on screen, its processes moved to `/top-app`
+(cores 0-7), SSH sessions included, and `jfk.wav` took 4.05 to 4.36 s in six runs. After Home, the
+first run took 4.17 s in `/foreground-boost`; the next two took 14.66 and 14.50 s, and the cpuset was
+`/moderate` when the loop ended. Termux's placement explains the 4 s and 15 s figures. No fix applied.
+[Evidence](../evidence/research/phone-transcribe-topapp-2026-11-04.json).
+
+ADB shell route, 4 November 2026: **pass**. With another app on screen, `whisper-cli` run directly
+through the phone's local adb shell stayed in cpuset `/` (cores 0-7) and took 4.35 to 4.46 s in four
+runs, words exact. `phone-transcribe` from background Termux took 19.67 and 18.86 s in `/moderate`,
+including `proot-distro login`. No fix applied; a fix awaits owner review.
+[Evidence](../evidence/research/phone-transcribe-adb-shell-2026-11-04.json).
+
 ## Wi-Fi trust watcher (2 November 2026; SDK 37 fix 3 November 2026)
 
 Owner decision, 2 November 2026: every Wi-Fi network the phone joins is trusted for Wireless

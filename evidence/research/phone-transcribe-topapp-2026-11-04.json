@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-04",
+  "device": "SM-S918U (S23 Ultra), USB, thermal status 0",
+  "sample": "/opt/whisper.cpp/samples/jfk.wav (11 s), base.en, 4 threads",
+  "words": "checked exact only in the on-screen runs; the runs after Home were not checked",
+  "result": "pass: placement reproduces both the 4 s and the 15 s figures",
+  "runs": [
+    {"state": "Termux on screen, new session", "cpuset": "/top-app", "cpusAllowed": "0-7", "elapsedSeconds": [4.35, 4.13, 4.20]},
+    {"state": "Termux on screen, over SSH", "cpuset": "/top-app", "elapsedSeconds": [4.05, 4.22, 4.36]},
+    {"state": "Launcher on screen, 4 s after Home", "cpuset": "/foreground-boost", "cpusAllowed": "0-7", "elapsedSeconds": [4.17]},
+    {"state": "Same loop, later runs", "cpuset": "/moderate at the end of the loop", "elapsedSeconds": [14.66, 14.5]}
+  ],
+  "notes": [
+    "Foregrounding Termux moved its processes, sshd sessions included, out of /moderate.",
+    "The cpuset was read before and after the last loop, not during each of its runs.",
+    "No fix was applied."
+  ]
+}
