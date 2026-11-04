@@ -134,8 +134,8 @@ changed, and doctor reports `supervisor_stale` until they are rebuilt. Then reco
   - It found two defects: partial typed text reported `completed` (D1) and a
     `native_timeout` on a URL-bar `type_text` (D2). The owner chose to fix and rerun (M7).
 - **Second TRACE-only rerun, after M7 (M7;
-  [report](HEAD_TO_HEAD_2026-11-03-RERUN2.md)).** Same rules and bars, 4 tasks × 2 in one
-  session, on merged main `2b5d0da` (M1–M4, PRs 117, 118 and 121). agent-desktop's
+  [report](https://github.com/mogesjohnson/trace-workbench/pull/122)).** Same rules and
+  bars, 4 tasks × 2 in one session, on merged main `2b5d0da` (M1–M4, PRs 117, 118 and 121). agent-desktop's
   3 November results are again reused. **Every bar was met.**
   - 8/8 task-runs passed with no corrective retyping, including Settings 2/2. Saved files
     were exactly 19 bytes, and the 75-character path `type_text` returned
