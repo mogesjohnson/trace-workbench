@@ -413,10 +413,18 @@ watcher with `tests/fixtures/WifiTrustTest.java` (skips without a JDK and Androi
 | 3 Nov, `5613c91`: joining MogesAIGirlfriend5 (5 GHz, `12:36:aa:0d:52:a6`) does not restart the watcher or adbd (same pid, adbd STIME unchanged) | pass |
 | 3 Nov, `5613c91`: joining MogesAIGirlfriend5 → network trusted, no dialog tap | **fail** (two causes below; the owner tapped Allow once) |
 | 3 Nov 00:52, `948dfac` watcher started by the owner: first round logs `allowed 12:36:aa:0d:52:a6 "MogesAIGirlfriend5" (3-arg)`; the keystore lists `12:36:aa:0d:52:a6` / `"MogesAIGirlfriend5"`; `is_trusted_network=true`; adbd not restarted (STIME 23:30:01) | pass |
-| fixed watcher: switching to 2.4 GHz and back to 5 GHz shows no dialog | **not_run** |
+| fixed watcher: switching to 2.4 GHz and back to 5 GHz shows no dialog | **dropped** (owner, 4 Nov): the 4 Nov new-network check already covers it. A band the phone has not trusted yet shows the pop-up once and the watcher trusts it with no tap. |
 | 3 Nov 12:59, eduroam `74:9e:75:2f:b8:a3` (not listed, but `is_trusted_network=true` by SSID): restarted watcher logs `allowed 74:9e:75:2f:b8:a3 "eduroam" (3-arg)` on its first round; the keystore lists it | pass |
+| 4 Nov 09:28, main `60825a7`, joining eduroam `74:9e:75:2f:f6:23` (a BSSID not trusted before): after the adbd restart at 09:28:31 the restarted watcher logs `allowed 74:9e:75:2f:f6:23 "eduroam" (3-arg)` at 09:28:51; `dumpsys adb` shows `is_trusted_network=true`; logcat has no `WifiDebuggingActivity` (no dialog); at 09:38 the PC, also on eduroam, connects with `adb connect 10.104.39.123:5555` (the phone's new address; the home address 10.0.0.151 no longer answers) | pass |
+| 3 Nov 23:11, `8d386a9` after reinstall and reboot: `adb tcpip 5555` restarts adbd and kills the watcher; the keep-alive starts it again 28 s later under the new adbd | pass |
+| 4 Nov 09:28, main `60825a7` after reinstall and reboot on eduroam: Termux:Boot starts the watcher, one process; first round logs `allowed 74:9e:75:2f:f6:23 "eduroam" (3-arg)` (a BSSID not seen before) | pass |
+| 4 Nov 10:53, main `60825a7`, joining `"healthnutnutrition"` (`06:01:21:32:bc:52`, 5 GHz, never joined before, neither SSID nor BSSID trusted): the system logs `Displaying auth prompt` at 10:53:33; the watcher logs `allowed 06:01:21:32:bc:52 "healthnutnutrition" (3-arg)` at 10:53:36 with no tap; wireless adb starts; `is_trusted_network=true`; one watcher process | pass |
+| 4 Nov 10:53, same join: no pop-up | **fail**: `WifiDebuggingActivity` opens on join, before the watcher's next round, and stays on screen after the network is trusted (still `mCurrentFocus` at 10:55). On networks already trusted by SSID (eduroam) it never opens |
+| 4 Nov, same network: PC connects over Wi-Fi | **not_run**: the network isolates clients (ping from the PC is `Destination host unreachable`; `adb connect` times out) |
 
 Findings:
+- On a network trusted by neither SSID nor BSSID, the watcher trusts it within one round, but the system pop-up it raced stays open. Closing it without denying needs an owner decision: Back or Cancel may call `denyWirelessDebugging`. On that network `settings get global adb_wifi_enabled` returned `0` while wireless adb was running; cause unknown, TODO(verify).
+- What closing the pop-up does (4 Nov, read from the S23's own `SystemUI.apk` and `services.jar` with `dexdump`, not tested on the device): `WifiDebuggingActivity.onDestroy` calls `denyWirelessDebugging()` whenever no button was clicked (`mClicked` false). So Back, `finish`, or the pop-up closing itself (its receiver finishes it when Wi-Fi turns off, disconnects or changes BSSID) all send deny. Home only stops it (`onStop`), which does not deny, but it stays in the background and denies later when it is destroyed. On this build deny is message 19 in `AdbDebuggingHandler`. It only broadcasts `com.android.server.adb.WIRELESS_DEBUG_STATUS` with status 5 and port -1, then logs a metric. It does not remove the keystore entry, does not stop the TLS server, and does not write `adb_wifi_enabled`, so deny is not what set that setting to 0. Port 5555 (`adb tcpip`) does not go through this path. TODO(verify) on the device: close the pop-up after the watcher has allowed, then check the keystore, `is_trusted_network`, the TLS port and 5555. The Settings Wireless debugging screen may act on the status-5 broadcast if it is open.
 - `pkill -f trace.phone.WifiTrust` also matches the `sh -c` running it, so it kills itself before
   starting the watcher. `pkill -x` does not work either: the process's kernel name is `main`.
   The script matches the whole command line instead, `^tracewifitrust$`.
@@ -446,8 +454,20 @@ Findings:
   that `127.0.0.1:5555` is a device (reconnecting the way boot does, including `adb tcpip 5555`)
   and that the watcher runs, and starts it again if not. It logs only changes to
   `~/.trace-keepalive.log` in Termux, and a pid file (`/tmp/trace-keepalive.pid` in Debian) keeps
-  one copy. Device check **not_run**: it needs a reinstall (`install-phone-claude.cjs`) and a
-  reboot, then an adbd restart. Limit: if Wireless debugging is off after the restart (for example,
+  one copy. Device check passed on 3 November at `8d386a9` (PR 105 comment 6622329235): after a
+  reinstall and reboot, Termux:Boot started the watcher, Remote Control and the keep-alive;
+  `adb tcpip 5555` restarted adbd (pid 10105, 23:11:02) and killed the watcher; at 23:11:30 the
+  keep-alive started it again (pid 10674, cgroup `/system/uid_0/pid_10105`, `is_trusted_network=true`).
+  Toggling Wireless debugging over USB does not restart adbd, so use `adb tcpip 5555` for this
+  check. `~/.trace-keepalive.log` is in Termux's home folder and cannot be read over adb. Limit: if Wireless debugging is off after the restart (for example,
   on an untrusted network) it can only wait.
+- adbd restarts without a reboot happen often, at irregular times. On 4 November logcat (history
+  from 08:22) showed adbd starts at 08:50:59 and 08:52:49, then none until 09:21:07, 09:21:57,
+  09:22:28 and 09:28:31, the last four around the phone's move from home Wi-Fi to eduroam (joined
+  09:19). Unplugging and replugging USB did not restart adbd. Each restart used to wipe `trace-wifi.log`, because the watcher's
+  output was redirected with `>`. The watcher now appends with `>>`, so events from before a
+  restart survive. When the log passes 64 KiB at a restart, it moves to `trace-wifi.log.1`. To see
+  when adbd started, run `logcat -d -b all -v time | grep 'wifi_init: Expecting'`, which prints one
+  line per adbd start.
 - Limit: nothing runs before adb is up, so a reboot straight onto a never-joined network still
   shows the system dialog once.
