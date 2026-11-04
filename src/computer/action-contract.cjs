@@ -16,7 +16,7 @@ const KEY_ALIASES = Object.freeze({ INSERT: 'insert', SEMICOLON: 'vk=0xba', EQUA
 const KEY_PATTERN = keyPattern([...KEY_NAMES, ...Object.keys(KEY_ALIASES)], '1[0-6]');
 const ACCESSIBILITY_ACTIONS = Object.freeze(['expand', 'collapse', 'toggle']);
 const FIELDS = {
-  activate: [], click: ['x', 'y', 'elementId', 'button', 'count'], type_text: ['text'], press_key: ['key'],
+  activate: [], click: ['x', 'y', 'elementId', 'button', 'count'], type_text: ['text', 'expectedFocusElementId'], press_key: ['key'],
   scroll: ['x', 'y', 'deltaX', 'deltaY', 'placement'], drag: ['fromX', 'fromY', 'toX', 'toY'],
   invoke: ['elementId'], set_value: ['elementId', 'value'],
   accessibility_action: ['elementId', 'action'],
@@ -50,7 +50,10 @@ function parseAction(action) {
         text('elementId', LIMITS.elementId);
       } else point('x', 'y');
       break;
-    case 'type_text': text('text', LIMITS.text); break;
+    case 'type_text':
+      text('text', LIMITS.text);
+      if (action.expectedFocusElementId !== undefined) text('expectedFocusElementId', LIMITS.elementId);
+      break;
     case 'press_key':
       text('key', LIMITS.key);
       if (!new RegExp(KEY_PATTERN, 'i').test(action.key)) reject('invalid_key', 'Use a supported key or Ctrl/Alt/Shift chord.');
@@ -78,6 +81,11 @@ function parseAction(action) {
 
 function validateAction(action, observation) {
   const checked = parseAction(action);
+  if (action.expectedFocusElementId !== undefined && (observation.focused?.available !== true
+    || observation.focused.hasFocus !== true || observation.focused.elementId !== action.expectedFocusElementId
+    || (observation.elements ?? []).filter(item => item.id === action.expectedFocusElementId && item.enabled !== false).length !== 1)) {
+    reject('focus_changed', 'Expected typing focus must match one enabled control in the current observation.');
+  }
   const points = action.type === 'drag' ? [['fromX', 'fromY'], ['toX', 'toY']]
     : action.type === 'scroll' || (action.type === 'click' && action.elementId === undefined) ? [['x', 'y']] : [];
   for (const [x, y] of points) {
