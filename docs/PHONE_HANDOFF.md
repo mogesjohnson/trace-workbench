@@ -454,5 +454,12 @@ Findings:
   Toggling Wireless debugging over USB does not restart adbd, so use `adb tcpip 5555` for this
   check. `~/.trace-keepalive.log` is in Termux's home folder and cannot be read over adb. Limit: if Wireless debugging is off after the restart (for example,
   on an untrusted network) it can only wait.
+- adbd restarts without a reboot happen often, at irregular times. On 4 November logcat (history
+  from 08:22) showed adbd starts at 08:50:59 and 08:52:49, then none for 8 minutes, then adb went
+  offline again at about 09:02. Each restart used to wipe `trace-wifi.log`, because the watcher's
+  output was redirected with `>`. The watcher now appends with `>>`, so events from before a
+  restart survive. When the log passes 64 KiB at a restart, it moves to `trace-wifi.log.1`. To see
+  when adbd started, run `logcat -d -b all -v time | grep 'wifi_init: Expecting'`, which prints one
+  line per adbd start.
 - Limit: nothing runs before adb is up, so a reboot straight onto a never-joined network still
   shows the system dialog once.

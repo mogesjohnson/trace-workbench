@@ -76,9 +76,12 @@ function connectFirst(ports) {
 
 // Shell command that (re)starts the trust watcher detached from the adb session. The process is
 // named WATCH_NAME, matched as the whole command line (an unanchored -f also matches this command's own shell).
+// The log is appended so events from before an adbd restart survive; past 64 KiB it rotates to WATCH_LOG.1.
 function watcherCommand() {
-  return `pkill -f '^${WATCH_NAME}$'; CLASSPATH=${REMOTE_DEX} nohup app_process / --nice-name=${WATCH_NAME} trace.phone.WifiTrust`
-    + ` > ${WATCH_LOG} 2>&1 < /dev/null &`;
+  return `pkill -f '^${WATCH_NAME}$'; `
+    + `if [ -f ${WATCH_LOG} ] && [ $(wc -c < ${WATCH_LOG}) -gt 65536 ]; then mv -f ${WATCH_LOG} ${WATCH_LOG}.1; fi; `
+    + `CLASSPATH=${REMOTE_DEX} nohup app_process / --nice-name=${WATCH_NAME} trace.phone.WifiTrust`
+    + ` >> ${WATCH_LOG} 2>&1 < /dev/null &`;
 }
 
 function startWatcher(log, serial = TARGET) {

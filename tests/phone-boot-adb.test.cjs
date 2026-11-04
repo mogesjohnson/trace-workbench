@@ -24,7 +24,8 @@ test('watcherCommand restarts one detached (exact name, not its own shell) trust
   const cmd = watcherCommand();
   assert.ok(cmd.startsWith("pkill -f '^tracewifitrust$'; "));
   assert.ok(cmd.includes('CLASSPATH=/data/local/tmp/trace-wifi.dex nohup app_process / --nice-name=tracewifitrust trace.phone.WifiTrust'));
-  assert.ok(cmd.endsWith('< /dev/null &'));
+  assert.ok(cmd.endsWith(' >> /data/local/tmp/trace-wifi.log 2>&1 < /dev/null &'), 'appends, so a restart keeps earlier events');
+  assert.ok(cmd.includes('-gt 65536 ]; then mv -f /data/local/tmp/trace-wifi.log /data/local/tmp/trace-wifi.log.1; fi; '));
 });
 
 test('keepAliveRound restarts the watcher after adbd restarts, reconnecting first when adb is gone', async () => {
