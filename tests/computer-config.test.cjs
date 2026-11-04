@@ -157,6 +157,31 @@ test("narrowed client scope creates only the selected configuration and skill di
   assert.deepEqual((await fs.readdir(home)).sort(), [".agents", ".gemini", ".trace"]);
 });
 
+test("Codex enabled = true is the same server entry, and only for Codex and only when true", async (t) => {
+  const toml = (enabled) => `[mcp_servers.trace-computer]
+command = ${JSON.stringify(SERVER.command)}
+args = ${JSON.stringify(SERVER.args)}
+enabled = ${enabled}
+`;
+  const home = await temporaryHome(t);
+  const original = toml(true);
+  const target = await write(home, CLIENTS.codex.path, original);
+  const result = await plan({ home, clients: ["codex"] });
+  assert.equal(result.conflicts, 0);
+  assert.equal(result.entries.find((entry) => entry.client === "codex").action, "unchanged");
+  assert.equal(await fs.readFile(target, "utf8"), original);
+
+  const disabled = await temporaryHome(t);
+  await write(disabled, CLIENTS.codex.path, toml(false));
+  const refused = await plan({ home: disabled, clients: ["codex"] });
+  assert.equal(refused.entries.find((entry) => entry.client === "codex").reason, "different_server_entry");
+
+  const grok = await temporaryHome(t);
+  await write(grok, CLIENTS.grok_build.path, toml(true));
+  const other = await plan({ home: grok, clients: ["grok_build"] });
+  assert.equal(other.entries.find((entry) => entry.client === "grok_build").reason, "different_server_entry");
+});
+
 test("a differing server entry blocks the complete apply before other configuration or skills are written", async (t) => {
   const home = await temporaryHome(t);
   const original = JSON.stringify({ mcpServers: { "trace-computer": { command: "owned-by-someone-else", args: ["retain"] } } });

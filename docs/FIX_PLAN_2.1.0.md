@@ -350,6 +350,8 @@ characters. D1 and D2 did not recur ([report](HEAD_TO_HEAD_2026-11-03-RERUN2.md)
 
 ## M6. Optional hygiene (owner decides; not blocking)
 
+**Done 4 November 2026 after 2.1.0:** the comparison ignores Codex `enabled = true`, and the `smoke-mcp` process query now has 30 s instead of 15 s.
+
 - **Codex `enabled = true`.** `node scripts/sync-computer-skill.cjs` reports the Codex
   `enabled = true` entry as a conflict. It is documented as expected (PR #106). The open
   decision is whether the config comparison should ignore it in code.
