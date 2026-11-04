@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-04",
+  "device": "SM-S918U (S23 Ultra), USB",
+  "sample": "/opt/whisper.cpp/samples/jfk.wav (11 s), base.en, 4 threads",
+  "caller": "phone-transcribe --json in proot Debian, started over SSH; Termux cpuset /moderate",
+  "words": "same exact text in all five runs",
+  "result": "pass: the adb route runs about 3 times faster and the fallback works",
+  "runs": [
+    {"state": "default, adb route", "route": "adb", "elapsedSeconds": [5.03, 4.97, 4.85]},
+    {"state": "--local", "route": "local", "elapsedSeconds": [15.21]},
+    {"state": "unreachable adb serial, automatic fallback", "route": "local", "elapsedSeconds": [14.9]}
+  ],
+  "installed": "/data/local/tmp/whisper-fast, mode 700, 614 MB including base.en and small.en",
+  "notes": [
+    "No audio file remained in the folder after the runs.",
+    "Not tested: the route after a reboot, a call through the MCP tool, or --record."
+  ]
+}

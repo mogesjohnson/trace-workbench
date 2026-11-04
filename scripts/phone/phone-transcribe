@@ -10,15 +10,59 @@
 #   -t, --threads N    whisper threads (default 4)
 #   --json             print {"text","model","audioSeconds","elapsedSeconds"} instead of plain text
 #   --keep DIR         with --record, keep the recording in DIR (default: deleted after use)
+#   --local            skip the adb route and run whisper-cli in this proot
+#   --install-fast     copy whisper-cli, its libraries and the installed models to the adb route's folder
 #   -h, --help
+#
+# Android confines background Termux to the slow cores, so transcription runs through the phone's
+# own adb shell when it can, and falls back to this proot (about 4 s against 15 s or more for 11 s of
+# audio). Each run copies the audio into a folder only uid shell can open, then deletes it.
 set -euo pipefail
 
 ROOT="${WHISPER_ROOT:-/opt/whisper.cpp}"
 CLI="$ROOT/build/bin/whisper-cli"
-model="base.en"; threads=4; json=0; record=""; keep=""; input=""
+FAST_DIR="/data/local/tmp/whisper-fast"
+SERIAL="${TRACE_ADB_SERIAL:-127.0.0.1:5555}"
+model="base.en"; threads=4; json=0; record=""; keep=""; input=""; use_adb=1; route="local"; remote=""
 
-usage() { sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'; }
 die() { echo "phone-transcribe: $*" >&2; exit 2; }
+
+adb_ready() {
+  command -v adb >/dev/null || return 1
+  timeout 5 adb start-server >/dev/null 2>&1 < /dev/null || return 1
+  timeout 5 adb connect "$SERIAL" >/dev/null 2>&1 < /dev/null || true
+  [ "$(timeout 5 adb -s "$SERIAL" get-state 2>/dev/null < /dev/null)" = device ]
+}
+
+install_fast() {
+  adb_ready || die "adb cannot reach the phone; run adb tcpip 5555 from the PC, then retry"
+  adb -s "$SERIAL" shell "mkdir -p $FAST_DIR && chmod 700 $FAST_DIR" < /dev/null || die "could not create $FAST_DIR"
+  local f
+  for f in "$CLI" "$ROOT"/models/ggml-*.bin $(ldd "$CLI" | grep -o '/[^ ]*'); do
+    adb -s "$SERIAL" push "$(readlink -f "$f")" "$FAST_DIR/$(basename "$f")" >/dev/null < /dev/null || die "could not copy $f"
+  done
+  adb -s "$SERIAL" shell "chmod 755 $FAST_DIR/whisper-cli $FAST_DIR/ld-linux-aarch64.so.1" < /dev/null || die "chmod failed"
+  echo "installed to $FAST_DIR"
+}
+
+# Writes the transcript to $work/out.txt. Any failure returns non-zero and the caller runs locally.
+run_fast() {
+  local name="in-$$.wav" model_name
+  model_name="$(basename "$model_file")"
+  adb_ready || return 1
+  timeout 10 adb -s "$SERIAL" shell "test -x $FAST_DIR/ld-linux-aarch64.so.1 && test -f $FAST_DIR/$model_name" < /dev/null || return 1
+  remote="$FAST_DIR/$name"
+  timeout 60 adb -s "$SERIAL" push "$wav" "$remote" >/dev/null 2>&1 < /dev/null || return 1
+  timeout 600 adb -s "$SERIAL" shell "cd $FAST_DIR && ./ld-linux-aarch64.so.1 --library-path . ./whisper-cli -m $model_name -t $threads -nt -np -f $name 2>/dev/null" > "$work/out.txt" 2> "$work/err.txt" < /dev/null || return 1
+  [ -s "$work/out.txt" ]
+}
+
+cleanup() {
+  [ -z "$remote" ] || timeout 10 adb -s "$SERIAL" shell "rm -f $remote" >/dev/null 2>&1 < /dev/null || true
+  rm -rf "$work"
+  [ -z "${temp_recording:-}" ] || rm -f "$temp_recording"
+}
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -27,6 +71,8 @@ while [ $# -gt 0 ]; do
     --json) json=1; shift ;;
     --record) record="${2:?}"; shift 2 ;;
     --keep) keep="${2:?}"; shift 2 ;;
+    --local) use_adb=0; shift ;;
+    --install-fast) install_fast_now=1; shift ;;
     -h|--help) usage; exit 0 ;;
     --) shift; input="${1:-}"; break ;;
     -*) die "unknown option $1" ;;
@@ -40,12 +86,13 @@ case "$model" in
   *) die "model must be tiny.en, base.en, small.en or a model file path" ;;
 esac
 [ -x "$CLI" ] || die "whisper-cli not found at $CLI; run install-whisper.sh"
+if [ "${install_fast_now:-0}" = 1 ]; then install_fast; exit 0; fi
 [ -f "$model_file" ] || die "model not found: $model_file (download: sh $ROOT/models/download-ggml-model.sh $model)"
 [[ "$threads" =~ ^[0-9]+$ ]] || die "--threads must be a number"
 command -v ffmpeg >/dev/null || die "ffmpeg not found (in Termux: pkg install ffmpeg)"
 
 work="$(mktemp -d)"
-trap 'rm -rf "$work"' EXIT
+trap cleanup EXIT
 
 if [ -n "$record" ]; then
   [ -z "$input" ] || die "give a FILE or --record, not both"
@@ -63,7 +110,7 @@ if [ -n "$record" ]; then
   sleep "$record"; sleep 0.5
   termux-microphone-record -q >/dev/null 2>&1 || true
   [ -s "$input" ] || die "recording failed: $input is empty (microphone permission for Termux:API?)"
-  [ -n "$keep" ] || trap 'rm -rf "$work"; rm -f "$input"' EXIT
+  [ -n "$keep" ] || temp_recording="$input"
 fi
 
 [ -n "$input" ] || { usage >&2; exit 2; }
@@ -75,8 +122,13 @@ bytes=$(stat -c %s "$wav")
 audio=$(awk -v b="$bytes" 'BEGIN { printf "%.2f", (b - 44) / 32000 }')
 
 start=$(date +%s.%N)
-"$CLI" -m "$model_file" -t "$threads" -nt -np -f "$wav" > "$work/out.txt" 2> "$work/err.txt" \
-  || { cat "$work/err.txt" >&2; die "whisper-cli failed"; }
+if [ "$use_adb" = 1 ] && run_fast; then
+  route="adb"
+else
+  [ "$use_adb" = 0 ] || echo "phone-transcribe: adb route unavailable, running locally (slower)" >&2
+  start=$(date +%s.%N)
+  "$CLI" -m "$model_file" -t "$threads" -nt -np -f "$wav" > "$work/out.txt" 2> "$work/err.txt" || { cat "$work/err.txt" >&2; die "whisper-cli failed"; }
+fi
 end=$(date +%s.%N)
 text=$(tr '\n' ' ' < "$work/out.txt" | sed 's/  */ /g; s/^ //; s/ $//')
 elapsed=$(awk -v a="$start" -v b="$end" 'BEGIN { printf "%.2f", b - a }')
@@ -84,7 +136,7 @@ elapsed=$(awk -v a="$start" -v b="$end" 'BEGIN { printf "%.2f", b - a }')
 if [ "$json" = 1 ]; then
   esc=$(printf '%s' "$text" | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/\\t/g')
   name=$(basename "$model_file" .bin); name=${name#ggml-}
-  printf '{"text":"%s","model":"%s","audioSeconds":%s,"elapsedSeconds":%s}\n' "$esc" "$name" "$audio" "$elapsed"
+  printf '{"text":"%s","model":"%s","audioSeconds":%s,"elapsedSeconds":%s,"route":"%s"}\n' "$esc" "$name" "$audio" "$elapsed" "$route"
 else
   printf '%s\n' "$text"
 fi

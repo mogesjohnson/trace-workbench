@@ -1,0 +1,9 @@
+{
+  "date": "2026-11-04",
+  "device": "R5CW8103GHV",
+  "caller": "fresh `trace phone mcp` in proot Debian, started over SSH; tools/call from a piped JSON-RPC client, not the Claude app",
+  "tool": "phone_transcribe",
+  "input": "/opt/whisper.cpp/samples/jfk.wav",
+  "result": { "model": "base.en", "audioSeconds": 11, "elapsedSeconds": 4.92, "wordsExact": true },
+  "stderr": "TRACE Phone: adb: more than one device/emulator (call still succeeded; cause not investigated)"
+}
