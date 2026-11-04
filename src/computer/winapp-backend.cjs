@@ -815,6 +815,13 @@ class WinappBackend {
         }
         break;
       case 'type_text':
+        if (action.expectedFocusElementId !== undefined) {
+          if (observation.focused?.available !== true || observation.focused.hasFocus !== true
+            || observation.focused.elementId !== action.expectedFocusElementId) {
+            fail('focus_changed', 'Expected typing focus differs from the observed bound control.', { outcome: 'not_dispatched' });
+          }
+          choose(action.expectedFocusElementId);
+        }
         verb = 'send-keys'; positional = [action.text]; options = ['--via', 'send-input', '--verbatim']; break;
       case 'press_key': {
         const key = normalizeKey(action.key);
@@ -882,6 +889,9 @@ class WinappBackend {
       if (!focused.hasFocus) fail('focus_not_acquired', 'Keyboard focus could not be verified inside the exact selected window.');
       if (observation.focused?.hasFocus && observation.focused.elementId !== focused.elementId) fail('focus_changed', 'Focused control changed since observation. Observe again.');
       if (!focused.elementId) fail('focus_not_acquired', 'Keyboard focus could not be bound to an observed control inside the exact selected window.');
+      if (action.expectedFocusElementId !== undefined && focused.elementId !== action.expectedFocusElementId) {
+        fail('focus_changed', 'Activation did not preserve the intended typing control.', { outcome: 'not_dispatched' });
+      }
       typedTarget = focused.elementId;
       if (checkText && !expected) {
         textBefore = await this.typedText(window, signal, fresh.elements, typedTarget);

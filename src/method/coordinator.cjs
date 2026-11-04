@@ -1,14 +1,16 @@
 'use strict';
 const { ProviderRegistry, CHANNELS } = require('./capabilities.cjs');
 const { fail, text, digest, targetKey } = require('./shared.cjs');
+const { performance } = require('node:perf_hooks');
 const { readPostActionEvidence, postActionStatus, normalizeVerificationPolicies, hasRequiredEvidence } = require('./post-action-evidence.cjs');
 const evidenceTargetKey = target => JSON.stringify([targetKey(target), target.identity?.sessionId ?? null]);
 const STEP_STATES = ['pending', 'observed', 'needs-verification', 'unknown', 'retryable', 'target-blocked', 'verified'];
 const stepKey = spec => digest(spec);
 
 class ComputerMethod {
-  constructor({ providers = [], registry, verifyStep, verifyEffect, clock = Date.now, ttlMs = 5000, verificationPolicies = {} } = {}) {
-    if (typeof verifyStep !== 'function' || typeof verifyEffect !== 'function' || !Number.isFinite(ttlMs) || ttlMs <= 0) {
+  constructor({ providers = [], registry, verifyStep, verifyEffect, clock = () => performance.now(), ttlMs = 5000,
+    verificationPolicies = {}, operationPolicies = {} } = {}) {
+    if (typeof verifyStep !== 'function' || typeof verifyEffect !== 'function' || typeof clock !== 'function' || !Number.isFinite(ttlMs) || ttlMs <= 0) {
       fail('invalid-config', 'Independent step/effect verifiers and a positive observation TTL are required.');
     }
     this.registry = registry || new ProviderRegistry(providers);
@@ -16,6 +18,17 @@ class ComputerMethod {
     this.effects = new Map(); this.started = false; this.closed = false; this.busy = false;
     this.epoch = 0; this.seen = new Set();
     this.verificationPolicies = normalizeVerificationPolicies(verificationPolicies);
+    if (!operationPolicies || typeof operationPolicies !== 'object' || Array.isArray(operationPolicies)) {
+      fail('invalid-config', 'Operation policies must map step check IDs to maxAgeMs.');
+    }
+    this.operationPolicies = new Map(Object.entries(operationPolicies).map(([id, policy]) => {
+      if (!text(id) || !policy || typeof policy !== 'object' || Array.isArray(policy)
+        || Object.keys(policy).length !== 1 || !Object.hasOwn(policy, 'maxAgeMs')
+        || !Number.isFinite(policy.maxAgeMs) || policy.maxAgeMs <= 0) {
+        fail('invalid-config', 'Each operation policy requires only a positive finite maxAgeMs.');
+      }
+      return [id, policy.maxAgeMs];
+    }));
   }
   start({ goalId, effects }) {
     if (this.started || !text(goalId) || !Array.isArray(effects) || !effects.length) fail('invalid-goal', 'Start once with a goal and effects.');
@@ -184,6 +197,7 @@ class ComputerMethod {
     const usesDesktop = provider.usesDesktop ?? provider.channel === 'desktop';
     if (usesDesktop) step.leaseActive = true;
     let observation;
+    const captureStartedAt = this.clock();
     try { observation = await provider.observe({ target: step.ref }); }
     catch (error) {
       // The provider may have acquired a lease before an interrupted open or capture.
@@ -196,7 +210,7 @@ class ComputerMethod {
     const key = digest([provider.id, observation.id]);
     if (!text(observation.id) || !text(observation.evidenceKey) || this.seen.has(key)) fail('invalid-observation', 'A new capture and evidence key are required.');
     this.seen.add(key);
-    step.observation = { ...observation, capturedAt: this.clock(), epoch: this.epoch, consumed: false };
+    step.observation = { ...observation, capturedAt: captureStartedAt, epoch: this.epoch, consumed: false };
     return step.observation;
   }
   async observe(effectId, stepId) {
@@ -223,7 +237,10 @@ class ComputerMethod {
       if (step.needsRevalidation) fail('resume-revalidation', 'A checkpoint never authorizes replay.');
       if (provider.id !== step.providerId) fail('route-changed', 'Rediscover the newly selected provider before input.');
       const observation = step.observation, age = observation && this.clock() - observation.capturedAt;
-      if (!observation || observation.consumed || observation.epoch !== this.epoch || age < 0 || age > this.ttlMs) {
+      const ageLimit = Math.min(this.ttlMs, provider.constraints?.observationTtlMs ?? this.ttlMs,
+        this.operationPolicies.get(step.spec.checkId) ?? this.ttlMs);
+      if (!observation || observation.consumed || observation.epoch !== this.epoch
+        || !Number.isFinite(age) || !Number.isFinite(ageLimit) || age < 0 || age > ageLimit) {
         fail('stale-observation', 'Use one fresh unconsumed observation per action step.');
       }
       if (step.attempts && (step.attempts >= 2 || step.retryUsed || step.status !== 'retryable'
@@ -231,7 +248,9 @@ class ComputerMethod {
       const checkedPayload = typeof provider.validateAction === 'function'
         ? await provider.validateAction({ target: step.ref, observationId: observation.id,
           capability: step.spec.capability, payload }) : payload;
-      if (this.clock() < observation.capturedAt || this.clock() - observation.capturedAt > this.ttlMs) {
+      const validatedAge = this.clock() - observation.capturedAt;
+      const validatedLimit = Math.min(ageLimit, provider.constraints?.observationTtlMs ?? ageLimit);
+      if (!Number.isFinite(validatedAge) || !Number.isFinite(validatedLimit) || validatedAge < 0 || validatedAge > validatedLimit) {
         fail('stale-observation', 'Observation expired during action validation.');
       }
       this._invalidatePostActions();
