@@ -103,7 +103,9 @@ if [ -n "$record" ]; then
   mkdir -p "$dir"
   input="$dir/rec-$(date +%Y%m%d-%H%M%S).m4a"
   termux-microphone-record -q >/dev/null 2>&1 || true
-  termux-microphone-record -f "$input" -l "$record" -r 16000 -c 1 >/dev/null
+  # The -q below ends the clip. Each Termux:API call takes seconds, so a limit of exactly $record would
+  # cut off speech after SPEAK NOW; this limit only stops the recorder if this script dies.
+  termux-microphone-record -f "$input" -l "$((record + 15))" -r 16000 -c 1 >/dev/null
   # Prompt only once the recorder has started, so the first words are not lost (owner-voice check, 3 Nov 2026).
   for _ in $(seq 1 30); do [ -s "$input" ] && break; sleep 0.1; done
   echo "SPEAK NOW (${record}s)" >&2
