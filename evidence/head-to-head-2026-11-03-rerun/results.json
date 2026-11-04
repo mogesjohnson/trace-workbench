@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-03",
+  "kind": "trace-only rerun (fix plan M5 step 3)",
+  "trace": { "version": "2.0.0 code on merged main (2.1.0 candidate)", "sourceCommit": "b938941", "winapp": "0.7.1" },
+  "agentDesktop": { "reused": "evidence/head-to-head-2026-11-03/results.json", "reason": "agent-desktop 1.0.2 unchanged" },
+  "driver": { "host": "Claude Code", "model": "claude-opus-5-5", "effort": "medium", "sessions": 1, "mcpRestarts": 0 },
+  "environment": { "os": "Windows 11 Home 10.0.26200", "notepad": "11.2607.14.0", "firefox": "159 (MSIX)" },
+  "doctorBefore": { "ready": true, "supervision": { "recoveryRequired": false, "ready": true, "code": null } },
+  "coldServerFirstObserve": { "native_timeout": false, "durationMs": 1232, "providerCalls": 8 },
+  "order": ["T1", "T2"],
+  "runs": {
+    "T1": [
+      { "task": 1, "result": "pass", "seconds": 52.6, "calls": 9, "readback": "exact TextPattern after a corrective type",
+        "defect": "type_text 'trace-vs-ad trace 1' returned outcome completed but the editor held 'trace-vs-ad trac' (two reads 6 s apart); typing 'e 1' completed it" },
+      { "task": 2, "result": "pass", "seconds": 93.6, "calls": 16, "disk": "exact 19 bytes",
+        "notes": ["set_value on File name refused as not_dispatched by design (dialog ignores UIA value)", "driver error: invoke Close not in depth-1 scope (unknown_element)", "driver error: screen bounds used as click coordinates (invalid_coordinates)"] },
+      { "task": 3, "result": "pass", "seconds": 123.5, "calls": 17, "url": "www.iana.org/help/example-domains",
+        "close": "ctrl+shift+w -> target_closed_after_dispatch (M2 confirmed in context)",
+        "defect": "type_text 'https://example.com\\n' -> native_timeout, outcome unknown; URL bar stayed empty; retry as type_text without newline plus press_key enter completed",
+        "notes": ["driver error: observe with a guessed session id (unknown_session)", "press_key refused focus_not_acquired: scoped observation excluded the focused document; tool refused correctly"] },
+      { "task": 4, "result": "pass", "seconds": 35.6, "calls": 7, "scale": "300%", "launch": "ms-settings:display",
+        "read": "includeOffscreen; Scale combo disabled (custom scaling)" }
+    ],
+    "T2": [
+      { "task": 1, "result": "pass", "seconds": 28.9, "calls": 5, "readback": "exact TextPattern" },
+      { "task": 2, "result": "pass", "seconds": 57.0, "calls": 10, "disk": "exact 19 bytes" },
+      { "task": 3, "result": "pass", "seconds": 63.4, "calls": 11, "url": "www.iana.org/help/example-domains", "close": "Close button click" },
+      { "task": 4, "result": "pass", "seconds": 20.1, "calls": 5, "scale": "300%" }
+    ]
+  },
+  "context": { "beforeT1": "59k", "afterT1": "105k", "afterT2": "133k", "deltaTokensApprox": 74000, "note": "Claude Code meter; includes driver reasoning, log writes and status messages; upper bound" },
+  "responseText": { "chars": 107192, "calls": 81, "images": 0, "byRun": { "setup": 2450, "T1": 64700, "T2": 40042 },
+    "byTool": { "observe": 91216, "act": 8788, "open_session": 2845, "doctor": 2450, "launch": 1365, "close_session": 528 } },
+  "bars": {
+    "pass8of8": "met (T1 task 1 needed a corrective type)",
+    "noMcpRestart": "met",
+    "contextUnder60k": "not met (~74k)",
+    "responseUnder100kChars": "not met (107,192)"
+  }
+}
