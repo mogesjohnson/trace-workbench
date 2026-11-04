@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-04",
+  "device": "R5CW8103GHV",
+  "afterReboot": {
+    "port5555Closed": {
+      "route": "local",
+      "elapsedSeconds": 5.31,
+      "termux": "on screen",
+      "wordsExact": true
+    },
+    "port5555Reopened": {
+      "route": "adb",
+      "elapsedSeconds": 5.33,
+      "termux": "background",
+      "wordsExact": true
+    },
+    "note": "phone-boot-adb.cjs reopened 5555 about 19:42:53 and the adb route returned without help"
+  },
+  "record": {
+    "command": "phone-transcribe --json --record 8",
+    "route": "adb",
+    "elapsedSeconds": 5.32,
+    "wallSeconds": 32.4,
+    "wordsConfirmedByOwner": true,
+    "clipLeftBehind": false
+  },
+  "stepTimingsSeconds": {
+    "scope": "measured without the microphone; the recorder start and the first-bytes wait were not timed",
+    "prootLogin": 0.93,
+    "termuxMicrophoneRecordQuitCalls": [
+      3.55,
+      3.33
+    ],
+    "ffmpegConvert11sWav": 1.1,
+    "adbShellNoop": 0.1
+  },
+  "limits": [
+    "The extra 19 s or so is explained by estimate, not by a timed --record run.",
+    "Whether Termux:Boot starts after unlock without opening Termux is still unknown."
+  ]
+}
