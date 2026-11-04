@@ -22,6 +22,7 @@ approval. The owner runs `gh pr merge` and `sync-computer-skill --apply` themsel
 | M4 | Leaner interactive observations and a clear document-read error | G4, G5 | R0 | yes, about 10 min |
 | M5 | TRACE rerun of the 4 tasks × 2; 2.1.0 published | all | M1–M4 | yes, about 30 min |
 | M6 | Optional hygiene | — | — | no |
+| M7 | Rerun fixes (D1 text check, D2 finding, leaner envelope), then the M5 step 3 rerun | rerun D1, D2, size bars | M5 rerun | yes, about 30 min |
 
 M1 must land before M2. Until M2 is fixed, ctrl+shift+w is the only known way to
 reproduce the stuck session, and M1's live check needs it. M3 and M4 are independent of
@@ -303,6 +304,45 @@ about 175 characters per row. Fixture results: Save As depth 3 4,440, depth 8 10
 5. Release 2.1.0 exactly as in R0, steps 2–5.
 
 **Done when:** v2.1.0 is published with its receipt, and the rerun meets every bar.
+
+**Rerun result, 3 November 2026.** 8/8 pass and no MCP restart, but context was about
+74k tokens and response text 107,192 characters, and two new defects appeared
+([report](https://github.com/mogesjohnson/trace-workbench/pull/120)). The owner chose to
+fix and rerun (M7) rather than accept the missed bars. Draft PR 120 stays draft.
+
+## M7. Rerun fixes, then the M5 step 3 rerun
+
+Owner decision, 3 November 2026: fix and rerun.
+
+- **D1, partial `type_text` reported `completed`.** winapp 0.7.1 (`KeyboardInput`) sends
+  text longer than 16 characters in 16-character chunks, 15 ms apart. "trace-vs-ad trace 1"
+  is "trace-vs-ad trac" plus "e 1", and Notepad showed exactly the first chunk while
+  SendInput reported every event sent. Fix: `type_text` reads the focused control before
+  and after input, and a shortfall returns `unknown` with `text_not_delivered` and
+  `textDelivery.prefixFound` ([COMPUTER_USE](COMPUTER_USE.md#v1-compatibility-boundary)).
+  The PR 121 review tightened it: only the changed span counts, so earlier copies of the
+  text cannot hide a dropped chunk; retyping an identical selection is `not_checked`;
+  polling stops at an unreadable read; the text is read before the focus check; and the
+  shortfall comes with the refreshed observation.
+- **D2, `native_timeout` on `type_text "https://example.com\n"` in Firefox.** Not
+  reproduced: the same text into a warm Firefox URL bar completed and navigated (1/1, 3
+  November). A WinForms text box took the same string and 258 more characters, newline
+  included, exactly. In winapp's source, send-keys resolves the window through UI
+  Automation and then waits for its cross-process desktop-exclusive lock, both before any
+  key is sent; either stalling fits "timed out, nothing typed". The newline is not the
+  cause, so no change is made. TRACE keeps reporting `unknown`.
+- **Observation size.** The lean `interactiveOnly` format (new in 2.1.0, unreleased) also
+  drops an `automationId` equal to the element ID and returns a lean envelope (window
+  naming fields, compact focus, no target-state provenance). On the rerun's Firefox
+  depth-2 read this removes 892 of 7,340 characters before the focus trim. The skill now
+  tells the driver to pass `interactiveOnly` on scoped and document reads too. In the
+  rerun, 33 observes made up 85% of response text, and a fixed envelope of about
+  1,000 characters each was a large share of it.
+- **Then:** merge, reconnect `trace-computer` on the merged `main`, sync the skill, and
+  repeat M5 step 3 in a new fresh session with the same rules and bars. Record it on a new
+  PR, because PR 120 is at its four-commit cap.
+
+**Done when:** the rerun meets every bar, or the owner accepts what it misses.
 
 ## M6. Optional hygiene (owner decides; not blocking)
 

@@ -84,20 +84,40 @@ const RETURN_OBSERVATIONS = ['full', 'summary', 'none'];
 const DIFF_LIMIT = 15;
 const short = value => { const text = String(value ?? ''); return text.length > 80 ? `${text.slice(0, 79)}…` : text; };
 const sameRect = (a, b) => (!a && !b) || (a && b && ['x', 'y', 'width', 'height'].every(key => a[key] === b[key]));
+// The client error for typed text the control does not show, with only bounded fields: no text.
+function textShortfall(delivery, length) {
+  const prefixFound = Number.isInteger(delivery.prefixFound) && delivery.prefixFound >= 0 ? Math.min(delivery.prefixFound, length) : 0;
+  const unchanged = delivery.unchanged === true;
+  return { code: 'text_not_delivered', outcome: 'unknown',
+    message: unchanged ? 'The focused control text did not change after input.'
+      : `The focused control does not show the typed text; the changed text starts with ${prefixFound} of its ${length} characters.`,
+    textDelivery: { status: 'missing', prefixFound, ...(unchanged ? { unchanged: true } : {}) } };
+}
 function compactFocus(focused) {
   if (!focused || focused.available === false || !focused.hasFocus) return focused ? { available: focused.available !== false, hasFocus: false, ...(focused.code ? { code: focused.code } : {}) } : { available: false };
   return { hasFocus: true, elementId: focused.elementId ?? null, name: short(focused.name), controlType: focused.controlType, ...(focused.binding ? { binding: focused.binding } : {}) };
 }
 // A bounded element diff between the consumed observation and the fresh one, keyed by element ID.
-// interactiveOnly returns a leaner element: no className, and enabled, offscreen and
-// secondaryActions only when they differ from true, false and []. Missing means the default.
-// The server-side snapshot keeps every field for dispatch and stale checks.
+// interactiveOnly returns a leaner element: no className, no automationId when it equals the
+// element ID, and enabled, offscreen and secondaryActions only when they differ from true, false
+// and []. Missing means the default. The server-side snapshot keeps every field for dispatch and
+// stale checks.
 function leanElement({ className, ...item }) {
+  if (item.automationId === item.id) delete item.automationId;
   if (item.enabled === true) delete item.enabled;
   if (item.offscreen === false) delete item.offscreen;
   if (Array.isArray(item.secondaryActions) && !item.secondaryActions.length) delete item.secondaryActions;
   return item;
 }
+// The lean window keeps what names the target; open_session already returned its full identity
+// and the top-level bounds carry its geometry. The server-side snapshot keeps every field.
+function leanWindow(window) {
+  if (!window) return window;
+  const { id, pid, processName, title } = window;
+  return { id, pid, processName, title };
+}
+// The lean target state drops its constant provenance; the server-side snapshot keeps it.
+function leanTargetState({ provenance, ...state }) { return state; }
 function elementDiff(before = [], after = []) {
   const old = new Map(), now = new Map();
   for (const item of before) if (!old.has(item.id)) old.set(item.id, item);
@@ -368,7 +388,7 @@ function createComputerController(options = {}) {
       count('base64', screenshot.data.length);
     }
     const result = {
-      sessionId: session.id, observationId, window: snapshot.window, bounds,
+      sessionId: session.id, observationId, window: interactiveOnly ? leanWindow(snapshot.window) : snapshot.window, bounds,
       elements: interactiveOnly ? (snapshot.elements ?? []).map(leanElement) : snapshot.elements ?? [], observedAt: new Date(observedAtMs).toISOString(),
       coordinateSpace: 'window-local-physical-pixels', captureMethod: snapshot.captureMethod ?? 'native-window',
       accessibility: { truncated: snapshot.truncated === true, depth: snapshot.depth,
@@ -376,8 +396,8 @@ function createComputerController(options = {}) {
         ...(rootElementId === undefined ? {} : { rootElementId }), ...(interactiveOnly ? { interactiveOnly: true } : {}),
         ...(Array.isArray(snapshot.hierarchy) && snapshot.hierarchy.length ? { hierarchy: snapshot.hierarchy } : {}) },
       ...(documentElementId === undefined ? {} : { documentRead: snapshot.documentRead }),
-      focused: snapshot.focused ? { ...snapshot.focused } : { available: false, code: 'focus_unavailable' },
-      targetState: snapshot.targetState ?? { available: false },
+      focused: !snapshot.focused ? { available: false, code: 'focus_unavailable' } : interactiveOnly ? { available: true, ...compactFocus(snapshot.focused) } : { ...snapshot.focused },
+      targetState: !snapshot.targetState ? { available: false } : interactiveOnly ? leanTargetState(snapshot.targetState) : snapshot.targetState,
       ...(snapshot.restoredFromMinimized === true ? { preparation: [{ step: 'restore', status: 'restored' }] } : {}),
       ...(screenshot ? { screenshot } : {}),
     };
@@ -547,9 +567,16 @@ function createComputerController(options = {}) {
             const { rootElementId, ...unscoped } = scope;
             fresh = await refresh(unscoped); scopeLost = true;
           }
-          await record(session, { type: 'action_completed', actionId, observationId: fresh.observationId });
+          // Typed text the control does not show is unknown, but the act still returns the fresh
+          // observation so the control can be read and the next action is authorized without another observe.
+          const missing = checked.type === 'type_text' && nativeResult?.textDelivery?.status === 'missing' ? textShortfall(nativeResult.textDelivery, checked.text.length) : undefined;
+          if (missing) nativeResult = (({ textDelivery, ...rest }) => rest)(nativeResult);
+          await record(session, missing ? { type: 'action_unknown', actionId, errorCode: 'text_not_delivered', observationId: fresh.observationId }
+            : { type: 'action_completed', actionId, observationId: fresh.observationId });
           await retainCapture(session, fresh, signal);
-          const completed = { actionId, outcome: 'completed', verification: 'fresh_observation', ...(scopeLost ? { scopeLost: true } : {}) };
+          const completed = missing ? { actionId, outcome: 'unknown', error: missing, verification: 'fresh_observation', ...(scopeLost ? { scopeLost: true } : {}),
+            nextStep: 'Read the control before typing again. It may have dropped part of the input or changed it (autocorrect, an input mask, a length limit).' }
+            : { actionId, outcome: 'completed', verification: 'fresh_observation', ...(scopeLost ? { scopeLost: true } : {}) };
           await reportModal(session, fresh, signal);
           const modal = fresh.ownedModal ? { ownedModal: fresh.ownedModal } : {};
           if (returnObservation === 'full') return { ...completed, nativeResult, observation: fresh };
@@ -663,4 +690,4 @@ function createComputerController(options = {}) {
   };
 }
 
-module.exports = { createComputerController, leanElement, defaultRuntimeDirectory, validateAction, validateDepth, validateScreenshot, elementDiff, safeError, listingNoise, listedWindow };
+module.exports = { createComputerController, leanElement, leanWindow, defaultRuntimeDirectory, validateAction, validateDepth, validateScreenshot, elementDiff, safeError, textShortfall, listingNoise, listedWindow };

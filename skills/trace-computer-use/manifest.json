@@ -2,9 +2,9 @@
   "schema": "trace.skill-bundle/1",
   "name": "trace-computer-use",
   "files": {
-    "SKILL.md": "1ecf89a169556aa194e17a9fa11007f53fffbb46a78e42bed24b9c3f90ce4743",
+    "SKILL.md": "fe99140254c55e10531772f48254aa760e2bc5296752d18f07ff636b657da8b4",
     "references/acceptance.md": "bf2bb50b452fd8c04d8548c530e2af5876a5fea843f453b7303c2c0a00c19575",
-    "references/operation-and-recovery.md": "b993d9c7a86f4438fa580847df01b25ce8fd49456d443e55787b4c0cabd740c3",
+    "references/operation-and-recovery.md": "2810a1c55835482f2dba18ce4c649f16c05005636a762ae5dd430766fe69cac6",
     "references/readiness-routing.md": "2c1cc72ede6d5462a3dc2fa37a82a2f7b15a089740303861b7ef521ccf349979"
   }
 }
