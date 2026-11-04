@@ -417,6 +417,7 @@ watcher with `tests/fixtures/WifiTrustTest.java` (skips without a JDK and Androi
 | 3 Nov 12:59, eduroam `74:9e:75:2f:b8:a3` (not listed, but `is_trusted_network=true` by SSID): restarted watcher logs `allowed 74:9e:75:2f:b8:a3 "eduroam" (3-arg)` on its first round; the keystore lists it | pass |
 | 4 Nov 09:28, main `60825a7`, joining eduroam `74:9e:75:2f:f6:23` (a BSSID not trusted before): after the adbd restart at 09:28:31 the restarted watcher logs `allowed 74:9e:75:2f:f6:23 "eduroam" (3-arg)` at 09:28:51; `dumpsys adb` shows `is_trusted_network=true`; logcat has no `WifiDebuggingActivity` (no dialog); at 09:38 the PC, also on eduroam, connects with `adb connect 10.104.39.123:5555` (the phone's new address; the home address 10.0.0.151 no longer answers) | pass |
 | 3 Nov 23:11, `8d386a9` after reinstall and reboot: `adb tcpip 5555` restarts adbd and kills the watcher; the keep-alive starts it again 28 s later under the new adbd | pass |
+| 4 Nov 09:28, main `60825a7` after reinstall and reboot on eduroam: Termux:Boot starts the watcher, one process; first round logs `allowed 74:9e:75:2f:f6:23 "eduroam" (3-arg)` (a BSSID not seen before) | pass |
 
 Findings:
 - `pkill -f trace.phone.WifiTrust` also matches the `sh -c` running it, so it kills itself before
