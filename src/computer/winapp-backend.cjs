@@ -246,6 +246,25 @@ async function verifyBridgeFiles(bridgePath = DEFAULT_BRIDGE) {
   }
 }
 
+// The largest k such that `after` is `before` with one span (the caret, or a replaced selection)
+// replaced by the first k characters of `text`, or -1 when no span fits. Only the changed span
+// counts, so text already in the control cannot stand in for dropped input.
+function deliveredPrefix(before, after, text) {
+  const limit = Math.min(before.length, after.length);
+  let prefix = 0, suffix = 0;
+  while (prefix < limit && before[prefix] === after[prefix]) prefix++;
+  while (suffix < limit && before[before.length - 1 - suffix] === after[after.length - 1 - suffix]) suffix++;
+  let best = -1;
+  for (let start = 0; start <= prefix && best < text.length; start++) {
+    let match = 0;
+    while (match < text.length && start + match < after.length && after[start + match] === text[match]) match++;
+    // The kept tail must be a common suffix and must not overlap the kept head.
+    const least = Math.max(0, after.length - start - suffix, after.length - before.length);
+    if (match >= least && match > best) best = match;
+  }
+  return best;
+}
+
 class WinappBackend {
   constructor({ binaryPath = DEFAULT_BINARY, bridgePath = DEFAULT_BRIDGE, indicatorPath = DEFAULT_INDICATOR, run = runProcess, platform = process.platform, arch = process.arch, verify = verifyFiles, verifyBridge = verifyBridgeFiles, verifyIndicator = verifyIndicatorFiles, supervisor } = {}) {
     this.binaryPath = binaryPath;
@@ -848,19 +867,28 @@ class WinappBackend {
       const ready = await this.bridge('bounds', window, signal);
       if (ready.enabled === false) fail('window_blocked', 'The selected window became disabled before its value operation.', { outcome: 'not_dispatched' });
     }
+    // Typed text is checked against the focused control's text (D1: SendInput reported success while
+    // Notepad dropped the second 16-character chunk). Enter and Tab may submit or move focus, so text
+    // holding them is not checked.
+    const checkText = action.type === 'type_text' && !/[\r\n\t]/.test(action.text);
     let typedTarget, textBefore;
     if (action.type === 'type_text' || action.type === 'press_key') {
+      // The text is read before focus is verified, so focus cannot move unchecked between the read
+      // and input: the observed focus must match the verified one. Without an observed focus, the
+      // focus is verified again after the read.
+      const expected = observation.focused?.hasFocus ? observation.focused.elementId : undefined;
+      if (checkText && expected) textBefore = await this.typedText(window, signal, fresh.elements, expected);
       const focused = await this.focused(window, signal, fresh.elements, fresh);
       if (!focused.hasFocus) fail('focus_not_acquired', 'Keyboard focus could not be verified inside the exact selected window.');
       if (observation.focused?.hasFocus && observation.focused.elementId !== focused.elementId) fail('focus_changed', 'Focused control changed since observation. Observe again.');
       if (!focused.elementId) fail('focus_not_acquired', 'Keyboard focus could not be bound to an observed control inside the exact selected window.');
       typedTarget = focused.elementId;
+      if (checkText && !expected) {
+        textBefore = await this.typedText(window, signal, fresh.elements, typedTarget);
+        const again = await this.focused(window, signal, fresh.elements, fresh);
+        if (!again.hasFocus || again.elementId !== typedTarget) fail('focus_changed', 'Focus moved while the control text was read. Observe again.', { outcome: 'not_dispatched' });
+      }
     }
-    // Typed text is checked against the focused control's text (D1: SendInput reported success while
-    // Notepad dropped the second 16-character chunk). Enter and Tab may submit or move focus, so text
-    // holding them is not checked.
-    const checkText = action.type === 'type_text' && !/[\r\n\t]/.test(action.text);
-    if (checkText) textBefore = await this.typedText(window, signal, fresh.elements, typedTarget);
     progress.primary = true;
     let result;
     try {
@@ -883,10 +911,8 @@ class WinappBackend {
       : !checkText ? { status: 'not_checked', reason: 'control_characters' }
       : typeof textBefore !== 'string' ? { status: 'not_checked', reason: 'text_unreadable' }
       : await this.textDelivery(window, signal, fresh.elements, typedTarget, textBefore, action.text);
-    if (textDelivery?.status === 'missing') {
-      fail('text_not_delivered', `The focused control does not show the typed text; ${textDelivery.prefixFound} of ${action.text.length} leading characters were found. Read the control before typing only what is missing.`,
-        { outcome: 'unknown', textDelivery });
-    }
+    // A shortfall (status missing) is returned, not thrown: the controller still refreshes the
+    // observation, then reports the act as unknown with text_not_delivered.
     return { performed: true, type: action.type, engine: pointerArgs ? 'public-win32-sendinput' : 'winapp', version: pointerArgs ? 1 : pin.version, ...(transport ? { transport } : {}), preparation: progress.preparation, native: result,
       ...(textDelivery ? { textDelivery } : {}) };
   }
@@ -902,28 +928,27 @@ class WinappBackend {
     }
   }
   // SendInput returns before the target has processed its queue, so the text is polled briefly.
+  // Polling stops at once when the text cannot be read: it will not become readable.
   async textDelivery(window, signal, elements, elementId, before, text, { timeoutMs = 1500, intervalMs = 100 } = {}) {
     const started = Date.now();
     let after;
     for (;;) {
       after = await this.typedText(window, signal, elements, elementId);
-      if (typeof after === 'string' && after !== before && after.includes(text)) return { status: 'verified' };
+      if (typeof after !== 'string') return { status: 'not_checked', reason: 'text_unreadable' };
+      if (after !== before && deliveredPrefix(before, after, text) === text.length) return { status: 'verified' };
       if (Date.now() - started >= timeoutMs) break;
       await new Promise(resolve => setTimeout(resolve, intervalMs));
       signal?.throwIfAborted();
     }
-    if (typeof after !== 'string') return { status: 'not_checked', reason: 'text_unreadable' };
-    // A found prefix implies every shorter one is found, so the longest is found by bisection.
-    let low = 0, high = text.length;
-    while (low < high) {
-      const middle = Math.ceil((low + high) / 2);
-      if (after.includes(text.slice(0, middle))) low = middle; else high = middle - 1;
-    }
-    return { status: 'missing', prefixFound: low, ...(after === before ? { unchanged: true } : {}) };
+    // Unchanged text that already holds the typed text cannot tell delivery over an identical
+    // selection from a drop. Otherwise unchanged text means nothing arrived.
+    if (after === before) return deliveredPrefix(before, after, text) === text.length
+      ? { status: 'not_checked', reason: 'text_unchanged' } : { status: 'missing', prefixFound: 0, unchanged: true };
+    return { status: 'missing', prefixFound: Math.max(0, deliveredPrefix(before, after, text)) };
   }
   async close() {
     if (this.supervisor?.child && this.supervisor.owner) await this.supervisor.release(this.supervisor.owner);
   }
 }
 
-module.exports = { WinappBackend, BackendError, DEFAULT_BINARY, DEFAULT_BRIDGE, pin, runProcess, parseJson, pngSize, readPngHeader, verifyFiles, verifyBridgeFiles, bridgeSourceHashes };
+module.exports = { WinappBackend, deliveredPrefix, BackendError, DEFAULT_BINARY, DEFAULT_BRIDGE, pin, runProcess, parseJson, pngSize, readPngHeader, verifyFiles, verifyBridgeFiles, bridgeSourceHashes };

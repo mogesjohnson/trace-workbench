@@ -21,9 +21,6 @@ function safeError(error) {
   if (['unknown', 'not_dispatched'].includes(error.details?.outcome)) result.outcome = error.details.outcome;
   if (error.details?.cleanup === 'unknown') result.cleanup = 'unknown';
   if (error.details?.reason === 'not_in_observed_tree') result.reason = 'not_in_observed_tree';
-  const delivery = error.details?.textDelivery;
-  if (delivery?.status === 'missing' && Number.isInteger(delivery.prefixFound) && delivery.prefixFound >= 0)
-    result.textDelivery = { status: 'missing', prefixFound: delivery.prefixFound, ...(delivery.unchanged === true ? { unchanged: true } : {}) };
   if (Array.isArray(error.cleanupCodes)) result.cleanupCodes = error.cleanupCodes
     .filter(code => typeof code === 'string' && /^[a-z_]{1,64}$/.test(code)).slice(0, 8);
   const recovery = error.details?.recovery;
@@ -87,6 +84,15 @@ const RETURN_OBSERVATIONS = ['full', 'summary', 'none'];
 const DIFF_LIMIT = 15;
 const short = value => { const text = String(value ?? ''); return text.length > 80 ? `${text.slice(0, 79)}…` : text; };
 const sameRect = (a, b) => (!a && !b) || (a && b && ['x', 'y', 'width', 'height'].every(key => a[key] === b[key]));
+// The client error for typed text the control does not show, with only bounded fields: no text.
+function textShortfall(delivery, length) {
+  const prefixFound = Number.isInteger(delivery.prefixFound) && delivery.prefixFound >= 0 ? Math.min(delivery.prefixFound, length) : 0;
+  const unchanged = delivery.unchanged === true;
+  return { code: 'text_not_delivered', outcome: 'unknown',
+    message: unchanged ? 'The focused control text did not change after input.'
+      : `The focused control does not show the typed text; the changed text starts with ${prefixFound} of its ${length} characters.`,
+    textDelivery: { status: 'missing', prefixFound, ...(unchanged ? { unchanged: true } : {}) } };
+}
 function compactFocus(focused) {
   if (!focused || focused.available === false || !focused.hasFocus) return focused ? { available: focused.available !== false, hasFocus: false, ...(focused.code ? { code: focused.code } : {}) } : { available: false };
   return { hasFocus: true, elementId: focused.elementId ?? null, name: short(focused.name), controlType: focused.controlType, ...(focused.binding ? { binding: focused.binding } : {}) };
@@ -390,7 +396,7 @@ function createComputerController(options = {}) {
         ...(rootElementId === undefined ? {} : { rootElementId }), ...(interactiveOnly ? { interactiveOnly: true } : {}),
         ...(Array.isArray(snapshot.hierarchy) && snapshot.hierarchy.length ? { hierarchy: snapshot.hierarchy } : {}) },
       ...(documentElementId === undefined ? {} : { documentRead: snapshot.documentRead }),
-      focused: !snapshot.focused ? { available: false, code: 'focus_unavailable' } : interactiveOnly ? compactFocus(snapshot.focused) : { ...snapshot.focused },
+      focused: !snapshot.focused ? { available: false, code: 'focus_unavailable' } : interactiveOnly ? { available: true, ...compactFocus(snapshot.focused) } : { ...snapshot.focused },
       targetState: !snapshot.targetState ? { available: false } : interactiveOnly ? leanTargetState(snapshot.targetState) : snapshot.targetState,
       ...(snapshot.restoredFromMinimized === true ? { preparation: [{ step: 'restore', status: 'restored' }] } : {}),
       ...(screenshot ? { screenshot } : {}),
@@ -561,9 +567,16 @@ function createComputerController(options = {}) {
             const { rootElementId, ...unscoped } = scope;
             fresh = await refresh(unscoped); scopeLost = true;
           }
-          await record(session, { type: 'action_completed', actionId, observationId: fresh.observationId });
+          // Typed text the control does not show is unknown, but the act still returns the fresh
+          // observation so the control can be read and the next action is authorized without another observe.
+          const missing = checked.type === 'type_text' && nativeResult?.textDelivery?.status === 'missing' ? textShortfall(nativeResult.textDelivery, checked.text.length) : undefined;
+          if (missing) nativeResult = (({ textDelivery, ...rest }) => rest)(nativeResult);
+          await record(session, missing ? { type: 'action_unknown', actionId, errorCode: 'text_not_delivered', observationId: fresh.observationId }
+            : { type: 'action_completed', actionId, observationId: fresh.observationId });
           await retainCapture(session, fresh, signal);
-          const completed = { actionId, outcome: 'completed', verification: 'fresh_observation', ...(scopeLost ? { scopeLost: true } : {}) };
+          const completed = missing ? { actionId, outcome: 'unknown', error: missing, verification: 'fresh_observation', ...(scopeLost ? { scopeLost: true } : {}),
+            nextStep: 'Read the control before typing again. It may have dropped part of the input or changed it (autocorrect, an input mask, a length limit).' }
+            : { actionId, outcome: 'completed', verification: 'fresh_observation', ...(scopeLost ? { scopeLost: true } : {}) };
           await reportModal(session, fresh, signal);
           const modal = fresh.ownedModal ? { ownedModal: fresh.ownedModal } : {};
           if (returnObservation === 'full') return { ...completed, nativeResult, observation: fresh };
@@ -677,4 +690,4 @@ function createComputerController(options = {}) {
   };
 }
 
-module.exports = { createComputerController, leanElement, leanWindow, defaultRuntimeDirectory, validateAction, validateDepth, validateScreenshot, elementDiff, safeError, listingNoise, listedWindow };
+module.exports = { createComputerController, leanElement, leanWindow, defaultRuntimeDirectory, validateAction, validateDepth, validateScreenshot, elementDiff, safeError, textShortfall, listingNoise, listedWindow };

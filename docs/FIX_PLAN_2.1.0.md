@@ -320,6 +320,10 @@ Owner decision, 3 November 2026: fix and rerun.
   SendInput reported every event sent. Fix: `type_text` reads the focused control before
   and after input, and a shortfall returns `unknown` with `text_not_delivered` and
   `textDelivery.prefixFound` ([COMPUTER_USE](COMPUTER_USE.md#v1-compatibility-boundary)).
+  The PR 121 review tightened it: only the changed span counts, so earlier copies of the
+  text cannot hide a dropped chunk; retyping an identical selection is `not_checked`;
+  polling stops at an unreadable read; the text is read before the focus check; and the
+  shortfall comes with the refreshed observation.
 - **D2, `native_timeout` on `type_text "https://example.com\n"` in Firefox.** Not
   reproduced: the same text into a warm Firefox URL bar completed and navigated (1/1, 3
   November). A WinForms text box took the same string and 258 more characters, newline

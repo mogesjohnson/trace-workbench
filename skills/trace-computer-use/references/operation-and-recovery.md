@@ -19,7 +19,7 @@ Keep preparatory activation/restoration, primary input, observed effect, and phy
 | `not_dispatched` | Resolve the condition, obtain fresh evidence, then permit at most one corrective retry for the same step |
 | `completed` with fresh state | Independently inspect the declared effect; delivery alone does not complete the requested result |
 | `unknown`, missing receipt, native failure, or failed post-action capture | Reinspect the original target/effect; it may already have happened |
-| `unknown` with `text_not_delivered` | The control showed only `textDelivery.prefixFound` leading characters of the typed text. Read the control, then type only the missing part |
+| `unknown` with `text_not_delivered` | The changed text holds only `textDelivery.prefixFound` leading characters of the typed text; the control may have dropped or changed input. Read the control from the returned observation before typing again |
 | Recovery required, cleanup uncertain, or native exit unconfirmed | Preserve quarantine; stop affected desktop input until independent recovery verification |
 
 If a fresh read proves the intended effect occurred, continue without replay. If it proves absence and cleanup is safe, changed preconditions/evidence can justify the one corrective retry. Keep unresolved effects pending. A different provider or restarted process cannot clear them.
