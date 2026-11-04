@@ -32,9 +32,8 @@ Branch and PR rules (from [VERSION_CONTROL.md](../VERSION_CONTROL.md)):
 
 - One PR per milestone, 2–3 commits (4 at most): implementation, verification and
   documentation.
-- Worktrees go in `../trace-workbench-worktrees/<name>`. Link `.runtime` and
-  `node_modules` by junction. Before `git worktree remove`, remove each junction with
-  `cmd /c rmdir`; never delete recursively through it.
+- Worktrees go in `../trace-workbench-worktrees/<name>`. Run `npm ci` in each one; see
+  [VERSION_CONTROL.md](../VERSION_CONTROL.md) for why worktrees are not linked by junction.
 
 ## R0. Publish 2.0.0
 
