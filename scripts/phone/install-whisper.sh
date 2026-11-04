@@ -31,4 +31,6 @@ for model in base.en "$@"; do
 done
 
 install -m 755 "$HERE/phone-transcribe" /usr/local/bin/phone-transcribe
+# Optional speed-up: needs adb to the phone. Without it, phone-transcribe runs locally.
+phone-transcribe --install-fast || echo "adb route not installed; rerun: phone-transcribe --install-fast"
 echo "installed: $("$ROOT/build/bin/whisper-cli" --version 2>&1 | head -1); models: $(ls "$ROOT"/models/ggml-*.bin | xargs -n1 basename | tr '\n' ' ')"
