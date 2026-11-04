@@ -415,6 +415,7 @@ watcher with `tests/fixtures/WifiTrustTest.java` (skips without a JDK and Androi
 | 3 Nov 00:52, `948dfac` watcher started by the owner: first round logs `allowed 12:36:aa:0d:52:a6 "MogesAIGirlfriend5" (3-arg)`; the keystore lists `12:36:aa:0d:52:a6` / `"MogesAIGirlfriend5"`; `is_trusted_network=true`; adbd not restarted (STIME 23:30:01) | pass |
 | fixed watcher: switching to 2.4 GHz and back to 5 GHz shows no dialog | **not_run** |
 | 3 Nov 12:59, eduroam `74:9e:75:2f:b8:a3` (not listed, but `is_trusted_network=true` by SSID): restarted watcher logs `allowed 74:9e:75:2f:b8:a3 "eduroam" (3-arg)` on its first round; the keystore lists it | pass |
+| 3 Nov 23:11, `8d386a9` after reinstall and reboot: `adb tcpip 5555` restarts adbd and kills the watcher; the keep-alive starts it again 28 s later under the new adbd | pass |
 
 Findings:
 - `pkill -f trace.phone.WifiTrust` also matches the `sh -c` running it, so it kills itself before
@@ -446,8 +447,12 @@ Findings:
   that `127.0.0.1:5555` is a device (reconnecting the way boot does, including `adb tcpip 5555`)
   and that the watcher runs, and starts it again if not. It logs only changes to
   `~/.trace-keepalive.log` in Termux, and a pid file (`/tmp/trace-keepalive.pid` in Debian) keeps
-  one copy. Device check **not_run**: it needs a reinstall (`install-phone-claude.cjs`) and a
-  reboot, then an adbd restart. Limit: if Wireless debugging is off after the restart (for example,
+  one copy. Device check passed on 3 November at `8d386a9` (PR 105 comment 6622329235): after a
+  reinstall and reboot, Termux:Boot started the watcher, Remote Control and the keep-alive;
+  `adb tcpip 5555` restarted adbd (pid 10105, 23:11:02) and killed the watcher; at 23:11:30 the
+  keep-alive started it again (pid 10674, cgroup `/system/uid_0/pid_10105`, `is_trusted_network=true`).
+  Toggling Wireless debugging over USB does not restart adbd, so use `adb tcpip 5555` for this
+  check. `~/.trace-keepalive.log` is in Termux's home folder and cannot be read over adb. Limit: if Wireless debugging is off after the restart (for example,
   on an untrusted network) it can only wait.
 - Limit: nothing runs before adb is up, so a reboot straight onto a never-joined network still
   shows the system dialog once.
