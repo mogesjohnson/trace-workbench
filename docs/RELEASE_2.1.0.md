@@ -1,12 +1,15 @@
 # TRACE Workbench 2.1.0
 
-**Status: a candidate on `main`, not published.** It fixes known limits G1–G5 of
+**Published 3 November 2026 with direct owner approval.**
+[Download v2.1.0](https://github.com/mogesjohnson/trace-workbench/releases/tag/v2.1.0).
+The [publication receipt](../evidence/release-2.1.0/publication.json) binds merged source
+`acca833`, passing final-main Windows CI, exact archive installation/rollback and five
+independently downloaded and hash-verified assets. The bundled notes and companion
+manifests keep their prepublication snapshot. It fixes known limits G1–G5 of
 [2.0.0](RELEASE_2.0.0.md), following the [2.1.0 fix plan](FIX_PLAN_2.1.0.md). Published
 2.0.0 and its assets remain available. The first TRACE-only rerun of the head-to-head
 (plan M5, step 3) passed 8/8 task-runs but missed its context and response-size bars. After
 the M7 fixes, the second rerun met every bar; see [Verification scope](#verification-scope).
-Publication still needs the owner's merge, hosted CI on the released `main` commit, the
-delivery folder and tag approval.
 
 ## Why
 

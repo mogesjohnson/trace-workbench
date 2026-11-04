@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "version": "2.1.0",
+  "status": "published",
+  "releaseId": 433458672,
+  "releaseUrl": "https://github.com/mogesjohnson/trace-workbench/releases/tag/v2.1.0",
+  "publishedAt": "2026-11-04T02:55:28Z",
+  "tag": "v2.1.0",
+  "sourceCommit": "acca83371c97ac1290f2e4ef973f8db4616503c7",
+  "ci": {
+    "url": "https://github.com/mogesjohnson/trace-workbench/actions/runs/41761608177",
+    "head": "acca83371c97ac1290f2e4ef973f8db4616503c7",
+    "conclusion": "success"
+  },
+  "archive": {
+    "sourceCommit": "acca83371c97ac1290f2e4ef973f8db4616503c7",
+    "file": "trace-workbench-2.1.0-source.zip",
+    "sha256": "7ba44237aacafa0bd29b84240b16542ddf7b9adaf99b00fa22e23b91933639cf",
+    "bytes": 24271434,
+    "retainedRequirementHashesVerified": 8,
+    "referenceHashesVerified": 16,
+    "reproductionTimezone": "UTC"
+  },
+  "assets": [
+    {
+      "name": "trace-workbench-2.1.0-source.zip",
+      "bytes": 24271434,
+      "sha256": "7ba44237aacafa0bd29b84240b16542ddf7b9adaf99b00fa22e23b91933639cf",
+      "id": 708000768
+    },
+    {
+      "name": "acceptance-manifest.json",
+      "bytes": 7791,
+      "sha256": "173549282a92ec178c5e0ea8b21bb6d2f839ffca812e78eebd85b975a47366c2",
+      "id": 708000767
+    },
+    {
+      "name": "distribution-receipt.json",
+      "bytes": 3459,
+      "sha256": "bd6b62bd4b34f92ce3274a74db1fd03f4360238153eb6c2de67ea599fe3b8303",
+      "id": 708000772
+    },
+    {
+      "name": "RELEASE_NOTES.md",
+      "bytes": 12892,
+      "sha256": "cba0f5a302a751c6d6a01401188ba7bceae61e6cb9ee29470fd916ebf80b9e97",
+      "id": 708000771
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 365,
+      "sha256": "772c23ea33a113363a6ee851b55a850863b1193e2fbf060374eeffddeeadb7fe",
+      "id": 708000769
+    }
+  ],
+  "independentDownloadedHashesVerified": true,
+  "publicTagAndAssetMetadataVerified": true,
+  "ownerApproval": {
+    "source": "direct-owner",
+    "reply": "Approve: tag and publish",
+    "scope": "Tag v2.1.0 on acca833, create the GitHub release with the five assets, re-verify downloaded hashes, open this publication PR"
+  },
+  "mergedPrs": [
+    120,
+    122
+  ],
+  "limits": "Fixes 2.0.0 known limits G1-G5 with no 2.0 contract change. The second TRACE-only head-to-head rerun after the M7 fixes passed 8/8 and met every bar; scope as stated in the release notes. No desktop work for publication."
+}
