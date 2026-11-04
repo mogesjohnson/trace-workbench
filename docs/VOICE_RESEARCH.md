@@ -118,7 +118,11 @@ Without those lost words, route 2b was word-perfect and base.en misheard "set a"
    Two practical points: `--keep` must be a path Termux can reach (the Termux home, not Debian's
    `/tmp`), and the speaker should start at the phone's green mic indicator with about 3 s of
    slack, since the PC-side prompt is invisible to them and 5 s cut the sentence off. Clips were
-   deleted after the runs. Not run yet: the call from phone Claude.
+   deleted after the runs. Call from phone Claude: **passed 4 Nov 2026.** A Claude app Code session on
+   `localhost · phone-work` called the `phone_transcribe` MCP tool on `jfk.wav` and got the words
+   exact, in 20.7 s ([evidence](../evidence/research/a8-phone-claude-transcribe-2026-11-04.json)).
+   That is 5 times the 3 Nov time; an SSH re-run right after took 15.3 s while the phone had 10.5 of
+   11 GB RAM and 6.4 GB swap in use. The cause is not verified.
 4. claude-voice: add `EXTRA_PREFER_OFFLINE = true` (owner approved). Done 3 Nov 2026 in the
    separate private claude-voice repository (its PR 1). The owner installed the build and spoken
    commands worked. Network-off test, 3 Nov 2026 (owner approved): Wi-Fi and mobile data
