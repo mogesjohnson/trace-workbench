@@ -6,7 +6,7 @@ const path = require('node:path');
 const { randomUUID, createHash } = require('node:crypto');
 const { DesktopLease } = require('./lease.cjs');
 const { ActivityIndicator } = require('./activity-indicator.cjs');
-const { validateAction, actionSupport, compactSupport } = require('./action-contract.cjs');
+const { validateAction, actionSupport, compactSupport, coordinateContract } = require('./action-contract.cjs');
 const { createObservationMetrics, measure, count } = require('./observation-metrics.cjs');
 const { parseCaptureKeepLast, createCaptureRetention } = require('./capture-retention.cjs');
 const { downscalePng, DEFAULT_MAX_EDGE } = require('./png-scale.cjs');
@@ -390,7 +390,7 @@ function createComputerController(options = {}) {
     const result = {
       sessionId: session.id, observationId, window: interactiveOnly ? leanWindow(snapshot.window) : snapshot.window, bounds,
       elements: interactiveOnly ? (snapshot.elements ?? []).map(leanElement) : snapshot.elements ?? [], observedAt: new Date(observedAtMs).toISOString(),
-      coordinateSpace: 'window-local-physical-pixels', captureMethod: snapshot.captureMethod ?? 'native-window',
+      coordinateSpace: 'window-local-physical-pixels', coordinates: coordinateContract(bounds, snapshot.dpi, screenshot), captureMethod: snapshot.captureMethod ?? 'native-window',
       accessibility: { truncated: snapshot.truncated === true, depth: snapshot.depth,
         ...(Number.isInteger(snapshot.offscreenOmitted) && snapshot.offscreenOmitted > 0 ? { offscreenOmitted: snapshot.offscreenOmitted } : {}),
         ...(rootElementId === undefined ? {} : { rootElementId }), ...(interactiveOnly ? { interactiveOnly: true } : {}),
@@ -406,7 +406,7 @@ function createComputerController(options = {}) {
     else {
       Object.assign(result, { mode, actionable: false });
       if (mode === 'screenshot') { delete result.elements; delete result.accessibility; }
-      else { delete result.screenshot; delete result.captureMethod; delete result.coordinateSpace; }
+      else { delete result.screenshot; delete result.captureMethod; delete result.coordinateSpace; delete result.coordinates; }
     }
     await measure('journal', () => record(session, { type: 'observation', observationId,
       ...(mode !== 'full' ? { mode } : {}), ...(screenshotMode !== (mode === 'accessibility' ? 'none' : 'full') ? { screenshot: screenshotMode } : {}),

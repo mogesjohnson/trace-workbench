@@ -99,6 +99,15 @@ function validateAction(action, observation) {
   return checked;
 }
 
+// Names each pixel space in one observation. An action point = image pixel * physicalPerImagePixel;
+// add windowOrigin for a physical screen position. Logical scale is reported, never assumed.
+function coordinateContract(bounds, dpi, screenshot) {
+  return { actionPoints: 'window-local-physical-pixels', elementBounds: 'physical-screen-pixels',
+    windowOrigin: { x: bounds.x, y: bounds.y },
+    ...(screenshot ? { image: { origin: 'window-top-left', physicalPerImagePixel: screenshot.scale?.factor ?? 1 } } : {}),
+    logical: Number.isInteger(dpi) && dpi > 0 ? { available: true, dpi, physicalPerLogicalPixel: dpi / 96 } : { available: false } };
+}
+
 function actionSupport(observationTtlMs = 60000) {
   return {
     contractVersion: 1, scope: 'trace-wrapper-contract', engine: { name: 'winapp', version: require('./winapp-pin.json').version },
@@ -162,4 +171,4 @@ function effectiveSupport(support) {
 }
 const compatibleSupport = support => effectiveSupport(support) !== null;
 
-module.exports = { LIMITS, KEY_PATTERN, ACCESSIBILITY_ACTIONS, normalizeKey, parseAction, validateAction, actionSupport, compactSupport, supportDigest, effectiveSupport, compatibleSupport };
+module.exports = { LIMITS, KEY_PATTERN, ACCESSIBILITY_ACTIONS, normalizeKey, parseAction, validateAction, actionSupport, coordinateContract, compactSupport, supportDigest, effectiveSupport, compatibleSupport };

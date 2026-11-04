@@ -91,7 +91,7 @@ internal static partial class Program
             Guard(hwnd, pid);
             Write(new { hwnd = raw.ToString(), pid, processCreationTime = creationTime, sessionId,
                 ownerWindowId = owner == 0 ? null : owner.ToInt64().ToString(),
-                windowBounds = outer.ToBounds(), frameBounds = frame.ToBounds(), foreground = GetForegroundWindow() == hwnd, minimized = IsIconic(hwnd), enabled = IsWindowEnabled(hwnd), method = "public-win32-dwm" });
+                windowBounds = outer.ToBounds(), frameBounds = frame.ToBounds(), dpi = GetDpiForWindow(hwnd), foreground = GetForegroundWindow() == hwnd, minimized = IsIconic(hwnd), enabled = IsWindowEnabled(hwnd), method = "public-win32-dwm" });
             return 0;
         }
         catch (Exception error)
@@ -344,6 +344,7 @@ internal static partial class Program
     [DllImport("user32.dll", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool AttachThreadInput(uint from, uint to, [MarshalAs(UnmanagedType.Bool)] bool attach);
     [DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool PeekMessage(out Message message, nint hwnd, uint min, uint max, uint remove);
     [DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool SetProcessDpiAwarenessContext(nint context);
+    [DllImport("user32.dll")] private static extern uint GetDpiForWindow(nint hwnd);
     [DllImport("user32.dll")] private static extern short GetAsyncKeyState(int key);
     [DllImport("user32.dll")] private static extern nint WindowFromPoint(Point point);
     [DllImport("user32.dll")] private static extern nint GetAncestor(nint hwnd, uint flags);
