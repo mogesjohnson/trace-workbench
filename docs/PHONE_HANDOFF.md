@@ -389,6 +389,18 @@ The phone session followed `AUTONOMOUS_SESSION.md` and posted this notification:
   showed 0 old frames, 22 total, and the dummy frame gone. Notification:
   `pass old=0 total=22 planted=gone`.
 
+## Task A8 last step: phone Claude calls phone_transcribe (4 November 2026, owner-approved)
+
+Same route as A7: the PC pushed `/sdcard/Download/trace-install/a8/TASK.md`, then over adb opened the
+Claude app, Code, new session, environment `localhost · phone-work`, and sent "Read ... TASK.md and
+follow it". The session called the `phone_transcribe` MCP tool (not Bash) on
+`/opt/whisper.cpp/samples/jfk.wav`. **Result: pass**, T1 to T4: exact words, base.en, 20.7 s for 11 s
+of audio, notification `a8transcribe` posted (exit 0), handoff at `/root/phone-work/a8-handoff.md`.
+No microphone recording. After archiving the session, `pidof app_process` was empty and
+`trace-phone.dex` was gone. The time is 5× the 3 Nov figure. An SSH re-run took 15.3 s with RAM
+nearly full and 6.4 GB swapped, so memory pressure is the likely cause (not verified).
+[Evidence](../evidence/research/a8-phone-claude-transcribe-2026-11-04.json).
+
 ## Wi-Fi trust watcher (2 November 2026; SDK 37 fix 3 November 2026)
 
 Owner decision, 2 November 2026: every Wi-Fi network the phone joins is trusted for Wireless

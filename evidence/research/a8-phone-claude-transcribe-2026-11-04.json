@@ -1,0 +1,23 @@
+{
+ "observedDate": "2026-11-04",
+ "task": "A8 last step: phone Claude calls the phone_transcribe MCP tool on a stock sample (owner-approved; no microphone recording)",
+ "device": "SM-S918U (S23 Ultra), serial R5CW8103GHV, install from main 7b658f1",
+ "route": "PC wrote /sdcard/Download/trace-install/a8/TASK.md over adb, then over adb opened the Claude app: Code > New session > environment 'localhost · phone-work' (Remote Control host s23-trace), sent 'Read /sdcard/Download/trace-install/a8/TASK.md and follow it. Owner-approved A8 task.' Session model shown in the app: Sonnet 5.5, Medium.",
+ "input": "/opt/whisper.cpp/samples/jfk.wav (Debian proot)",
+ "rawToolResult": {"text": "And so my fellow Americans, ask not what your country can do for you, ask what you can do for your country.", "model": "base.en", "audioSeconds": 11, "elapsedSeconds": 20.74},
+ "checks": {
+  "T1 tool call returned text": "pass (MCP phone_transcribe, not Bash)",
+  "T2 words match the reference": "pass (exact, ignoring case and punctuation)",
+  "T3 notification posted": "pass (exit 0; dumpsys notification shows tag a8transcribe from com.android.shell)",
+  "T4 handoff written": "pass (/root/phone-work/a8-handoff.md, read back by the PC over SSH)"
+ },
+ "cleanup": "Session archived in the Claude app over adb (Session menu > Archive > Archive). About 25 s later pidof app_process printed nothing and /data/local/tmp/trace-phone.dex was absent. Still running and not part of this run: the older s23-trace Remote Control session (13 h old), the claude-voice bridge, the Wi-Fi trust watcher.",
+ "latency": {
+  "phoneClaudeRun": 20.74,
+  "pcSshRerunAfter": 15.34,
+  "baseline2026-11-03": 4.21,
+  "phoneStateAtRerun": "top: 10547M of 11044M RAM used, 6465M swap used; system_server 82% and logd 71% CPU",
+  "cause": "not verified; memory pressure and swap are the likely cause, since the same binary, model and file took 4.2 s on 3 Nov"
+ },
+ "note": "Audio stayed on the phone; only text left it. Nothing was recorded."
+}
