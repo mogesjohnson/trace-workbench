@@ -86,11 +86,16 @@ function checkScript() {
 // A5: Remote Control runs as the login's own command (proot ends detached children when a login
 // exits), and that login starts Debian's adb server first so trace-phone has one.
 // Then the watcher keep-alive runs the same way, as its login's own command.
+// sshd comes first, because phone-boot-adb.cjs can wait minutes for Wireless debugging. `ssh phone`
+// arrives through adb forward, so sshd stays on loopback, off the phone's Wi-Fi address, and keys only.
+const SSHD_COMMAND = 'sshd -o ListenAddress=127.0.0.1 -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no';
+
 function bootScript() {
   return [
     TERMUX_SHELL.replace('bash', 'sh'),
     '# Installed by TRACE scripts/install-phone-claude.cjs. Termux:Boot runs it after each boot.',
     'termux-wake-lock',
+    SSHD_COMMAND,
     `proot-distro login debian -- ${NODE_BIN}/node /opt/trace/scripts/phone-boot-adb.cjs > "$HOME/.trace-boot.log" 2>&1`,
     remoteControlCommand(),
     keepAliveCommand(),
