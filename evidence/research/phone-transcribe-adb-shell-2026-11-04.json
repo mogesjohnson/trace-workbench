@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-04",
+  "device": "SM-S918U (S23 Ultra), USB, thermal status 0",
+  "sample": "jfk.wav (11 s), base.en, 4 threads",
+  "route": "phone's local adb (127.0.0.1:5555), uid shell, Debian whisper-cli and its libraries copied to a temporary folder and run directly, no proot",
+  "words": "same exact text in all six runs",
+  "result": "pass: the adb shell route keeps full speed with Termux in the background",
+  "foregroundApp": "com.mira.app in all runs; Termux not on screen",
+  "runs": [
+    {"state": "local adb shell", "cpuset": "/", "cpusAllowed": "0-7", "elapsedSeconds": [4.35, 4.35, 4.45, 4.46]},
+    {"state": "phone-transcribe in Termux and proot, over SSH", "cpuset": "/moderate", "elapsedSeconds": [19.67, 18.86]}
+  ],
+  "notes": [
+    "The adb runs read the whisper process's cpuset 1.5 s into each run.",
+    "The Termux figure is the login shell's cpuset. Those times include proot-distro login, unlike the adb runs and the 14.6 s runs.",
+    "The temporary folder was deleted afterwards. No fix was applied."
+  ]
+}
