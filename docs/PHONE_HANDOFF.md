@@ -420,6 +420,22 @@ runs, words exact. `phone-transcribe` from background Termux took 19.67 and 18.8
 including `proot-distro login`. No fix applied; a fix awaits owner review.
 [Evidence](../evidence/research/phone-transcribe-adb-shell-2026-11-04.json).
 
+### After a reboot, and `--record` (4 November 2026, owner-approved)
+
+After `adb reboot` and the owner's unlock, `phone-transcribe` ran on route `local` (5.31 s, Termux
+on screen) while port 5555 was closed. `phone-boot-adb.cjs` reopened 5555 at about 19:42:53, and
+route `adb` then took 5.33 s from background Termux, so the adb route comes back by itself. Words
+were exact on both runs.
+
+`--record 8` with the owner speaking used route `adb`: 5.32 s to transcribe, 32.4 s in total. The
+owner confirmed the words, and no clip was left behind.
+
+About 19 s of that total is not sleep or transcription. Most of it looks like Termux:API: each
+`termux-microphone-record` call from Debian takes about 3.4 s, and a run makes three. The proot
+login takes 0.9 s and ffmpeg about 1 s. The recorder start and the wait for its first bytes were
+not timed, so this is an estimate.
+[Evidence](../evidence/research/phone-transcribe-reboot-record-2026-11-04.json).
+
 ## Wi-Fi trust watcher (2 November 2026; SDK 37 fix 3 November 2026)
 
 Owner decision, 2 November 2026: every Wi-Fi network the phone joins is trusted for Wireless
