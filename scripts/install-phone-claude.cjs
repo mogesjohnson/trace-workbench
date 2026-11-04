@@ -64,6 +64,8 @@ function installScript(sha) {
     'rm -rf /opt/trace.old',
     'if [ -d /opt/trace ]; then mv /opt/trace /opt/trace.old; fi',
     'mv /opt/trace.new /opt/trace && rm -rf /opt/trace.old',
+    // Only refreshes an existing install: install-whisper.sh stays the way to add whisper.
+    'if [ -e /usr/local/bin/phone-transcribe ]; then install -m 755 /opt/trace/scripts/phone/phone-transcribe /usr/local/bin/phone-transcribe; fi',
     'mkdir -p ~/.claude/skills && rm -rf ~/.claude/skills/trace-phone && cp -r /opt/trace/skills/trace-phone ~/.claude/skills/trace-phone',
     'claude mcp remove --scope user trace-phone >/dev/null 2>&1 || true',
     `claude mcp add --scope user trace-phone -- ${NODE_BIN}/node /opt/trace/bin/trace.cjs phone mcp`,
