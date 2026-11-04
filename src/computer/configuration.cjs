@@ -44,6 +44,16 @@ function equalValue(left, right) {
   return isDeepStrictEqual(records(left), records(right));
 }
 
+// Codex writes enabled = true into the entry when the server is turned on. That key does not
+// change which server runs, so it is not a conflict. enabled = false stays one.
+function sameServerEntry(client, existing, entry) {
+  if (client === "codex" && plainObject(existing) && existing.enabled === true) {
+    const { enabled, ...rest } = existing;
+    return equalValue(rest, entry);
+  }
+  return equalValue(existing, entry);
+}
+
 function optionsFor(options = {}) {
   const clients = options.clients ?? Object.keys(CLIENTS);
   if (!Array.isArray(clients) || !clients.length || clients.some((client) => !Object.hasOwn(CLIENTS, client))) {
@@ -212,7 +222,7 @@ async function configItem(options, client) {
     const table = parsed[descriptor.table];
     if (table !== undefined && !plainObject(table)) throw failure("invalid_configuration", "MCP settings must be an object.");
     if (table && Object.hasOwn(table, SERVER_NAME)) {
-      const same = equalValue(table[SERVER_NAME], options.entry);
+      const same = sameServerEntry(client, table[SERVER_NAME], options.entry);
       return { ...summary, target, original, action: same ? "unchanged" : "conflict", ...(same ? {} : { reason: "different_server_entry" }) };
     }
     return { ...summary, target, original, bytes: updatedBytes(original, parsed, descriptor, options.entry), action: "add" };

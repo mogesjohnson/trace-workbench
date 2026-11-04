@@ -127,7 +127,7 @@ async function ownedWindowsChildren(pid) {
     "-NoProfile", "-NonInteractive", "-Command",
     `Get-CimInstance Win32_Process -Filter 'ParentProcessId = ${pid}' | Select-Object ProcessId, Name | ConvertTo-Json -Compress`,
   // Allow PowerShell/CIM cold start within the existing 90-second run watchdog.
-  ], { windowsHide: true, timeout: 15_000, maxBuffer: 64 * 1024 });
+  ], { windowsHide: true, timeout: 30_000, maxBuffer: 64 * 1024 });
   const parsed = stdout.trim() ? JSON.parse(stdout) : [];
   const children = Array.isArray(parsed) ? parsed : [parsed];
   assert.ok(children.every((child) => Number.isSafeInteger(child.ProcessId)));
