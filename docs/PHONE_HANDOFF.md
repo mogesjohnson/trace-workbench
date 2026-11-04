@@ -436,6 +436,14 @@ login takes 0.9 s and ffmpeg about 1 s. The recorder start and the wait for its 
 not timed, so this is an estimate.
 [Evidence](../evidence/research/phone-transcribe-reboot-record-2026-11-04.json).
 
+### `--record` past SPEAK NOW (4 November 2026, owner-approved)
+
+With the fix from PR 132, `--record 15` gave 17.67 s of audio on route `adb`. The owner confirmed
+the words, and no clip was left behind. The phone's `/usr/local/bin/phone-transcribe` for this run
+was copied by hand. `install-phone-claude.cjs` now refreshes that file when it already exists, and
+`install-whisper.sh` remains the way to add it. The refresh itself has not yet run on the phone.
+[Evidence](../evidence/research/phone-transcribe-record-fix-2026-11-04.json).
+
 ## Wi-Fi trust watcher (2 November 2026; SDK 37 fix 3 November 2026)
 
 Owner decision, 2 November 2026: every Wi-Fi network the phone joins is trusted for Wireless

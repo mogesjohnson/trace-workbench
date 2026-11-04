@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-04",
+  "device": "R5CW8103GHV",
+  "installedRef": "59f890e",
+  "record": {
+    "command": "phone-transcribe --record 15",
+    "route": "adb",
+    "audioSeconds": 17.67,
+    "wordsConfirmedByOwner": true,
+    "clipLeftBehind": false
+  },
+  "limits": [
+    "The phone's /usr/local/bin/phone-transcribe was copied by hand for this run.",
+    "The installer's refresh of that file has not yet run on the phone."
+  ]
+}

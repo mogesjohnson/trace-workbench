@@ -24,6 +24,9 @@ test('install script swaps only after npm ci, records the ref, keeps frames and 
   assert.ok(at(/claude mcp add --scope user trace-phone -- \/opt\/node22\/bin\/node \/opt\/trace\/bin\/trace\.cjs phone mcp/) >= 0);
   assert.ok(at(/configure-phone-permissions\.cjs --apply/) >= 0);
   assert.ok(at(/rm -f "\$S\/src\.tar" "\$S\/classes\.dex"/) > at(/mv \/opt\/trace\.new \/opt\/trace/));
+  const transcribe = at(/install -m 755 \/opt\/trace\/scripts\/phone\/phone-transcribe \/usr\/local\/bin\/phone-transcribe/);
+  assert.ok(transcribe > at(/mv \/opt\/trace\.new \/opt\/trace/), 'phone-transcribe is copied from the swapped tree');
+  assert.match(lines[transcribe], /^if \[ -e \/usr\/local\/bin\/phone-transcribe \]; then/, 'only an existing install is refreshed');
   assert.ok(installScript(SHA).endsWith(checkScript()));
   assert.throws(() => installScript('HEAD'), /full commit sha/);
 });
