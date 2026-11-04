@@ -146,6 +146,12 @@ test('closing the server stops the agent and removes its dex', async (t) => {
   assert.deepEqual(adb.calls.filter((c) => c[0] === 'exec').map((c) => c[1]), ['kill 4242', 'rm -f /data/local/tmp/trace-phone.dex']);
 });
 
+test('closing a server that never used the agent leaves the phone alone', async (t) => {
+  const { server, adb } = await connection(t);
+  await server.close();
+  assert.deepEqual(adb.calls.filter((c) => c[0] === 'exec'), []);
+});
+
 test('toControllerAction maps keys, text, swipes and selectors', () => {
   assert.deepEqual(toControllerAction({ type: 'key', key: 'back' }), { key: KEYS.back });
   assert.deepEqual(toControllerAction({ type: 'key', key: 66 }), { key: 66 });

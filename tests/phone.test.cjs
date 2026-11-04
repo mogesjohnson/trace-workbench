@@ -139,6 +139,18 @@ test('controller stop kills the agent by pid and removes the dex', async () => {
   } finally { fake.server.close(); }
 });
 
+test('controller stop with onlyIfUsed skips adb until the agent has been used', async () => {
+  const fake = await fakeAgent((r) => (r.op === 'hello' ? hello : { header: {} }));
+  const adb = fakeAdb(fake.port);
+  const phone = createPhoneController({ adb, framesDir: tempDir() });
+  try {
+    assert.deepEqual(await phone.stop({ onlyIfUsed: true }), { stopped: false, pid: null });
+    assert.deepEqual(adb.calls, []);
+    await phone.ensure();
+    assert.deepEqual(await phone.stop({ onlyIfUsed: true }), { stopped: true, pid: 4242 });
+  } finally { fake.server.close(); }
+});
+
 test('controller refuses a version mismatch by restarting the agent', async () => {
   let version = '0';
   const fake = await fakeAgent((r) => (r.op === 'hello' ? { header: { version, pid: 7 } } : { header: {} }));
