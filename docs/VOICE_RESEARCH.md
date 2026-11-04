@@ -125,6 +125,10 @@ Without those lost words, route 2b was word-perfect and base.en misheard "set a"
    11 GB RAM and 6.4 GB swap in use. A follow-up the same day found no heat or frequency limit and
    Termux confined to cores 0-2, the slow cores, the likely cause; a run in `top-app` is still
    untested ([evidence](../evidence/research/phone-transcribe-slowdown-2026-11-04.json)).
+   ADB route, 4 Nov 2026 (owner approved): `phone-transcribe` now runs whisper through the phone's
+   local adb shell, from a `/data/local/tmp/whisper-fast` copy made by `--install-fast`, and falls
+   back to proot if adb is unavailable. From background Termux: about 5 s against 15 s
+   ([evidence](../evidence/research/phone-transcribe-adb-route-2026-11-04.json)).
 4. claude-voice: add `EXTRA_PREFER_OFFLINE = true` (owner approved). Done 3 Nov 2026 in the
    separate private claude-voice repository (its PR 1). The owner installed the build and spoken
    commands worked. Network-off test, 3 Nov 2026 (owner approved): Wi-Fi and mobile data
