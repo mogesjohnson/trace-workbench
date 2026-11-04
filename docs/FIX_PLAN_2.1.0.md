@@ -344,6 +344,10 @@ Owner decision, 3 November 2026: fix and rerun.
 
 **Done when:** the rerun meets every bar, or the owner accepts what it misses.
 
+**Rerun result, 3 November 2026.** Every bar met on merged `main` `2b5d0da`: 8/8 pass with
+no corrective retyping, no MCP restart, context about 53k tokens and response text 68,760
+characters. D1 and D2 did not recur ([report](HEAD_TO_HEAD_2026-11-03-RERUN2.md)).
+
 ## M6. Optional hygiene (owner decides; not blocking)
 
 - **Codex `enabled = true`.** `node scripts/sync-computer-skill.cjs` reports the Codex

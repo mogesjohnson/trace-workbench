@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-03",
+  "kind": "trace-only rerun after M7 (fix plan M5 step 3, second attempt)",
+  "trace": { "version": "2.0.0 code on merged main (2.1.0 candidate)", "sourceCommit": "2b5d0da", "winapp": "0.7.1" },
+  "previousRerun": { "report": "docs/HEAD_TO_HEAD_2026-11-03-RERUN.md on PR 120", "sourceCommit": "b938941" },
+  "agentDesktop": { "reused": "evidence/head-to-head-2026-11-03/results.json", "reason": "agent-desktop 1.0.2 unchanged" },
+  "driver": { "host": "Claude Code", "model": "claude-opus-5-5", "effort": "medium", "sessions": 1, "mcpRestarts": 0,
+    "note": "trace-computer was reconnected once before the run so it loaded merged main; none during the 8 task-runs" },
+  "environment": { "os": "Windows 11 Home 10.0.26200", "notepad": "11.2607.14.0", "firefox": "159 (MSIX)" },
+  "setup": { "skillSync": "applied; all three copies match SKILL.md fe991402", "doctorBefore": { "ready": true, "supervision": { "recoveryRequired": false, "ready": true, "code": null } }, "computerSetupApply": "not needed" },
+  "runFolder": "%TEMP%\\trace-vs-ad\\2026-11-03-rerun2\\",
+  "order": ["T1", "T2"],
+  "runs": {
+    "T1": [
+      { "task": 1, "result": "pass", "seconds": 78.3, "calls": 6, "readback": "exact TextPattern; type_text completed and was exact" },
+      { "task": 2, "result": "pass", "seconds": 122.9, "calls": 12, "disk": "exact 19 bytes",
+        "notes": ["type_text of the 75-character path returned textDelivery.status verified", "press_key ctrl+a refused focus_not_acquired: the focused File name edit was not in the depth-2 tree (binding unresolved); scoping to FileNameControlHost bound it"] },
+      { "task": 3, "result": "pass", "seconds": 150.0, "calls": 12, "url": "www.iana.org/help/example-domains",
+        "close": "ctrl+shift+w -> target_closed_after_dispatch (M2 confirmed in context)",
+        "notes": ["type_text 'https://example.com' then press_key enter; no native_timeout", "a nav-bar read gave no URL value; documentElementId on urlbar-input read it"] },
+      { "task": 4, "result": "pass", "seconds": 59.2, "calls": 6, "scale": "300%", "launch": "ms-settings:display",
+        "read": "whole window, depth 8, interactiveOnly, includeOffscreen; Scale combo disabled (custom scaling)" }
+    ],
+    "T2": [
+      { "task": 1, "result": "pass", "seconds": 84.0, "calls": 9, "readback": "exact TextPattern",
+        "notes": ["first click returned not_dispatched foreground_not_target (Windows refused activation of the launched window); activate then click completed"] },
+      { "task": 2, "result": "pass", "seconds": 97.3, "calls": 9, "disk": "exact 19 bytes", "notes": ["followModal observe scoped straight to FileNameControlHost"] },
+      { "task": 3, "result": "pass", "seconds": 151.3, "calls": 11, "url": "www.iana.org/help/example-domains", "close": "Close button invoke" },
+      { "task": 4, "result": "pass", "seconds": 54.4, "calls": 6, "scale": "300%", "read": "scoped to the Scale combo with includeOffscreen" }
+    ]
+  },
+  "context": { "beforeT1": "74k", "afterT1": "106k", "afterT2": "127k", "deltaTokensApprox": 53000, "note": "Claude Code meter; includes driver reasoning, log writes and status messages; upper bound" },
+  "responseText": { "chars": 68760, "calls": 72, "images": 0, "byRun": { "setup": 2450, "T1": 42873, "T2": 23437 },
+    "byTool": { "observe": 47137, "act": 14421, "open_session": 2861, "doctor": 2450, "launch": 1363, "close_session": 528 },
+    "largest": [
+      { "run": "T1", "task": 4, "options": "accessibility+none+d8+io+offscreen", "chars": 7691 },
+      { "run": "T1", "task": 2, "options": "none+d2+io+modal", "chars": 3497 },
+      { "run": "T1", "task": 3, "options": "accessibility+none+d3+io+root", "chars": 3270 }
+    ] },
+  "bars": {
+    "pass8of8": "met",
+    "noMcpRestart": "met",
+    "contextUnder60k": "met (~53k)",
+    "responseUnder100kChars": "met (68,760)"
+  },
+  "defects": { "D1": "not seen: every typed text read back exact", "D2": "not seen: no native_timeout" }
+}
