@@ -31,3 +31,9 @@ Use `v<package-version>` tags for published releases. A merged PR is not a relea
 Preserve unrelated user changes. Stage explicit paths and inspect the staged diff. Never commit personal configuration, authentication data, analysis targets, model conversations, or machine-specific paths. Sanitized receipts may record versions, hashes, tool counts, and pass/fail results.
 
 Avoid rewriting shared history. A justified amendment to an owned branch uses an explicit lease against an inspected remote head; explain the replacement in the task. Keep the final PR within the four-commit maximum.
+
+## Worktree dependencies
+
+Never link `node_modules` or `.runtime` into a worktree with a junction or symlink. `git worktree remove`, and `gh pr merge --delete-branch` which runs it, can delete through the link into the main checkout. On 4 November 2026 this reached the main `.runtime`. Run `npm ci` in the worktree instead. Live checks that need `.runtime` run from the main checkout.
+
+If a worktree already has a link, remove it with `cmd /c rmdir <link>` before removing the worktree, and check that the target is intact.
