@@ -398,8 +398,15 @@ follow it". The session called the `phone_transcribe` MCP tool (not Bash) on
 of audio, notification `a8transcribe` posted (exit 0), handoff at `/root/phone-work/a8-handoff.md`.
 No microphone recording. After archiving the session, `pidof app_process` was empty and
 `trace-phone.dex` was gone. The time is 5× the 3 Nov figure. An SSH re-run took 15.3 s with RAM
-nearly full and 6.4 GB swapped, so memory pressure is the likely cause (not verified).
+nearly full and 6.4 GB swapped, which first suggested memory pressure; the follow-up below points to CPU placement instead.
 [Evidence](../evidence/research/a8-phone-claude-transcribe-2026-11-04.json).
+
+Follow-up, 4 November 2026: SSH runs still took 14.9 to 15.4 s with 4 threads, 13.6 to 15.5 s with 3
+and about 17.3 s with 2, on a cool phone (thermal status 0, no frequency cap) with 2.7 GB available.
+Termux processes, sshd included, sat in cpuset `/moderate` and cpu cgroup `/background`, which allow
+only cores 0-2, the slow cores. `top-app` allows 0-7. This is the likely cause of the slowdown,
+but no run in `top-app` was timed and the 3 Nov placement was not recorded.
+[Evidence](../evidence/research/phone-transcribe-slowdown-2026-11-04.json).
 
 ## Wi-Fi trust watcher (2 November 2026; SDK 37 fix 3 November 2026)
 

@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-04",
+  "device": "SM-S918U (S23 Ultra), USB",
+  "sample": "/opt/whisper.cpp/samples/jfk.wav (11 s), base.en",
+  "words": "exact in every run",
+  "elapsedSeconds": {
+    "threads4": [14.92, 15.34, 15.44],
+    "threads3": [15.45, 13.58],
+    "threads2": [17.35, 17.16]
+  },
+  "comparison": {"2026-11-03": 4.2, "2026-11-04_phone_claude": 20.7},
+  "thermal": {"status": 0, "apC": 30.8, "skinC": 30.1, "batteryC": 27.7, "cpuMaxFreqCapped": false},
+  "memory": {"memAvailableKb": 2749204, "swapTotalKb": 12582908, "swapFreeKb": 6051196},
+  "placement": {
+    "sshdAndTermuxProcesses": {"cpuset": "/moderate", "cpuCgroup": "/background", "cpusAllowed": "0-2"},
+    "cpusets": {"top-app": "0-7", "foreground": "0-6", "moderate": "0-2", "background": "0-2", "system-background": "0-2"}
+  },
+  "notTested": "A run inside top-app; the 3 Nov placement was not recorded"
+}
