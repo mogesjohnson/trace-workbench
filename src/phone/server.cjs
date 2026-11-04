@@ -123,11 +123,11 @@ function createPhoneServer({ controller, transcribe, onError = () => {}, stopOnC
   }
   const server = new McpServer({ name: 'trace-phone', version }, { maxToolInputElements: 64 });
   let closePromise;
-  // Closing the server stops the agent and removes its dex, so nothing with
-  // shell rights is left listening on the phone.
+  // Closing the server stops the agent it used and removes the dex, so nothing
+  // with shell rights is left listening on the phone.
   const closeController = () => {
     closePromise ??= (async () => {
-      try { if (stopOnClose) await controller.stop(); } catch (error) { onError(error); }
+      try { if (stopOnClose) await controller.stop({ onlyIfUsed: true }); } catch (error) { onError(error); }
       controller.close();
     })();
     return closePromise;

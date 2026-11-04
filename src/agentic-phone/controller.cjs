@@ -45,6 +45,7 @@ function createPhoneController({
   let lastFrame = null; // header of the last encoded frame (scale, region)
   let lastHash = null;
   let frameCount = 0;
+  let used = false; // set once this controller tries to reach the agent
 
   async function attach() {
     const { socket, leftover } = await adb.openAbstract(agentName);
@@ -75,6 +76,7 @@ function createPhoneController({
   }
 
   async function ensure() {
+    used = true;
     if (agent && !agent.closed) return info;
     agent = null;
     try { return await attach(); }
@@ -210,8 +212,13 @@ function createPhoneController({
     return { header, nodes: JSON.parse(payload.toString('utf8') || '[]') };
   }
 
-  /** Stop the agent process and remove its dex. Safe to call when nothing runs. */
-  async function stop() {
+  /**
+   * Stop the agent process and remove its dex. Safe to call when nothing runs.
+   * onlyIfUsed leaves the phone alone if this controller never reached for the agent: a server that
+   * only transcribed has no chosen device and must not stop an agent another session is using.
+   */
+  async function stop({ onlyIfUsed = false } = {}) {
+    if (onlyIfUsed && !used) return { stopped: false, pid: null };
     let pid = info && info.pid;
     if (!pid) { try { pid = (await attach()).pid; } catch { pid = null; } }
     if (agent) { agent.close(); agent = null; }

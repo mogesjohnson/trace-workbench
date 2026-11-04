@@ -43,6 +43,9 @@ test('install puts the A4 boot script in ~/.termux/boot; a check does not', () =
   const boot = bootScript();
   assert.match(boot, /^#!\/data\/data\/com\.termux\/files\/usr\/bin\/sh\n/);
   assert.ok(boot.includes('termux-wake-lock'));
+  const sshd = boot.split('\n').find((line) => line.startsWith('sshd '));
+  assert.equal(sshd, 'sshd -o ListenAddress=127.0.0.1 -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no');
+  assert.ok(boot.indexOf(sshd) < boot.indexOf('phone-boot-adb.cjs'), 'before the wait for port 5555');
   assert.ok(boot.includes('proot-distro login debian -- /opt/node22/bin/node /opt/trace/scripts/phone-boot-adb.cjs'));
   const rc = remoteControlCommand();
   assert.ok(boot.includes(rc), 'boot script starts Remote Control');
