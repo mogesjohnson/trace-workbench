@@ -54,7 +54,9 @@ test('MCP can open and capture an exact window with UIA unavailable; screenshot 
   assert.equal(value.captureMethod,'public-win32-printwindow-dwm');assert.equal(value.screenshot.width,1);
   assert.deepEqual(Buffer.from(result.content[value.screenshot.contentIndex].data,'base64'),png);
   assert.equal(value.accessibility,undefined);assert.equal(value.elements,undefined);assert.equal(value.focused.code,'visual_only');
-  assert.deepEqual(f.calls,['identity','identity','identity','bounds','capture','identity','bounds']);
+  // R21: the related-window read follows the capture; this fake gives no list, so it is unavailable, not an error.
+  assert.deepEqual(f.calls,['identity','identity','identity','bounds','capture','related','identity','bounds']);
+  assert.deepEqual(value.relatedWindows,{available:false,code:'invalid_native_response',authority:'context-only'});
   await assert.rejects(controller.act({...session,observationId:value.observationId,action:{type:'activate'}}),{code:'stale_observation'});
   f.control.fault='capture';const failed=await call();assert.equal(failed.isError,true);assert.equal(failed.structuredContent.error.code,'capture_blank');
 });

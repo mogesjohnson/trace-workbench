@@ -1,0 +1,559 @@
+{
+  "at": "2026-11-05T03:03:17.494Z",
+  "source": "0ebc32ffd5a3747927fee3f66251a9370b28f2b1",
+  "setup": {
+    "winapp": "main checkout .runtime winapp v0.7.1, pin-verified",
+    "bridge": "PR B source built in scratchpad",
+    "supervisor": "none",
+    "indicator": "none (owner-approved)"
+  },
+  "bridgeSha256": "4f6bd3366a7599c26376cb7144b5243f9d0eafdf21de4f45d39c193f5deadc09",
+  "steps": [
+    {
+      "label": "0-base",
+      "mode": "full",
+      "bounds": {
+        "x": 1189,
+        "y": 740,
+        "width": 502,
+        "height": 311
+      },
+      "rootSha256": "f537671363322ae7c17e7ccb1cc2e5291b9eadc99a7c2957bda0a907fb7190e9",
+      "related": {
+        "available": true,
+        "authority": "context-only",
+        "truncated": false,
+        "menuMode": {
+          "available": true,
+          "active": false
+        },
+        "coverage": {
+          "ownerChain": true,
+          "threadMenu": true,
+          "sameThreadPopups": true,
+          "otherThreadsAndProcesses": false
+        },
+        "windows": []
+      },
+      "imageCount": 1
+    },
+    {
+      "label": "1-strip-before-click",
+      "mode": "full",
+      "bounds": {
+        "x": 1189,
+        "y": 740,
+        "width": 502,
+        "height": 311
+      },
+      "rootSha256": "f537671363322ae7c17e7ccb1cc2e5291b9eadc99a7c2957bda0a907fb7190e9",
+      "related": {
+        "available": true,
+        "authority": "context-only",
+        "truncated": false,
+        "menuMode": {
+          "available": true,
+          "active": false
+        },
+        "coverage": {
+          "ownerChain": true,
+          "threadMenu": true,
+          "sameThreadPopups": true,
+          "otherThreadsAndProcesses": false
+        },
+        "windows": [
+          {
+            "windowId": "461800",
+            "pid": 26944,
+            "relation": "owned",
+            "kind": "menu",
+            "className": "WindowsForms10.Window.20808.app.0.5c39d4_r3_ad1",
+            "zOrder": 0,
+            "bounds": {
+              "x": 1241,
+              "y": 873,
+              "width": 200,
+              "height": 100
+            },
+            "boundsSource": "dwm-frame",
+            "dpi": 144,
+            "dpiAwareness": "per-monitor",
+            "topmost": true,
+            "uia": {
+              "available": true,
+              "controlType": "ControlType.Menu",
+              "name": ""
+            },
+            "offset": {
+              "x": 52,
+              "y": 133
+            },
+            "coversWindow": true
+          }
+        ]
+      },
+      "imageCount": 1
+    },
+    {
+      "label": "2-after-refused-click",
+      "mode": "full",
+      "bounds": {
+        "x": 1189,
+        "y": 740,
+        "width": 502,
+        "height": 311
+      },
+      "rootSha256": "f537671363322ae7c17e7ccb1cc2e5291b9eadc99a7c2957bda0a907fb7190e9",
+      "related": {
+        "available": true,
+        "authority": "context-only",
+        "truncated": false,
+        "menuMode": {
+          "available": true,
+          "active": false
+        },
+        "coverage": {
+          "ownerChain": true,
+          "threadMenu": true,
+          "sameThreadPopups": true,
+          "otherThreadsAndProcesses": false
+        },
+        "windows": [
+          {
+            "windowId": "461800",
+            "pid": 26944,
+            "relation": "owned",
+            "kind": "menu",
+            "className": "WindowsForms10.Window.20808.app.0.5c39d4_r3_ad1",
+            "zOrder": 0,
+            "bounds": {
+              "x": 1241,
+              "y": 873,
+              "width": 200,
+              "height": 100
+            },
+            "boundsSource": "dwm-frame",
+            "dpi": 144,
+            "dpiAwareness": "per-monitor",
+            "topmost": true,
+            "uia": {
+              "available": true,
+              "controlType": "ControlType.Menu",
+              "name": ""
+            },
+            "offset": {
+              "x": 52,
+              "y": 133
+            },
+            "coversWindow": true
+          }
+        ]
+      },
+      "imageCount": 1
+    },
+    {
+      "label": "3-strip",
+      "mode": "full",
+      "bounds": {
+        "x": 1189,
+        "y": 740,
+        "width": 502,
+        "height": 311
+      },
+      "rootSha256": "f537671363322ae7c17e7ccb1cc2e5291b9eadc99a7c2957bda0a907fb7190e9",
+      "related": {
+        "available": true,
+        "authority": "context-only",
+        "truncated": false,
+        "menuMode": {
+          "available": true,
+          "active": false
+        },
+        "coverage": {
+          "ownerChain": true,
+          "threadMenu": true,
+          "sameThreadPopups": true,
+          "otherThreadsAndProcesses": false
+        },
+        "windows": [
+          {
+            "windowId": "461800",
+            "pid": 26944,
+            "relation": "owned",
+            "kind": "menu",
+            "className": "WindowsForms10.Window.20808.app.0.5c39d4_r3_ad1",
+            "zOrder": 0,
+            "bounds": {
+              "x": 1241,
+              "y": 873,
+              "width": 200,
+              "height": 100
+            },
+            "boundsSource": "dwm-frame",
+            "dpi": 144,
+            "dpiAwareness": "per-monitor",
+            "topmost": true,
+            "uia": {
+              "available": true,
+              "controlType": "ControlType.Menu",
+              "name": ""
+            },
+            "offset": {
+              "x": 52,
+              "y": 133
+            },
+            "coversWindow": true,
+            "image": {
+              "available": true,
+              "width": 200,
+              "height": 100,
+              "sha256": "c7fc66f7fcb2ea7f3f855e4581d5652fa09761c977e872a4e280cca08586c00c"
+            }
+          }
+        ]
+      },
+      "imageCount": 2
+    },
+    {
+      "label": "4-substrip",
+      "mode": "full",
+      "bounds": {
+        "x": 1189,
+        "y": 740,
+        "width": 502,
+        "height": 311
+      },
+      "rootSha256": "f537671363322ae7c17e7ccb1cc2e5291b9eadc99a7c2957bda0a907fb7190e9",
+      "related": {
+        "available": true,
+        "authority": "context-only",
+        "truncated": false,
+        "menuMode": {
+          "available": true,
+          "active": false
+        },
+        "coverage": {
+          "ownerChain": true,
+          "threadMenu": true,
+          "sameThreadPopups": true,
+          "otherThreadsAndProcesses": false
+        },
+        "windows": [
+          {
+            "windowId": "855190",
+            "pid": 26944,
+            "relation": "owned",
+            "kind": "menu",
+            "className": "WindowsForms10.Window.20808.app.0.5c39d4_r3_ad1",
+            "zOrder": 0,
+            "bounds": {
+              "x": 1440,
+              "y": 939,
+              "width": 211,
+              "height": 38
+            },
+            "boundsSource": "dwm-frame",
+            "dpi": 144,
+            "dpiAwareness": "per-monitor",
+            "topmost": true,
+            "uia": {
+              "available": true,
+              "controlType": "ControlType.Menu",
+              "name": "Strip submenu"
+            },
+            "offset": {
+              "x": 251,
+              "y": 199
+            },
+            "coversWindow": true,
+            "image": {
+              "available": true,
+              "width": 211,
+              "height": 38,
+              "sha256": "ea50554ed5b87f4e218aa60bbbacb7352e0226026b00d843632fef97bb3ebde2"
+            }
+          },
+          {
+            "windowId": "461800",
+            "pid": 26944,
+            "relation": "owned",
+            "kind": "menu",
+            "className": "WindowsForms10.Window.20808.app.0.5c39d4_r3_ad1",
+            "zOrder": 1,
+            "bounds": {
+              "x": 1241,
+              "y": 873,
+              "width": 200,
+              "height": 100
+            },
+            "boundsSource": "dwm-frame",
+            "dpi": 144,
+            "dpiAwareness": "per-monitor",
+            "topmost": true,
+            "uia": {
+              "available": true,
+              "controlType": "ControlType.Menu",
+              "name": ""
+            },
+            "offset": {
+              "x": 52,
+              "y": 133
+            },
+            "coversWindow": true,
+            "image": {
+              "available": true,
+              "width": 200,
+              "height": 100,
+              "sha256": "c7fc66f7fcb2ea7f3f855e4581d5652fa09761c977e872a4e280cca08586c00c"
+            }
+          }
+        ]
+      },
+      "imageCount": 3
+    },
+    {
+      "label": "5-tooltip-screenshot-mode",
+      "mode": "screenshot",
+      "bounds": {
+        "x": 1189,
+        "y": 740,
+        "width": 502,
+        "height": 311
+      },
+      "rootSha256": "0142e9793aae83ef2e3d639bb1a95f655e33fa21c6f5c118094088a1b2a05013",
+      "related": {
+        "available": true,
+        "authority": "context-only",
+        "truncated": false,
+        "menuMode": {
+          "available": true,
+          "active": false
+        },
+        "coverage": {
+          "ownerChain": true,
+          "threadMenu": true,
+          "sameThreadPopups": true,
+          "otherThreadsAndProcesses": false
+        },
+        "windows": [
+          {
+            "windowId": "527658",
+            "pid": 26944,
+            "relation": "same-thread-popup",
+            "kind": "tooltip",
+            "className": "WindowsForms10.tooltips_class32.app.0.5c39d4_r3_ad1",
+            "zOrder": 0,
+            "bounds": {
+              "x": 1251,
+              "y": 795,
+              "width": 180,
+              "height": 30
+            },
+            "boundsSource": "dwm-frame",
+            "dpi": 144,
+            "dpiAwareness": "per-monitor",
+            "topmost": true,
+            "uia": {
+              "available": true,
+              "controlType": "ControlType.ToolTip",
+              "name": "Inventory tooltip text"
+            },
+            "offset": {
+              "x": 62,
+              "y": 55
+            },
+            "coversWindow": true,
+            "image": {
+              "available": true,
+              "width": 180,
+              "height": 30,
+              "sha256": "f291fcfeac4d416489365909b8b51d10e5ff40208ec61c768a8dba8eab009c8e"
+            }
+          }
+        ]
+      },
+      "imageCount": 2
+    },
+    {
+      "label": "6-native",
+      "mode": "full",
+      "bounds": {
+        "x": 1189,
+        "y": 740,
+        "width": 502,
+        "height": 311
+      },
+      "rootSha256": "f537671363322ae7c17e7ccb1cc2e5291b9eadc99a7c2957bda0a907fb7190e9",
+      "related": {
+        "available": true,
+        "authority": "context-only",
+        "truncated": false,
+        "menuMode": {
+          "available": true,
+          "active": true
+        },
+        "coverage": {
+          "ownerChain": true,
+          "threadMenu": true,
+          "sameThreadPopups": true,
+          "otherThreadsAndProcesses": false
+        },
+        "windows": [
+          {
+            "windowId": "657822",
+            "pid": 26944,
+            "relation": "thread-menu",
+            "kind": "menu",
+            "className": "#32768",
+            "zOrder": 0,
+            "bounds": {
+              "x": 1241,
+              "y": 873,
+              "width": 257,
+              "height": 76
+            },
+            "boundsSource": "dwm-frame",
+            "dpi": 144,
+            "dpiAwareness": "per-monitor",
+            "topmost": true,
+            "uia": {
+              "available": true,
+              "controlType": "ControlType.Menu",
+              "name": "Menu"
+            },
+            "offset": {
+              "x": 52,
+              "y": 133
+            },
+            "coversWindow": true,
+            "image": {
+              "available": true,
+              "width": 257,
+              "height": 76,
+              "sha256": "188d612cd5a6a49f80dc61b6a5f079a59db73fa04a0e6b85ad06cc2f6a3e1769"
+            }
+          }
+        ]
+      },
+      "imageCount": 2
+    },
+    {
+      "label": "7-closed",
+      "mode": "full",
+      "bounds": {
+        "x": 1189,
+        "y": 740,
+        "width": 502,
+        "height": 311
+      },
+      "rootSha256": "f537671363322ae7c17e7ccb1cc2e5291b9eadc99a7c2957bda0a907fb7190e9",
+      "related": {
+        "available": true,
+        "authority": "context-only",
+        "truncated": false,
+        "menuMode": {
+          "available": true,
+          "active": false
+        },
+        "coverage": {
+          "ownerChain": true,
+          "threadMenu": true,
+          "sameThreadPopups": true,
+          "otherThreadsAndProcesses": false
+        },
+        "windows": []
+      },
+      "imageCount": 1
+    }
+  ],
+  "bridgeTrace": [
+    {
+      "at": "2026-11-05T03:03:25.875Z",
+      "verb": "activate",
+      "value": {
+        "foreground": true
+      }
+    },
+    {
+      "at": "2026-11-05T03:03:26.020Z",
+      "verb": "hit",
+      "value": [
+        {
+          "x": 1341,
+          "y": 923,
+          "clear": false,
+          "coveredBy": {
+            "windowId": "461800",
+            "pid": 26944,
+            "className": "WindowsForms10.Window.20808.app.0.5c39d4_r3_ad1",
+            "related": true
+          }
+        }
+      ]
+    }
+  ],
+  "occlusion": {
+    "act": {
+      "actionId": "13e68674-e73c-4100-a628-39a6a765518e",
+      "outcome": "not_dispatched",
+      "error": {
+        "code": "target_occluded",
+        "message": "A menu, tooltip or popup of this window covers the point. Close it (for example with escape) or choose its item with the keyboard, then observe again.",
+        "outcome": "not_dispatched",
+        "preparation": [
+          {
+            "step": "activation",
+            "status": "foreground"
+          }
+        ]
+      },
+      "nextStep": "The requested input was not sent. Observe again and resolve the reported condition before at most one new attempt."
+    },
+    "point": {
+      "x": 152,
+      "y": 183
+    },
+    "menuWindowId": "461800",
+    "isError": false,
+    "error": {
+      "code": "target_occluded",
+      "message": "A menu, tooltip or popup of this window covers the point. Close it (for example with escape) or choose its item with the keyboard, then observe again.",
+      "outcome": "not_dispatched",
+      "preparation": [
+        {
+          "step": "activation",
+          "status": "foreground"
+        }
+      ]
+    },
+    "outcome": "not_dispatched",
+    "inputLinesBefore": 0,
+    "inputLinesAfter": 0
+  },
+  "fixtureLog": [
+    "shown hwnd=2689478 button=986396",
+    "cmd strip",
+    "strip visible=True hwnd=461800",
+    "cmd close",
+    "strip closed reason=CloseCalled",
+    "closed",
+    "cmd strip",
+    "strip visible=True hwnd=461800",
+    "cmd substrip",
+    "substrip shown",
+    "cmd close",
+    "strip closed reason=CloseCalled",
+    "closed",
+    "cmd tooltip",
+    "tooltip shown",
+    "cmd close",
+    "closed",
+    "cmd native",
+    "native open",
+    "cmd close",
+    "closed",
+    "native closed result=0",
+    "cmd exit"
+  ],
+  "fixtureExited": true
+}

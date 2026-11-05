@@ -32,6 +32,15 @@ internal static partial class Program
             || !Path.IsPathFullyQualified(args[3]) || !args[3].EndsWith(".png", StringComparison.OrdinalIgnoreCase))
             throw new BridgeException("invalid_arguments", "Capture requires HWND PID and an absolute new PNG path.");
         var hwnd = new nint(raw); SetProcessDpiAwarenessContext(new nint(-4)); Guard(hwnd, pid);
+        var (crop, frame) = CapturePng(hwnd, pid, args[3]);
+        Write(new { hwnd = raw.ToString(), pid, filePath = args[3], width = crop.Width, height = crop.Height,
+            bounds = frame.ToBounds(), method = "public-win32-printwindow-dwm", uiaRequired = false });
+    }
+
+    // PrintWindow pixels of one guarded HWND, cropped to its DWM frame and written to a new PNG.
+    // Geometry is re-read afterwards, so a window that moved or closed yields no file.
+    private static (Int32Rect Crop, Rect Frame) CapturePng(nint hwnd, uint pid, string path)
+    {
         if (IsIconic(hwnd)) throw new BridgeException("window_minimized", "Restore before capture.");
         if (!GetWindowRect(hwnd, out var outer) || DwmGetWindowAttribute(hwnd, 9, out var frame, Marshal.SizeOf<Rect>()) != 0)
             throw new BridgeException("frame_bounds_unavailable", "Exact capture geometry is unavailable.");
@@ -62,9 +71,8 @@ internal static partial class Program
             if (IsIconic(hwnd) || !GetWindowRect(hwnd, out var after) || !outer.Equals(after)
                 || DwmGetWindowAttribute(hwnd, 9, out var afterFrame, Marshal.SizeOf<Rect>()) != 0 || !frame.Equals(afterFrame))
                 throw new BridgeException("window_moved", "Window geometry changed during capture.");
-            using (var output = new FileStream(args[3], FileMode.CreateNew, FileAccess.Write, FileShare.None)) { encoded.Position = 0; encoded.CopyTo(output); }
-            Write(new { hwnd = raw.ToString(), pid, filePath = args[3], width = crop.Width, height = crop.Height,
-                bounds = frame.ToBounds(), method = "public-win32-printwindow-dwm", uiaRequired = false });
+            using (var output = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None)) { encoded.Position = 0; encoded.CopyTo(output); }
+            return (crop, frame);
         }
         finally
         {

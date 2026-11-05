@@ -32,6 +32,8 @@ function mock(handler) {
       if (override !== undefined) return json(override);
     }
     if (args[0] === 'info') return json({ version: 1 });
+    // R21 occlusion check before winapp pointer input: nothing covers the point by default.
+    if (args[0] === 'hit') return json({ hwnd: args[1], pid: Number(args[2]), method: 'public-win32-hit', points: Array.from({ length: (args.length - 3) / 2 }, (_, i) => ({ x: Number(args[3 + 2 * i]), y: Number(args[4 + 2 * i]), clear: true })) });
     if (args[0] === 'identities') return json({ windows: args.slice(1).map(pair => { const [hwnd, pid] = pair.split(':'); return { hwnd, pid: Number(pid) }; }) });
     if (args[0] === 'identity' || args[0] === 'bounds' || args[0] === 'activate') return json({ hwnd: '1234', pid: 456, frameBounds: { ...rect }, windowBounds: { ...rect }, foreground: true, minimized: false });
     if (args[1] === 'status') return json(status());
