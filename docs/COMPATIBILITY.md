@@ -223,4 +223,4 @@ TRACE's four native helpers (activity indicator, window bridge, clipboard and in
 
 This raises the runtime floor from .NET 9 to .NET 10. It is a contract change, so it ships as a Minor release with a release-notes notice. Microsoft lists .NET 9 end of support as 10 November 2026. After that date .NET 9 receives no patches.
 
-Native live evidence from the .NET 9 build no longer applies to this runtime and has not been re-taken on .NET 10. The test fixtures under `tests/fixtures` still target `net9.0-windows`, so the tests that build them need the .NET 9 SDK until they are retargeted.
+Native live evidence from the .NET 9 build no longer applies to this runtime and has not been re-taken on .NET 10.

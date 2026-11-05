@@ -16,8 +16,14 @@ evidence are set when the owner approves publication.
 - This is a runtime floor change, handled as a contract change. It ships as a Minor
   release with this notice. See the [.NET 10 runtime section](COMPATIBILITY.md#net-10-runtime).
 
+## Helper rebuild required
+
+Existing installs must rebuild the helpers after updating. Install the .NET 10 SDK, run
+`npm run computer:setup -- --plan`, review the plan, then run
+`npm run computer:setup -- --apply`. Until then doctor is not ready and reports a stale
+helper such as `bridge_stale`.
+
 ## Not yet verified
 
 - Native live evidence recorded on the .NET 9 build does not carry over. Live desktop
   checks on the .NET 10 build are not yet recorded and need a desktop session.
-- The test fixtures under `tests/fixtures` still target `net9.0-windows`.
