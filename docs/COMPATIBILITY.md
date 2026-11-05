@@ -198,8 +198,8 @@ Tested means tested: each row lists actual evidence with its date and scope. A l
 
 | Area | Supported | Evidence |
 |---|---|---|
-| OS | Windows 11 x64. Windows 10 is not claimed | Last verified on build 10.0.26200, plus CI `windows-latest`. Release receipts should record the runner image |
-| Node | `^22.19.0 \|\| ^24.11.0 \|\| >=26.0.0` | CI runs Node 26. Node 22 and 24 are allowed but not yet tested |
+| OS | Windows 11 x64. Windows 10 is not claimed | Live checks last verified on build 10.0.26200. CI `windows-latest` is a Windows Server image (`windows-2025-vs2026` on 4 November 2026) and runs no desktop input. Release receipts should record the runner image |
+| Node | `^22.19.0 \|\| ^24.11.0 \|\| >=26.0.0` | CI runs the full verification on Node 26, and `check`, `test` and `test:computer:mcp` on Node 22 and 24. First passed 4 November 2026 on 22.23.4 and 24.22.2. Live desktop checks used Node 26 |
 | .NET | .NET 9 SDK and Desktop runtime | CI 9.0.x. See the [known limit](#known-limit-net-9) |
 | Engine | winapp `0.7.1`, exact | Live and CI |
 | Display | One display at 144 DPI. Wider DPI and monitor support is not claimed | 1920×1080 and 2880×1800 receipts. Nothing refuses other setups at runtime |
