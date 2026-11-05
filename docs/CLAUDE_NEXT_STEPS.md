@@ -1,6 +1,8 @@
 # Claude continuation and Codex review handoff
 
-**Latest, 3 November 2026:** start with [the fixes handoff](SESSION_HANDOFF_2026-11-03-fixes.md): release 2.0.0, then the 2.1.0 milestones in [the fix plan](FIX_PLAN_2.1.0.md). The sections below are historical.
+**Latest, 4 November 2026:** 2.0.0 (3 November) and 2.1.0 (4 November) are published, and every milestone in [the fix plan](FIX_PLAN_2.1.0.md), including optional M6, is merged. Issue #6 was closed as out of date. Next: the phone Wi-Fi pop-up test (needs owner approval and a network), the band-switch test at home, and defining Road V1 item 19. Worktrees are no longer linked by junction ([VERSION_CONTROL.md](../VERSION_CONTROL.md)).
+
+**Previous, 3 November 2026:** start with [the fixes handoff](SESSION_HANDOFF_2026-11-03-fixes.md): release 2.0.0, then the 2.1.0 milestones in [the fix plan](FIX_PLAN_2.1.0.md). The sections below are historical.
 
 **Current continuation, 23 October 2026 UTC:** Codex owns the remaining work. Draft PR 17 adds archive verification on PR 16; `codex/live-acceptance-results` carries the latest live evidence and Claude forwarding fix. Typing quarantine passed. Claude supplemental attempt 1 discovered both skills and typed correctly but remains blocked on recovery completion and client-state writes. Glow amended budget is exhausted. Clipboard recovery is protected after a guarded restoration refusal. Use [current status](GAP_CLOSURE_STATUS.md) and [the dashboard](GAP_CLOSURE_PROGRESS.html). No new Claude coding session is required. Any optional Claude review should be read-only; concurrent code edits and Claude processes during announced host tests would invalidate the evidence.
 
