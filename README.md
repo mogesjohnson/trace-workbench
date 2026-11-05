@@ -6,6 +6,8 @@ Shared tools that give agents abilities beyond written instructions.
 
 **Version:** [`2.1.0`](https://github.com/mogesjohnson/trace-workbench/releases/tag/v2.1.0) · **Status:** Published for the declared Windows scope
 
+**Development candidate: `2.2.0`** adds intended focus for typing and operation freshness (Road V1 item 10), a `coordinates` block that names every pixel space, and `relatedWindows` that reports menus, tooltips and owned popups and refuses pointer input they cover (item 19), plus a Codex configuration fix and phone fixes. [Candidate notes](docs/RELEASE_2.2.0.md) keep the 2.0 contract. Final-main CI and publication are pending; this is not a published update.
+
 **2.1.0 published, 3 November:** fixes 2.0.0 known limits G1–G5: a session is released after a confirmed recovery, keyboard closes report `target_closed_after_dispatch`, Settings and packaged apps launch, `interactiveOnly` is leaner, and observe is faster (8 provider launches instead of 12). [Release notes](docs/RELEASE_2.1.0.md) keep the 2.0 contract. The [publication receipt](evidence/release-2.1.0/publication.json) binds source `acca833`, passing final-main CI, exact archive and five verified assets.
 
 **2.0.0 published, 3 November:** makes the act result compact by default (a major version under the V1 boundary), adds optional observation images, scoped observations, trimmed window listings, launch and owned-modal follow. [Release notes](docs/RELEASE_2.0.0.md) carry the migration steps, the [3 November head-to-head](docs/HEAD_TO_HEAD_2026-11-03.md) (6/8, about 94k context tokens) and known limits G1–G4. The [publication receipt](evidence/release-2.0.0/publication.json) binds source `9886a6b`, passing final-main CI, exact archive and five verified assets.
