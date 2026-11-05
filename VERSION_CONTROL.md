@@ -16,6 +16,8 @@ The earlier published package is `2.0.0`. It makes the act result compact by def
 
 The published package is `2.1.0`. It fixes known limits G1–G5 with no 2.0 contract change. Its [release notes](docs/RELEASE_2.1.0.md) record each fix's live check and the head-to-head rerun. Tag `v2.1.0` pins tested source `acca833`; the [publication receipt](evidence/release-2.1.0/publication.json) binds final-main CI, exact archive and five verified assets. Later receipt/documentation commits do not replace that archive.
 
+The development candidate is `2.2.0`. It adds Road V1 items 10 and 19 with no 2.0 contract change. Its [candidate notes](docs/RELEASE_2.2.0.md) record the checks and limits; final-main CI and publication are pending. It is not published.
+
 The earlier published package is `1.1.0`, covering additive selective observation modes, scoped observation cost reductions, numeric reporting and opt-in current-session capture retention. [Release notes](docs/RELEASE_1.1.0.md) preserve compatibility and evidence limits. Tag `v1.1.0` pins tested source `ccf8734`; the [publication receipt](evidence/release-1.1.0/publication.json) binds final-main CI, exact archive and five verified assets. Later receipt/documentation commits do not replace that archive.
 
 The package before that is `1.0.0`. Its [release notes](docs/RELEASE_1.0.0.md), [publication receipt](evidence/release-1.0.0/publication.json) and [compatibility boundary](docs/COMPUTER_USE.md#v1-compatibility-boundary) define the V1 promise. Tag `v1.0.0` pins the tested release source; later documentation commits do not replace that archive or inherit its exact-byte gate. The older publication below remains historical evidence.
