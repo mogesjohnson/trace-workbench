@@ -38,3 +38,27 @@ jobs:
         with:
           dotnet-version: '9.0.x'
       - run: npm run verify:archive
+
+  node-compatibility:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - name: Canonicalize Windows temporary paths
+        shell: pwsh
+        run: |
+          node -e "const fs=require('node:fs'),os=require('node:os');const before=os.tmpdir(),canonical=fs.realpathSync.native(before);fs.appendFileSync(process.env.GITHUB_ENV,'TEMP='+canonical+'\nTMP='+canonical+'\n');console.log(JSON.stringify({temporaryPathAliasResolved:before.toLowerCase()!==canonical.toLowerCase()}));"
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+      - run: npm run test:computer:mcp
