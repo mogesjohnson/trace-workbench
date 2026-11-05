@@ -16,6 +16,7 @@ function fixture() {
   const supervisor = { ready: true, async run(provider, args, options) {
     calls.push({ provider, args, options });
     const value = { hwnd: '123', pid: 7, frameBounds: rect, windowBounds: rect, enabled: true, foreground: true, minimized: false };
+    if (args[0] === 'hit') return { stdout: JSON.stringify({ hwnd: args[1], pid: Number(args[2]), method: 'public-win32-hit', points: Array.from({ length: (args.length - 3) / 2 }, (_, i) => ({ x: Number(args[3 + 2 * i]), y: Number(args[4 + 2 * i]), clear: true })) }), stderr: '', exitCode: 0 };
     if (args[0] === 'click') Object.assign(value, { performed: true, operation: 'click', inputEvents: control.events ?? 2 * Number(args[6]) });
     if (args[0] === 'click' && control.nativeError) throw Object.assign(new Error('partial insertion'), { code: 'input_rejected' });
     return { stdout: JSON.stringify(value), stderr: '', exitCode: 0 };

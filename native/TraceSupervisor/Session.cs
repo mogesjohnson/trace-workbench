@@ -510,6 +510,8 @@ internal static class SupervisorSelfTest
         Require(InputDeclaration.For("bridge", ["bounds", "1", "2"], [], false).Keys.Length == 0);
         Require(InputDeclaration.For("bridge", ["identity", "1", "2"], [], false).Keys.Length == 0);
         Require(InputDeclaration.For("bridge", ["identities"], [], false).Keys.Length == 0);
+        Require(InputDeclaration.For("bridge", ["related", "1", "2"], [], false).Keys.Length == 0);
+        Require(InputDeclaration.For("bridge", ["hit", "1", "2", "3", "4"], [], false).Keys.Length == 0);
         foreach (var pair in new[] { ("left", 1), ("right", 2), ("middle", 4) })
         {
             var declaration = InputDeclaration.For("bridge", ["click", "1", "2", "30", "40", pair.Item1, "1"], [], true);

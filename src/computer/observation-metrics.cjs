@@ -3,9 +3,9 @@ const { AsyncLocalStorage } = require('node:async_hooks');
 const { performance } = require('node:perf_hooks');
 const context = new AsyncLocalStorage();
 const STAGES = new Set(['observation', 'backend', 'identity', 'uia', 'geometry', 'restore', 'settle', 'capture',
-  'backendPngRead', 'fileStat', 'fileRead', 'pngHeader', 'hashEncode', 'journal', 'focus', 'provider']);
+  'backendPngRead', 'fileStat', 'fileRead', 'pngHeader', 'hashEncode', 'journal', 'focus', 'provider', 'related']);
 const COUNTS = new Set(['providerRequests', 'supervisedRequests', 'directRequests', 'captureRequests', 'elements', 'invalidTimingSamples']);
-const BYTES = new Set(['backendPngRead', 'controllerPngRead', 'base64']);
+const BYTES = new Set(['backendPngRead', 'controllerPngRead', 'base64', 'relatedPngRead']);
 const bounded = value => Math.min(Number.MAX_SAFE_INTEGER, value);
 
 function count(name, amount = 1) {

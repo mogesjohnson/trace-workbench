@@ -40,7 +40,7 @@ function duplicateGroup(element, keptParent) {
   return element.type === 'Group' && keptParent?.type === 'Group' && typeof element.name === 'string' && element.name !== ''
     && element.name === keptParent.name && ['expanded', 'collapsed'].includes(element.expandState) && element.expandState === keptParent.expandState;
 }
-const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj', 'native/TraceWindowBridge/Capture.cs', 'native/TraceWindowBridge/Applications.cs', 'native/TraceWindowBridge/Packages.cs'];
+const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj', 'native/TraceWindowBridge/Capture.cs', 'native/TraceWindowBridge/Related.cs', 'native/TraceWindowBridge/Applications.cs', 'native/TraceWindowBridge/Packages.cs'];
 
 class BackendError extends Error {
   constructor(code, message, details = {}) {
@@ -74,6 +74,43 @@ function sameBounds(a, b) { return object(a) && object(b) && ['x', 'y', 'width',
 function captureBounds(frame, root) {
   const x = Math.max(frame.x, root.x), y = Math.max(frame.y, root.y);
   return bounds({ x, y, width: Math.min(frame.x + frame.width, root.x + root.width) - x, height: Math.min(frame.y + frame.height, root.y + root.height) - y });
+}
+// R21: menus, tooltips and owned popups above the session window. The native list is checked
+// field by field; anything malformed makes the whole list unavailable rather than partly trusted.
+const RELATED_LIMIT = 16;
+const RELATED_RELATIONS = new Set(['owned', 'thread-menu', 'same-thread-popup']);
+const RELATED_KINDS = new Set(['menu', 'tooltip', 'window', 'other']);
+function normalizeRelated(native, imagePrefix) {
+  const invalid = () => fail('invalid_native_response', 'Invalid related-window response.');
+  const text = (value, nullable = false) => (nullable && value === null) || (typeof value === 'string' && value.length <= 256) ? value : invalid();
+  const flag = value => typeof value === 'boolean' ? value : invalid();
+  if (native?.method !== 'public-win32-related' || !Array.isArray(native.windows) || native.windows.length > RELATED_LIMIT
+    || !object(native.coverage) || !object(native.menuMode)) invalid();
+  const coverage = native.coverage;
+  for (const key of ['ownerChain', 'threadMenu', 'sameThreadPopups', 'otherThreadsAndProcesses']) flag(coverage[key]);
+  if (flag(native.menuMode.available) && native.menuMode.active !== undefined) flag(native.menuMode.active);
+  const windows = native.windows.map((item, index) => {
+    if (!object(item) || item.zOrder !== index || !RELATED_RELATIONS.has(item.relation) || !RELATED_KINDS.has(item.kind)
+      || !['dwm-frame', 'window-rect'].includes(item.boundsSource) || !Number.isInteger(item.pid) || item.pid <= 0 || !object(item.uia)) invalid();
+    const uia = flag(item.uia.available) ? { available: true, controlType: text(item.uia.controlType), name: text(item.uia.name) }
+      : { available: false, code: text(item.uia.code) };
+    let image;
+    if (imagePrefix !== undefined) {
+      const raw = item.image;
+      if (!object(raw)) invalid();
+      image = flag(raw.available)
+        ? (path.resolve(raw.filePath ?? '') === path.resolve(`${imagePrefix}-${index}.png`) && Number.isInteger(raw.width) && Number.isInteger(raw.height)
+          ? { available: true, path: path.resolve(raw.filePath), width: raw.width, height: raw.height } : invalid())
+        : { available: false, code: text(raw.code) };
+    } else if (item.image !== null && item.image !== undefined) invalid();
+    return { windowId: id(item.hwnd), pid: item.pid, relation: item.relation, kind: item.kind, className: text(item.className),
+      ...(item.title === null ? {} : { title: text(item.title) }), zOrder: index, bounds: bounds(item.bounds), boundsSource: item.boundsSource,
+      ...(Number.isInteger(item.dpi) && item.dpi > 0 ? { dpi: item.dpi } : {}), ...(typeof item.dpiAwareness === 'string' ? { dpiAwareness: item.dpiAwareness } : {}),
+      topmost: flag(item.topmost), uia, ...(image ? { image } : {}) };
+  });
+  return { available: true, windows, truncated: flag(native.truncated),
+    menuMode: native.menuMode.available ? { available: true, active: native.menuMode.active === true } : { available: false },
+    coverage: { ownerChain: coverage.ownerChain, threadMenu: coverage.threadMenu, sameThreadPopups: coverage.sameThreadPopups, otherThreadsAndProcesses: coverage.otherThreadsAndProcesses } };
 }
 function point(x, y, rect) {
   if (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0 || x >= rect.width || y >= rect.height) {
@@ -322,6 +359,25 @@ class WinappBackend {
     const parsed = parseJson(result.stdout, result.stderr, result.exitCode);
     if (!standalone && (parsed.hwnd !== window.id || parsed.pid !== window.pid)) fail('window_identity_changed', 'Window bridge returned a different HWND/PID.');
     return parsed;
+  }
+  // Context only: a failed or malformed read leaves the observation intact and says why the list
+  // is missing. Cancellation still propagates.
+  async relatedWindows(window, signal, imagePrefix) {
+    if (imagePrefix !== undefined && (typeof imagePrefix !== 'string' || !path.isAbsolute(imagePrefix) || path.extname(imagePrefix).toLowerCase() === '.png')) fail('invalid_observation', 'Related image prefix must be an absolute path without an extension.');
+    try { return normalizeRelated(await this.bridge('related', window, signal, imagePrefix === undefined ? [] : [imagePrefix]), imagePrefix); }
+    catch (error) { if (signal?.aborted) throw error; return { available: false, code: error?.code || 'related_unavailable' }; }
+  }
+  // Refuses before dispatch when one of the window's own popups (owner chain or UI thread) covers a
+  // point. Other applications' windows are left to activation, as before; a malformed reply refuses.
+  async assertNoOwnPopup(window, signal, points) {
+    const result = await this.bridge('hit', window, signal, points.flatMap(item => [String(item.x), String(item.y)]));
+    if (result.method !== 'public-win32-hit' || !Array.isArray(result.points) || result.points.length !== points.length
+      || result.points.some((item, index) => !object(item) || item.x !== points[index].x || item.y !== points[index].y || typeof item.clear !== 'boolean'
+        || (!item.clear && (!object(item.coveredBy) || typeof item.coveredBy.related !== 'boolean'))))
+      fail('invalid_native_response', 'Invalid occlusion check response.', { outcome: 'not_dispatched' });
+    const covered = result.points.find(item => !item.clear && item.coveredBy.related);
+    if (covered) fail('target_occluded', 'A menu, tooltip or popup of this window covers the point. Close it (for example with escape) or choose its item with the keyboard, then observe again.',
+      { outcome: 'not_dispatched', coveredBy: { windowId: covered.coveredBy.windowId, className: covered.coveredBy.className } });
   }
   async identities(windows, signal) {
     const args = ['identities', ...windows.map(window => `${id(window.id)}:${window.pid}`)];
@@ -679,7 +735,7 @@ class WinappBackend {
     if (text.length < value.text.length && last >= 0xd800 && last <= 0xdbff) text = text.slice(0, -1);
     return result({ available: true, text, truncated: text.length < value.text.length });
   }
-  async observeVisual({ window, screenshotPath, signal }) {
+  async observeVisual({ window, screenshotPath, signal, related = false, relatedImagePrefix }) {
     if (typeof screenshotPath !== 'string' || !path.isAbsolute(screenshotPath) || path.extname(screenshotPath).toLowerCase() !== '.png') fail('invalid_screenshot_path', 'An absolute PNG output path is required.');
     await this.currentVisualWindow(window, { signal });
     let geometry = await this.bridge('bounds', window, signal);
@@ -692,19 +748,22 @@ class WinappBackend {
     const png = await readPngHeader(screenshotPath); count('backendPngRead', png.length);
     const size = pngSize(png);
     if (size.width !== capture.width || size.height !== capture.height || size.width !== frame.width || size.height !== frame.height) fail('capture_mismatch', 'Native PNG dimensions differ from exact DWM frame.');
+    const relatedWindows = related ? await measure('related', () => this.relatedWindows(window, signal, relatedImagePrefix)) : undefined;
     const current = await this.currentVisualWindow(window, { signal }), after = await this.bridge('bounds', window, signal);
     if (after.processCreationTime !== current.processCreationTime || after.sessionId !== current.sessionId) fail('window_identity_changed', 'Native lifetime changed after visual capture.');
     if (after.minimized || !sameBounds(after.frameBounds, frame) || !sameBounds(after.windowBounds, outer)) fail('window_moved', 'Window moved during visual observation.');
     return { window: { ...current, bounds: frame }, bounds: frame, elements: [],
       focused: { available: false, code: 'visual_only' },
       targetState: { enabled: after.enabled, minimized: after.minimized, foreground: after.foreground, provenance: 'public-win32-dwm' },
-      restoredFromMinimized: restored, captureMethod: capture.method, screenshot: { path: screenshotPath, mimeType: 'image/png', ...size } };
+      restoredFromMinimized: restored, captureMethod: capture.method, screenshot: { path: screenshotPath, mimeType: 'image/png', ...size },
+      ...(relatedWindows ? { relatedWindows } : {}) };
   }
-  async observe({ window, screenshotPath, signal, depth = 8, includeScreenshot = true, documentElementId, visualOnly = false, includeOffscreen = false, rootElementId, interactiveOnly = false }) {
+  async observe({ window, screenshotPath, signal, depth = 8, includeScreenshot = true, documentElementId, visualOnly = false, includeOffscreen = false, rootElementId, interactiveOnly = false, related = false, relatedImagePrefix }) {
+    if (typeof related !== 'boolean' || (relatedImagePrefix !== undefined && !related)) fail('invalid_observation', 'related must be a boolean, and related images need related.');
     if (typeof includeOffscreen !== 'boolean' || typeof interactiveOnly !== 'boolean') fail('invalid_observation', 'includeOffscreen and interactiveOnly must be booleans.');
     if (rootElementId !== undefined && (visualOnly || selector(rootElementId) !== rootElementId)) fail('invalid_observation', 'rootElementId needs an accessibility tree.');
     if (typeof visualOnly !== 'boolean' || (visualOnly && (!includeScreenshot || documentElementId !== undefined))) fail('invalid_observation', 'Visual-only capture cannot include document reads or omit PNG.');
-    if (visualOnly) return this.observeVisual({ window, screenshotPath, signal });
+    if (visualOnly) return this.observeVisual({ window, screenshotPath, signal, related, relatedImagePrefix });
     if (typeof includeScreenshot !== 'boolean') fail('invalid_observation', 'includeScreenshot must be a boolean.');
     if (documentElementId !== undefined && (includeScreenshot || selector(documentElementId) !== documentElementId)) fail('invalid_document_request', 'Document reads require accessibility-only observation.');
     if (includeScreenshot && (typeof screenshotPath !== 'string' || !path.isAbsolute(screenshotPath) || path.extname(screenshotPath).toLowerCase() !== '.png')) fail('invalid_screenshot_path', 'An absolute PNG output path is required.');
@@ -736,6 +795,8 @@ class WinappBackend {
       if (size.width !== screenshot.width || size.height !== screenshot.height) fail('invalid_screenshot', 'PNG dimensions disagree with native capture metadata.');
       if (size.width !== captured.width || size.height !== captured.height) fail('coordinate_space', 'PNG dimensions do not match exact DWM capture bounds. No scaling is assumed.');
     }
+    // Read next to the capture: popups are transient. The identity and geometry checks below still bracket it.
+    const relatedWindows = related ? await measure('related', () => this.relatedWindows(window, signal, relatedImagePrefix)) : undefined;
     const documentRead = documentElementId === undefined ? undefined
       : await measure('document', () => this.readDocument(window, signal, state.elements, documentElementId));
     const current = await measure('identity', () => this.identity(window, signal));
@@ -748,7 +809,8 @@ class WinappBackend {
     if (window.processCreationTime !== undefined && afterGeometry.processCreationTime !== window.processCreationTime) fail('window_identity_changed', 'The selected process was replaced.');
     return { ...state, ...(documentRead ? { documentRead } : {}), window: { ...current, bounds: captured }, bounds: captured, uiaBounds: state.bounds, nativeWindowBounds: bounds(geometry.windowBounds), frameBounds: bounds(geometry.frameBounds), ...(Number.isInteger(afterGeometry.dpi) && afterGeometry.dpi > 0 ? { dpi: afterGeometry.dpi } : {}), ...(typeof afterGeometry.dpiAwareness === 'string' ? { dpiAwareness: afterGeometry.dpiAwareness } : {}), focused,
       targetState: { enabled: afterGeometry.enabled, minimized: afterGeometry.minimized, foreground: afterGeometry.foreground, ownerWindowId: afterGeometry.ownerWindowId ?? null, provenance: 'public-win32-dwm' },
-      restoredFromMinimized: restored, ...(includeScreenshot ? { captureMethod: 'window-capture-dwm-bounds', actionCoordinateSpace: 'window-local-pixels', screenshot: { path: screenshotPath, mimeType: 'image/png', ...size } } : {}) };
+      restoredFromMinimized: restored, ...(includeScreenshot ? { captureMethod: 'window-capture-dwm-bounds', actionCoordinateSpace: 'window-local-pixels', screenshot: { path: screenshotPath, mimeType: 'image/png', ...size } } : {}),
+      ...(relatedWindows ? { relatedWindows } : {}) };
   }
   // Any rejection before the requested primary mutation begins is provably not dispatched. Once it
   // may have begun, the outcome stays unknown even if an error code was raised before input.
@@ -785,7 +847,10 @@ class WinappBackend {
       if (!old || !now || !now.enabled || old.enabled !== now.enabled || old.name !== now.name || old.controlType !== now.controlType || (old.bounds && (!now.bounds || !sameBounds(old.bounds, now.bounds)))) fail('stale_element', 'Element changed since observation. Observe again.');
       return selector(elementId);
     };
-    let verb, positional = [], options = [], transport, pointerArgs;
+    // Screen points where winapp will press or wheel; checked against the window's own popups before dispatch.
+    let verb, positional = [], options = [], transport, pointerArgs, hitPoints = [];
+    const center = rect => ({ x: Math.floor(rect.x + rect.width / 2), y: Math.floor(rect.y + rect.height / 2) });
+    const screen = (x, y) => ({ x: captured.x + x, y: captured.y + y });
     switch (action.type) {
       case 'activate': {
         // Activation is the primary mutation of an activate action.
@@ -807,9 +872,13 @@ class WinappBackend {
           pointerArgs = [...point(x, y, captured).split(','), action.button ?? 'left', String(action.count ?? 1)];
           verb = 'click'; transport = 'supervised-public-win32'; break;
         }
-        if (action.elementId) { verb = 'click'; positional = [choose(action.elementId)]; }
+        if (action.elementId) {
+          verb = 'click'; positional = [choose(action.elementId)];
+          const rect = fresh.elements.find(item => item.id === action.elementId)?.bounds;
+          if (rect) hitPoints = [center(rect)];
+        }
         else {
-          const p = point(action.x, action.y, captured);
+          const p = point(action.x, action.y, captured); hitPoints = [screen(action.x, action.y)];
           // The public drag command documents same-point, zero-hold button down/up gestures.
           verb = 'drag'; positional = [p, p]; options = ['--hold-ms', '0']; transport = 'same-point-button-down-up';
         }
@@ -827,7 +896,8 @@ class WinappBackend {
         const key = normalizeKey(action.key);
         verb = 'send-keys'; positional = [key]; options = ['--via', 'send-input']; break;
       }
-      case 'drag': verb = 'drag'; positional = [point(action.fromX, action.fromY, captured), point(action.toX, action.toY, captured)]; break;
+      case 'drag': verb = 'drag'; positional = [point(action.fromX, action.fromY, captured), point(action.toX, action.toY, captured)];
+        hitPoints = [screen(action.fromX, action.fromY), screen(action.toX, action.toY)]; break;
       case 'scroll': {
         if (pointWheel) {
           pointerArgs = [...point(action.x, action.y, captured).split(','), String(action.deltaX), String(action.deltaY)];
@@ -837,7 +907,8 @@ class WinappBackend {
         const physicalX = captured.x + action.x, physicalY = captured.y + action.y;
         const candidates = fresh.elements.filter(element => element.enabled && !element.offscreen && element.bounds && physicalX >= element.bounds.x && physicalY >= element.bounds.y && physicalX < element.bounds.x + element.bounds.width && physicalY < element.bounds.y + element.bounds.height).sort((a, b) => a.bounds.width * a.bounds.height - b.bounds.width * b.bounds.height);
         if (!candidates.length) fail('unsupported_action', 'No observed element is available under the wheel position.');
-        verb = 'scroll'; positional = [choose(candidates[0].id)]; options = ['--wheel', String(-action.deltaY / 120)]; transport = 'wheel-at-element-center'; break;
+        verb = 'scroll'; positional = [choose(candidates[0].id)]; options = ['--wheel', String(-action.deltaY / 120)]; transport = 'wheel-at-element-center';
+        hitPoints = [center(candidates[0].bounds)]; break;
       }
       case 'invoke': verb = 'invoke'; positional = [choose(action.elementId)]; break;
       case 'accessibility_action': {
@@ -874,6 +945,9 @@ class WinappBackend {
       const ready = await this.bridge('bounds', window, signal);
       if (ready.enabled === false) fail('window_blocked', 'The selected window became disabled before its value operation.', { outcome: 'not_dispatched' });
     }
+    // R21: activation leaves an open menu or tooltip in place, and winapp presses at screen points
+    // without an occlusion check, so a popup of this window over a point would take the input.
+    if (hitPoints.length) await this.assertNoOwnPopup(window, signal, hitPoints);
     // Typed text is checked against the focused control's text (D1: SendInput reported success while
     // Notepad dropped the second 16-character chunk). Enter and Tab may submit or move focus, so text
     // holding them is not checked.

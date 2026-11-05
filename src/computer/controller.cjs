@@ -70,6 +70,20 @@ function validateScreenshot(screenshot, mode) {
   if (mode === 'screenshot' && screenshot === 'none') throw fail('invalid_observation', 'Screenshot mode requires an image.');
   return screenshot;
 }
+// R21: menus, tooltips and owned popups above the session window, read with full and screenshot
+// observations. They are context only: no element IDs, and their region never authorizes input
+// (a point a popup covers is rejected as target_occluded). Offsets use the action-point space.
+function relatedContext(native, bounds, images) {
+  if (!native) return undefined;
+  if (native.available !== true) return { available: false, code: native.code ?? 'related_unavailable', authority: 'context-only' };
+  return { available: true, authority: 'context-only', truncated: native.truncated, menuMode: native.menuMode, coverage: native.coverage,
+    windows: native.windows.map((item, index) => {
+      const { image, ...rest } = item, box = item.bounds, x = box.x - bounds.x, y = box.y - bounds.y;
+      return { ...rest, offset: { x, y }, coversWindow: x < bounds.width && y < bounds.height && x + box.width > 0 && y + box.height > 0,
+        ...(images ? { image: images[index] } : {}) };
+    }) };
+}
+const RELATED_IMAGE_BYTES = 6 * 1024 * 1024;
 const validElementId = value => typeof value === 'string' && value.length > 0 && value.length <= 512 && !value.startsWith('-') && !/[\u0000-\u001f]/.test(value);
 // rootElementId observes one subtree of the window; interactiveOnly keeps interactive controls
 // (and truncation markers) under their nearest kept ancestor. Neither applies to screenshot mode.
@@ -141,7 +155,9 @@ function actSummary(before, fresh) {
   const titleChanged = before.window?.title !== fresh.window?.title;
   return { elementCount: fresh.elements?.length ?? 0, focused: compactFocus(fresh.focused),
     ...(titleChanged ? { titleChanged: true, title: short(fresh.window?.title) } : {}),
-    targetState: fresh.targetState, changes: elementDiff(before.elements, fresh.elements) };
+    targetState: fresh.targetState, changes: elementDiff(before.elements, fresh.elements),
+    // A menu or tooltip the action opened is reported here, so a summary shows it without an observe.
+    ...(fresh.relatedWindows?.available === false || fresh.relatedWindows?.windows?.length ? { relatedWindows: fresh.relatedWindows } : {}) };
 }
 
 // The default listing drops windows an agent cannot use: tiny or zero-size helpers, cloaked shell
@@ -324,21 +340,21 @@ function createComputerController(options = {}) {
     // No typed text, values, screenshots, or full window inventory in the journal.
     await fs.appendFile(path.join(session.directory, 'events.jsonl'), `${JSON.stringify({ at: new Date(now()).toISOString(), sessionId: session.id, ...event })}\n`);
   }
-  async function observeInternal(session, signal, { depth = DEFAULT_DEPTH, mode = 'full', documentElementId, includeOffscreen = false, screenshot = mode === 'accessibility' ? 'none' : 'full', screenshotPreference = screenshot, scope = {}, metrics: reportMetrics = false } = {}) {
+  async function observeInternal(session, signal, { depth = DEFAULT_DEPTH, mode = 'full', documentElementId, includeOffscreen = false, screenshot = mode === 'accessibility' ? 'none' : 'full', screenshotPreference = screenshot, scope = {}, metrics: reportMetrics = false, relatedImages = false } = {}) {
     // A valid selective read revokes input authority even if readiness/capture fails.
     if (mode !== 'full') session.observation = null;
     const metrics = createObservationMetrics({ clock: options.metricsClock,
       sample: observedBefore ? 'later-controller-attempt' : 'first-controller-attempt' });
     observedBefore = true;
     return metrics.run(async () => {
-      const result = await measure('observation', () => observeMeasured(session, signal, depth, mode, documentElementId, includeOffscreen, screenshot, screenshotPreference, scope));
+      const result = await measure('observation', () => observeMeasured(session, signal, depth, mode, documentElementId, includeOffscreen, screenshot, screenshotPreference, scope, relatedImages));
       // Stage timings are diagnostics, so they are returned only on request.
       if (reportMetrics) result.metrics = metrics.snapshot();
       if (session.observation?.id === result.observationId) session.observation.snapshot.metrics = reportMetrics;
       return result;
     });
   }
-  async function observeMeasured(session, signal, depth, mode, documentElementId, includeOffscreen, screenshotMode, screenshotPreference, { rootElementId, interactiveOnly = false }) {
+  async function observeMeasured(session, signal, depth, mode, documentElementId, includeOffscreen, screenshotMode, screenshotPreference, { rootElementId, interactiveOnly = false }, relatedImages = false) {
     signal = markedSignal(signal);
     await lease.assert(session.id);
     await measure('identity', () => currentWindow(session, signal, mode === 'screenshot'));
@@ -346,12 +362,21 @@ function createComputerController(options = {}) {
     const observationId = randomUUID();
     const capture = screenshotMode !== 'none';
     const screenshotPath = capture ? path.join(session.directory, `${observationId}.png`) : undefined;
-    const snapshot = await measure('backend', () => backend.observe({ window: session.window, screenshotPath, signal, depth,
+    const related = mode !== 'accessibility', relatedPrefix = related && relatedImages ? path.join(session.directory, `${observationId}-related`) : undefined;
+    let snapshot, relatedImageList;
+    try {
+    snapshot = await measure('backend', () => backend.observe({ window: session.window, screenshotPath, signal, depth,
       ...(!capture ? { includeScreenshot: false } : {}),
       ...(mode === 'screenshot' ? { visualOnly: true } : {}),
       ...(includeOffscreen ? { includeOffscreen: true } : {}),
       ...(rootElementId === undefined ? {} : { rootElementId }), ...(interactiveOnly ? { interactiveOnly: true } : {}),
+      ...(related ? { related: true } : {}), ...(relatedPrefix ? { relatedImagePrefix: relatedPrefix } : {}),
       ...(documentElementId === undefined ? {} : { documentElementId }) }));
+    if (relatedPrefix && snapshot.relatedWindows?.available === true) relatedImageList = await readRelatedImages(snapshot.relatedWindows.windows, relatedPrefix);
+    } finally {
+      // Popup images are returned inline and never retained on disk.
+      if (relatedPrefix) await removeRelatedImages(session.directory, observationId);
+    }
     // The effective depth stays server-side with the observation; actions cannot replace it.
     snapshot.depth = Number.isInteger(snapshot.depth) ? snapshot.depth : depth;
     snapshot.includeOffscreen = includeOffscreen;
@@ -360,6 +385,7 @@ function createComputerController(options = {}) {
     snapshot.interactiveOnly = interactiveOnly;
     // What the caller asked for, kept for a later act with returnObservation: full.
     snapshot.screenshotPreference = screenshotPreference;
+    snapshot.relatedImages = relatedImages;
     if (!identityMatches(snapshot.window, session.window)) throw fail('window_changed', 'Observation returned a different window identity.');
     const bounds = snapshot.bounds;
     if (!bounds || !['x', 'y', 'width', 'height'].every(key => Number.isFinite(bounds[key])) || bounds.width < 1 || bounds.height < 1) throw fail('invalid_observation', 'Backend returned invalid window bounds.');
@@ -400,6 +426,7 @@ function createComputerController(options = {}) {
       targetState: !snapshot.targetState ? { available: false } : interactiveOnly ? leanTargetState(snapshot.targetState) : snapshot.targetState,
       ...(snapshot.restoredFromMinimized === true ? { preparation: [{ step: 'restore', status: 'restored' }] } : {}),
       ...(screenshot ? { screenshot } : {}),
+      ...(related ? { relatedWindows: relatedContext(snapshot.relatedWindows ?? { available: false, code: 'related_unavailable' }, bounds, relatedImageList) } : {}),
     };
     if (mode === 'full' && !screenshot) delete result.captureMethod;
     if (mode === 'full') session.observation = { id: observationId, observedAtMs, snapshot, result };
@@ -410,12 +437,43 @@ function createComputerController(options = {}) {
     }
     await measure('journal', () => record(session, { type: 'observation', observationId,
       ...(mode !== 'full' ? { mode } : {}), ...(screenshotMode !== (mode === 'accessibility' ? 'none' : 'full') ? { screenshot: screenshotMode } : {}),
-      ...(screenshot ? { screenshotSha256: screenshot.sha256 } : {}) }));
+      ...(screenshot ? { screenshotSha256: screenshot.sha256 } : {}),
+      ...(result.relatedWindows?.available ? { relatedWindowCount: result.relatedWindows.windows.length } : {}) }));
     signal.throwIfAborted();
     indicator.assertActive();
     return result;
   }
 
+  // Each related PNG must be the file the bridge was told to write, within the image limit and the
+  // size it reported. A bad image is unavailable; it never replaces or fails the observation.
+  async function readRelatedImages(windows, prefix) {
+    const read = async (item, index) => {
+      const image = item.image, unavailable = code => ({ available: false, code });
+      if (!image?.available) return unavailable(image?.code ?? 'capture_failed');
+      if (path.resolve(image.path) !== path.resolve(`${prefix}-${index}.png`)) return unavailable('invalid_capture');
+      let bytes;
+      try {
+        if ((await fs.stat(image.path)).size > RELATED_IMAGE_BYTES) return unavailable('capture_too_large');
+        bytes = await fs.readFile(image.path);
+      } catch (error) { return unavailable(error?.code === 'ENOENT' ? 'capture_missing' : 'capture_failed'); }
+      if (bytes.length < 24 || !bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) return unavailable('invalid_capture');
+      const width = bytes.readUInt32BE(16), height = bytes.readUInt32BE(20);
+      if (width !== image.width || height !== image.height || (item.boundsSource === 'dwm-frame' && (width !== item.bounds.width || height !== item.bounds.height)))
+        return unavailable('capture_mismatch');
+      count('relatedPngRead', bytes.length);
+      return { available: true, origin: 'related-window-top-left', physicalPerImagePixel: 1,
+        screenshot: { data: bytes.toString('base64'), mimeType: 'image/png', width, height, sha256: createHash('sha256').update(bytes).digest('hex') } };
+    };
+    const images = [];
+    for (const [index, item] of windows.entries()) images.push(await read(item, index));
+    return images;
+  }
+  async function removeRelatedImages(directory, observationId) {
+    const start = `${observationId}-related-`;
+    let names = [];
+    try { names = await fs.readdir(directory); } catch { return; }
+    await Promise.all(names.filter(name => name.startsWith(start) && name.endsWith('.png')).map(name => fs.rm(path.join(directory, name), { force: true })));
+  }
   async function retainCapture(session, result, signal) {
     if (!session.captureRetention || !result.screenshot) return result;
     const file = path.join(session.directory, `${result.observationId}.png`);
@@ -506,7 +564,7 @@ function createComputerController(options = {}) {
         }
       }, callOptions);
     },
-    observe({ sessionId, accessibilityDepth, mode, documentElementId, includeOffscreen, screenshot, rootElementId, interactiveOnly, metrics, followModal: follow }, callOptions) {
+    observe({ sessionId, accessibilityDepth, mode, documentElementId, includeOffscreen, screenshot, rootElementId, interactiveOnly, metrics, followModal: follow, relatedImages }, callOptions) {
       return queued(async signal => {
         const session = getSession(sessionId);
         const depth = validateDepth(accessibilityDepth), checkedMode = validateObservationMode(mode);
@@ -515,11 +573,12 @@ function createComputerController(options = {}) {
           throw fail('invalid_document_request', 'documentElementId requires accessibility mode and a valid observed element ID.');
         if (includeOffscreen !== undefined && typeof includeOffscreen !== 'boolean') throw fail('invalid_observation', 'includeOffscreen must be a boolean.');
         if (metrics !== undefined && typeof metrics !== 'boolean') throw fail('invalid_observation', 'metrics must be a boolean.');
+        if (relatedImages !== undefined && (typeof relatedImages !== 'boolean' || (relatedImages && checkedMode === 'accessibility'))) throw fail('invalid_observation', 'relatedImages must be a boolean and needs full or screenshot mode.');
         const screenshotMode = validateScreenshot(screenshot, checkedMode);
         const scope = validateScope(rootElementId, interactiveOnly, checkedMode);
         if (follow !== undefined && typeof follow !== 'boolean') throw fail('invalid_observation', 'followModal must be a boolean.');
         if (follow) { const marked = markedSignal(signal); await lease.assert(session.id); await followModal(session, marked); }
-        const result = await observeInternal(session, signal, { depth, mode: checkedMode, documentElementId, includeOffscreen: includeOffscreen === true, screenshot: screenshotMode, scope, metrics: metrics === true });
+        const result = await observeInternal(session, signal, { depth, mode: checkedMode, documentElementId, includeOffscreen: includeOffscreen === true, screenshot: screenshotMode, scope, metrics: metrics === true, relatedImages: relatedImages === true });
         await reportModal(session, result, signal);
         return retainCapture(session, result, signal);
       }, callOptions);
@@ -556,7 +615,7 @@ function createComputerController(options = {}) {
           const refresh = scope => observeInternal(session, signal, { depth: snapshot.depth, mode: 'full',
             includeOffscreen: snapshot.includeOffscreen === true, scope, metrics: snapshot.metrics === true,
             screenshot: returnObservation === 'full' ? snapshot.screenshotPreference ?? 'full' : 'none',
-            screenshotPreference: snapshot.screenshotPreference ?? 'full' });
+            screenshotPreference: snapshot.screenshotPreference ?? 'full', relatedImages: returnObservation === 'full' && snapshot.relatedImages === true });
           const scope = { ...(snapshot.rootElementId === undefined ? {} : { rootElementId: snapshot.rootElementId }), ...(snapshot.interactiveOnly ? { interactiveOnly: true } : {}) };
           let fresh, scopeLost = false;
           try { fresh = await refresh(scope); }
@@ -595,7 +654,7 @@ function createComputerController(options = {}) {
               const snapshot = observation.snapshot;
               const fresh = await observeInternal(session, signal, { depth: snapshot.depth, mode: 'full', includeOffscreen: snapshot.includeOffscreen === true,
                 metrics: snapshot.metrics === true, screenshot: returnObservation === 'full' ? snapshot.screenshotPreference ?? 'full' : 'none',
-                screenshotPreference: snapshot.screenshotPreference ?? 'full' });
+                screenshotPreference: snapshot.screenshotPreference ?? 'full', relatedImages: returnObservation === 'full' && snapshot.relatedImages === true });
               await record(session, { type: 'modal_returned', windowId: owner.id, observationId: fresh.observationId });
               await retainCapture(session, fresh, signal);
               await reportModal(session, fresh, signal);
