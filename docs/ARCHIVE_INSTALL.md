@@ -6,7 +6,7 @@
 
 `npm run verify:archive` verifies an exact committed source archive in a new private directory. It resolves HEAD once, creates two byte-identical Git archives, extracts one without Git metadata or dependencies, installs locked dependencies, and builds the pinned Windows engine and four helpers. The existing checkout remains available.
 
-The verifier checks provider readiness, the six Computer Use MCP tools without desktop actions, and 207 REA tools with synthetic static analysis. It uses a scratch home for four client configurations and three managed skill destinations. It verifies exact backups, preservation of unrelated settings and files, idempotence, conflicts, and rollback. Child process homes, package caches and .NET state are scoped to the private run directory. It makes no model request, reads no clipboard contents and changes no personal client settings.
+The verifier checks provider readiness, the seven Computer Use MCP tools without desktop actions, and 207 REA tools with synthetic static analysis. It uses a scratch home for four client configurations and three managed skill destinations. It verifies exact backups, preservation of unrelated settings and files, idempotence, conflicts, and rollback. Child process homes, package caches and .NET state are scoped to the private run directory. It makes no model request, reads no clipboard contents and changes no personal client settings.
 
 Inspect the plan without creating processes or files:
 
