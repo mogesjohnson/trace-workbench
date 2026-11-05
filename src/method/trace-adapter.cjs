@@ -75,7 +75,14 @@ function createTraceProvider({ client, callTool = client?.callTool?.bind(client)
         if (!supportsDepth && accessibilityDepth !== 8) {
           return diagnostics(false, 'depth-unsupported', 'The live observation schema does not advertise requested depth.');
         }
-        const result = await call(0, {}), value = state(result), support = value.support ?? unknownSupport();
+        let result = await call(0, {}), value = state(result);
+        // A compact digest matches only an identical descriptor. Before refusing a different
+        // one, read the full form: it may be a compatible descriptor with added fields.
+        if (value.support?.detail === 'compact' && !effectiveSupport(value.support)) {
+          const full = await call(0, { verbose: true });
+          if (full.isError !== true && state(full).support) { result = full; value = state(full); }
+        }
+        const support = value.support ?? unknownSupport();
         // 2.x defaults act to a compact summary; post-action evidence needs the full observation.
         fullReturn = advertisesFullReturn(value); verboseListing = advertisesVerboseListing(value);
         const declared = value.support != null ? effectiveSupport(support) : null;

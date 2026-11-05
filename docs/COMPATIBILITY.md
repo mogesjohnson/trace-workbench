@@ -32,7 +32,7 @@ Not covered: other method index exports such as `state`, `computer apps`, native
 | Compact form loses a non-authority field | Minor | See [result fields](#result-fields) |
 | Strictly safer reclassification, or a new refusal | Minor | See [reclassifying results](#reclassifying-results). Needs a release-notes entry |
 | Helper rebuild required (`computer:setup -- --apply`) | Minor | Stated in the release notes |
-| Engine pin bump that keeps behavior | Minor | Affected live checks rerun |
+| Engine pin bump that keeps behavior | Minor | Affected live checks rerun. See [version identities](#version-identities) for the adapter limit |
 | Runtime floor change (Node, .NET, Windows) | Minor with notice | Major if a supported platform is dropped without notice |
 | Announce a deprecation | Minor | See [deprecation](#deprecation) |
 | Remove or rename a tool, input, documented default-form field or [cataloged code](#error-codes) | Major | Needs an earlier deprecation and migration notes |
@@ -95,7 +95,7 @@ A new top-level `outcome` value needs a major. Clients must still treat an outco
 
 `support.contractVersion` identifies the action-support descriptor, separately from the package, protocol and engine versions. It changes only on a semantic break. Unknown legacy support stays explicitly unknown; contradictory descriptors disable the method route. Feature additions are declared outside the descriptor when possible.
 
-A compact descriptor must match the local descriptor's digest exactly, and the digest includes the engine version. Next release: on a mismatch the adapter re-reads doctor with `verbose: true` and uses the tolerant full-descriptor match. Adapters from 2.0 to 2.2 stay strict, so pair them with a server from the same checkout.
+A compact descriptor must match the local descriptor's digest exactly, and the digest includes the engine version. Next release: on a mismatch the adapter re-reads doctor with `verbose: true` and uses the tolerant full-descriptor match, which accepts added fields. That match still needs the same engine name and version, so an adapter and server on different engine pins stay refused. Adapters from 2.0 to 2.2 stay strict. Run the adapter and server from the same checkout.
 
 ## Identifier lifetimes
 
