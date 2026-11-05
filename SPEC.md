@@ -71,7 +71,7 @@ Status 20 October 2026 ([case status](evidence/0.1.0-alpha.3.1/case-status.json)
 
 - **GLOW-LIFECYCLE / CU-04:** acquire the desktop lease before starting the marker; publish a session only after native readiness. Show a nonactivating, click-through glow on every attached monitor until input/recovery and session cleanup finish. Marker startup failure rejects the session; marker loss stops further input and cancels in-flight work.
 - **GLOW-LIVE / CU-01, CU-04:** declare an owned synthetic target, expected edge click count and exact cleanup. Verify visible edges on available monitors, unchanged native foreground/focus on marker start, physical clicks through the edge, and process/overlay removal after EOF and owned parent termination. Retain source hashes, independent target state and sanitized screen evidence. Missing topology changes remain blocked.
-- **GLOW-DIAGNOSTICS / CFG-01:** diagnostics verify helper source/output hashes and the .NET 9 Desktop runtime without showing UI; discovery excludes the helper. Existing acceptance remains at its recorded scope.
+- **GLOW-DIAGNOSTICS / CFG-01:** diagnostics verify helper source/output hashes and the .NET 10 Desktop runtime without showing UI; discovery excludes the helper. Existing acceptance remains at its recorded scope.
 - **A31-GLOW / CU-04:** preserve both existing attempts. Under the recorded continuation plan, require count 0 initially, 1 after one reference edge click and 2 after one TRACE edge click. Prove visible click-through glow, unchanged focus, ordinary close/EOF cleanup and abrupt owned-parent-loss cleanup, with helper exit verified separately. If the separate Codex/reference executor is unavailable, prepare the continuation and retain that subcase as blocked; a second TRACE click or synthetic substitute cannot pass it.
 - **A31-SKILL / CFG-01:** back up existing installations, synchronize the repository Computer Use instructions to the canonical and selected client copies, and retain matching hashes plus discovery checks. Preserve earlier synchronization receipts; later repository edits are not already installed.
 
@@ -110,7 +110,7 @@ Status 20 October 2026 ([case status](evidence/0.1.0-alpha.3.3/case-status.json)
 
 ## Current operating limits
 
-- Windows x64, a supported Node.js runtime, .NET 9 SDK with Windows Desktop reference pack for local helpers, and .NET 9 Desktop runtime for the activity marker.
+- Windows x64, a supported Node.js runtime, .NET 10 SDK with Windows Desktop reference pack for local helpers, and .NET 10 Desktop runtime for the activity marker.
 - Physical input uses an unlocked interactive desktop. Secure/elevated desktop automation is outside the initial release scope.
 - Screenshots must match exact DWM/window geometry and remain within the 6 MiB image limit. Accessibility inspection reads 8 levels by default and up to 32 on request.
 - Vertical wheel input defaults to 120-unit notches at an observed element's center. Since 2.0.0, opt-in `placement: 'point'` adds point and horizontal wheel input; see [Computer Use](docs/COMPUTER_USE.md).

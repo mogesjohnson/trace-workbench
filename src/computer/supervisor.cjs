@@ -32,7 +32,7 @@ async function verifySupervisorFiles(binaryPath = DEFAULT_SUPERVISOR, root = ROO
     return { available: true, integrity: 'verified', protocol: 1 };
   } catch (error) {
     if (error.code?.startsWith('supervisor_')) throw error;
-    throw failure('supervisor_unavailable', 'Native supervisor is not built. Run computer setup with the .NET 9 SDK.');
+    throw failure('supervisor_unavailable', 'Native supervisor is not built. Run computer setup with the .NET 10 SDK.');
   }
 }
 

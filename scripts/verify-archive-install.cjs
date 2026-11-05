@@ -31,7 +31,7 @@ function parseArgs(args) {
 function plan({ commit } = {}) {
   need(commit === undefined || FULL_SHA.test(commit), 'archive_commit_invalid');
   return { schemaVersion: 1, mode: 'plan', effectsStarted: false, commit: commit ?? 'HEAD resolved once at verification',
-    requirements: ['Windows x64', 'Git', 'Node and npm CLI', '.NET 9 SDK and Windows Desktop runtime', 'Network for locked npm dependencies and pinned engine archive'],
+    requirements: ['Windows x64', 'Git', 'Node and npm CLI', '.NET 10 SDK and Windows Desktop runtime', 'Network for locked npm dependencies and pinned engine archive'],
     steps: ['Archive one full commit twice and compare exact bytes.', 'Extract into a unique ignored directory; reject links and preexisting runtimes/dependencies.',
       'Install the extracted lock with npm ci; build and verify local helpers and pinned engine.', 'Check actual doctor and both read-only MCP smoke paths.',
       'Verify four synthetic client configurations, three skill bundles, exact backups, idempotence, conflict preservation and rollback.'],

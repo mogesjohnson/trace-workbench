@@ -45,7 +45,7 @@ test('a failed helper build preserves the previous manifest and reports the miss
   await fs.mkdir(path.dirname(manifestPath), { recursive: true });
   const prior = '{"prior":"must remain"}\n';
   await fs.writeFile(manifestPath, prior);
-  await assert.rejects(buildActivityIndicator({ root, binaryPath, run: async () => ({ exitCode: 1 }) }), /\.NET 9 SDK with Windows Desktop reference pack/);
+  await assert.rejects(buildActivityIndicator({ root, binaryPath, run: async () => ({ exitCode: 1 }) }), /\.NET 10 SDK with Windows Desktop reference pack/);
   assert.equal(await fs.readFile(manifestPath, 'utf8'), prior);
 });
 

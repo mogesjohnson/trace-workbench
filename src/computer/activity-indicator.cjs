@@ -27,7 +27,7 @@ async function verifyIndicatorFiles(binaryPath = DEFAULT_INDICATOR, root = ROOT)
     return { available: true, integrity: 'verified', protocol: 1 };
   } catch (error) {
     if (['indicator_stale', 'indicator_integrity'].includes(error.code)) throw error;
-    throw failure('indicator_unavailable', 'Activity indicator is not built. Run computer setup with the .NET 9 SDK.');
+    throw failure('indicator_unavailable', 'Activity indicator is not built. Run computer setup with the .NET 10 SDK.');
   }
 }
 

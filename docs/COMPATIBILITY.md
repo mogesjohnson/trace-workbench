@@ -200,7 +200,7 @@ Tested means tested: each row lists actual evidence with its date and scope. A l
 |---|---|---|
 | OS | Windows 11 x64. Windows 10 is not claimed | Live checks last verified on build 10.0.26200. CI `windows-latest` is a Windows Server image (`windows-2025-vs2026` on 4 November 2026) and runs no desktop input. Release receipts should record the runner image |
 | Node | `^22.19.0 \|\| ^24.11.0 \|\| >=26.0.0` | CI runs the full verification on Node 26, and `check`, `test` and `test:computer:mcp` on Node 22 and 24. First passed 4 November 2026 on 22.23.4 and 24.22.2. Live desktop checks used Node 26 |
-| .NET | .NET 9 SDK and Desktop runtime | CI 9.0.x. See the [known limit](#known-limit-net-9) |
+| .NET | .NET 10 SDK and Desktop runtime | CI 10.0.x. Native helpers target `net10.0-windows`. Live checks on the .NET 10 build are not yet recorded. See [.NET 10 runtime](#net-10-runtime) |
 | Engine | winapp `0.7.1`, exact | Live and CI |
 | Display | One display at 144 DPI. Wider DPI and monitor support is not claimed | 1920×1080 and 2880×1800 receipts. Nothing refuses other setups at runtime |
 | Desktop | Unlocked interactive desktop. No secure or elevated targets | Live |
@@ -217,6 +217,10 @@ Tested means tested: each row lists actual evidence with its date and scope. A l
 
 Browser, application, clipboard and artifact providers are optional and supplied by the host. The [method README](../src/method/README.md) states their tested scope.
 
-### Known limit: .NET 9
+### .NET 10 runtime
 
-Microsoft lists .NET 9 end of support as 10 November 2026. TRACE's four native helpers target `net9.0-windows`, and doctor requires a .NET 9 Desktop runtime, so a machine with only .NET 10 fails doctor. TRACE keeps working after that date, but .NET 9 stops getting patches. Moving to .NET 10 is planned as its own change before the next release.
+TRACE's four native helpers (activity indicator, window bridge, clipboard and input supervisor) target `net10.0-windows`. Building them needs the .NET 10 SDK with the Windows Desktop reference pack. Running them, and doctor, need the .NET 10 Windows Desktop runtime. A machine with only .NET 9 fails doctor until .NET 10 is installed.
+
+This raises the runtime floor from .NET 9 to .NET 10. It is a contract change, so it ships as a Minor release with a release-notes notice. Microsoft lists .NET 9 end of support as 10 November 2026. After that date .NET 9 receives no patches.
+
+Native live evidence from the .NET 9 build no longer applies to this runtime and has not been re-taken on .NET 10. The test fixtures under `tests/fixtures` still target `net9.0-windows`, so the tests that build them need the .NET 9 SDK until they are retargeted.

@@ -4,7 +4,7 @@ TRACE's `trace-computer` MCP server exposes seven tools for a Windows agent: dia
 
 ## Install and connect
 
-Requires Windows x64, a Node.js version allowed by `package.json`, .NET 9 SDK with Windows Desktop reference pack, and .NET 9 Desktop runtime. Run from the repository:
+Requires Windows x64, a Node.js version allowed by `package.json`, .NET 10 SDK with Windows Desktop reference pack, and .NET 10 Desktop runtime. Run from the repository:
 
 ```powershell
 npm ci
