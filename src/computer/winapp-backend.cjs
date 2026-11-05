@@ -415,7 +415,7 @@ class WinappBackend {
       if (bridge.version !== 1) fail('bridge_version', 'Unexpected window bridge version.');
       const result = await this.run(this.binaryPath, ['--version'], { signal });
       if (result.exitCode !== 0 || !new RegExp(`(^|\\s)${pin.version.replaceAll('.', '\\.')}($|\\s)`).test(result.stdout)) fail('engine_version', 'Unexpected Windows engine version.');
-      return { ready: true, engine: 'winapp', version: pin.version, platform: this.platform, architecture: this.arch, transport: 'public-cli', integrity: 'verified', bridge: { version: 1, runtime: '.NET 9', method: 'public-win32-dwm' }, activityIndicator, ...(supervision ? { supervision } : {}), limitations: ['Windows x64', 'minimized observations restore the selected window', 'unlocked interactive desktop for input', 'legacy wheel is vertical at element center; point/horizontal wheel requires native supervision', 'no secure desktop or elevation bypass'] };
+      return { ready: true, engine: 'winapp', version: pin.version, platform: this.platform, architecture: this.arch, transport: 'public-cli', integrity: 'verified', bridge: { version: 1, runtime: '.NET 9', method: 'public-win32-dwm' }, activityIndicator, ...(supervision ? { supervision } : {}), limitations: ['Windows x64', 'observing restores a minimized window', 'unlocked interactive desktop for input', 'point/horizontal wheel requires native supervision', 'no secure desktop or elevation bypass'] };
     } catch (error) {
       if (signal?.aborted) throw error;
       return { ready: false, engine: 'winapp', version: pin.version, code: error.code || 'engine_unavailable', reason: error.message };

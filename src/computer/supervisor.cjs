@@ -6,6 +6,7 @@ const crypto = require('node:crypto');
 const { spawn, execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 const ROOT = path.resolve(__dirname, '../..');
+const SUPERVISOR_VERSION = 1;
 const DEFAULT_SUPERVISOR = path.join(ROOT, '.runtime', 'supervisor', 'bin', 'TraceSupervisor.exe');
 const OUTPUTS = ['TraceSupervisor.exe', 'TraceSupervisor.dll', 'TraceSupervisor.runtimeconfig.json', 'TraceSupervisor.deps.json'];
 const digest = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
@@ -24,7 +25,7 @@ async function supervisorSourceHashes(root = ROOT) {
 async function verifySupervisorFiles(binaryPath = DEFAULT_SUPERVISOR, root = ROOT) {
   try {
     const manifest = JSON.parse(await fs.readFile(path.join(path.dirname(path.dirname(binaryPath)), 'manifest.json'), 'utf8'));
-    if (manifest.version !== 1 || JSON.stringify(manifest.sources) !== JSON.stringify(await supervisorSourceHashes(root))) throw failure('supervisor_stale', 'Native supervisor source changed; rebuild computer setup.');
+    if (manifest.version !== SUPERVISOR_VERSION || JSON.stringify(manifest.sources) !== JSON.stringify(await supervisorSourceHashes(root))) throw failure('supervisor_stale', 'Native supervisor source changed; rebuild computer setup.');
     for (const name of OUTPUTS) {
       if (digest(await fs.readFile(path.join(path.dirname(binaryPath), name))) !== manifest.files?.[name]) throw failure('supervisor_integrity', 'Native supervisor output differs from its setup manifest.');
     }
@@ -123,7 +124,7 @@ class NativeSupervisor {
         const line = buffer.slice(0, newline); buffer = buffer.slice(newline + 1);
         let item;
         try { item = JSON.parse(line); } catch { protocolFailed(); return; }
-        if (item.event === 'hello' && !helloSeen && item.version === 1 && item.pid === child.pid) { helloSeen = true; helloResolve(item); continue; }
+        if (item.event === 'hello' && !helloSeen && item.version === SUPERVISOR_VERSION && item.pid === child.pid) { helloSeen = true; helloResolve(item); continue; }
         if (item.event === 'stopped') {
           const stop = { code: item.code || 'session_stopped' };
           if (item.physical === true && item.code === 'physical_escape' && Number.isFinite(item.stopLatencyMs)
@@ -284,4 +285,4 @@ async function recovery(mode = '--check', { binaryPath = DEFAULT_SUPERVISOR } = 
   }
 }
 
-module.exports = { NativeSupervisor, DEFAULT_SUPERVISOR, OUTPUTS, supervisorSourceHashes, verifySupervisorFiles, recovery, configuration };
+module.exports = { NativeSupervisor, DEFAULT_SUPERVISOR, SUPERVISOR_VERSION, OUTPUTS, supervisorSourceHashes, verifySupervisorFiles, recovery, configuration };
