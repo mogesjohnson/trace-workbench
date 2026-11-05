@@ -1,0 +1,104 @@
+{
+  "note": "First live attempt, same source. Not instrumented for the guard reply. The menu had closed before the click, so the click reached the window beneath; the next observation showed no popups.",
+  "at": "2026-11-05T03:00:56.122Z",
+  "source": "0ebc32ffd5a3747927fee3f66251a9370b28f2b1",
+  "occlusion": {
+    "point": {
+      "x": 152,
+      "y": 183
+    },
+    "menuWindowId": "526766",
+    "isError": false,
+    "error": null,
+    "outcome": "completed",
+    "inputLinesBefore": 0,
+    "inputLinesAfter": 1
+  },
+  "steps": [
+    {
+      "label": "0-base",
+      "popups": []
+    },
+    {
+      "label": "1-strip",
+      "popups": [
+        [
+          "owned",
+          "menu"
+        ]
+      ]
+    },
+    {
+      "label": "2-substrip",
+      "popups": [
+        [
+          "owned",
+          "menu"
+        ],
+        [
+          "owned",
+          "menu"
+        ]
+      ]
+    },
+    {
+      "label": "3-tooltip-screenshot-mode",
+      "popups": [
+        [
+          "same-thread-popup",
+          "tooltip"
+        ]
+      ]
+    },
+    {
+      "label": "4-native",
+      "popups": [
+        [
+          "thread-menu",
+          "menu"
+        ]
+      ]
+    },
+    {
+      "label": "5-strip-before-click",
+      "popups": [
+        [
+          "owned",
+          "menu"
+        ]
+      ]
+    },
+    {
+      "label": "6-after-refused-click",
+      "popups": []
+    },
+    {
+      "label": "7-closed",
+      "popups": []
+    }
+  ],
+  "fixtureLog": [
+    "shown hwnd=265514 button=396264",
+    "cmd strip",
+    "strip visible=True hwnd=526766",
+    "cmd substrip",
+    "substrip shown",
+    "cmd close",
+    "closed",
+    "cmd tooltip",
+    "tooltip shown",
+    "cmd close",
+    "closed",
+    "cmd native",
+    "native open",
+    "cmd close",
+    "closed",
+    "native closed result=0",
+    "cmd strip",
+    "strip visible=True hwnd=526766",
+    "input mousedown form Left",
+    "cmd close",
+    "closed",
+    "cmd exit"
+  ]
+}
