@@ -147,17 +147,7 @@ Package `2.0.0` changes the default `trace_computer_act` result, which the V1 bo
 For the development branch's opt-in current-session capture policy, see
 [capture retention](CAPTURE_RETENTION.md). The published V1 archive is unchanged.
 
-The V1 stable wrapper contract covers these six public tool names and their advertised strict input schemas: `trace_computer_doctor`, `trace_computer_list_windows`, `trace_computer_open_session`, `trace_computer_observe`, `trace_computer_act` and `trace_computer_close_session`. Inspect the connected server's schemas; unsupported fields are rejected. The supported action forms, units and limits above are part of that contract.
-
-Results carry matching JSON text and `structuredContent`. Screenshot metadata indexes a PNG block in the original complete MCP `content` array; filtering consumers must explicitly remap that index. The method adapter validates image metadata/hash, observation/session and process lifetime before exposing its remapped image array. This checks association, not producer authenticity, full PNG decoding or semantic image understanding. No formal MCP output JSON schemas are advertised.
-
-`completed` reports action delivery; `not_dispatched` requires proof that primary input never began; `unknown` preserves possible delivery. Preparation, cleanup and independently verified application effects remain separate. Errors may include bounded recovery fields; missing cleanup confirmation or an unreadable response must not become proof of safe cleanup. Unknown outcomes never authorize automatic replay.
-
-Native observations authorize one action within the server TTL (default 60 seconds), with target/geometry/focus checks at dispatch. Opt-in immediate read-only method verification can use validated post-action evidence within its stricter age/field/lifecycle policy; it cannot authorize future input. Settled checks, uncertain results and final effect verification require fresh observations. See [the method API](../src/method/README.md) for callback and checkpoint obligations.
-
-Package `1.x` preserved these documented forms and meanings; `2.x` keeps them except for the act result described above. Additive optional diagnostic/result fields are compatible; clients should tolerate unknown result metadata while requiring known authority and cleanup proof. Removing accepted inputs/tools or changing units, authority, outcome or cleanup meanings requires a new major package version and migration notes. Reject unsupported action/support versions rather than guessing. Schema string lengths count code points; shared runtime UTF-16 validation remains authoritative.
-
-`support.contractVersion: 1` identifies the declared TRACE action-support descriptor, separately from the package version, MCP protocol version and pinned engine version. Unknown legacy support remains explicitly unknown; contradictory descriptors disable the method route. Internal helpers, transient evidence tokens and native implementation files are not a serialized compatibility surface. Skill guidance is shipped as a manifest-owned bundle; source changes alone do not prove personal installed copies were updated.
+The compatibility contract now lives in [COMPATIBILITY.md](COMPATIBILITY.md): covered surfaces, version rules, result fields, identifier lifetimes, error codes, deprecation and support. Published `1.x` and `2.x` archives keep the text they shipped with. The heading stays because release notes link here.
 
 ## Selective observations (V2 development)
 

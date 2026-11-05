@@ -28,6 +28,8 @@ The published version is `0.1.0`, following preview `0.1.0-alpha.3.3`. [Release 
 
 Use `v<package-version>` tags for published releases. A merged PR is not a release. Publish only after the version, artifacts, required checks, and known limits are recorded. Report CI account or billing failures as release blockers, with the run linked.
 
+[The compatibility contract](docs/COMPATIBILITY.md) says which version bump each kind of change needs. Check it before choosing a version.
+
 ## History and local data
 
 Preserve unrelated user changes. Stage explicit paths and inspect the staged diff. Never commit personal configuration, authentication data, analysis targets, model conversations, or machine-specific paths. Sanitized receipts may record versions, hashes, tool counts, and pass/fail results.
