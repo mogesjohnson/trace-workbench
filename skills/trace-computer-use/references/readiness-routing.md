@@ -10,12 +10,13 @@ When no ready provider implements a requested operation, retain that checklist i
 
 ## TRACE's native boundary
 
-The native MCP interface contains six tools:
+The native MCP interface contains seven tools:
 
 | Tool | Purpose |
 | --- | --- |
 | `trace_computer_doctor` | Checks installed provider readiness without desktop input |
 | `trace_computer_list_windows` | Returns exact window IDs and available process/ownership evidence |
+| `trace_computer_launch` | Starts a registered app, packaged app or allowlisted Settings page with no session open, and returns its windows |
 | `trace_computer_open_session` | Binds one discovered window and acquires native ownership |
 | `trace_computer_observe` | Returns current PNG, accessibility, target/focus evidence, and observation ID |
 | `trace_computer_act` | Consumes one observation for one operation, then refreshes state |

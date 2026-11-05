@@ -13,7 +13,7 @@ elements/accessibility and remains `actionable: false`; a valid request revokes
 old input authority even on failure. Full observation is still required before
 any input and retains its readable-root, geometry, focus and action checks.
 
-The six tools and mode names remain unchanged. Doctor adds
+Tool and mode names remain unchanged. Doctor adds
 `observationModes.screenshotRequiresReadableUiaRoot: false`; the legacy support
 descriptor's readable-root requirement continues to describe full input evidence.
 Minimized screenshot observations can restore the exact target under supervision.
