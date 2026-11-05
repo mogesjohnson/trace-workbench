@@ -1,10 +1,14 @@
 # TRACE Workbench 2.2.0
 
-**Status: a candidate on `main`, not published.** It adds Road V1 item 10 (intended
-focus and operation freshness) and item 19 (the coordinate contract and related
-popups) to [2.1.0](RELEASE_2.1.0.md), with a Codex configuration fix and phone fixes.
-Published 2.1.0 and its assets remain available. Final-main CI and publication are
-pending.
+**Published 4 November 2026 with direct owner approval.**
+[Download v2.2.0](https://github.com/mogesjohnson/trace-workbench/releases/tag/v2.2.0).
+The [publication receipt](../evidence/release-2.2.0/publication.json) binds merged source
+`397d6c5`, passing final-main Windows CI, exact archive installation/rollback and five
+independently downloaded and hash-verified assets. The bundled notes and companion
+manifests keep their prepublication snapshot. It adds Road V1 item 10 (intended focus
+and operation freshness) and item 19 (the coordinate contract and related popups) to
+[2.1.0](RELEASE_2.1.0.md), with a Codex configuration fix and phone fixes. Published
+2.1.0 and its assets remain available.
 
 ## Changes
 
@@ -81,8 +85,8 @@ reinstall the phone with `install-phone-claude.cjs`.
   `v9-coordinate-contract` (5 cases), PR 139 added `v9-related-windows` (14 cases) and
   bridge and supervisor self-tests, PR 134 added a Codex configuration case, and PR 105
   added `phone-wifi-trust` (skipped without a JDK and Android SDK). PR 139's full run was
-  827 tests, 821 passed, 0 failed. Hosted Windows CI must pass on the `main` commit that
-  is released.
+  827 tests, 821 passed, 0 failed. [Final-main Windows CI](https://github.com/mogesjohnson/trace-workbench/actions/runs/41963617309)
+  passed on released commit `397d6c5`.
 - Live checks:
   - **Coordinates (PR 138).** A read-only bridge `bounds` query on six windows (Notepad,
     Explorer, Firefox, Edge, VS Code, ApplicationFrameHost) returned 144 DPI and

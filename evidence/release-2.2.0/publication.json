@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "version": "2.2.0",
+  "status": "published",
+  "releaseId": 434761745,
+  "releaseUrl": "https://github.com/mogesjohnson/trace-workbench/releases/tag/v2.2.0",
+  "publishedAt": "2026-11-05T03:50:25Z",
+  "tag": "v2.2.0",
+  "sourceCommit": "397d6c5e2206054cb5957f2769c8d926b513f8e2",
+  "ci": {
+    "url": "https://github.com/mogesjohnson/trace-workbench/actions/runs/41963617309",
+    "head": "397d6c5e2206054cb5957f2769c8d926b513f8e2",
+    "conclusion": "success"
+  },
+  "archive": {
+    "sourceCommit": "397d6c5e2206054cb5957f2769c8d926b513f8e2",
+    "file": "trace-workbench-2.2.0-source.zip",
+    "sha256": "4f4d3190c6aed5c36b3065397d4dd990b9edaea5df23a13b585ae9250b7ceb09",
+    "bytes": 24337112,
+    "retainedRequirementHashesVerified": 8,
+    "referenceHashesVerified": 13,
+    "reproductionTimezone": "UTC"
+  },
+  "assets": [
+    {
+      "name": "trace-workbench-2.2.0-source.zip",
+      "bytes": 24337112,
+      "sha256": "4f4d3190c6aed5c36b3065397d4dd990b9edaea5df23a13b585ae9250b7ceb09",
+      "id": 711965754
+    },
+    {
+      "name": "acceptance-manifest.json",
+      "bytes": 7665,
+      "sha256": "0ba622b1905bf21972a3f0285f2d7553666704855fffab408f635f7c705641f1",
+      "id": 711965756
+    },
+    {
+      "name": "distribution-receipt.json",
+      "bytes": 3372,
+      "sha256": "9ea3c49b457527e26290bf5a0f58b9989541920cdedc387a4252f528abd4d060",
+      "id": 711965753
+    },
+    {
+      "name": "RELEASE_NOTES.md",
+      "bytes": 7908,
+      "sha256": "c7560858dde7d93a30fc6a99578a1ac1663b63cc0df1eec4e8364e84c93b1f6f",
+      "id": 711965757
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 365,
+      "sha256": "e4d38c928b836efc1e99c55683a2d5dec53ab0342297883920191ef46a7d5126",
+      "id": 711965759
+    }
+  ],
+  "independentDownloadedHashesVerified": true,
+  "publicTagAndAssetMetadataVerified": true,
+  "ownerApproval": {
+    "source": "direct-owner",
+    "reply": "Approve: tag and publish",
+    "scope": "Tag v2.2.0 on 397d6c5, create the GitHub release with the five assets, re-verify downloaded hashes, open this publication PR"
+  },
+  "mergedPrs": [
+    140
+  ],
+  "limits": "Adds Road V1 items 10 and 19 with no 2.0 contract change; pointer input on a point covered by the window's own popup now returns not_dispatched / target_occluded. Scope and known limits as stated in the release notes. No head-to-head rerun and no desktop work for publication."
+}

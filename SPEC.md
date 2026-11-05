@@ -4,7 +4,7 @@
 
 `2.1.0` published 3 November 2026: fixes known limits G1–G5 without a 2.0 contract change. [Release notes](docs/RELEASE_2.1.0.md) record the live check of each fix and the TRACE-only head-to-head rerun; the [publication receipt](evidence/release-2.1.0/publication.json) records final-main CI, exact archive and five verified assets.
 
-`2.2.0` is a development candidate on `main` that adds Road V1 items 10 and 19 without a 2.0 contract change. [Candidate notes](docs/RELEASE_2.2.0.md) record the checks and limits; final-main CI and publication are pending.
+`2.2.0` published 4 November 2026: adds Road V1 items 10 and 19 without a 2.0 contract change. [Release notes](docs/RELEASE_2.2.0.md) record the checks and limits; the [publication receipt](evidence/release-2.2.0/publication.json) records final-main CI, exact archive and five verified assets.
 
 V2 published as `1.1.0` on 31 October 2026: selective evidence-only observation modes, scoped provider/I/O reductions, numeric profile reporting and opt-in current-session capture retention. [Release notes](docs/RELEASE_1.1.0.md) define scope and limits; the [publication receipt](evidence/release-1.1.0/publication.json) records reviewed integration, final-main CI, exact archive and five verified assets. [Four controlled observations](evidence/v2-observation-profile/completed-2026-10-31.json) completed with confirmed owned cleanup; remaining independent guards are retained. Existing compatible acceptance is reused, with no comparative speedup claim.
 
