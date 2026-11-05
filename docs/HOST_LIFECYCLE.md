@@ -4,7 +4,7 @@
 controller to one trusted Claude Agent SDK query/turn generation. Stop and
 SubagentStop callbacks stop admission immediately, abort in-flight requests, and
 await controller shutdown plus all admitted requests. Duplicate events share one
-completion. Existing six-tool schemas and native recovery fallbacks are unchanged.
+completion. Existing tool schemas and native recovery fallbacks are unchanged.
 
 ```javascript
 const { createClaudeLifecycle } = require('../src/method/index.cjs');

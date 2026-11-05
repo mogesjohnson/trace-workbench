@@ -113,7 +113,7 @@ Status 20 October 2026 ([case status](evidence/0.1.0-alpha.3.3/case-status.json)
 - Windows x64, a supported Node.js runtime, .NET 9 SDK with Windows Desktop reference pack for local helpers, and .NET 9 Desktop runtime for the activity marker.
 - Physical input uses an unlocked interactive desktop. Secure/elevated desktop automation is outside the initial release scope.
 - Screenshots must match exact DWM/window geometry and remain within the 6 MiB image limit. Accessibility inspection reads 8 levels by default and up to 32 on request.
-- Vertical wheel input uses 120-unit notches at an observed element's center; horizontal wheel input is unsupported.
+- Vertical wheel input defaults to 120-unit notches at an observed element's center. Since 2.0.0, opt-in `placement: 'point'` adds point and horizontal wheel input; see [Computer Use](docs/COMPUTER_USE.md).
 - The desktop lease coordinates TRACE processes for one OS user. It cannot prevent human input or unrelated automation from interfering; target/focus checks remain necessary.
 - Physical Escape during held mouse and keyboard input and ordinary injected Escape have separate passing [live receipts](docs/GAP_CLOSURE_STATUS.md). They prove their recorded source/display/session scope. The effective recovery map covers all 15 pairs with mixed compatible scopes and three legacy owner-exit metadata limits. The historical Escape-interrupted glow case stopped the reference executor and is retained separately.
 - Native journals record action metadata and artifact references. The [method library](src/method/README.md) supplies caller-managed checkpoints with fresh revalidation and explicit effect verification; neither mechanism undoes external service changes or authorizes replay after an unknown outcome.

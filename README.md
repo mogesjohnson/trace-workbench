@@ -18,7 +18,7 @@ Shared tools that give agents abilities beyond written instructions.
 
 **27 October release:** all 22 declared checkpoints are complete at their stated scopes. [Download v0.1.0](https://github.com/mogesjohnson/trace-workbench/releases/tag/v0.1.0) with verified source/setup ZIP and checksums. The [requirement checklist](docs/REQUIREMENT_EVIDENCE_REVIEW.md) preserves historical failures and operating limits.
 
-TRACE provides local tools for **Codex, Claude Code, Grok Build, and Gemini CLI**. The first two skills are **Reverse Engineer Anything** and **Computer Use**. The Windows executor exposes six MCP tools for discovering windows, observing screenshots and controls, acting, and releasing desktop ownership. A screen-edge glow shows when TRACE owns the desktop.
+TRACE provides local tools for **Codex, Claude Code, Grok Build, and Gemini CLI**. The first two skills are **Reverse Engineer Anything** and **Computer Use**. The Windows executor exposes seven MCP tools for discovering windows, launching applications, observing screenshots and controls, acting, and releasing desktop ownership. A screen-edge glow shows when TRACE owns the desktop.
 
 Read the [specification and remaining acceptance](SPEC.md). [Skill status](SKILLS.md) and [future skills under review](docs/CAPABILITIES.md) distinguish selected work from research.
 

@@ -42,9 +42,9 @@ A successful close returns `{ sessionId, closed: true, cleanup: 'confirmed' }`. 
 
 The method adapter requires explicit confirmation, including when connected to an older server. It retains uncertain close results across repeated calls and blocks further observations through that provider. Independently resolve recovery, then discard the failed provider and reconnect its server before starting a new session. Reconnection alone does not resolve recovery. Whole-controller shutdown also retains its original failed result across repeated calls.
 
-Cleanup confirmation concerns the owned session and input lifecycle. It does not prove the intended application effect or settle a deferred clipboard transaction. Existing observation freshness, input quarantine and clipboard obligations still apply. The six tools and supported Windows/display scope remain unchanged; the [V1 release notes](RELEASE_1.0.0.md) distinguish candidate readiness from publication.
+Cleanup confirmation concerns the owned session and input lifecycle. It does not prove the intended application effect or settle a deferred clipboard transaction. Existing observation freshness, input quarantine and clipboard obligations still apply. The supported Windows/display scope remains unchanged; the [V1 release notes](RELEASE_1.0.0.md) distinguish candidate readiness from publication.
 
-The server supports activation, coordinate/element clicks, typing, allowed key chords, wheel scrolling, dragging, accessibility invocation and editable values. Development extensions for supervised buttons/double-click and opt-in point/horizontal wheel are described below; they are not new published 1.1.0 acceptance. Actual tested coverage and limitations are recorded in [verification](VERIFICATION.md) and [the specification](../SPEC.md).
+The server supports activation, coordinate/element clicks, typing, allowed key chords, wheel scrolling, dragging, accessibility invocation and editable values. Supervised buttons/double-click and opt-in point/horizontal wheel, published since 2.0.0, are described below. Actual tested coverage and limitations are recorded in [verification](VERIFICATION.md) and [the specification](../SPEC.md).
 
 ### Effective action limits (V1)
 
@@ -52,7 +52,7 @@ Literal text accepts 1–8192 UTF-16 code units; editable values accept 0–8192
 
 Omitting wheel `placement` preserves legacy input: `deltaX: 0`, nonzero `deltaY` in 120-unit steps from -2400 to 2400, positive down. Its requested point selects the smallest enabled onscreen observed element; input occurs at the element center. This default is unchanged.
 
-Development item 12 adds `placement: 'point'` with both deltas in bounded 120-unit steps,
+Item 12 adds `placement: 'point'` with both deltas in bounded 120-unit steps,
 allowing zero on one axis but not both. Positive X is right and positive Y is down.
 One action inserts Y then X at the requested image point, converted to physical screen
 coordinates without replacing it with a UIA element center. A matching element is not
@@ -61,7 +61,7 @@ native supervisor and rebuilt source-matched helpers, with no unsupervised fallb
 Discover the connected schema and optional `support.actions.scroll.point`; older servers
 reject the field and cannot acquire invented support through the adapter.
 
-Development item 11 adds optional click `button: 'left' | 'right' | 'middle'` and
+Item 11 adds optional click `button: 'left' | 'right' | 'middle'` and
 `count: 1 | 2`, with count 2 left-only. Omitted/default single-left forms retain old
 paths. New variants require supervision and use one complete native event sequence
 per observation; element targets use their revalidated physical center. See the
@@ -144,20 +144,19 @@ Package `2.0.0` changes the default `trace_computer_act` result, which the V1 bo
 
 ## V1 compatibility boundary
 
-For the development branch's opt-in current-session capture policy, see
-[capture retention](CAPTURE_RETENTION.md). The published V1 archive is unchanged.
+For the opt-in current-session capture policy, see [capture retention](CAPTURE_RETENTION.md).
 
 The compatibility contract now lives in [COMPATIBILITY.md](COMPATIBILITY.md): covered surfaces, version rules, result fields, identifier lifetimes, error codes, deprecation and support. Published `1.x` and `2.x` archives keep the text they shipped with. The heading stays because release notes link here.
 
-## Selective observations (V2 development)
+## Selective observations
 
 `trace_computer_observe` accepts optional `mode: 'full' | 'accessibility' | 'screenshot'`. Omission or `full` preserves the existing combined PNG/controls response and single-use input authority. Both selective modes return a fresh evidence ID with `mode` and `actionable: false`; they revoke the prior full observation and cannot authorize any action, including activation, keys or element actions. Request and inspect a fresh full observation before input. Failed selective capture also leaves prior authority revoked; invalid mode/depth rejected before observation does not consume it.
 
-`accessibility` returns controls/depth, focus, target state and physical bounds without screenshot, capture-method or pixel-coordinate provenance. The backend skips the screenshot command; no PNG file, stat/read, hash/base64 or MCP image is produced. `screenshot` returns PNG evidence plus window/focus/target metadata, omitting public `elements` and `accessibility`. Its internal UIA inspection still uses `accessibilityDepth` (default 8, range 1–32); it saves output payload, not UIA work.
+`accessibility` returns controls/depth, focus, target state and physical bounds without screenshot, capture-method or pixel-coordinate provenance. The backend skips the screenshot command; no PNG file, stat/read, hash/base64 or MCP image is produced. `screenshot` returns PNG evidence plus window/focus/target metadata, omitting public `elements` and `accessibility`. Since item 15 it performs no UIA work; see [visual observation](VISUAL_OBSERVATION.md).
 
-All modes retain readable UIA root, identity, ownership, geometry and focus checks. Observation can restore/focus the target; evidence-only does not mean free of desktop side effects. This does not support apps without readable UIA roots, which remains a separate roadmap item. Action refresh stays full at the retained depth; the existing method adapter continues requesting full and keeps strict image validation. Discover the live `mode` schema and additive `doctor.observationModes` metadata before using selective modes; older servers reject the new input. The V1 action-support descriptor and published v1.0.0 archive are unchanged.
+Full and accessibility modes retain readable UIA root, identity, ownership, geometry and focus checks. Screenshot mode retains native lifetime and geometry checks and needs no readable UIA root. Observation can restore/focus the target; evidence-only does not mean free of desktop side effects. An app without a readable UIA root can be seen in screenshot mode, but input still needs a full observation with a readable root. Action refresh stays full at the retained depth; the existing method adapter continues requesting full and keeps strict image validation. Discover the live `mode` schema and additive `doctor.observationModes` metadata before using selective modes; older servers reject the new input. The V1 action-support descriptor and published v1.0.0 archive are unchanged.
 
-Synthetic tests verify omitted native capture/PNG work, authority invalidation, retained guards and MCP image projection. No live latency improvement, new native acceptance or V2 release is claimed.
+Synthetic tests verify omitted native capture/PNG work, authority invalidation, retained guards and MCP image projection. No live latency improvement or new native acceptance is claimed.
 
 ## Storage and recovery
 
@@ -178,13 +177,13 @@ A failed session release is cached by the running server. From 2.1.0, a later `c
 
 Inspection does not clear state. Apply validates recorded process creation/user/session identity, confirms owned-process exit and verifies input release before clearing. Unavailable foreground/desktop input access remains unresolved. Physical Escape during held mouse and keyboard input has passed scoped acceptance; a separate injected Escape case remained an ordinary action. [The gap-closure checkpoint](GAP_CLOSURE_STATUS.md) distinguishes source, ordinary operation and recovery receipts. Controlled held-mouse timeout, chord cancellation and failed-acknowledgement mouse quarantine also have passing MCP evidence with independent release and exact follow-up; other recovery cells remain incomplete. The historical alpha.3 primitive is not substituted for those cases.
 
-The [method library](../src/method/README.md) composes these six tools with ready structured-browser, application-recipe and artifact providers. Its canonical guidance is installed as one manifest-owned skill bundle. A supplied Playwright Page and host-specific application ownership inspector remain explicit runtime dependencies; installing instructions alone cannot provide them. Clipboard transactions are explicitly text-only and reject unsupported formats before mutation. Before any native paste, durably defer automatic restoration; acknowledge input quiescence only after owned native cleanup is independently confirmed. Helper EOF or close then preserves recovery instead of exposing private original bytes to an uncertain late paste. Actual paste/restoration acceptance is separate from native input acceptance.
+The [method library](../src/method/README.md) composes six of these tools, all but `trace_computer_launch`, with ready structured-browser, application-recipe and artifact providers. Its canonical guidance is installed as one manifest-owned skill bundle. A supplied Playwright Page and host-specific application ownership inspector remain explicit runtime dependencies; installing instructions alone cannot provide them. Clipboard transactions are explicitly text-only and reject unsupported formats before mutation. Before any native paste, durably defer automatic restoration; acknowledge input quiescence only after owned native cleanup is independently confirmed. Helper EOF or close then preserves recovery instead of exposing private original bytes to an uncertain late paste. Actual paste/restoration acceptance is separate from native input acceptance.
 
 To recover configuration, close the affected host, restore its matching backup, and reconnect. Restore the shared skill and discovery copies together if rolling back. Existing differing entries are reported as conflicts rather than silently replaced.
 
-## Known issue: observation token cost (code red)
+## Known issue: observation token cost
 
-Observations and action results are currently too large for sustained agent use: a 3-task desktop run consumed most of a 420k-token context. Causes, measurements and required fixes are in [the incident report](OBSERVATION_TOKEN_COST_INCIDENT.md). Until those fixes land, request the smallest `accessibilityDepth` that contains your target (start at 2) and prefer `mode: "accessibility"` for checks that do not need input authority.
+On 2 November 2026 a 3-task desktop run consumed most of a 420k-token context. Causes and measurements are in [the incident report](OBSERVATION_TOKEN_COST_INCIDENT.md). 2.0.0 made the act result compact by default and 2.1.0 made `interactiveOnly` leaner. Keep requests small: request the smallest `accessibilityDepth` that contains your target (start at 2) and prefer `mode: "accessibility"` for checks that do not need input authority.
 
 ## Verify
 

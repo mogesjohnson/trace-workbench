@@ -1,6 +1,8 @@
 # TRACE 0.1.0 integration and publication procedure
 
-Prepared candidate; no merge, tag or release has been performed. Use [release notes](RELEASE_0.1.0.md), [acceptance manifest](../evidence/release-0.1.0/acceptance-manifest.json) and [requirement map](REQUIREMENT_EVIDENCE_REVIEW.md) as the review packet.
+**Historical.** This is the procedure used for 0.1.0, kept as a record. Current rules are in [version control](../VERSION_CONTROL.md) and the [compatibility contract](COMPATIBILITY.md), and each later release has its own publication receipt. Its original text follows.
+
+Use [release notes](RELEASE_0.1.0.md), [acceptance manifest](../evidence/release-0.1.0/acceptance-manifest.json) and [requirement map](REQUIREMENT_EVIDENCE_REVIEW.md) as the review packet.
 
 ## Before owner approval
 
