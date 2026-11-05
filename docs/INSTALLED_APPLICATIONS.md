@@ -29,7 +29,7 @@ The native lease/marker is released after bounded handoff. The launched app stay
 open; its independent process is not an input-helper job child and crash cleanup
 of that application is not promised. Unknown lease cleanup stays explicit.
 This can activate the desktop and requires normal host authorization/readiness.
-Installed defaults/settings/registrations are not edited. Six MCP tools remain.
+Installed defaults/settings/registrations are not edited. This library adds no MCP tool.
 
 The [owned-fixture receipt](../evidence/visual-app-handoff/acceptance.json) records
 registered discovery/launch/window handoff and two independently decoded MCP
