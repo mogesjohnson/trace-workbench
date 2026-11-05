@@ -390,7 +390,7 @@ function createComputerController(options = {}) {
     const result = {
       sessionId: session.id, observationId, window: interactiveOnly ? leanWindow(snapshot.window) : snapshot.window, bounds,
       elements: interactiveOnly ? (snapshot.elements ?? []).map(leanElement) : snapshot.elements ?? [], observedAt: new Date(observedAtMs).toISOString(),
-      coordinateSpace: 'window-local-physical-pixels', coordinates: coordinateContract(bounds, snapshot.dpi, screenshot), captureMethod: snapshot.captureMethod ?? 'native-window',
+      coordinateSpace: 'window-local-physical-pixels', coordinates: coordinateContract(bounds, snapshot.dpi, screenshot, snapshot.dpiAwareness), captureMethod: snapshot.captureMethod ?? 'native-window',
       accessibility: { truncated: snapshot.truncated === true, depth: snapshot.depth,
         ...(Number.isInteger(snapshot.offscreenOmitted) && snapshot.offscreenOmitted > 0 ? { offscreenOmitted: snapshot.offscreenOmitted } : {}),
         ...(rootElementId === undefined ? {} : { rootElementId }), ...(interactiveOnly ? { interactiveOnly: true } : {}),

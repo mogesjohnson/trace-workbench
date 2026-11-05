@@ -100,12 +100,15 @@ function validateAction(action, observation) {
 }
 
 // Names each pixel space in one observation. An action point = image pixel * physicalPerImagePixel;
-// add windowOrigin for a physical screen position. Logical scale is reported, never assumed.
-function coordinateContract(bounds, dpi, screenshot) {
+// add windowOrigin for a physical screen position. Logical scale is reported, never assumed: an
+// unaware or system-aware window's DPI is virtualized, so only a per-monitor-aware window has one.
+function coordinateContract(bounds, dpi, screenshot, dpiAwareness) {
+  const known = Number.isInteger(dpi) && dpi > 0 && dpiAwareness === 'per-monitor';
   return { actionPoints: 'window-local-physical-pixels', elementBounds: 'physical-screen-pixels',
     windowOrigin: { x: bounds.x, y: bounds.y },
     ...(screenshot ? { image: { origin: 'window-top-left', physicalPerImagePixel: screenshot.scale?.factor ?? 1 } } : {}),
-    logical: Number.isInteger(dpi) && dpi > 0 ? { available: true, dpi, physicalPerLogicalPixel: dpi / 96 } : { available: false } };
+    logical: known ? { available: true, dpi, physicalPerLogicalPixel: dpi / 96 }
+      : { available: false, ...(typeof dpiAwareness === 'string' ? { dpiAwareness } : {}) } };
 }
 
 function actionSupport(observationTtlMs = 60000) {
