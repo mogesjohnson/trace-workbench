@@ -4,6 +4,9 @@ const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
 const { randomUUID, createHash } = require('node:crypto');
+const { version: packageVersion } = require('../../package.json');
+const { schema: skillBundleSchema } = require('../../skills/trace-computer-use/manifest.json');
+const { SUPERVISOR_VERSION } = require('./supervisor.cjs');
 const { DesktopLease } = require('./lease.cjs');
 const { ActivityIndicator } = require('./activity-indicator.cjs');
 const { validateAction, actionSupport, compactSupport, coordinateContract } = require('./action-contract.cjs');
@@ -496,6 +499,10 @@ function createComputerController(options = {}) {
         if (callOptions.verbose !== undefined && typeof callOptions.verbose !== 'boolean') throw fail('invalid_argument', 'verbose must be a boolean.');
         const result = await backend.doctor({ signal });
         return { ...result, support: callOptions.verbose ? actionSupport(observationTtlMs) : compactSupport(observationTtlMs),
+          // Outside support, so that adding a version here never changes the descriptor digest.
+          versions: { package: packageVersion, contract: actionSupport().contractVersion, engine: result.version ?? null,
+            bridge: result.bridge?.version ?? null, supervisor: SUPERVISOR_VERSION, skillBundle: skillBundleSchema },
+          deprecations: [],
           observationModes: { default: 'full', actionable: ['full'], evidenceOnly: ['accessibility', 'screenshot'], screenshotRequiresReadableUiaRoot: false,
             screenshotModes: { values: [...SCREENSHOT_MODES], default: 'full', actionableWithout: true, scaledMaxEdge: DEFAULT_MAX_EDGE } },
           observationScope: { rootElementId: true, interactiveOnly: true },
@@ -506,7 +513,7 @@ function createComputerController(options = {}) {
           captureRetention: { mode: captureKeepLast ? 'keep-last' : 'preserve', keepLast: captureKeepLast,
             scope: 'validated-current-session-captures', onClose: captureKeepLast ? 'remove-tracked' : 'preserve' }, readiness: {
           native: { ready: result.ready === true, code: result.code || null, reason: result.reason || null },
-          target: { ready: null, reason: 'Exact target, geometry, patterns and focus are checked during observation and dispatch.' },
+          target: { ready: null, reason: 'Checked during observation and dispatch.' },
         } };
       }, callOptions);
     },

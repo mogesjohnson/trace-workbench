@@ -22,6 +22,7 @@ Usage:
   trace-workbench computer mcp
   trace-workbench computer doctor
   trace-workbench --help
+  trace-workbench --version
 
 Clients: codex, claude_code, grok_build, gemini_cli
 Without --client, all four clients are selected. Repeating --client narrows

@@ -18,6 +18,10 @@ async function phone(args) {
 }
 
 async function dispatch(args) {
+  if (args.length === 1 && args[0] === '--version') {
+    process.stdout.write(`${require('../package.json').version}\n`);
+    return 0;
+  }
   if (args[0] === 'phone') return phone(args.slice(1));
   if (args[0] !== 'computer') return runCli(args);
   const [command, ...extra] = args.slice(1);
