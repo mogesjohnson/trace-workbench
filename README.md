@@ -37,7 +37,7 @@ npm run computer:config -- --apply
 
 Review each plan before applying it. Setup pins the Windows engine locally; configuration preserves unrelated settings and exact backups. Reconnect agent hosts after installation or code changes.
 
-[Computer Use operation and recovery](docs/COMPUTER_USE.md) · [Analysis setup](docs/SETUP.md) · [Third-party notices](THIRD_PARTY_NOTICES.md)
+[Computer Use operation and recovery](docs/COMPUTER_USE.md) · [Compatibility and support](docs/COMPATIBILITY.md) · [Analysis setup](docs/SETUP.md) · [Third-party notices](THIRD_PARTY_NOTICES.md)
 
 ## Verified
 
