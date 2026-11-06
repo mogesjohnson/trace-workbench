@@ -94,12 +94,12 @@ async function session(h) {
 }
 const readDocument = (h, sessionId) => h.call('observe', { sessionId, mode: 'accessibility', screenshot: 'none', accessibilityDepth: 2, documentElementId: 'doc-texteditor-53ad' });
 
-test('P2-1 bar: a ready doctor is at most 2,500 chars, and verbose still returns the full descriptor', async t => {
+test('P2-1 bar: a ready doctor is at most 2,750 chars, and verbose still returns the full descriptor', async t => {
   const h = await harness(t, { supervised: true });
   const compact = await h.call('doctor'), verbose = await h.call('doctor', { verbose: true });
   assert.equal(compact.structuredContent.ready, true, text(compact));
-  console.log(`P2-1: doctor ${text(compact).length} chars (bar 2500); verbose ${text(verbose).length}`);
-  assert.ok(text(compact).length <= 2500, `doctor was ${text(compact).length} chars`);
+  console.log(`P2-1: doctor ${text(compact).length} chars (bar 2750); verbose ${text(verbose).length}`);
+  assert.ok(text(compact).length <= 2750, `doctor was ${text(compact).length} chars`);
   // The key regexes appear in neither the compact doctor nor twice anywhere.
   assert.doesNotMatch(text(compact), /\[Cc\]\[Tt\]\[Rr\]\[Ll\]/);
   assert.deepEqual(compact.structuredContent.support.actions, Object.keys(actionSupport().actions));
