@@ -279,7 +279,7 @@ async function verifyBridgeFiles(bridgePath = DEFAULT_BRIDGE) {
     }
   } catch (error) {
     if (error instanceof BackendError) throw error;
-    fail('bridge_unavailable', 'Window bridge is not built. Computer setup requires the .NET 9 SDK; running it requires .NET 9.');
+    fail('bridge_unavailable', 'Window bridge is not built. Computer setup requires the .NET 10 SDK; running it requires .NET 10.');
   }
 }
 
@@ -410,12 +410,12 @@ class WinappBackend {
           nextStep: 'A session release failed earlier. Recovery is clear now; close that session to release the desktop.' };
       }
       const runtimes = await this.run('dotnet', ['--list-runtimes'], { signal, maxOutputBytes: 128 * 1024 });
-      if (runtimes.exitCode !== 0 || !/^Microsoft\.WindowsDesktop\.App 9\.\d+\.\d+\s+\[/m.test(runtimes.stdout)) fail('indicator_runtime', 'The .NET 9 Windows Desktop runtime is required by the visible activity indicator.');
+      if (runtimes.exitCode !== 0 || !/^Microsoft\.WindowsDesktop\.App 10\.\d+\.\d+\s+\[/m.test(runtimes.stdout)) fail('indicator_runtime', 'The .NET 10 Windows Desktop runtime is required by the visible activity indicator.');
       const bridge = await this.bridge('info', null, signal);
       if (bridge.version !== 1) fail('bridge_version', 'Unexpected window bridge version.');
       const result = await this.run(this.binaryPath, ['--version'], { signal });
       if (result.exitCode !== 0 || !new RegExp(`(^|\\s)${pin.version.replaceAll('.', '\\.')}($|\\s)`).test(result.stdout)) fail('engine_version', 'Unexpected Windows engine version.');
-      return { ready: true, engine: 'winapp', version: pin.version, platform: this.platform, architecture: this.arch, transport: 'public-cli', integrity: 'verified', bridge: { version: 1, runtime: '.NET 9', method: 'public-win32-dwm' }, activityIndicator, ...(supervision ? { supervision } : {}), limitations: ['Windows x64', 'observing restores a minimized window', 'unlocked interactive desktop for input', 'point/horizontal wheel requires native supervision', 'no secure desktop or elevation bypass'] };
+      return { ready: true, engine: 'winapp', version: pin.version, platform: this.platform, architecture: this.arch, transport: 'public-cli', integrity: 'verified', bridge: { version: 1, runtime: '.NET 10', method: 'public-win32-dwm' }, activityIndicator, ...(supervision ? { supervision } : {}), limitations: ['Windows x64', 'observing restores a minimized window', 'unlocked interactive desktop for input', 'point/horizontal wheel requires native supervision', 'no secure desktop or elevation bypass'] };
     } catch (error) {
       if (signal?.aborted) throw error;
       return { ready: false, engine: 'winapp', version: pin.version, code: error.code || 'engine_unavailable', reason: error.message };

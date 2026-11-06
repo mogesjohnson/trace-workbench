@@ -49,7 +49,7 @@ function fakeWinapp(state) {
     const hwnd = args[1] === 'status' ? args[args.indexOf('-w') + 1] : /^\d+$/.test(args[1] ?? '') ? args[1] : '1234';
     const identity = { hwnd, pid: 456, processCreationTime: '100', sessionId: 1 };
     if (executable === 'supervisor.exe') return json({ recoveryRequired: false, ready: true, code: null });
-    if (executable === 'dotnet') return { stdout: 'Microsoft.WindowsDesktop.App 9.0.4 [C:\\dotnet]\n', stderr: '', exitCode: 0 };
+    if (executable === 'dotnet') return { stdout: 'Microsoft.WindowsDesktop.App 10.0.4 [C:\\dotnet]\n', stderr: '', exitCode: 0 };
     if (args[0] === '--version') return { stdout: '0.7.1\n', stderr: '', exitCode: 0 };
     if (args[0] === 'info') return json({ version: 1 });
     if (args[0] === 'bounds' || args[0] === 'activate') return json({ ...identity, frameBounds: { ...rect }, windowBounds: { ...rect }, foreground: true, minimized: false, enabled: true });

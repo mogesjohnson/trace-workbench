@@ -22,7 +22,7 @@ Before dispatching native paste/input that might read the clipboard, await `defe
 
 ## Build and pure verification
 
-Build with the existing .NET 9 SDK and an empty local package feed; no package download is required. Use TRACE's setup integration when available so helper source/output hashes are verified before launch.
+Build with the existing .NET 10 SDK and an empty local package feed; no package download is required. Use TRACE's setup integration when available so helper source/output hashes are verified before launch.
 
 `TraceClipboard.exe --self-test` exercises `ClipboardService` using fake clipboard/sequence/storage objects. It never constructs the Win32 backend or DPAPI store and makes zero actual clipboard API calls. The Node test suite uses injected transports and synthetic formats. Live clipboard acceptance is separate and must verify actual supported bytes, guarded refusal after owner changes, and cleanup.
 

@@ -17,7 +17,7 @@ internal static partial class Program
             if (!OperatingSystem.IsWindows()) throw new BridgeException("unsupported_platform", "Windows is required.");
             if (args.Length == 1 && args[0] == "info")
             {
-                Write(new { version = 1, runtime = "net9.0-windows", capabilities = new[] { "identities", "identity", "bounds", "activate", "release-left", "click", "wheel", "document", "capture", "related", "hit", "apps", "process", "packaged", "packaged-identities", "activate-package", "selftest" } });
+                Write(new { version = 1, runtime = "net10.0-windows", capabilities = new[] { "identities", "identity", "bounds", "activate", "release-left", "click", "wheel", "document", "capture", "related", "hit", "apps", "process", "packaged", "packaged-identities", "activate-package", "selftest" } });
                 return 0;
             }
             if (args.Length == 1 && args[0] == "selftest") { PointerSelfTest(); DocumentSelfTest(); CaptureSelfTest(); RelatedSelfTest(); ApplicationSelfTest(); PackageSelfTest(); Write(new { passed = true, inputSent = false }); return 0; }

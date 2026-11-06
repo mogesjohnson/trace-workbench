@@ -110,7 +110,7 @@ Status 20 October 2026 ([case status](evidence/0.1.0-alpha.3.3/case-status.json)
 
 ## Current operating limits
 
-- Windows x64, a supported Node.js runtime, .NET 9 SDK with Windows Desktop reference pack for local helpers, and .NET 9 Desktop runtime for the activity marker.
+- Windows x64, a supported Node.js runtime, .NET 10 SDK with Windows Desktop reference pack for local helpers, and .NET 10 Desktop runtime for the activity marker.
 - Physical input uses an unlocked interactive desktop. Secure/elevated desktop automation is outside the initial release scope.
 - Screenshots must match exact DWM/window geometry and remain within the 6 MiB image limit. Accessibility inspection reads 8 levels by default and up to 32 on request.
 - Vertical wheel input defaults to 120-unit notches at an observed element's center. Since 2.0.0, opt-in `placement: 'point'` adds point and horizontal wheel input; see [Computer Use](docs/COMPUTER_USE.md).

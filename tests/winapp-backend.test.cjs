@@ -25,7 +25,7 @@ function mock(handler) {
   const calls = [];
   const backend = new WinappBackend({ platform: 'win32', arch: 'x64', verify: async () => {}, verifyBridge: async () => {}, verifyIndicator: async () => ({ available: true, integrity: 'verified', protocol: 1 }), run: async (executable, args, options) => {
     calls.push({ executable, args, options });
-    if (args[0] === '--list-runtimes') return { stdout: 'Microsoft.WindowsDesktop.App 9.0.10 [synthetic-runtime]\n', stderr: '', exitCode: 0 };
+    if (args[0] === '--list-runtimes') return { stdout: 'Microsoft.WindowsDesktop.App 10.0.10 [synthetic-runtime]\n', stderr: '', exitCode: 0 };
     if (args[0] === '--version') return { stdout: pin.version + '\n', stderr: '', exitCode: 0 };
     if (handler) {
       const override = await handler(args, calls);
@@ -88,7 +88,18 @@ test('doctor refuses to claim a marker is usable when the .NET Desktop runtime i
   const { backend } = mock();
   const run = backend.run;
   backend.run = (executable, args, options) => args[0] === '--list-runtimes'
-    ? Promise.resolve({ stdout: 'Microsoft.NETCore.App 9.0.10 [synthetic-runtime]\n', stderr: '', exitCode: 0 })
+    ? Promise.resolve({ stdout: 'Microsoft.NETCore.App 10.0.10 [synthetic-runtime]\n', stderr: '', exitCode: 0 })
+    : run(executable, args, options);
+  const result = await backend.doctor();
+  assert.equal(result.ready, false);
+  assert.equal(result.code, 'indicator_runtime');
+});
+
+test('doctor refuses a machine with only the .NET 9 Desktop runtime', async () => {
+  const { backend } = mock();
+  const run = backend.run;
+  backend.run = (executable, args, options) => args[0] === '--list-runtimes'
+    ? Promise.resolve({ stdout: 'Microsoft.WindowsDesktop.App 9.0.22 [synthetic-runtime]\n', stderr: '', exitCode: 0 })
     : run(executable, args, options);
   const result = await backend.doctor();
   assert.equal(result.ready, false);

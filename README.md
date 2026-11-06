@@ -24,7 +24,7 @@ Read the [specification and remaining acceptance](SPEC.md). [Skill status](SKILL
 
 ## Computer Use setup
 
-Requires Windows x64, a supported Node.js version, and .NET 9 SDK/runtime.
+Requires Windows x64, a supported Node.js version, and .NET 10 SDK/runtime.
 
 ```powershell
 npm ci

@@ -20,9 +20,9 @@ For an unverified archive, select its full 40-character Git commit:
 npm run verify:archive -- --commit <full-commit-sha>
 ```
 
-Omitting `--commit` selects the current HEAD, including no uncommitted changes. Windows x64, Node.js 26, .NET 9 SDK/Desktop runtime, Git, npm and network access to the pinned dependencies are required. Receipts and private logs remain under `.runtime/archive-install/verify-*`; only the sanitized receipt is suitable for sharing. Symlinks, submodules and redirected extraction/configuration paths are rejected.
+Omitting `--commit` selects the current HEAD, including no uncommitted changes. Windows x64, Node.js 26, .NET 10 SDK/Desktop runtime, Git, npm and network access to the pinned dependencies are required. Receipts and private logs remain under `.runtime/archive-install/verify-*`; only the sanitized receipt is suitable for sharing. Symlinks, submodules and redirected extraction/configuration paths are rejected.
 
-The Windows CI workflow provisions .NET 9 and runs this verifier after the existing checks. A local result does not establish a fresh-runner result. CI must actually execute successfully before its release gate passes.
+The Windows CI workflow provisions .NET 10 and runs this verifier after the existing checks. A local result does not establish a fresh-runner result. CI must actually execute successfully before its release gate passes.
 
 ## Observed scope
 

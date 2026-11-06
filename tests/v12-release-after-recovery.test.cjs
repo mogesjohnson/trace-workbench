@@ -119,7 +119,7 @@ test('M1: doctor names a release that is waiting on a closed session once recove
   const backend = new WinappBackend({ platform: 'win32', arch: 'x64', supervisor, verify: async () => {}, verifyBridge: async () => {},
     verifyIndicator: async () => ({ available: true }), run: async (executable, args) => {
       if (executable === 'supervisor.exe') return json(CLEAR);
-      if (executable === 'dotnet') return { stdout: 'Microsoft.WindowsDesktop.App 9.0.4 [C:\dotnet]\n', stderr: '', exitCode: 0 };
+      if (executable === 'dotnet') return { stdout: 'Microsoft.WindowsDesktop.App 10.0.4 [C:\dotnet]\n', stderr: '', exitCode: 0 };
       if (args[0] === '--version') return { stdout: '0.7.1\n', stderr: '', exitCode: 0 };
       return json({ version: 1 });
     } });

@@ -59,7 +59,7 @@ async function build() {
   let exit;
   try { exit = await new Promise((resolve, reject) => { child.once('error', reject); child.once('exit', code => resolve(code)); }); }
   finally { clearTimeout(timeout); }
-  if (exit !== 0) throw new Error('Owned glow fixture build failed; local .NET 9 SDK/Desktop reference pack is required.');
+  if (exit !== 0) throw new Error('Owned glow fixture build failed; local .NET 10 SDK/Desktop reference pack is required.');
   if (JSON.stringify(before) !== JSON.stringify(await sourceHashes())) throw new Error('Fixture source changed during build.');
   const files = {};
   for (const name of OUTPUTS) {
@@ -111,7 +111,7 @@ async function live(options) {
 
 async function main(args = process.argv.slice(2)) {
   const options = parse(args);
-  if (options.mode === 'plan') return { fixture: 'owned-fullscreen-primary-screen', physicalInputActions: 0, commands: ['focus', 'capture-desktop', 'close'], requirements: ['Windows interactive unlocked desktop', '.NET 9 SDK/Desktop runtime'], sources: await sourceHashes() };
+  if (options.mode === 'plan') return { fixture: 'owned-fullscreen-primary-screen', physicalInputActions: 0, commands: ['focus', 'capture-desktop', 'close'], requirements: ['Windows interactive unlocked desktop', '.NET 10 SDK/Desktop runtime'], sources: await sourceHashes() };
   if (options.mode === 'build') return build();
   if (options.mode === 'command') return command(options);
   return live(options);

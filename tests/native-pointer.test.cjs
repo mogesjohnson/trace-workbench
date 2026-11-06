@@ -14,8 +14,8 @@ test('compiled pointer planning and supervisor declaration/release checks send n
 }, async t => {
   let sdks;
   try { sdks = await execute('dotnet', ['--list-sdks'], { windowsHide: true, timeout: 15000 }); }
-  catch { t.skip('.NET 9 SDK unavailable; native contract checks not run.'); return; }
-  if (!/^9\./m.test(sdks.stdout)) { t.skip('.NET 9 SDK unavailable; native contract checks not run.'); return; }
+  catch { t.skip('.NET 10 SDK unavailable; native contract checks not run.'); return; }
+  if (!/^10\./m.test(sdks.stdout)) { t.skip('.NET 10 SDK unavailable; native contract checks not run.'); return; }
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'trace-pointer-contract-'));
   t.after(async () => {
     const resolved = path.resolve(directory);
