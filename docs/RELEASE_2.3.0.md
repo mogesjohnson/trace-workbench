@@ -23,6 +23,15 @@ Existing installs must rebuild the helpers after updating. Install the .NET 10 S
 `npm run computer:setup -- --apply`. Until then doctor is not ready and reports a stale
 helper such as `bridge_stale`.
 
+## Doctor size bar raised to 2,750 characters
+
+- The compact ready doctor bar (P2-1 in the
+  [token cost incident](OBSERVATION_TOKEN_COST_INCIDENT.md)) rises from 2,500 to 2,750
+  characters. A real ready doctor on the .NET 10 build, measured on 6 November 2026 after
+  `setup --apply`, was 2,489 characters (verbose 6,235), leaving 11 characters under the
+  old bar. The owner chose 2,750 for about 10% headroom.
+- The doctor's output is unchanged. Only the test bar moves.
+
 ## Not yet verified
 
 - Native live evidence recorded on the .NET 9 build does not carry over. Live desktop

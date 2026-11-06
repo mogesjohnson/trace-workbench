@@ -159,7 +159,7 @@ Each fix needs a test that measures response size. These numbers are the bar.
 | P1-3 | `open_session` accepts a window id from a recent listing without a mandatory re-list, or `list_windows` takes a `processName`/`title` filter | Session on a just-launched window costs one small call |
 | P1-4 | A distinct outcome `target_closed_after_dispatch`, replacing `internal_error` | Save/Close actions report it; the test covers it |
 | P1-5 | Report response size (`responseBytes`) and add a skill rule: start at depth 2 and escalate only on need | Skill text and doctor field updated |
-| P2-1 | Move `metrics` behind an opt-in flag; stop printing the key regex twice in `doctor` | `doctor` ≤ 2,500 chars |
+| P2-1 | Move `metrics` behind an opt-in flag; stop printing the key regex twice in `doctor` | `doctor` ≤ 2,500 chars; raised to 2,750 on 6 Nov 2026 after a real ready doctor measured 2,489 ([2.3.0 notes](RELEASE_2.3.0.md)) |
 | P2-2 | Text readback for RichEdit/Notepad documents (F4) | Notepad text read back exactly |
 | P2-3 | Optional `launch` tool, or a documented launcher contract (F1) | Notepad/Firefox/Settings launched without a shell |
 | P2-4 | Modal-dialog handoff: a session follows an owned modal, or reports it explicitly (F2) | Save As completed without close/re-list/re-open |
