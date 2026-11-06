@@ -95,6 +95,17 @@ test('doctor refuses to claim a marker is usable when the .NET Desktop runtime i
   assert.equal(result.code, 'indicator_runtime');
 });
 
+test('doctor refuses a machine with only the .NET 9 Desktop runtime', async () => {
+  const { backend } = mock();
+  const run = backend.run;
+  backend.run = (executable, args, options) => args[0] === '--list-runtimes'
+    ? Promise.resolve({ stdout: 'Microsoft.WindowsDesktop.App 9.0.22 [synthetic-runtime]\n', stderr: '', exitCode: 0 })
+    : run(executable, args, options);
+  const result = await backend.doctor();
+  assert.equal(result.ready, false);
+  assert.equal(result.code, 'indicator_runtime');
+});
+
 test('discovery preserves PID and dimensions without inventing unknown x/y', async () => {
   const { backend } = mock(args => args[1] === 'list-windows' ? [{ hwnd: 1234, processId: 456, processName: 'TraceFixture', title: 'TRACE fixture', width: 300, height: 400 }] : undefined);
   assert.deepEqual(await backend.listWindows(), [{ ...window, bounds: { x: null, y: null, width: 300, height: 400 } }]);
