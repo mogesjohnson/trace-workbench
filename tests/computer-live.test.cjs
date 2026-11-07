@@ -119,3 +119,17 @@ test('supervisor harnesses that read act().observation ask for the full act resu
     }
   }
 });
+
+test('harnesses that replacement-acceptance-common requires back export before they start run()', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  // Run as main, quarantine's run() loads replacement-acceptance-common, which requires these
+  // scripts back. Exports set after the main call are still {} then ('shared.waitFor is not a function').
+  const common = fs.readFileSync(path.join(__dirname, '../scripts/replacement-acceptance-common.cjs'), 'utf8');
+  const names = [...common.matchAll(/^const .*require\('\.\/(accept-[\w-]+)\.cjs'\)/gm)].map(match => match[1]);
+  assert.deepEqual(names.sort(), ['accept-supervisor-quarantine', 'accept-supervisor-recovery']);
+  for (const name of names) {
+    const source = fs.readFileSync(path.join(__dirname, `../scripts/${name}.cjs`), 'utf8');
+    assert.ok(source.indexOf('\nmodule.exports = ') < source.indexOf('\nif (require.main === module)'), name);
+  }
+});
