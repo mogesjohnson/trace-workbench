@@ -405,7 +405,8 @@ async function run(options = {}, injected = {}) {
   return receipt;
 }
 
+// Export before starting run(): it loads modules that require this one back.
+module.exports = { plan, parseArgs, assertIndependentProof, connectionConfiguration, command, waitFor, exited, exactNativeExit, fixtureState, connect, open, followup, prepareContinuation, run };
 if (require.main === module) run(parseArgs(process.argv.slice(2))).then(receipt => {
   process.stdout.write(JSON.stringify(receipt, null, 2) + '\n'); if (receipt.status && receipt.status !== 'pass') process.exitCode = 1;
 }).catch(error => { process.stderr.write(String(error.message) + '\n'); process.exitCode = 1; });
-module.exports = { plan, parseArgs, assertIndependentProof, connectionConfiguration, command, waitFor, exited, exactNativeExit, fixtureState, connect, open, followup, prepareContinuation, run };

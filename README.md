@@ -6,6 +6,8 @@ Shared tools that give agents abilities beyond written instructions.
 
 **Version:** [`2.2.0`](https://github.com/mogesjohnson/trace-workbench/releases/tag/v2.2.0) · **Status:** Published for the declared Windows scope
 
+**Development candidate: `2.3.0`** moves the native helpers to .NET 10 (a runtime floor change: install the .NET 10 SDK and rebuild the helpers), adds the [compatibility contract](docs/COMPATIBILITY.md), doctor `versions` and `--version`, and raises the doctor size bar to 2,750 characters. [Candidate notes](docs/RELEASE_2.3.0.md) record the checks and limits; final-main CI and publication are pending.
+
 **2.2.0 published, 4 November:** adds intended focus for typing and operation freshness (Road V1 item 10), a `coordinates` block that names every pixel space, and `relatedWindows` that reports menus, tooltips and owned popups and refuses pointer input they cover (item 19), plus a Codex configuration fix and phone fixes. [Release notes](docs/RELEASE_2.2.0.md) keep the 2.0 contract. The [publication receipt](evidence/release-2.2.0/publication.json) binds source `397d6c5`, passing final-main CI, exact archive and five verified assets.
 
 **2.1.0 published, 3 November:** fixes 2.0.0 known limits G1–G5: a session is released after a confirmed recovery, keyboard closes report `target_closed_after_dispatch`, Settings and packaged apps launch, `interactiveOnly` is leaner, and observe is faster (8 provider launches instead of 12). [Release notes](docs/RELEASE_2.1.0.md) keep the 2.0 contract. The [publication receipt](evidence/release-2.1.0/publication.json) binds source `acca833`, passing final-main CI, exact archive and five verified assets.

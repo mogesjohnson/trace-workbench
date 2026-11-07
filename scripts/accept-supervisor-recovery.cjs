@@ -411,8 +411,9 @@ async function run(options) {
   return manifest;
 }
 
+// Export before starting run(): it loads modules that require this one back.
+module.exports = { cells, plan, parseArgs, validateDisplay, compareDisplay, stateOf, run, runCell };
 if (require.main === module) run(parseArgs(process.argv.slice(2))).then(result => {
   process.stdout.write(JSON.stringify(result, null, 2) + '\n');
   if (result.status && result.status !== 'pass') process.exitCode = 1;
 }).catch(error => { process.stderr.write(String(error.message) + '\n'); process.exitCode = 1; });
-module.exports = { cells, plan, parseArgs, validateDisplay, compareDisplay, stateOf, run, runCell };
