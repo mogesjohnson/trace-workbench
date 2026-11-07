@@ -153,7 +153,8 @@ async function connectCell(directory, mode, failure) {
 }
 
 async function openTarget(connection, fixture) {
-  const discovery = await connection.call('list_windows');
+  // The compact listing omits processCreationTime; ask for the verbose one.
+  const discovery = await connection.call('list_windows', { verbose: true });
   const target = discovery.windows.find(window => window.pid === fixture.pid && window.title === fixture.title);
   assert.ok(target?.processCreationTime, 'Exact discovered process generation is required.');
   const session = await connection.call('open_session', { windowId: target.id });

@@ -164,7 +164,8 @@ async function connect(directory, input = 'none', fault = false, options = {}) {
   };
 }
 async function open(connection, fixture) {
-  const listed = await connection.call('list_windows');
+  // The compact listing omits processCreationTime; ask for the verbose one.
+  const listed = await connection.call('list_windows', { verbose: true });
   const target = listed.windows.find(window => window.pid === fixture.pid && window.title === fixture.title);
   assert.ok(target?.processCreationTime, 'A current exact process generation is required.');
   const session = await connection.call('open_session', { windowId: target.id });
