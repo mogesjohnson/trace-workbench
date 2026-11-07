@@ -28,13 +28,13 @@ focused typing and clipboard.
 
 ## Not run
 
-- **Physical keyboard and mouse stops:** these need a physical action, and the owner was
-  off the desktop (owner decision, 6 November 2026).
 - **Quarantine ACK typing and clipboard Unicode paste:** both need a claim in the
   historical live-acceptance continuation ledger. That budget is closed: clipboard has
   used both claims, and typing's last claim is only for a corrective retry after a
   failure. The earlier passes were on .NET 9. Owner decision, 7 November 2026: record
-  both as not run on .NET 10 and leave the ledger alone.
+  both as not run on .NET 10 and leave the ledger alone. Later that day the owner chose
+  to re-prove both on .NET 10 under a new acceptance contract, drafted in its own PR
+  before any live run.
 
 ## Blocked attempts and how they were resolved
 
@@ -58,3 +58,33 @@ focused typing and clipboard.
   function`. Mouse attempt 1 failed this way after the effect, with input released and
   recovery clear. Attempt 2, and chord, ran through a private wrapper that imports the
   unchanged harness and calls `run()`. The entry-order fix ships separately.
+
+## After publication: physical stops, 7 November 2026
+
+Run after 2.3.0 was published, from the main checkout detached at `f2153fc`. The native
+supervisor sources hash the same as above, so these cover the published build. Results
+are in `postPublication` in [summary.json](summary.json).
+
+| Case | Result |
+|---|---|
+| Physical mouse stop (`stop-physical-mouse-restart/`) | Pass: physical Escape seen 0.53 ms after the hook event, held button released 239 ms later, later action rejected with `session_stopped`, new session counter +1 |
+| Physical keyboard stop (`stop-physical-keyboard-restart/`) | Pass: physical Escape seen 0.74 ms after the hook event, held C released 230 ms later, text `abc` stable, later action rejected, new session counter +1 |
+
+Both ran through a private runner, `.runtime/run-dotnet10-stop.cjs`. It calls the
+unchanged `scripts/accept-supervisor-stop.cjs` `run()` with the audible cue on and writes
+the root start file as soon as the harness prints `PREPARED`.
+
+Four earlier attempts did not pass. None was a TRACE fault, and each cleaned up with no
+input held and no recovery needed:
+
+- Mouse attempt 1 was blocked with `physical_tap_late`. The owner's audio was not
+  working, so the cue played but was not heard.
+- Mouse attempt 2 was blocked the same way. The owner was not clearly told to press
+  Escape.
+- Keyboard attempt 1 failed before any input was held: the fixture lost focus after
+  `PREPARED`.
+- Keyboard attempt 2 was blocked. The cue told the owner to wait for growing `c` text,
+  but a synthetic held key does not autorepeat, so the text stayed `abc`.
+
+The owner then restarted both cases with a fresh budget. Before each run, the owner was
+given the step-by-step instructions and asked whether they were ready.
