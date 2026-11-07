@@ -1,8 +1,35 @@
-# TRACE Workbench 2.3.0 (draft, unreleased)
+# TRACE Workbench 2.3.0 (candidate)
 
-**Not published.** This draft holds the release-notes notice for the .NET 10 retarget. It
-is not a release, and nothing here is a publication receipt. The version, notes and
-evidence are set when the owner approves publication.
+**Candidate, not published.** These are the candidate notes for `2.3.0` on `main`. It moves
+the native helpers to .NET 10, which raises the runtime floor, and adds Road V1 item 20:
+the compatibility and support contract. Final-main CI, the exact archive check and
+publication are pending, and publication needs the owner's direct approval. Published
+[2.2.0](RELEASE_2.2.0.md) and its assets remain available.
+
+## Changes
+
+### Compatibility and support contract (Road V1 item 20)
+
+- [COMPATIBILITY.md](COMPATIBILITY.md) is the single source for what TRACE promises: the
+  covered surfaces, what each version bump means, identifier lifetimes, error codes,
+  deprecation and the support matrix (PRs 142 and 143). The shipped skill and method docs
+  list all seven tools (PR 144).
+- Doctor reports `versions` (`package`, `contract`, `engine`, `bridge`, `supervisor`,
+  `skillBundle`) and an empty `deprecations` list. `trace-workbench --version` prints the
+  package version (PR 145). Both doctor fields sit outside `support`, so the descriptor
+  digest is unchanged.
+- On a support-descriptor digest mismatch, the adapter re-reads doctor with
+  `verbose: true` and applies the tolerant full-descriptor match. A digest match still
+  needs only one call (PR 146).
+- A CI job runs `check`, `test` and `test:computer:mcp` on Node 22 and 24 (PR 147). It
+  first passed on GitHub Actions on 4 November 2026. It was not run for 2.3.0; see
+  [CI for this release](#ci-for-this-release).
+
+### Live harness fixes
+
+- The supervisor live harnesses request the full act result, match the supervisor-owned
+  marker and the compact window listing, and export before they start (PRs 151, 152 and
+  154). These are test-only changes.
 
 ## Runtime change: .NET 10 is the floor
 
@@ -46,3 +73,18 @@ helper such as `bridge_stale`.
 - Quarantine typing and clipboard Unicode paste: their historical acceptance budget is
   closed, and they last passed on .NET 9.
 - Glow click subcases: these need the coordinated reference executor, as on .NET 9.
+
+## CI for this release
+
+GitHub Actions billing is locked, so CI for 2.3.0 runs locally on Node 26 on the owner's
+Windows machine and is recorded as local, with no run URL. Node 22 and 24 were not run
+for 2.3.0. They are allowed by `package.json` and last passed on 4 November 2026.
+
+## Known limits
+
+- The limits of [2.2.0](RELEASE_2.2.0.md#known-limits) still apply.
+- Windows 11 x64 with one display at 144 DPI, as in the
+  [support matrix](COMPATIBILITY.md#support-matrix).
+- The live checks ran on one machine. A `GameInputSvc` foreground window can block input
+  with `foreground_access_denied` until an ordinary window is clicked. TRACE refuses
+  before dispatch, so nothing is sent.
