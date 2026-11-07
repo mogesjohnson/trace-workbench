@@ -242,7 +242,7 @@ async function runCell(cell, directory, executable, pinnedDisplay, prepareForegr
     const edit = frame.elements.find(element => element.name === 'TRACE text input');
     assert.ok(edit?.enabled);
     await assertDisplay(pinnedDisplay);
-    const focused = await connection.call('act', { sessionId: session.sessionId, observationId: frame.observationId, action: { type: 'click', elementId: edit.id } });
+    const focused = await connection.call('act', { sessionId: session.sessionId, observationId: frame.observationId, action: { type: 'click', elementId: edit.id }, returnObservation: 'full' });
     assert.equal(focused.outcome, 'completed');
     frame = focused.observation;
     assert.equal(frame.focused?.elementId, edit.id);
