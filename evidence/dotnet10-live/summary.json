@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "scope": "Native .NET 10 live evidence for TRACE 2.3.0, matching the .NET 9 scope. Raw receipts, frames and screenshots are retained untracked in the owner checkout; this summary pins each receipt by sha256.",
+  "observed": {
+    "from": "2026-11-07T01:00Z",
+    "to": "2026-11-07T16:47Z"
+  },
+  "source": {
+    "commit": "0a3381be42cbd577bd47208d9020e84e38f9bf11",
+    "note": "Main checkout detached at the commit; untracked evidence directories only."
+  },
+  "runner": {
+    "os": "Windows 11 Home 10.0.26200",
+    "node": "v26.2.0",
+    "dotnetSdk": "10.0.403",
+    "windowsDesktopRuntime": "10.0.14",
+    "bridgeTarget": "net10.0-windows",
+    "display": "2880x1800 at 144 DPI, one monitor"
+  },
+  "fixtureSha256": "d14cb59a04750445f0c1a366772fbd2e3f2d74ea824a709d14dc2e8e1d15199b",
+  "supervisorSourceSha256": {
+    "native/TraceSupervisor/InputState.cs": "52ee44c613746a1f423c53779d3e803ee097f8a1d68108e0db24e17af85d26fe",
+    "native/TraceSupervisor/Native.cs": "cb0621e2efed44e15caa3ed793f7d8f5d0383d31127c7f6ca136c6146fda4146",
+    "native/TraceSupervisor/Probe.cs": "44f6afe5c41c893770b02d62899fef317c5920dd75470c5adb7425eb8d34997c",
+    "native/TraceSupervisor/Program.cs": "c8dc9e6fd440542b624fe93850bdafb4469f72ff81ff33942e96fd3ce5697202",
+    "native/TraceSupervisor/Recovery.cs": "37ddcfa4b421b98be140b95f7c86ea640cd7ffebce1ef1a4be3e417760e0f8c8",
+    "native/TraceSupervisor/Session.cs": "d92c3c65c5e2dfe03bd16c17ef87083320527d1baeeecce5c1f210b3610440c3",
+    "native/TraceSupervisor/SessionProcess.cs": "986d5c821d115fb60e93d8aa2740eb19a377ba93a32806f1e2553c2aa47e212f",
+    "native/TraceSupervisor/TraceSupervisor.csproj": "4c0ab0afe1e01d6c13681f274451fa0e4d7171ed7af8279f71708127de5af2cf"
+  },
+  "cases": [
+    {"caseId":"COMPUTER-LIVE-SMOKE","status":"passed","actions":20,"frames":23,"receipt":"evidence/dotnet10-live/computer-live/report.json","sha256":"7eb977d72573dd3037b283004a920e6309a84ccc949f9abacbb4d43dc9fd62a4"},
+    {"caseId":"A31-GLOW-HARNESS-SELFCHECK","status":"pass","receipt":"evidence/dotnet10-live/glow-selfcheck/receipt.json","sha256":"70ec368223d6598e8d1745e9d18f739d8f3ce2a13fe8b06b7e45ce475988f69a"},
+    {"caseId":"A31-GLOW","status":"pending","subcases":{"A31-GLOW-START":"pass","A31-GLOW-VISIBLE":"pass","A31-GLOW-EOF":"pass","A31-GLOW-PARENT-LOSS":"pass","A31-GLOW-REFERENCE-CLICK":"blocked","A31-GLOW-TRACE-CLICK":"blocked"},"receipt":"evidence/dotnet10-live/glow-independent/receipt.json","sha256":"34b42d3a48ae7b84e6a3f23dfa05121caf070b6e2803edd89f9a442cbbe4c219"},
+    {"caseId":"A31-GLOW-REGRESSION","status":"pending","subcases":{"A31-GLOW-START":"pass","A31-GLOW-VISIBLE":"pass","A31-GLOW-EOF":"pass","A31-GLOW-PARENT-LOSS":"pass","A31-GLOW-REFERENCE-CLICK":"not_run","A31-GLOW-TRACE-CLICK":"not_run"},"receipt":"evidence/dotnet10-live/glow-regression/receipt.json","sha256":"d3d4811a5d6ede1dea5dfcc6cbefdffae8c16ee2cce73b76b5fcae2b089e3e2c"},
+    {"caseId":"A32-STOP-INJECTED","attempt":1,"status":"pass","receipt":"evidence/dotnet10-live/stop-injected/receipt.json","sha256":"f805296ce5a53bb42cf48fac32912b21154466724cfb79bcf41f5b6df1b84b07"},
+    {"caseId":"A32-RECOVERY-CANCEL-MOUSE","directory":"recovery","attempt":1,"status":"pass","error":null,"receipt":"evidence/dotnet10-live/recovery/a32-recovery-cancel-mouse/receipt.json","sha256":"52e6af237b927a4c73cd88a6b026b80b39cf796e909a6ae697c047a5029753d8"},
+    {"caseId":"A32-RECOVERY-CANCEL-CHORD","directory":"recovery","attempt":1,"status":"blocked","error":"foreground_access_denied","receipt":"evidence/dotnet10-live/recovery/a32-recovery-cancel-chord/receipt.json","sha256":"bf5b7138c58a0d731e866accf64ed83875997455b5c817dea878602df8ca68b7"},
+    {"caseId":"A32-RECOVERY-CANCEL-CHORD","directory":"recovery-cancel-chord-attempt-2","attempt":2,"status":"blocked","error":"foreground_access_denied","receipt":"evidence/dotnet10-live/recovery-cancel-chord-attempt-2/a32-recovery-cancel-chord/receipt.json","sha256":"71c4c2b84a3fe4e2a8d4091c46546516ea555d2662476aa0c399605abd3f2e6d"},
+    {"caseId":"A32-RECOVERY-CANCEL-CHORD","directory":"recovery-cancel-chord-attempt-3","attempt":1,"status":"pass","error":null,"receipt":"evidence/dotnet10-live/recovery-cancel-chord-attempt-3/a32-recovery-cancel-chord/receipt.json","sha256":"2c7548c9c50e596def20c0fda52c3913711b23ed4114f10667cbf7b11adfd1c4"},
+    {"caseId":"A32-RECOVERY-CANCEL-TYPING","directory":"recovery-cancel-typing","attempt":1,"status":"blocked","error":"foreground_access_denied","receipt":"evidence/dotnet10-live/recovery-cancel-typing/a32-recovery-cancel-typing/receipt.json","sha256":"e245295183d795c36853e181009f34bd5b86d6566f99d17a3dbb48b359bdec28"},
+    {"caseId":"A32-RECOVERY-CANCEL-TYPING","directory":"recovery-cancel-typing-attempt-2","attempt":2,"status":"pass","error":null,"foregroundAnchor":true,"receipt":"evidence/dotnet10-live/recovery-cancel-typing-attempt-2/a32-recovery-cancel-typing/receipt.json","sha256":"3e98e5446b8afa3ad6c0943beed3f8db8be915eb88b4a3cc57db7986191ea3b0"},
+    {"caseId":"A32-RECOVERY-DISCONNECT-CHORD","directory":"recovery-disconnect-chord","attempt":1,"status":"pass","error":null,"foregroundAnchor":true,"receipt":"evidence/dotnet10-live/recovery-disconnect-chord/a32-recovery-disconnect-chord/receipt.json","sha256":"a3374dbed1395517fe4c5ba9b2a17111d19f425c0c9a829c63f0fc7780f6de6f"},
+    {"caseId":"A32-RECOVERY-DISCONNECT-MOUSE","directory":"recovery-disconnect-mouse","attempt":1,"status":"pass","error":null,"foregroundAnchor":true,"receipt":"evidence/dotnet10-live/recovery-disconnect-mouse/a32-recovery-disconnect-mouse/receipt.json","sha256":"e9847e5733cbf71062c882d9c5bd48c4ab8e90c193e44c24c9cfce11766ecdfc"},
+    {"caseId":"A32-RECOVERY-DISCONNECT-TYPING","directory":"recovery-disconnect-typing","attempt":1,"status":"pass","error":null,"foregroundAnchor":true,"receipt":"evidence/dotnet10-live/recovery-disconnect-typing/a32-recovery-disconnect-typing/receipt.json","sha256":"4e0d3babf2878dad6e9927ec5e779c9e93452179313283b4a4574b0e4208142f"},
+    {"caseId":"A32-RECOVERY-NODE-DEATH-CHORD","directory":"recovery-node-death-chord","attempt":1,"status":"pass","error":null,"foregroundAnchor":true,"receipt":"evidence/dotnet10-live/recovery-node-death-chord/a32-recovery-node-death-chord/receipt.json","sha256":"7528d72c8c6cc91fdf991ce31989c4e6b68d0647aafa2d767db670cfa51f6702"},
+    {"caseId":"A32-RECOVERY-NODE-DEATH-MOUSE","directory":"recovery-node-death-mouse","attempt":1,"status":"pass","error":null,"foregroundAnchor":true,"receipt":"evidence/dotnet10-live/recovery-node-death-mouse/a32-recovery-node-death-mouse/receipt.json","sha256":"590fd9aa1be37cac85d8015fb3bb18b7c6565fa2c446c12408246990006b62bf"},
+    {"caseId":"A32-RECOVERY-NODE-DEATH-TYPING","directory":"recovery-node-death-typing","attempt":1,"status":"pass","error":null,"foregroundAnchor":true,"receipt":"evidence/dotnet10-live/recovery-node-death-typing/a32-recovery-node-death-typing/receipt.json","sha256":"534f44d2fc0d983ec570d3717b3309d0a944207c9edc9cf5af945088cb64d1da"},
+    {"caseId":"A32-RECOVERY-SUPERVISOR-DEATH-CHORD","directory":"recovery-supervisor-death-chord","attempt":1,"status":"pass","error":null,"foregroundAnchor":true,"receipt":"evidence/dotnet10-live/recovery-supervisor-death-chord/a32-recovery-supervisor-death-chord/receipt.json","sha256":"662d0603a30d2ac1f808d5fa5c280494658987ca06fc057e500328378a4e9667"},
+    {"caseId":"A32-RECOVERY-SUPERVISOR-DEATH-MOUSE","directory":"recovery-supervisor-death-mouse","attempt":1,"status":"pass","error":null,"foregroundAnchor":true,"receipt":"evidence/dotnet10-live/recovery-supervisor-death-mouse/a32-recovery-supervisor-death-mouse/receipt.json","sha256":"3f1d315e8e6a264d981c7b564d3f154604f156bceb51b5d18237b9f2ad88c6d2"},
+    {"caseId":"A32-RECOVERY-SUPERVISOR-DEATH-TYPING","directory":"recovery-supervisor-death-typing","attempt":1,"status":"pass","error":null,"foregroundAnchor":true,"receipt":"evidence/dotnet10-live/recovery-supervisor-death-typing/a32-recovery-supervisor-death-typing/receipt.json","sha256":"f10562f7d6e240fa36bb89a5cd0818dbf9676b1dccf728572e56c382747de633"},
+    {"caseId":"A32-RECOVERY-TIMEOUT-CHORD","directory":"recovery-timeout-chord","attempt":1,"status":"pass","error":null,"foregroundAnchor":true,"receipt":"evidence/dotnet10-live/recovery-timeout-chord/a32-recovery-timeout-chord/receipt.json","sha256":"d40f3b6597915b0ef4dd578f4e15a49210dd5832a8f42eb63d01989725dfde92"},
+    {"caseId":"A32-RECOVERY-TIMEOUT-MOUSE","directory":"recovery-timeout-mouse","attempt":1,"status":"pass","error":null,"foregroundAnchor":true,"receipt":"evidence/dotnet10-live/recovery-timeout-mouse/a32-recovery-timeout-mouse/receipt.json","sha256":"77080987ab7cdfdea02646e2617d46e8d8f82db4271f2e658cff79af8c234211"},
+    {"caseId":"A32-RECOVERY-TIMEOUT-TYPING","directory":"recovery-timeout-typing","attempt":1,"status":"pass","error":null,"foregroundAnchor":true,"receipt":"evidence/dotnet10-live/recovery-timeout-typing/a32-recovery-timeout-typing/receipt.json","sha256":"537bb9521d9f7dfcd807443fa3a78bfc02cc51351c65718da415f75404449741"},
+    {"caseId":"A32-QUARANTINE-ACK-MOUSE","directory":"quarantine-ack-mouse","attempt":1,"status":"fail","error":"assertion_failed","receipt":"evidence/dotnet10-live/quarantine-ack-mouse/receipt.json","sha256":"b02105ef8eab9c091bb3d133c7987bc875bf792d0622f41853172ade6de0eef5"},
+    {"caseId":"A32-QUARANTINE-ACK-MOUSE","directory":"quarantine-ack-mouse-attempt-2","attempt":2,"status":"pass","error":null,"receipt":"evidence/dotnet10-live/quarantine-ack-mouse-attempt-2/receipt.json","sha256":"7228d45b59b91b9c3936026780165132aeb29e7daded245eee1e8df28e53ddfa"},
+    {"caseId":"A32-QUARANTINE-ACK-CHORD","directory":"quarantine-ack-chord","attempt":1,"status":"pass","error":null,"receipt":"evidence/dotnet10-live/quarantine-ack-chord/receipt.json","sha256":"fa173a1c1dcaf91ea09353ee8737ed1fe06f9836de4ecc3622240ef3e77345a0"},
+    {"caseId":"A32-PROBE-FOCUSED-TYPING","status":"pass","error":null,"receipt":"evidence/dotnet10-live/focused-typing/receipt.json","sha256":"72785511c1f8a85e49eeab629411368a422b8843e7ae930e5e5195baaa15407f"}
+  ],
+  "notRun": [
+    {"caseId":"A32-STOP-PHYSICAL-KEYBOARD","reason":"Needs a physical key press; owner off the desktop (owner decision 6 Nov 2026)."},
+    {"caseId":"A32-STOP-PHYSICAL-MOUSE","reason":"Needs a physical mouse action; owner off the desktop (owner decision 6 Nov 2026)."},
+    {"caseId":"A32-QUARANTINE-ACK-TYPING","reason":"Historical continuation ledger budget closed: the one remaining claim is a corrective retry after a failure, and the prior passed. Owner decision 7 Nov 2026: not_run on .NET 10."},
+    {"caseId":"METHOD-CLIPBOARD-UNICODE-PASTE","reason":"Historical continuation ledger budget exhausted (two claims used). Owner decision 7 Nov 2026: not_run on .NET 10."},
+    {"caseId":"A31-GLOW click subcases","reason":"Need --coordinated with the reference executor; blocked/not_run by design, as on .NET 9."}
+  ]
+}
