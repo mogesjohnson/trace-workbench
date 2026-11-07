@@ -294,7 +294,7 @@ async function run(options = {}, injected = {}) {
     const observed = await connection.call('observe', { sessionId: session.sessionId });
     const edit = observed.elements.find(element => element.name === 'TRACE text input'); assert.ok(edit?.enabled);
     await assertDisplay(display);
-    const click = await connection.call('act', { sessionId: session.sessionId, observationId: observed.observationId, action: { type: 'click', elementId: edit.id } });
+    const click = await connection.call('act', { sessionId: session.sessionId, observationId: observed.observationId, action: { type: 'click', elementId: edit.id }, returnObservation: 'full' });
     assert.equal(click.outcome, 'completed'); assert.equal(click.observation.focused?.elementId, edit.id);
     assert.equal((await fixture.state()).focusedControl, 'traceTextInput');
     if (exactEvidence) receipt.focus = await exactEvidence.focus(connection, target, click.observation, await fixture.state());

@@ -104,3 +104,18 @@ test('live smoke expects exactly the tools the server registers', () => {
   const registered = [...source.matchAll(/register\("(trace_computer_\w+)"/g)].map(match => match[1]).sort();
   assert.deepEqual(EXPECTED_TOOLS, registered);
 });
+
+test('supervisor harnesses that read act().observation ask for the full act result', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  // Their MCP connections never call doctor, so the compat wrapper cannot add returnObservation itself.
+  for (const name of ['accept-supervisor-stop', 'accept-supervisor-recovery', 'accept-supervisor-quarantine']) {
+    const lines = fs.readFileSync(path.join(__dirname, `../scripts/${name}.cjs`), 'utf8').split('\n');
+    const reads = lines.flatMap((line, index) => [...line.matchAll(/\b(\w+)\.observation\b/g)].map(match => ({ variable: match[1], index })));
+    assert.ok(reads.length > 0, name);
+    for (const { variable, index } of reads) {
+      const call = lines.slice(0, index + 1).reverse().find(line => new RegExp(String.raw`\b${variable} = await \w+\.call\('act'`).test(line));
+      if (call) assert.match(call, /returnObservation: 'full'/, `${name}: ${variable}`);
+    }
+  }
+});

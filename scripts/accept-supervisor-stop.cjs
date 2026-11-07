@@ -125,7 +125,7 @@ async function run(options = {}) {
     receipt.target = { pid: target.pid, processCreationTime: target.processCreationTime, windowId: target.id };
     let frame = await freshFrame(connection, session, display);
     const edit = frame.elements.find(element => element.name === 'TRACE text input'); assert.ok(edit?.enabled);
-    const focus = await connection.call('act', { sessionId: session.sessionId, observationId: frame.observationId, action: { type: 'click', elementId: edit.id } });
+    const focus = await connection.call('act', { sessionId: session.sessionId, observationId: frame.observationId, action: { type: 'click', elementId: edit.id }, returnObservation: 'full' });
     assert.equal(focus.outcome, 'completed'); assert.equal(focus.observation.focused?.elementId, edit.id);
     assert.equal((await fixture.state()).focusedControl, 'traceTextInput'); frame = focus.observation;
     await fs.writeFile(path.join(directory, 'focused.png'), Buffer.from(frame.screenshot.data, 'base64'));
