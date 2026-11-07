@@ -4,7 +4,7 @@
 
 `2.1.0` published 3 November 2026: fixes known limits G1–G5 without a 2.0 contract change. [Release notes](docs/RELEASE_2.1.0.md) record the live check of each fix and the TRACE-only head-to-head rerun; the [publication receipt](evidence/release-2.1.0/publication.json) records final-main CI, exact archive and five verified assets.
 
-`2.3.0` is a development candidate on `main`: it moves the native helpers to .NET 10, a runtime floor change shipped as a Minor with a notice, and adds Road V1 item 20, the compatibility contract. [Candidate notes](docs/RELEASE_2.3.0.md) record the checks and limits; final-main CI and publication are pending.
+`2.3.0` published 7 November 2026: moves the native helpers to .NET 10, a runtime floor change shipped as a Minor with a notice, and adds Road V1 item 20, the compatibility contract. [Release notes](docs/RELEASE_2.3.0.md) record the checks and limits; the [publication receipt](evidence/release-2.3.0/publication.json) records local final-main CI, exact archive and five verified assets.
 
 `2.2.0` published 4 November 2026: adds Road V1 items 10 and 19 without a 2.0 contract change. [Release notes](docs/RELEASE_2.2.0.md) record the checks and limits; the [publication receipt](evidence/release-2.2.0/publication.json) records final-main CI, exact archive and five verified assets.
 
