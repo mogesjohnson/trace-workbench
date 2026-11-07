@@ -32,7 +32,17 @@ helper such as `bridge_stale`.
   old bar. The owner chose 2,750 for about 10% headroom.
 - The doctor's output is unchanged. Only the test bar moves.
 
-## Not yet verified
+## Live evidence on .NET 10
 
-- Native live evidence recorded on the .NET 9 build does not carry over. Live desktop
-  checks on the .NET 10 build are not yet recorded and need a desktop session.
+- Native live evidence recorded on the .NET 9 build does not carry over. The .NET 10
+  build was re-checked live on 7 November 2026 at `0a3381b` (Node 26.2.0, SDK 10.0.403,
+  Desktop runtime 10.0.14). See the [.NET 10 live evidence](../evidence/dotnet10-live/README.md).
+- Passed: live smoke, glow (self-check, start, visible, EOF, parent loss), injected stop,
+  all 15 recovery cells, quarantine mouse and chord, and focused typing.
+
+## Not verified on .NET 10
+
+- Physical keyboard and mouse stops: these need a person at the desktop.
+- Quarantine typing and clipboard Unicode paste: their historical acceptance budget is
+  closed, and they last passed on .NET 9.
+- Glow click subcases: these need the coordinated reference executor, as on .NET 9.

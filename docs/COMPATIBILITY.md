@@ -200,7 +200,7 @@ Tested means tested: each row lists actual evidence with its date and scope. A l
 |---|---|---|
 | OS | Windows 11 x64. Windows 10 is not claimed | Live checks last verified on build 10.0.26200. CI `windows-latest` is a Windows Server image (`windows-2025-vs2026` on 4 November 2026) and runs no desktop input. Release receipts should record the runner image |
 | Node | `^22.19.0 \|\| ^24.11.0 \|\| >=26.0.0` | CI runs the full verification on Node 26, and `check`, `test` and `test:computer:mcp` on Node 22 and 24. First passed 4 November 2026 on 22.23.4 and 24.22.2. Live desktop checks used Node 26 |
-| .NET | .NET 10 SDK and Desktop runtime | CI 10.0.x. Native helpers target `net10.0-windows`. Live checks on the .NET 10 build are not yet recorded. See [.NET 10 runtime](#net-10-runtime) |
+| .NET | .NET 10 SDK and Desktop runtime | CI 10.0.x. Native helpers target `net10.0-windows`. Live checks passed on the .NET 10 build on 7 November 2026 (SDK 10.0.403, Desktop runtime 10.0.14), with the gaps listed in [.NET 10 runtime](#net-10-runtime) |
 | Engine | winapp `0.7.1`, exact | Live and CI |
 | Display | One display at 144 DPI. Wider DPI and monitor support is not claimed | 1920×1080 and 2880×1800 receipts. Nothing refuses other setups at runtime |
 | Desktop | Unlocked interactive desktop. No secure or elevated targets | Live |
@@ -223,4 +223,4 @@ TRACE's four native helpers (activity indicator, window bridge, clipboard and in
 
 This raises the runtime floor from .NET 9 to .NET 10. It is a contract change, so it ships as a Minor release with a release-notes notice. Microsoft lists .NET 9 end of support as 10 November 2026. After that date .NET 9 receives no patches.
 
-Native live evidence from the .NET 9 build no longer applies to this runtime and has not been re-taken on .NET 10.
+Native live evidence from the .NET 9 build does not carry over. The .NET 10 build was re-checked live on 7 November 2026 at `0a3381b`: live smoke, glow, injected stop, all 15 recovery cells, quarantine mouse and chord, and focused typing passed. Physical keyboard and mouse stops, quarantine typing and clipboard Unicode paste were not run on .NET 10, and the glow click subcases need the coordinated reference executor. See [.NET 10 live evidence](../evidence/dotnet10-live/README.md).
