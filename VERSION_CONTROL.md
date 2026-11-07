@@ -16,6 +16,8 @@ The earlier published package is `2.0.0`. It makes the act result compact by def
 
 The earlier published package is `2.1.0`. It fixes known limits G1–G5 with no 2.0 contract change. Its [release notes](docs/RELEASE_2.1.0.md) record each fix's live check and the head-to-head rerun. Tag `v2.1.0` pins tested source `acca833`; the [publication receipt](evidence/release-2.1.0/publication.json) binds final-main CI, exact archive and five verified assets. Later receipt/documentation commits do not replace that archive.
 
+The development candidate is `2.3.0`. It moves the native helpers to .NET 10, a runtime floor change shipped as a Minor with a notice, and adds Road V1 item 20. Its [candidate notes](docs/RELEASE_2.3.0.md) record the checks and limits; final-main CI and publication are pending. It is not published.
+
 The published package is `2.2.0`. It adds Road V1 items 10 and 19 with no 2.0 contract change. Its [release notes](docs/RELEASE_2.2.0.md) record the checks and limits. Tag `v2.2.0` pins tested source `397d6c5`; the [publication receipt](evidence/release-2.2.0/publication.json) binds final-main CI, exact archive and five verified assets. Later receipt/documentation commits do not replace that archive.
 
 The earlier published package is `1.1.0`, covering additive selective observation modes, scoped observation cost reductions, numeric reporting and opt-in current-session capture retention. [Release notes](docs/RELEASE_1.1.0.md) preserve compatibility and evidence limits. Tag `v1.1.0` pins tested source `ccf8734`; the [publication receipt](evidence/release-1.1.0/publication.json) binds final-main CI, exact archive and five verified assets. Later receipt/documentation commits do not replace that archive.
@@ -26,7 +28,7 @@ The package before that is `1.0.0`. Its [release notes](docs/RELEASE_1.0.0.md), 
 
 The published version is `0.1.0`, following preview `0.1.0-alpha.3.3`. [Release notes](docs/RELEASE_0.1.0.md) describe its supported scope; [publication evidence](evidence/release-0.1.0/publication.json) records the exact archive and source. Native supervision and recovery are implemented; the owner-approved production-owner replacement resolves the obsolete failed probe prerequisite at its documented scope. Functional acceptance is reconciled in [the requirement map](docs/REQUIREMENT_EVIDENCE_REVIEW.md); final versioned distribution and reviewed release are complete. TRACE versions are independent of upstream package and skill versions. Keep package, lockfile and release notes consistent when preparing a candidate; a version bump alone is not release publication.
 
-Use `v<package-version>` tags for published releases. A merged PR is not a release. Publish only after the version, artifacts, required checks, and known limits are recorded. Report CI account or billing failures as release blockers, with the run linked.
+Use `v<package-version>` tags for published releases. A merged PR is not a release. Publish only after the version, artifacts, required checks, and known limits are recorded. Report CI account or billing failures as release blockers, with the run linked. While GitHub Actions billing is locked, local CI on the owner's Windows machine stands in for 2.3.0, recorded as local with no run URL.
 
 [The compatibility contract](docs/COMPATIBILITY.md) says which version bump each kind of change needs. Check it before choosing a version.
 
