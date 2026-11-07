@@ -4,13 +4,15 @@
 
 `2.1.0` published 3 November 2026: fixes known limits G1–G5 without a 2.0 contract change. [Release notes](docs/RELEASE_2.1.0.md) record the live check of each fix and the TRACE-only head-to-head rerun; the [publication receipt](evidence/release-2.1.0/publication.json) records final-main CI, exact archive and five verified assets.
 
+`2.3.0` is a development candidate on `main`: it moves the native helpers to .NET 10, a runtime floor change shipped as a Minor with a notice, and adds Road V1 item 20, the compatibility contract. [Candidate notes](docs/RELEASE_2.3.0.md) record the checks and limits; final-main CI and publication are pending.
+
 `2.2.0` published 4 November 2026: adds Road V1 items 10 and 19 without a 2.0 contract change. [Release notes](docs/RELEASE_2.2.0.md) record the checks and limits; the [publication receipt](evidence/release-2.2.0/publication.json) records final-main CI, exact archive and five verified assets.
 
 V2 published as `1.1.0` on 31 October 2026: selective evidence-only observation modes, scoped provider/I/O reductions, numeric profile reporting and opt-in current-session capture retention. [Release notes](docs/RELEASE_1.1.0.md) define scope and limits; the [publication receipt](evidence/release-1.1.0/publication.json) records reviewed integration, final-main CI, exact archive and five verified assets. [Four controlled observations](evidence/v2-observation-profile/completed-2026-10-31.json) completed with confirmed owned cleanup; remaining independent guards are retained. Existing compatible acceptance is reused, with no comparative speedup claim.
 
 V1 published 30 October 2026: the five selected improvements cover cleanup uncertainty, action support/validation, image association, observation diagnostics and opt-in read-only evidence reuse. [V1 publication](evidence/release-1.0.0/publication.json) records reviewed integration, passing final-source Windows CI, exact archive verification and five verified assets. [Release notes](docs/RELEASE_1.0.0.md) and the [compatibility boundary](docs/COMPUTER_USE.md#v1-compatibility-boundary) define the stable wrapper scope. Historical v0.1.0 acceptance below remains scoped evidence; instrumentation and synthetic capture reduction do not claim measured live speedup.
 
-The [compatibility contract](docs/COMPATIBILITY.md) states what TRACE promises from the next release: covered surfaces, version rules, identifier lifetimes, error codes, deprecation and support.
+The [compatibility contract](docs/COMPATIBILITY.md) states what TRACE promises from 2.3.0: covered surfaces, version rules, identifier lifetimes, error codes, deprecation and support.
 
 Status reviewed 27 October 2026 after [v0.1.0 publication](https://github.com/mogesjohnson/trace-workbench/releases/tag/v0.1.0). All required cases have accepted scoped evidence under the original contracts and approved replacements. Final versioned source, hosted CI, exact archive installation/rollback, reviewed integration and publication are recorded in the [publication receipt](evidence/release-0.1.0/publication.json). Original failed receipts and milestone status paragraphs below remain historical; retained operating limits still apply.
 

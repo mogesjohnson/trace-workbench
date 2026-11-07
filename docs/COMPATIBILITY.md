@@ -2,7 +2,7 @@
 
 This is the single source for what TRACE promises: what is covered, what each version bump means, how long identifiers live, how things are retired, and what is supported.
 
-**Applies from the next release.** Published `2.2.0` and earlier archives are unchanged and keep the promises they shipped with. Items marked "next release" are not in `2.2.0`. Live discovery governs: this file describes the contract, and the connected schema and doctor describe the actual server.
+**Applies from 2.3.0.** Published `2.2.0` and earlier archives are unchanged and keep the promises they shipped with. Items marked "from 2.3.0" are not in `2.2.0`. Live discovery governs: this file describes the contract, and the connected schema and doctor describe the actual server.
 
 [Computer Use](COMPUTER_USE.md) has the operating details. The [2.0.0 boundary](COMPUTER_USE.md#v2-compatibility-boundary-200) lists what changed in that release.
 
@@ -84,18 +84,18 @@ A new top-level `outcome` value needs a major. Clients must still treat an outco
 
 | Identity | Current value | How a client reads it |
 |---|---|---|
-| Package and release | `2.2.0`, tag `v2.2.0`. Private, so no npm package | MCP `serverInfo.version`. Next release: doctor `versions`, `node bin/trace.cjs --version` |
+| Package and release | `2.3.0` candidate. Published: `2.2.0`, tag `v2.2.0`. Private, so no npm package | MCP `serverInfo.version`. From 2.3.0: doctor `versions`, `node bin/trace.cjs --version` |
 | MCP protocol | Negotiated by the pinned SDK | MCP handshake. TRACE promises no specific protocol version |
 | Tool input schemas | Seven strict schemas, no version | `tools/list` |
 | Action support descriptor | `support.contractVersion: 1` plus `sha256` of the full descriptor | Doctor `support` |
 | Doctor feature flags | `actResult`, `windowListing`, `observationModes`, `observationScope`, `launch`, `ownedModal`, `responseSize` | Doctor |
 | Skill bundle | `trace.skill-bundle/1`, file hashes, no content version | `manifest.json` |
-| Native helpers | Wire and manifest `version: 1`, source hashes | Failure codes. Next release: doctor `versions`. Not a compatibility surface |
+| Native helpers | Wire and manifest `version: 1`, source hashes | Failure codes. From 2.3.0: doctor `versions`. Not a compatibility surface |
 | Engine | winapp `0.7.1`, x64, pinned file hashes | Doctor `version` and `support.engine` |
 
 `support.contractVersion` identifies the action-support descriptor, separately from the package, protocol and engine versions. It changes only on a semantic break. Unknown legacy support stays explicitly unknown; contradictory descriptors disable the method route. Feature additions are declared outside the descriptor when possible.
 
-A compact descriptor must match the local descriptor's digest exactly, and the digest includes the engine version. Next release: on a mismatch the adapter re-reads doctor with `verbose: true` and uses the tolerant full-descriptor match, which accepts added fields. That match still needs the same engine name and version, so an adapter and server on different engine pins stay refused. Adapters from 2.0 to 2.2 stay strict. Run the adapter and server from the same checkout.
+A compact descriptor must match the local descriptor's digest exactly, and the digest includes the engine version. From 2.3.0: on a mismatch the adapter re-reads doctor with `verbose: true` and uses the tolerant full-descriptor match, which accepts added fields. That match still needs the same engine name and version, so an adapter and server on different engine pins stay refused. Adapters from 2.0 to 2.2 stay strict. Run the adapter and server from the same checkout.
 
 ## Identifier lifetimes
 
@@ -172,7 +172,7 @@ Method API failures use their own hyphenated codes, such as `support-unsupported
 
 To retire something covered by the Stable tier:
 
-1. Announce it in a minor: in the release notes, in the list below and, from the next release, in the doctor `deprecations` list.
+1. Announce it in a minor: in the release notes, in the list below and, from 2.3.0, in the doctor `deprecations` list.
 2. Keep it working through that major.
 3. Remove it no earlier than the next major, with migration notes.
 
@@ -199,7 +199,7 @@ Tested means tested: each row lists actual evidence with its date and scope. A l
 | Area | Supported | Evidence |
 |---|---|---|
 | OS | Windows 11 x64. Windows 10 is not claimed | Live checks last verified on build 10.0.26200. CI `windows-latest` is a Windows Server image (`windows-2025-vs2026` on 4 November 2026) and runs no desktop input. Release receipts should record the runner image |
-| Node | `^22.19.0 \|\| ^24.11.0 \|\| >=26.0.0` | CI runs the full verification on Node 26, and `check`, `test` and `test:computer:mcp` on Node 22 and 24. First passed 4 November 2026 on 22.23.4 and 24.22.2. Live desktop checks used Node 26 |
+| Node | `^22.19.0 \|\| ^24.11.0 \|\| >=26.0.0` | CI runs the full verification on Node 26, and `check`, `test` and `test:computer:mcp` on Node 22 and 24. First passed 4 November 2026 on 22.23.4 and 24.22.2. For 2.3.0, GitHub Actions billing is locked: CI ran locally on Node 26 only, and Node 22 and 24 were not run. Live desktop checks used Node 26 |
 | .NET | .NET 10 SDK and Desktop runtime | CI 10.0.x. Native helpers target `net10.0-windows`. Live checks passed on the .NET 10 build on 7 November 2026 (SDK 10.0.403, Desktop runtime 10.0.14), with the gaps listed in [.NET 10 runtime](#net-10-runtime) |
 | Engine | winapp `0.7.1`, exact | Live and CI |
 | Display | One display at 144 DPI. Wider DPI and monitor support is not claimed | 1920×1080 and 2880×1800 receipts. Nothing refuses other setups at runtime |
