@@ -12,6 +12,11 @@ const path = require('node:path');
 const { promisify } = require('node:util');
 
 const ROOT = path.resolve(__dirname, '..');
+// Every tool src/computer/server.cjs registers, sorted; tests/computer-live.test.cjs keeps them equal.
+const EXPECTED_TOOLS = [
+  'trace_computer_act', 'trace_computer_close_session', 'trace_computer_doctor', 'trace_computer_launch',
+  'trace_computer_list_windows', 'trace_computer_observe', 'trace_computer_open_session',
+];
 const BUILD = path.join(ROOT, '.runtime', 'computer-fixture');
 const PROJECT = path.join(ROOT, 'tests', 'fixtures', 'computer-app', 'TraceComputerFixture.csproj');
 const EXECUTABLE = path.join(BUILD, 'bin', 'TraceComputerFixture.exe');
@@ -207,10 +212,7 @@ async function createMcpController(runtimeDirectory, runDirectory) {
     serverPid = transport.pid;
     const { tools } = await client.listTools({}, { timeout: 10_000, signal: abort.signal });
     const toolNames = tools.map((item) => item.name).sort();
-    assert.deepEqual(toolNames, [
-      'trace_computer_act', 'trace_computer_close_session', 'trace_computer_doctor',
-      'trace_computer_list_windows', 'trace_computer_observe', 'trace_computer_open_session',
-    ]);
+    assert.deepEqual(toolNames, EXPECTED_TOOLS);
     const call = async (name, arguments_ = {}) => {
       const result = await client.callTool({ name, arguments: arguments_ }, { timeout: 45_000, signal: abort.signal });
       const state = result.structuredContent;
@@ -681,4 +683,4 @@ async function main(args) {
 }
 
 if (require.main === module) main(process.argv.slice(2)).catch((error) => { console.error(error.stack || error.message); process.exitCode = 1; });
-module.exports = { buildFixture, main, assertScroll, assertChord, assertDrag, resultState, waitForOwnedProcessExit, rejectedModalParentAction, createMcpController, sourceHashes, stopFixture, reserveEvidenceDirectory };
+module.exports = { EXPECTED_TOOLS, buildFixture, main, assertScroll, assertChord, assertDrag, resultState, waitForOwnedProcessExit, rejectedModalParentAction, createMcpController, sourceHashes, stopFixture, reserveEvidenceDirectory };

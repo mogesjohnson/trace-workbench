@@ -95,3 +95,12 @@ test('modal safety accepts only known pre-input guards, regardless of descendant
   const badIdentity = Object.assign(new Error('wrong fixture PID'), { code: 'ERR_ASSERTION' });
   await assert.rejects(rejectedModalParentAction(async () => { throw badIdentity; }), (error) => error === badIdentity);
 });
+
+test('live smoke expects exactly the tools the server registers', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const { EXPECTED_TOOLS } = require('../scripts/smoke-computer-live.cjs');
+  const source = fs.readFileSync(path.join(__dirname, '../src/computer/server.cjs'), 'utf8');
+  const registered = [...source.matchAll(/register\("(trace_computer_\w+)"/g)].map(match => match[1]).sort();
+  assert.deepEqual(EXPECTED_TOOLS, registered);
+});
