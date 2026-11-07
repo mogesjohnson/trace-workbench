@@ -1,10 +1,13 @@
-# TRACE Workbench 2.3.0 (candidate)
+# TRACE Workbench 2.3.0
 
-**Candidate, not published.** These are the candidate notes for `2.3.0` on `main`. It moves
-the native helpers to .NET 10, which raises the runtime floor, and adds Road V1 item 20:
-the compatibility and support contract. Final-main CI, the exact archive check and
-publication are pending, and publication needs the owner's direct approval. Published
-[2.2.0](RELEASE_2.2.0.md) and its assets remain available.
+**Published 7 November 2026 with direct owner approval.**
+[Download v2.3.0](https://github.com/mogesjohnson/trace-workbench/releases/tag/v2.3.0).
+The [publication receipt](../evidence/release-2.3.0/publication.json) binds merged source
+`e19717b`, local final-main CI on Node 26, exact archive installation and five
+independently downloaded and hash-verified assets. The bundled notes and companion
+manifests keep their prepublication snapshot. It moves the native helpers to .NET 10,
+which raises the runtime floor, and adds Road V1 item 20: the compatibility and support
+contract. Published [2.2.0](RELEASE_2.2.0.md) and its assets remain available.
 
 ## Changes
 

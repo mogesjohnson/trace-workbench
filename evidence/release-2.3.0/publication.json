@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "version": "2.3.0",
+  "status": "published",
+  "releaseId": 437738398,
+  "releaseUrl": "https://github.com/mogesjohnson/trace-workbench/releases/tag/v2.3.0",
+  "publishedAt": "2026-11-07T17:49:05Z",
+  "tag": "v2.3.0",
+  "sourceCommit": "e19717b6ef7d52eea0e2c6978eba0974c28288ad",
+  "ci": {
+    "mode": "local",
+    "url": null,
+    "head": "e19717b6ef7d52eea0e2c6978eba0974c28288ad",
+    "conclusion": "success",
+    "runner": "Owner Windows 11 Home 10.0.26200, Node v26.2.0, .NET SDK 10.0.403",
+    "test": {
+      "tests": 837,
+      "pass": 831,
+      "fail": 0,
+      "skipped": 6
+    },
+    "notRun": "Node 22 and 24 (owner decision: local CI on Node 26 only while GitHub Actions billing is locked).",
+    "note": "GitHub Actions billing is locked; local CI stands in (VERSION_CONTROL.md)."
+  },
+  "archive": {
+    "sourceCommit": "e19717b6ef7d52eea0e2c6978eba0974c28288ad",
+    "file": "trace-workbench-2.3.0-source.zip",
+    "sha256": "5525efb21e76fdf842d28ddd1d459efb177b1a75d27288c84c5b406eaa37d619",
+    "bytes": 24359091,
+    "hashesVerified": 17,
+    "reproductionTimezone": "UTC",
+    "verifiedByArchiveInstall": "pass"
+  },
+  "assets": [
+    {
+      "name": "trace-workbench-2.3.0-source.zip",
+      "bytes": 24359091,
+      "sha256": "5525efb21e76fdf842d28ddd1d459efb177b1a75d27288c84c5b406eaa37d619",
+      "id": 721454450
+    },
+    {
+      "name": "acceptance-manifest.json",
+      "bytes": 7392,
+      "sha256": "8814214c0b21f075bd6c013aad31509a9a0c770458e172548682caebcb05db50",
+      "id": 721454647
+    },
+    {
+      "name": "distribution-receipt.json",
+      "bytes": 3781,
+      "sha256": "a9ae5f1b83ae1f488fc75106013eabe0090f081d3e400a5bb44bb0d65103aec2",
+      "id": 721454684
+    },
+    {
+      "name": "RELEASE_NOTES.md",
+      "bytes": 4728,
+      "sha256": "0f1592b84ddd2d025a32a229dc861c7268e34ec248fbf50d2be937da6445b234",
+      "id": 721454736
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 365,
+      "sha256": "401fb21a8241235af929f268690e972d62172cc5f1f575fddfb28dd094bb046a",
+      "id": 721454778
+    }
+  ],
+  "independentDownloadedHashesVerified": true,
+  "publicTagAndAssetMetadataVerified": true,
+  "ownerApproval": {
+    "source": "direct-owner",
+    "reply": "Approve: tag and publish",
+    "scope": "Tag v2.3.0 on e19717b, publish the GitHub release with the five assets, re-verify downloaded hashes, open this publication PR"
+  },
+  "mergedPrs": [
+    153,
+    154,
+    155
+  ],
+  "publicationNote": "A first gh release create failed on a duplicate SHA256SUMS.txt upload and gh removed that release; the release was recreated as a draft, assets uploaded one at a time, re-downloaded and hash-verified, then published.",
+  "limits": ".NET 10 runtime floor (contract change, Minor with notice); Node 22 and 24 not run; physical stops, quarantine typing and clipboard not run on .NET 10. Scope and known limits as stated in the release notes."
+}
