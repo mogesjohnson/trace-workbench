@@ -72,10 +72,15 @@ helper such as `bridge_stale`.
 
 ## Not verified on .NET 10
 
-- Physical keyboard and mouse stops: these need a person at the desktop.
 - Quarantine typing and clipboard Unicode paste: their historical acceptance budget is
   closed, and they last passed on .NET 9.
 - Glow click subcases: these need the coordinated reference executor, as on .NET 9.
+
+## After publication
+
+On 7 November 2026, after publication, the physical keyboard and mouse stops passed live on
+the .NET 10 build, from `f2153fc` with unchanged native sources. This is a note, not a
+new release. See [.NET 10 live evidence](../evidence/dotnet10-live/README.md#after-publication-physical-stops-7-november-2026).
 
 ## CI for this release
 
