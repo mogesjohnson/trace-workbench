@@ -57,11 +57,23 @@
     {"caseId":"A32-QUARANTINE-ACK-CHORD","directory":"quarantine-ack-chord","attempt":1,"status":"pass","error":null,"receipt":"evidence/dotnet10-live/quarantine-ack-chord/receipt.json","sha256":"fa173a1c1dcaf91ea09353ee8737ed1fe06f9836de4ecc3622240ef3e77345a0"},
     {"caseId":"A32-PROBE-FOCUSED-TYPING","status":"pass","error":null,"receipt":"evidence/dotnet10-live/focused-typing/receipt.json","sha256":"72785511c1f8a85e49eeab629411368a422b8843e7ae930e5e5195baaa15407f"}
   ],
+  "postPublication": {
+    "observed": {"from":"2026-11-07T19:03Z","to":"2026-11-07T20:19Z"},
+    "source": {"commit":"f2153fcd46101996c11b58a64707d08ffc087cdb","note":"Main checkout detached at the 2.3.0 receipt merge. Native supervisor sources hash identical to supervisorSourceSha256 above."},
+    "fixtureSha256": "45b6b091b76b0ac8f25ecaa9189f305f2754c7465be478545b9afc6b1adc056c",
+    "runner": "Private untracked .runtime/run-dotnet10-stop.cjs (sha256 15ea7fae8cf77ff8201a7d2d751343daa45320547b2e8a4d30d2c00cd8a3c66d) calls the unchanged scripts/accept-supervisor-stop.cjs run() with the audible cue on and writes the root start file on PREPARED.",
+    "cases": [
+      {"caseId":"A32-STOP-MOUSE","directory":"stop-physical-mouse","attempt":1,"status":"blocked","error":"physical_tap_late","note":"Owner audio unavailable: the audible cue played (receipt timestamps) but was not heard; no Escape within the 15 s hold.","receipt":"evidence/dotnet10-live/stop-physical-mouse/receipt.json","sha256":"b811d0144d70eae7cb17c54e33257996c36a6ec692a068597e6d93c478827d5f"},
+      {"caseId":"A32-STOP-MOUSE","directory":"stop-physical-mouse-attempt-2","attempt":2,"status":"blocked","error":"physical_tap_late","note":"Visual cue (pointer jump), but the owner was not clearly told to press Escape; no Escape within the hold.","receipt":"evidence/dotnet10-live/stop-physical-mouse-attempt-2/receipt.json","sha256":"ff6498151345a07b9421634d119cb0e3fa9515ae7b9fc40ae5e7076e44340ea4"},
+      {"caseId":"A32-STOP-KEYBOARD","directory":"stop-physical-keyboard","attempt":1,"status":"fail","error":"assertion_failed","note":"Fixture lost focus after PREPARED, before any held input; nothing held.","receipt":"evidence/dotnet10-live/stop-physical-keyboard/receipt.json","sha256":"dd3e5b9ecde3c7a8c57809b4f4579d4925010f0c2920ddcd34e49e4999a1f9fd"},
+      {"caseId":"A32-STOP-KEYBOARD","directory":"stop-physical-keyboard-attempt-2","attempt":2,"status":"blocked","error":"physical_tap_late","note":"Cue named growing c text, but a synthetic held C does not autorepeat; text stayed abc.","receipt":"evidence/dotnet10-live/stop-physical-keyboard-attempt-2/receipt.json","sha256":"34d84a419bea65f288ff3c6ee3b5ef61216666f6e71c8ec8bcc5ea8b5137adc6"},
+      {"caseId":"A32-STOP-MOUSE","directory":"stop-physical-mouse-restart","attempt":1,"status":"pass","error":null,"stopLatencyMs":0.53,"nativeCleanupMs":239.457,"note":"Fresh budget by owner decision 7 Nov 2026; step instructions and a ready check asked before launch.","receipt":"evidence/dotnet10-live/stop-physical-mouse-restart/receipt.json","sha256":"bd30ed606c9ae962052beeb803b54492ea5b4ad080030475e2ee4231c7718f02"},
+      {"caseId":"A32-STOP-KEYBOARD","directory":"stop-physical-keyboard-restart","attempt":1,"status":"pass","error":null,"stopLatencyMs":0.741,"nativeCleanupMs":230.127,"note":"Fresh budget by owner decision 7 Nov 2026; text abc stable after stop.","receipt":"evidence/dotnet10-live/stop-physical-keyboard-restart/receipt.json","sha256":"6d845f615a570f6dfa1e2a03d2bcf5fc0a97c867b6eb882033031eb2593f6c94"}
+    ]
+  },
   "notRun": [
-    {"caseId":"A32-STOP-PHYSICAL-KEYBOARD","reason":"Needs a physical key press; owner off the desktop (owner decision 6 Nov 2026)."},
-    {"caseId":"A32-STOP-PHYSICAL-MOUSE","reason":"Needs a physical mouse action; owner off the desktop (owner decision 6 Nov 2026)."},
-    {"caseId":"A32-QUARANTINE-ACK-TYPING","reason":"Historical continuation ledger budget closed: the one remaining claim is a corrective retry after a failure, and the prior passed. Owner decision 7 Nov 2026: not_run on .NET 10."},
-    {"caseId":"METHOD-CLIPBOARD-UNICODE-PASTE","reason":"Historical continuation ledger budget exhausted (two claims used). Owner decision 7 Nov 2026: not_run on .NET 10."},
+    {"caseId":"A32-QUARANTINE-ACK-TYPING","reason":"Historical continuation ledger budget closed: the one remaining claim is a corrective retry after a failure, and the prior passed. Owner decision 7 Nov 2026: not_run on .NET 10. Owner decision 7 Nov 2026 evening: re-prove on .NET 10 under a new acceptance contract, drafted in its own PR before any live run."},
+    {"caseId":"METHOD-CLIPBOARD-UNICODE-PASTE","reason":"Historical continuation ledger budget exhausted (two claims used). Owner decision 7 Nov 2026: not_run on .NET 10. Owner decision 7 Nov 2026 evening: re-prove on .NET 10 under a new acceptance contract, drafted in its own PR before any live run."},
     {"caseId":"A31-GLOW click subcases","reason":"Need --coordinated with the reference executor; blocked/not_run by design, as on .NET 9."}
   ]
 }
