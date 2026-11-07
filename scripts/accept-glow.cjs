@@ -138,10 +138,16 @@ async function monitorCount() {
   return Number(stdout.trim());
 }
 
+// The native supervisor, a direct child of the server, now owns the marker.
+async function markersOwnedBy(serverPid) {
+  const owners = [Number(serverPid), ...(await processList(`Name='TraceSupervisor.exe' AND ParentProcessId=${Number(serverPid)}`)).map(item => Number(item.pid))];
+  return processList(`Name='TraceActivityIndicator.exe' AND (${owners.map(pid => `ParentProcessId=${pid}`).join(' OR ')})`);
+}
+
 async function markerOf(serverPid) {
   const deadline = Date.now() + 8000;
   while (Date.now() < deadline) {
-    const found = await processList(`Name='TraceActivityIndicator.exe' AND ParentProcessId=${Number(serverPid)}`);
+    const found = await markersOwnedBy(serverPid);
     assert.ok(found.length < 2, 'More than one marker belongs to the owned server');
     if (found.length === 1) return found[0];
     await delay(200);
@@ -353,7 +359,7 @@ async function run(options) {
         captureBands: capture0.bands, glowAbsentOracle: glowAbsent(capture0.bands), fixtureProcessVisible: fixtureRecord?.pid === fixture.pid,
         serverIsDirectNodeChild: true, doctorReady: doctor.ready === true, activityIndicator: doctor.activityIndicator,
         fixtureDiscovered: windows.windows.some(item => item.pid === status.pid && item.id === status.windowId),
-        markersOwnedByServer: (await processList(`Name='TraceActivityIndicator.exe' AND ParentProcessId=${Number(server.pid)}`)).length,
+        markersOwnedByServer: (await markersOwnedBy(server.pid)).length,
         focus: status.focus, sessionOpened: false, inputDispatched: 0,
       };
       receipt.cleanup.server = await server.close();

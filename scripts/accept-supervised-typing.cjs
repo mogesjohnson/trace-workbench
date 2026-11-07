@@ -141,7 +141,7 @@ async function run(reportDirectory, { regression = false } = {}) {
 }
 
 if (require.main === module) {
-  if (process.argv.length < 3 || process.argv.length > 4 || (process.argv[3] && process.argv[3] !== '--regression')) throw new Error('Usage: node scripts/accept-supervised-typing.cjs <new-report-directory> [--regression]');
+  if (process.argv.length < 3 || process.argv.length > 4 || process.argv[2].startsWith('-') || (process.argv[3] && process.argv[3] !== '--regression')) throw new Error('Usage: node scripts/accept-supervised-typing.cjs <new-report-directory> [--regression]');
   run(process.argv[2], { regression: process.argv[3] === '--regression' }).then(result => { process.stdout.write(JSON.stringify({ status: result.status, error: result.error, focus: result.focus, target: result.target, cleanup: result.cleanup }) + '\n'); if (result.status !== 'pass') process.exitCode = 1; }).catch(error => { process.stderr.write(`${error.message}\n`); process.exitCode = 1; });
 }
 module.exports = { run };
