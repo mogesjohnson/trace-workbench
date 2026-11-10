@@ -30,11 +30,11 @@ function agentHandler() {
   };
 }
 
-async function connection(t, { adbOptions, transcribe } = {}) {
-  const fake = await fakeAgent(agentHandler());
+async function connection(t, { adbOptions, transcribe, handler = agentHandler(), hasDex = true } = {}) {
+  const fake = await fakeAgent(handler);
   const dir = tempDir();
   const dexPath = path.join(dir, 'classes.dex');
-  fs.writeFileSync(dexPath, 'dex');
+  if (hasDex) fs.writeFileSync(dexPath, 'dex');
   const adb = fakeAdb(fake.port, adbOptions);
   const controller = createPhoneController({ adb, dexPath, framesDir: path.join(dir, 'frames') });
   const server = createPhoneServer({ controller, transcribe });
@@ -113,6 +113,94 @@ test('phone_act converts image coordinates, then returns the settled frame in on
   assert.equal(images(result).length, 1);
   const unknown = await call('phone_act', { action: { type: 'tap' } });
   assert.equal(unknown.isError, true);
+});
+
+test('phone_act sends each input once when the acknowledgment is lost', async (t) => {
+  const cases = [
+    ['key', { type: 'key', key: 'back' }],
+    ['text', { type: 'text', text: 'hello' }],
+    ['swipe', { type: 'swipe', from: { x: 1, y: 2 }, to: { x: 3, y: 4 }, space: 'device' }],
+    ['node', { type: 'tap', selector: { text: 'Wi-Fi' } }],
+    ['tap', { type: 'tap', x: 1, y: 2, space: 'device' }],
+  ];
+  for (const [op, action] of cases) {
+    await t.test(op, async (t) => {
+      let drop = true;
+      const reply = agentHandler();
+      const { call, fake } = await connection(t, { handler(r, socket) {
+        if (r.op === op && drop) {
+          drop = false;
+          socket.destroy();
+          return null;
+        }
+        return reply(r);
+      } });
+      const failed = await call('phone_act', { action });
+      assert.deepEqual(fake.requests.map((r) => r.op), ['hello', op]);
+      assert.equal(failed.isError, true);
+      assert.match(failed.structuredContent.error.message, /delivery is unknown.*verify the phone state/i);
+
+      const read = await call('phone_screen', { force: true });
+      assert.notEqual(read.isError, true);
+      assert.deepEqual(fake.requests.map((r) => r.op), ['hello', op, 'hello', 'screen']);
+    });
+  }
+});
+
+test('phone_act distinguishes an agent error from unknown input delivery', async (t) => {
+  const reply = agentHandler();
+  const { call, fake } = await connection(t, { handler(r) {
+    if (r.op === 'node') return { header: { ok: false, error: 'no matching node' } };
+    return reply(r);
+  } });
+  const failed = await call('phone_act', { action: { type: 'tap', selector: { text: 'Missing' } } });
+  assert.equal(failed.isError, true);
+  assert.equal(failed.structuredContent.error.message, 'agent: no matching node');
+  assert.deepEqual(fake.requests.map((r) => r.op), ['hello', 'node']);
+});
+
+test('phone_act reports setup failure before dispatch', async (t) => {
+  const { call, fake } = await connection(t, { adbOptions: { running: false }, hasDex: false });
+  const failed = await call('phone_act', { action: { type: 'key', key: 'back' } });
+  assert.equal(failed.isError, true);
+  assert.match(failed.structuredContent.error.message, /before dispatch.*agent dex not built/i);
+  assert.deepEqual(fake.requests, []);
+});
+
+test('phone_act does not resend input after a protocol failure', async (t) => {
+  const reply = agentHandler();
+  let corrupt = true;
+  const { call, fake } = await connection(t, { handler(r, socket) {
+    if (r.op === 'key' && corrupt) {
+      corrupt = false;
+      const malformed = Buffer.alloc(9);
+      malformed.writeUInt32BE(1);
+      malformed.write('{', 4);
+      socket.write(malformed);
+      return null;
+    }
+    return reply(r);
+  } });
+  const failed = await call('phone_act', { action: { type: 'key', key: 'back' } });
+  assert.equal(failed.isError, true);
+  assert.match(failed.structuredContent.error.message, /delivery is unknown.*agent sent bad JSON/i);
+  assert.deepEqual(fake.requests.map((r) => r.op), ['hello', 'key']);
+});
+
+test('phone_act reports acknowledged input when both settle reads lose their link', async (t) => {
+  const reply = agentHandler();
+  const { call, fake } = await connection(t, { handler(r, socket) {
+    if (r.op === 'wait') { socket.destroy(); return null; }
+    return reply(r);
+  } });
+  await call('phone_screen');
+  const failed = await call('phone_act', { action: { type: 'key', key: 'back' } });
+  assert.equal(failed.isError, true);
+  assert.match(failed.structuredContent.error.message, /agent acknowledged.*settle failed.*verify the phone state/i);
+  const stale = await call('phone_act', { action: { type: 'tap', x: 1, y: 2 } });
+  assert.match(stale.structuredContent.error.message, /call screen first/);
+  assert.deepEqual(fake.requests.map((r) => r.op), ['hello', 'screen', 'key', 'wait', 'hello', 'wait']);
+  assert.equal(images(await call('phone_screen')).length, 1);
 });
 
 test('phone_ui reads nodes, finds by selector and can release UiAutomation', async (t) => {
