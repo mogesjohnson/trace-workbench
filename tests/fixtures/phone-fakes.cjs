@@ -8,6 +8,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { EventEmitter } = require('node:events');
+const { AGENT_VERSION } = require('../../src/agentic-phone/agent.cjs');
 
 function frame(header, payload = Buffer.alloc(0)) {
   const h = Buffer.from(JSON.stringify(header));
@@ -65,7 +66,7 @@ function fakeAdb(port, { running = true, devices = [{ serial: 'R5CW', state: 'de
       calls.push(['spawn', command]);
       running = true;
       const out = new EventEmitter();
-      setImmediate(() => out.emit('data', Buffer.from('trace-phone agent 1 listening on @trace-phone\n')));
+      setImmediate(() => out.emit('data', Buffer.from(`trace-phone agent ${AGENT_VERSION} listening on @trace-phone\n`)));
       return out;
     },
     async exec(command) { calls.push(['exec', command]); return Buffer.from(''); },
@@ -74,7 +75,7 @@ function fakeAdb(port, { running = true, devices = [{ serial: 'R5CW', state: 'de
 
 function tempDir() { return fs.mkdtempSync(path.join(os.tmpdir(), 'trace-phone-')); }
 
-const hello = { header: { version: '1', sdk: 37, pid: 4242 } };
+const hello = { header: { version: AGENT_VERSION, sdk: 37, pid: 4242 } };
 const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xd9]);
 
 module.exports = { frame, fakeAgent, fakeAdb, tempDir, hello, jpeg };
