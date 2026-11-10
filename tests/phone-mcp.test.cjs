@@ -12,11 +12,11 @@ const { Client, InMemoryTransport } = require('@modelcontextprotocol/client');
 const { createPhoneServer, toControllerAction, commandTranscriber, KEYS } = require('../src/phone/server.cjs');
 const { createPhoneController } = require('../src/agentic-phone/controller.cjs');
 const { newest, compare } = require('../src/agentic-phone/build.cjs');
-const { fakeAgent, fakeAdb, tempDir, hello, jpeg } = require('./fixtures/phone-fakes.cjs');
+const { frame, fakeAgent, fakeAdb, tempDir, hello, jpeg } = require('./fixtures/phone-fakes.cjs');
 
 const TOOLS = ['phone_act', 'phone_connect', 'phone_logcat', 'phone_screen', 'phone_transcribe', 'phone_ui', 'phone_wait'];
 
-function agentHandler() {
+function agentHandler(waitFor) {
   let hash = 'h1';
   return (r) => {
     if (r.op === 'hello') return hello;
@@ -24,14 +24,21 @@ function agentHandler() {
       if (r.ifChangedFrom === hash) return { header: { hash, changed: false } };
       return { header: { hash, changed: true, format: 'jpeg', scale: 0.5, regionX: 0, regionY: 0, width: 4, height: 8 }, payload: jpeg };
     }
-    if (r.op === 'wait') { hash = 'h2'; return { header: { hash, met: true, format: 'jpeg', scale: 0.5, regionX: 0, regionY: 0 }, payload: jpeg }; }
+    if (r.op === 'wait') {
+      const header = { hash: 'h2', met: true, frames: 2, width: 4, height: 8, ...waitFor?.(r, hash) };
+      header.changed ??= header.hash !== (r.from ?? hash);
+      hash = header.hash;
+      return r.image
+        ? { header: { ...header, format: 'jpeg', scale: 0.5, regionX: 0, regionY: 0 }, payload: jpeg }
+        : { header };
+    }
     if (r.op === 'ui' || r.op === 'find') return { header: { count: 1 }, payload: Buffer.from('[{"text":"Wi-Fi","cx":10,"cy":20}]') };
     return { header: { done: r.op } };
   };
 }
 
-async function connection(t, { adbOptions, transcribe } = {}) {
-  const fake = await fakeAgent(agentHandler());
+async function connection(t, { adbOptions, transcribe, handler = agentHandler() } = {}) {
+  const fake = await fakeAgent(handler);
   const dir = tempDir();
   const dexPath = path.join(dir, 'classes.dex');
   fs.writeFileSync(dexPath, 'dex');
@@ -166,7 +173,7 @@ test('phone_act converts image coordinates, then returns the settled frame in on
   const tap = fake.requests.find((r) => r.op === 'tap');
   assert.deepEqual([tap.x, tap.y], [20, 40]);
   const wait = fake.requests.find((r) => r.op === 'wait');
-  assert.deepEqual([wait.until, wait.stableMs, wait.from], ['stable', 200, 'h1']);
+  assert.deepEqual([wait.until, wait.stableMs, wait.from, wait.image], ['stable', 200, 'h1', true]);
   assert.equal(result.structuredContent.action.done, 'tap');
   assert.equal(result.structuredContent.frame.met, true);
   assert.equal(images(result).length, 1);
@@ -190,12 +197,110 @@ test('phone_wait passes until:change and phone_logcat bounds its query', async (
   await call('phone_screen');
   const waited = await call('phone_wait', { until: 'change', timeoutMs: 500 });
   assert.equal(waited.structuredContent.frame.met, true);
-  assert.deepEqual(fake.requests.find((r) => r.op === 'wait').until, 'change');
+  const wait = fake.requests.find((r) => r.op === 'wait');
+  assert.deepEqual([wait.until, wait.image], ['change', true]);
+  assert.equal(images(waited).length, 1);
   await call('phone_logcat', { lines: 20, filter: 'ActivityManager:I *:S' });
   assert.ok(adb.calls.some((c) => c[0] === 'exec' && c[1] === 'logcat -d -t 20 ActivityManager:I *:S'));
   const injected = await call('phone_logcat', { filter: 'x; reboot' });
   assert.equal(injected.isError, true);
   assert.equal(adb.calls.some((c) => c[0] === 'exec' && /reboot/.test(c[1])), false);
+});
+
+test('metadata-only waits expose metadata without saving an image or enabling image-space input', async (t) => {
+  const { call, fake, dir } = await connection(t);
+  const waited = await call('phone_wait', { image: false });
+  assert.deepEqual(waited.structuredContent.frame, {
+    hash: 'h2', met: true, frames: 2, changed: true, width: 4, height: 8,
+    bytes: 0, file: null, imageIncluded: false,
+  });
+  assert.deepEqual(waited.content.map((item) => item.type), ['text']);
+  assert.equal(fs.existsSync(path.join(dir, 'frames')), false);
+  const tap = await call('phone_act', { action: { type: 'tap', x: 1, y: 1 } });
+  assert.equal(tap.isError, true);
+  assert.equal(fake.requests.some((r) => r.op === 'tap'), false);
+  const deviceTap = await call('phone_act', { action: { type: 'tap', x: 3, y: 4, space: 'device' } });
+  assert.equal(images(deviceTap).length, 1);
+  const deviceRequest = fake.requests.find((r) => r.op === 'tap');
+  assert.deepEqual([deviceRequest.x, deviceRequest.y], [3, 4]);
+
+  const imaged = await call('phone_wait', { image: true });
+  assert.equal(images(imaged).length, 1);
+  assert.ok(fs.existsSync(imaged.structuredContent.frame.file));
+  const waits = fake.requests.filter((r) => r.op === 'wait');
+  assert.deepEqual(waits.map((r) => [r.image, r.from]), [[false, undefined], [true, 'h2'], [true, 'h2']]);
+});
+
+test('metadata-only waits keep matching geometry and invalidate it when the final frame differs', async (t) => {
+  const handler = agentHandler((r, hash) => r.timeoutMs === 500
+    ? { hash: 'h2', met: false }
+    : { hash, changed: !r.image });
+  const { call, fake, dir } = await connection(t, { handler });
+  const tap = { type: 'tap', x: 1, y: 1 };
+  const swipe = { type: 'swipe', from: { x: 1, y: 1 }, to: { x: 2, y: 2 } };
+  await call('phone_screen');
+
+  const stable = await call('phone_wait', { image: false });
+  assert.equal(stable.structuredContent.frame.changed, true);
+  assert.equal(stable.structuredContent.frame.hash, 'h1');
+  assert.equal(images(await call('phone_screen')).length, 0);
+  assert.equal(images(await call('phone_act', { action: tap })).length, 1);
+
+  const timedOut = await call('phone_wait', { image: false, timeoutMs: 500 });
+  assert.equal(timedOut.structuredContent.frame.met, false);
+  assert.equal(timedOut.structuredContent.frame.hash, 'h2');
+  assert.equal(images(timedOut).length, 0);
+  assert.equal(fs.readdirSync(path.join(dir, 'frames')).length, 2);
+  const requestCount = fake.requests.length;
+  for (const action of [tap, swipe]) {
+    const rejected = await call('phone_act', { action });
+    assert.equal(rejected.isError, true);
+    assert.match(rejected.structuredContent.error.message, /call screen first/);
+  }
+  assert.equal(fake.requests.length, requestCount);
+  await call('phone_wait', { image: false });
+  assert.equal(fake.requests.at(-1).from, 'h2');
+
+  const refreshed = await call('phone_screen');
+  assert.equal(images(refreshed).length, 1);
+  assert.equal(fake.requests.at(-1).ifChangedFrom, undefined);
+  assert.equal(images(await call('phone_screen')).length, 0);
+});
+
+test('image-space input requires a fresh frame after a metadata-only wait fails', async (t) => {
+  const received = Promise.withResolvers();
+  const defaultHandler = agentHandler();
+  const { call, fake } = await connection(t, {
+    handler(r, socket) {
+      if (r.op === 'wait' && r.image === false) {
+        received.resolve(() => socket.write(frame({ id: r.id, ok: false, error: 'capture failed' })));
+        return;
+      }
+      return defaultHandler(r);
+    },
+  });
+  const tap = { type: 'tap', x: 1, y: 1 };
+  await call('phone_screen');
+  const waiting = call('phone_wait', { image: false });
+  const failWait = await Promise.race([
+    received.promise,
+    waiting.then(() => { throw new Error('metadata wait did not reach the agent'); }),
+  ]);
+  try {
+    const rejected = await call('phone_act', { action: tap });
+    assert.equal(rejected.isError, true);
+    assert.match(rejected.structuredContent.error.message, /metadata-only wait is in progress/);
+    assert.equal(fake.requests.some((r) => r.op === 'tap'), false);
+  } finally {
+    failWait();
+  }
+  assert.equal((await waiting).isError, true);
+  const stale = await call('phone_act', { action: tap });
+  assert.equal(stale.isError, true);
+  assert.match(stale.structuredContent.error.message, /call screen first/);
+  assert.equal(fake.requests.some((r) => r.op === 'tap'), false);
+  assert.equal(images(await call('phone_screen')).length, 1);
+  assert.equal(images(await call('phone_act', { action: tap })).length, 1);
 });
 
 test('closing the server stops the agent and removes its dex', async (t) => {

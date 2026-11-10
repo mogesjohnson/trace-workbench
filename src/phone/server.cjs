@@ -191,8 +191,9 @@ function createPhoneServer({ controller, transcribe, onError = () => {}, stopOnC
     { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true });
 
   register('phone_wait',
-    'Wait on the phone, without link traffic, until the screen changes from the last frame (until:"change") or stays the same for stableMs (until:"stable"). Returns the frame; met:false means it timed out.',
-    z.strictObject({ until: z.enum(['change', 'stable']).optional(), ...settleSchema, ...imageSchema }),
+    'Wait on the phone until the screen changes from the last observation (until:"change") or stays the same for stableMs (until:"stable"). Returns an image by default. Set image:false for frame metadata only. If a metadata-only wait fails or ends on a different frame, call phone_screen before using image coordinates again. met:false means it timed out.',
+    z.strictObject({ until: z.enum(['change', 'stable']).optional(), ...settleSchema, ...imageSchema,
+      image: z.boolean().optional().describe('Return and save an image (default true). Use false for metadata only.') }),
     async (args) => {
       const { state, images } = frameState(await controller.wait(args));
       return result(state, images);
