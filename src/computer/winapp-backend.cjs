@@ -346,7 +346,8 @@ class WinappBackend {
     }
     return parseJson(result.stdout, result.stderr, result.exitCode);
   }
-  async bridge(verb, window, signal, parameters = []) {
+  async bridge(verb, window, signal, parameters = [], { supervisedRead = false } = {}) {
+    if (supervisedRead) this.supervisor.assertActive();
     const pointer = verb === 'click' || verb === 'wheel';
     if (pointer && !this.supervisor?.ready) fail('supervision_required', 'New pointer input requires a ready native owner.', { outcome: 'not_dispatched' });
     const standalone = ['info', 'apps', 'process', 'packaged', 'packaged-identities', 'activate-package'].includes(verb);
@@ -356,6 +357,11 @@ class WinappBackend {
     const result = await providerRequest(this.supervisor?.ready === true, () => this.supervisor?.ready
       ? this.supervisor.run('bridge', args, { signal, timeoutMs: 10000, mutating })
       : this.run(this.bridgePath, args, { signal, timeoutMs: 10000 }));
+    if (supervisedRead) {
+      signal?.throwIfAborted();
+      this.supervisor.assertActive();
+      if (result.recovery != null) fail('input_recovery_required', 'The supervised read did not confirm clean completion.', { recovery: result.recovery });
+    }
     const parsed = parseJson(result.stdout, result.stderr, result.exitCode);
     if (!standalone && (parsed.hwnd !== window.id || parsed.pid !== window.pid)) fail('window_identity_changed', 'Window bridge returned a different HWND/PID.');
     return parsed;
@@ -366,6 +372,29 @@ class WinappBackend {
     if (imagePrefix !== undefined && (typeof imagePrefix !== 'string' || !path.isAbsolute(imagePrefix) || path.extname(imagePrefix).toLowerCase() === '.png')) fail('invalid_observation', 'Related image prefix must be an absolute path without an extension.');
     try { return normalizeRelated(await this.bridge('related', window, signal, imagePrefix === undefined ? [] : [imagePrefix]), imagePrefix); }
     catch (error) { if (signal?.aborted) throw error; return { available: false, code: error?.code || 'related_unavailable' }; }
+  }
+  async relatedWithIdentity(window, signal) {
+    const result = await this.bridge('related', window, signal, ['--with-identity'], { supervisedRead: true });
+    const { related, relatedError, identity, identityDeferred } = result;
+    if (result.method !== 'public-win32-related-identity'
+      || !(identityDeferred === true ? identity === null : identityDeferred === false && object(identity))) {
+      fail('invalid_native_response', 'Invalid related and identity envelope.');
+    }
+    if (relatedError != null) {
+      if (related !== null || !['window_closed', 'invalid_bounds', 'window_bridge_failed'].includes(relatedError)) {
+        fail('invalid_native_response', 'Unrecognized combined read failure.');
+      }
+      return { identity, relatedWindows: { available: false, code: relatedError } };
+    }
+    if ((related?.hwnd !== undefined && related.hwnd !== window.id) || (related?.pid !== undefined && related.pid !== window.pid)) {
+      fail('window_identity_changed', 'Related windows were read for a different HWND/PID.');
+    }
+    try {
+      if (related?.hwnd === undefined || related?.pid === undefined) fail('invalid_native_response', 'Missing related-window target.');
+      return { identity, relatedWindows: normalizeRelated(related) };
+    } catch (error) {
+      return { identity, relatedWindows: { available: false, code: error.code || 'related_unavailable' } };
+    }
   }
   // Refuses before dispatch when one of the window's own popups (owner chain or UI thread) covers a
   // point. Other applications' windows are left to activation, as before; a malformed reply refuses.
@@ -479,16 +508,16 @@ class WinappBackend {
   // bounds read reuses it instead of launching a provider. Every UIA read still rejects a coordinate
   // space other than physical-screen-pixels before its bounds are used. An unpinned window keeps the
   // engine's status read, the only check that binds its PID to the process name.
-  async identity(window, signal, adjacentBounds) {
+  async identity(window, signal, adjacentReceipt) {
     if (!object(window) || !Number.isSafeInteger(window.pid) || window.pid <= 0 || typeof window.processName !== 'string') fail('invalid_window', 'A pinned HWND, PID and process name are required.');
-    if (adjacentBounds !== undefined && !object(adjacentBounds)) fail('invalid_native_response', 'Expected the observation bounds receipt.');
+    if (adjacentReceipt !== undefined && !object(adjacentReceipt)) fail('invalid_native_response', 'Expected a native identity or bounds receipt.');
     if (window.processCreationTime === undefined) {
       const current = await this.command('status', ['-w', id(window.id)], signal);
       if (id(current.hwnd) !== window.id || current.processId !== window.pid || current.processName !== window.processName) fail('window_identity_changed', 'Window no longer belongs to the selected process.');
       if (current.coordinateSpace !== 'physical-screen-pixels') fail('coordinate_space', 'Engine coordinate space is not physical-screen-pixels.');
       return { ...window, title: current.windowTitle || '' };
     }
-    const native = adjacentBounds ?? await this.bridge('identity', window, signal);
+    const native = adjacentReceipt ?? await this.bridge('identity', window, signal);
     if (native.hwnd !== window.id || native.pid !== window.pid || native.processCreationTime !== window.processCreationTime || native.sessionId !== window.sessionId) fail('window_identity_changed', 'The selected process identity changed.');
     return { ...window, title: typeof native.title === 'string' ? native.title : window.title || '' };
   }
@@ -796,10 +825,23 @@ class WinappBackend {
       if (size.width !== captured.width || size.height !== captured.height) fail('coordinate_space', 'PNG dimensions do not match exact DWM capture bounds. No scaling is assumed.');
     }
     // Read next to the capture: popups are transient. The identity and geometry checks below still bracket it.
-    const relatedWindows = related ? await measure('related', () => this.relatedWindows(window, signal, relatedImagePrefix)) : undefined;
+    // The shared dispatch is charged to related. The identity stage still validates the fresh receipt.
+    const combined = related && pinned && !includeScreenshot && !restored && documentElementId === undefined
+      && relatedImagePrefix === undefined && this.supervisor?.ready
+      ? await measure('related', () => this.relatedWithIdentity(window, signal)) : undefined;
+    const relatedWindows = combined?.relatedWindows
+      ?? (related ? await measure('related', () => this.relatedWindows(window, signal, relatedImagePrefix)) : undefined);
     const documentRead = documentElementId === undefined ? undefined
       : await measure('document', () => this.readDocument(window, signal, state.elements, documentElementId));
-    const current = await measure('identity', () => this.identity(window, signal));
+    const current = await measure('identity', async () => {
+      if (!combined) return this.identity(window, signal);
+      const identity = combined.identity ?? await this.bridge('identity', window, signal, [], { supervisedRead: true });
+      if (identity.method !== 'public-win32-identity' || typeof identity.title !== 'string'
+        || typeof identity.processCreationTime !== 'string' || !Number.isInteger(identity.sessionId)) {
+        fail('invalid_native_response', 'Missing final window identity.');
+      }
+      return this.identity(window, signal, identity);
+    });
     const after = await measure('uia', () => this.inspect(window, signal, 1));
     const afterGeometry = await measure('geometry', () => this.bridge('bounds', window, signal));
     if (!sameBounds(state.bounds, after.bounds) || !sameBounds(bounds(geometry.frameBounds), bounds(afterGeometry.frameBounds)) || !sameBounds(bounds(geometry.windowBounds), bounds(afterGeometry.windowBounds))) fail('window_moved', 'Window moved during observation; request a fresh observation.');

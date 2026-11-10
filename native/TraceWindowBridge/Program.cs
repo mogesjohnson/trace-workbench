@@ -27,7 +27,7 @@ internal static partial class Program
             if (args.Length is >= 2 and <= 101 && args[0] == "packaged-identities") { PackagedIdentities(args); return 0; }
             if (args.Length > 0 && args[0] == "activate-package") { ActivatePackage(args); return 0; }
             if (args.Length > 0 && args[0] == "capture") { CaptureWindow(args); return 0; }
-            if (args.Length > 0 && args[0] == "related") { RelatedWindows(args); return 0; }
+            if (args.Length > 0 && args[0] == "related") { Write(RelatedWindows(args)); return 0; }
             if (args.Length > 0 && args[0] == "hit") { HitTest(args); return 0; }
             if (args.Length > 0 && args[0] == "document") { ReadDocument(args); return 0; }
             if (args.Length > 0 && args[0] is "click" or "wheel") { Pointer(args); return 0; }
@@ -70,20 +70,13 @@ internal static partial class Program
                 throw new BridgeException("invalid_arguments", "Usage: TraceWindowBridge info|release-left OR bounds|activate <HWND> <PID>");
             var hwnd = new nint(raw);
             SetProcessDpiAwarenessContext(new nint(-4)); // PER_MONITOR_AWARE_V2; physical pixel geometry.
+            if (args[0] == "identity") { Write(ReadIdentity(hwnd, pid, includeTitle: true)); return 0; }
             Guard(hwnd, pid);
             using var process = Process.GetProcessById((int)pid);
             var creationTime = process.StartTime.ToFileTimeUtc().ToString();
             var sessionId = process.SessionId;
             var owner = GetWindow(hwnd, 4 /* GW_OWNER */);
-            if (args[0] == "identity")
-            {
-                // The title is read between the two guards, so it belongs to the guarded window.
-                var title = Title(hwnd);
-                Guard(hwnd, pid);
-                Write(new { hwnd = raw.ToString(), pid, processCreationTime = creationTime, sessionId,
-                    ownerWindowId = owner == 0 ? null : owner.ToInt64().ToString(), title, method = "public-win32-identity" });
-                return 0;
-            }
+
             if (args[0] == "activate") Activate(hwnd, pid);
             Guard(hwnd, pid);
             if (!GetWindowRect(hwnd, out var outer)) throw new Win32Exception(Marshal.GetLastWin32Error());
@@ -124,13 +117,21 @@ internal static partial class Program
         return new string(text, 0, Math.Clamp(GetWindowText(hwnd, text, text.Length), 0, text.Length - 1));
     }
 
-    private static object ReadIdentity(nint hwnd, uint pid)
+    private static object ReadIdentity(nint hwnd, uint pid, bool includeTitle = false)
     {
         Guard(hwnd, pid);
         using var process = Process.GetProcessById((int)pid);
         var created = process.StartTime.ToFileTimeUtc().ToString();
         var session = process.SessionId;
         var owner = GetWindow(hwnd, 4 /* GW_OWNER */);
+        if (includeTitle)
+        {
+            // The title is read between the two guards, so it belongs to the guarded window.
+            var title = Title(hwnd);
+            Guard(hwnd, pid);
+            return new { hwnd = hwnd.ToInt64().ToString(), pid, processCreationTime = created, sessionId = session,
+                ownerWindowId = owner == 0 ? null : owner.ToInt64().ToString(), title, method = "public-win32-identity" };
+        }
         string? executable = null; try { executable = process.MainModule?.FileName; } catch (Exception error) when (error is System.ComponentModel.Win32Exception or InvalidOperationException) { }
         Guard(hwnd, pid);
         return new { hwnd = hwnd.ToInt64().ToString(), pid, processCreationTime = created, sessionId = session,
