@@ -16,7 +16,7 @@ test('adb encode prefixes four hex digits', () => {
   assert.equal(encode('host:version').toString(), '000chost:version');
 });
 
-test('adb client parses devices and reports FAIL text', async () => {
+test('adb client parses devices without a selected serial', async () => {
   const server = net.createServer((socket) => {
     socket.once('data', (data) => {
       const command = data.subarray(4).toString();
@@ -32,8 +32,50 @@ test('adb client parses devices and reports FAIL text', async () => {
   try {
     const adb = createAdbClient({ port: server.address().port });
     assert.deepEqual(await adb.devices(), [{ serial: 'R5CW', state: 'device', product: 'dm3q', model: 'SM_S918U', transport_id: '1' }]);
-    await assert.rejects(adb.exec('true'), /adb: no devices!/);
   } finally { server.close(); }
+});
+
+test('adb guest services require an exact serial before opening a socket', async (t) => {
+  const commands = [];
+  let connections = 0;
+  const server = net.createServer((socket) => {
+    connections += 1;
+    let buffer = Buffer.alloc(0);
+    socket.on('data', (chunk) => {
+      buffer = Buffer.concat([buffer, chunk]);
+      if (buffer.length < 4) return;
+      const length = parseInt(buffer.subarray(0, 4).toString('ascii'), 16);
+      if (buffer.length < 4 + length) return;
+      const command = buffer.subarray(4, 4 + length).toString();
+      buffer = buffer.subarray(4 + length);
+      commands.push(command);
+      if (command === 'host:transport:R5CW') socket.write('OKAY');
+      else if (command === 'exec:true') socket.end('OKAYselected');
+      else socket.end('FAIL000bwrong route');
+    });
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => server.close());
+
+  const adb = createAdbClient({ port: server.address().port });
+  const attempts = await Promise.allSettled([
+    adb.exec('true'),
+    adb.spawn('true'),
+    adb.openAbstract('trace-phone'),
+    adb.push(Buffer.from('dex'), '/data/local/tmp/trace-phone.dex'),
+  ]);
+  assert.deepEqual(commands, []);
+  assert.equal(connections, 0);
+  for (const attempt of attempts) {
+    assert.equal(attempt.status, 'rejected');
+    assert.match(attempt.reason.message, /select an exact device serial/);
+  }
+
+  adb.setSerial('missing-phone');
+  await assert.rejects(adb.exec('true'), /adb: wrong route/);
+  adb.setSerial('R5CW');
+  assert.equal((await adb.exec('true')).toString(), 'selected');
+  assert.deepEqual(commands, ['host:transport:missing-phone', 'host:transport:R5CW', 'exec:true']);
 });
 
 test('agent client matches replies in order and surfaces agent errors', async () => {
@@ -76,11 +118,12 @@ test('controller starts the agent when absent, saves frames, skips unchanged one
   const dexPath = path.join(dir, 'classes.dex');
   fs.writeFileSync(dexPath, 'dex');
   const adb = fakeAdb(fake.port, { running: false });
+  adb.setSerial('R5CW');
   const phone = createPhoneController({ adb, dexPath, framesDir: path.join(dir, 'frames') });
   try {
     const first = await phone.screen();
     assert.ok(first.file && fs.readFileSync(first.file).equals(jpeg));
-    assert.deepEqual(adb.calls.map((c) => c[0]), ['open', 'push', 'spawn', 'open']);
+    assert.deepEqual(adb.calls.map((c) => c[0]), ['serial', 'open', 'push', 'spawn', 'open']);
     const second = await phone.screen();
     assert.equal(second.file, null);
     assert.equal(fake.requests.filter((r) => r.op === 'screen')[1].ifChangedFrom, 'aa');
@@ -95,7 +138,9 @@ test('controller converts image coordinates, acts, then settles in one call', as
     return { header: {} };
   });
   const dir = tempDir();
-  const phone = createPhoneController({ adb: fakeAdb(fake.port), framesDir: dir });
+  const adb = fakeAdb(fake.port);
+  adb.setSerial('R5CW');
+  const phone = createPhoneController({ adb, framesDir: dir });
   try {
     await assert.rejects(phone.act({ target: { x: 1, y: 1 } }), /no frame yet/);
     await phone.screen();
@@ -120,6 +165,7 @@ test('controller reconnects once after the link drops', async () => {
     return { header: { count: 1 }, payload: Buffer.from('[{"text":"OK"}]') };
   });
   const adb = fakeAdb(fake.port);
+  adb.setSerial('R5CW');
   const phone = createPhoneController({ adb, framesDir: tempDir() });
   try {
     const result = await phone.ui();
@@ -131,6 +177,7 @@ test('controller reconnects once after the link drops', async () => {
 test('controller stop kills the agent by pid and removes the dex', async () => {
   const fake = await fakeAgent((r) => (r.op === 'hello' ? hello : { header: {} }));
   const adb = fakeAdb(fake.port);
+  adb.setSerial('R5CW');
   const phone = createPhoneController({ adb, framesDir: tempDir() });
   try {
     await phone.ensure();
@@ -144,8 +191,11 @@ test('controller stop with onlyIfUsed skips adb until the agent has been used', 
   const adb = fakeAdb(fake.port);
   const phone = createPhoneController({ adb, framesDir: tempDir() });
   try {
-    assert.deepEqual(await phone.stop({ onlyIfUsed: true }), { stopped: false, pid: null });
+    assert.deepEqual(await phone.stop(), { stopped: false, pid: null });
     assert.deepEqual(adb.calls, []);
+    adb.setSerial('R5CW');
+    assert.deepEqual(await phone.stop({ onlyIfUsed: true }), { stopped: false, pid: null });
+    assert.deepEqual(adb.calls, [['serial', 'R5CW']]);
     await phone.ensure();
     assert.deepEqual(await phone.stop({ onlyIfUsed: true }), { stopped: true, pid: 4242 });
   } finally { fake.server.close(); }
@@ -158,6 +208,7 @@ test('controller refuses a version mismatch by restarting the agent', async () =
   const dexPath = path.join(dir, 'classes.dex');
   fs.writeFileSync(dexPath, 'dex');
   const adb = fakeAdb(fake.port);
+  adb.setSerial('R5CW');
   const realSpawn = adb.spawn;
   adb.spawn = async (command) => { version = '1'; return realSpawn(command); };
   const phone = createPhoneController({ adb, dexPath, framesDir: dir });

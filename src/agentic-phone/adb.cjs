@@ -100,9 +100,13 @@ function createAdbClient({ host = DEFAULT_HOST, port = DEFAULT_PORT, serial = nu
 
   /** Switch a fresh connection to the device transport, then open a service on it. */
   async function service(name) {
+    const target = serial;
+    if (typeof target !== 'string' || !target || target.includes('\0')) {
+      throw new Error('adb: select an exact device serial before opening a device service');
+    }
     const { socket, reader } = await open();
     try {
-      socket.write(encode(serial ? `host:transport:${serial}` : 'host:transport-any'));
+      socket.write(encode(`host:transport:${target}`));
       await status(reader);
       socket.write(encode(name));
       await status(reader);
