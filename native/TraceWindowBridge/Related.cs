@@ -10,16 +10,35 @@ internal static partial class Program
     private const int RelatedLimit = 16;
     private const int RelatedUiaBudgetMs = 2000;
 
-    // Usage: related <HWND> <PID> [<absolute PNG prefix>]. With a prefix, window i is captured to
+    // With a PNG prefix, window i is captured to
     // "<prefix>-<i>.png" through the same exact-frame PrintWindow path as the root.
-    private static void RelatedWindows(string[] args)
+    private static object RelatedWindows(string[] args)
     {
+        var withIdentity = args.Length == 4 && args[3] == "--with-identity";
+        var prefix = args.Length == 4 && !withIdentity ? args[3] : null;
         if (args.Length is not (3 or 4) || !long.TryParse(args[1], out var raw) || raw <= 0 || !uint.TryParse(args[2], out var pid) || pid == 0
-            || (args.Length == 4 && (!Path.IsPathFullyQualified(args[3]) || args[3].EndsWith(".png", StringComparison.OrdinalIgnoreCase)
-                || !Directory.Exists(Path.GetDirectoryName(args[3])))))
-            throw new BridgeException("invalid_arguments", "Usage: related <HWND> <PID> [<absolute PNG prefix in an existing directory>]");
-        var root = new nint(raw); var prefix = args.Length == 4 ? args[3] : null;
+            || (prefix is not null && (!Path.IsPathFullyQualified(prefix) || prefix.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+                || !Directory.Exists(Path.GetDirectoryName(prefix)))))
+            throw new BridgeException("invalid_arguments", "Usage: related <HWND> <PID> [--with-identity | <absolute PNG prefix in an existing directory>]");
         SetProcessDpiAwarenessContext(new nint(-4));
+        var uiaTimedOut = false;
+        if (!withIdentity) return ReadRelatedWindows(raw, pid, prefix, ref uiaTimedOut);
+
+        object? related = null;
+        string? relatedError = null;
+        try { related = ReadRelatedWindows(raw, pid, null, ref uiaTimedOut); }
+        catch (BridgeException error) when (error.Code is "window_closed" or "invalid_bounds") { relatedError = error.Code; }
+        catch (Exception error) when (error is ExternalException or InvalidOperationException) { relatedError = "window_bridge_failed"; }
+
+        // A timed-out UIA task can still be running. Defer identity until this process and its job exit.
+        var identity = uiaTimedOut ? null : ReadIdentity(new nint(raw), pid, includeTitle: true);
+        return new { hwnd = raw.ToString(), pid, method = "public-win32-related-identity", related, relatedError,
+            identity, identityDeferred = uiaTimedOut };
+    }
+
+    private static object ReadRelatedWindows(long raw, uint pid, string? prefix, ref bool uiaTimedOut)
+    {
+        var root = new nint(raw);
         Guard(root, pid);
         var rootThread = GetWindowThreadProcessId(root, out _);
         // A Win32 menu (#32768) has no owner; only its thread's menu state names the window it serves.
@@ -54,6 +73,7 @@ internal static partial class Program
             if (windows.Count == RelatedLimit) { truncated = true; break; }
             var index = windows.Count;
             var uia = RelatedUia(hwnd, uiaDeadline);
+            uiaTimedOut |= uia.Code == "uia_timeout";
             var title = Title(hwnd);
             object? image = null;
             if (prefix is not null)
@@ -75,7 +95,7 @@ internal static partial class Program
             });
         }
         Guard(root, pid);
-        Write(new
+        return new
         {
             hwnd = raw.ToString(), pid, method = "public-win32-related",
             menuMode = menuStateAvailable ? (object)new { available = true, active = menuActive } : new { available = false },
@@ -83,7 +103,7 @@ internal static partial class Program
             // IME popup) are never attributed to the root, so their absence proves nothing.
             coverage = new { ownerChain = true, threadMenu = menuStateAvailable, sameThreadPopups = true, otherThreadsAndProcesses = false },
             truncated, windows,
-        });
+        };
     }
 
     // Usage: hit <HWND> <PID> <x> <y> [<x> <y>]... (1-4 physical screen points). Read-only: for each

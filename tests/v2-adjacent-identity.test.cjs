@@ -23,7 +23,15 @@ function fixture(screenshotPath, alter = () => {}) {
     calls.push({ verb, args, options });
     let value;
     if (verb === 'status') value = { hwnd: 1234, processId: 456, processName: 'Fixture', windowTitle: 'Fixture', coordinateSpace: 'physical-screen-pixels' };
-    if (verb === 'identity') value = { hwnd: '1234', pid: 456, processCreationTime: '1000', sessionId: 2, ownerWindowId: '99', title: 'Fixture title' };
+    const identity = { hwnd: '1234', pid: 456, processCreationTime: '1000', sessionId: 2, ownerWindowId: '99', title: 'Fixture title', method: 'public-win32-identity' };
+    if (verb === 'identity') value = identity;
+    if (verb === 'related') {
+      const related = { hwnd: window.id, pid: window.pid, method: 'public-win32-related', windows: [], truncated: false,
+        menuMode: { available: false }, coverage: { ownerChain: true, threadMenu: false, sameThreadPopups: true, otherThreadsAndProcesses: false } };
+      value = args[3] === '--with-identity'
+        ? { hwnd: window.id, pid: window.pid, method: 'public-win32-related-identity', related, relatedError: null, identity, identityDeferred: false }
+        : related;
+    }
     if (verb === 'bounds' || verb === 'activate') value = { hwnd: '1234', pid: 456, processCreationTime: '1000', sessionId: 2, ownerWindowId: '99', frameBounds: { ...rect }, windowBounds: { ...rect }, foreground: true, minimized: false, enabled: true };
     if (verb === 'inspect') value = { windows: [{ hwnd: 1234, coordinateSpace: 'physical-screen-pixels', elements: [{ selector: 'root', name: 'Fixture', type: 'Window', isEnabled: true, ...rect }] }] };
     if (verb === 'screenshot') {
@@ -33,8 +41,8 @@ function fixture(screenshotPath, alter = () => {}) {
     if (verb === 'get-focused') value = { hasFocus: false };
     if (verb === 'invoke') value = { hwnd: 1234 };
     assert.ok(value, `unexpected request ${args.join(' ')}`);
-    alter(verb, number, value);
-    return { stdout: JSON.stringify(value), stderr: '', exitCode: 0 };
+    const envelopeFields = alter(verb, number, value);
+    return { stdout: JSON.stringify(value), stderr: '', exitCode: 0, ...envelopeFields };
   } });
   return { backend, calls };
 }
@@ -149,4 +157,94 @@ test('a changed dispatch bounds receipt or pre-input guard stops before input', 
       error => error.code === 'window_identity_changed' && error.details.outcome === 'not_dispatched');
     assert.ok(!calls.some(call => call.verb === 'activate' || call.verb === 'invoke'));
   }));
+});
+
+function supervisedFixture(alter) {
+  const mock = fixture(undefined, alter);
+  mock.backend.supervisor = { ready: true, assertActive() {}, run: mock.backend.run };
+  return mock;
+}
+
+const noImage = { window, includeScreenshot: false, related: true };
+const prelude = ['bounds', 'inspect', 'bounds', 'related'];
+
+test('combined related and final identity use one supervised request before final UIA and bounds', async () => {
+  const { backend, calls } = supervisedFixture();
+  const signal = new AbortController().signal;
+  const metrics = createObservationMetrics();
+  const result = await metrics.run(() => backend.observe({ ...noImage, signal, window: { ...window, title: 'Earlier title' } }));
+  assert.deepEqual(calls.map(call => call.verb), [...prelude, 'inspect', 'bounds', 'get-focused']);
+  assert.deepEqual(calls[3].args, ['related', window.id, String(window.pid), '--with-identity']);
+  assert.equal(calls[3].options.mutating, false);
+  assert.ok(calls.every(call => call.options.signal === signal));
+  assert.equal(metrics.snapshot().counts.providerRequests, 7);
+  assert.equal(metrics.snapshot().counts.supervisedRequests, 7);
+  assert.equal(result.window.title, 'Fixture title');
+  assert.deepEqual(result.relatedWindows.windows, []);
+  assert.equal(result.relatedWindows.coverage.otherThreadsAndProcesses, false);
+});
+
+test('combined malformed or recoverably failed related evidence stays unavailable with a fresh identity', async () => {
+  for (const code of ['invalid_native_response', 'window_closed']) {
+    const { backend, calls } = supervisedFixture((verb, _, value) => {
+      if (verb !== 'related') return;
+      if (code === 'window_closed') Object.assign(value, { related: null, relatedError: code });
+      else value.related.truncated = 'malformed';
+    });
+    const result = await backend.observe(noImage);
+    assert.deepEqual(result.relatedWindows, { available: false, code });
+    assert.equal(result.window.title, 'Fixture title');
+    assert.deepEqual(calls.map(call => call.verb), [...prelude, 'inspect', 'bounds', 'get-focused']);
+  }
+});
+
+test('combined identity disagreement or missing final caption fails before subsequent reads', async () => {
+  const cases = [
+    ...receiptChanges.map(([name, alter]) => [value => alter(value.identity),
+      name.startsWith('missing') ? 'invalid_native_response' : 'window_identity_changed']),
+    [value => { value.identity = null; }, 'invalid_native_response'],
+    [value => { delete value.identity.title; }, 'invalid_native_response'],
+    [value => { value.related.pid++; }, 'window_identity_changed'],
+  ];
+  for (const [alter, code] of cases) {
+    const { backend, calls } = supervisedFixture((verb, _, value) => { if (verb === 'related') alter(value); });
+    await assert.rejects(backend.observe(noImage), { code });
+    assert.deepEqual(calls.map(call => call.verb), prelude);
+  }
+});
+
+test('combined cancellation and uncertain cleanup fail closed without an identity fallback', async () => {
+  const abort = new AbortController();
+  const cancelled = supervisedFixture(verb => { if (verb === 'related') abort.abort(); });
+  await assert.rejects(cancelled.backend.observe({ ...noImage, signal: abort.signal }), { name: 'AbortError' });
+  assert.deepEqual(cancelled.calls.map(call => call.verb), prelude);
+
+  const uncertain = supervisedFixture(verb => verb === 'related' ? { recovery: { reason: 'process_exit_unconfirmed' } } : undefined);
+  await assert.rejects(uncertain.backend.observe(noImage), { code: 'input_recovery_required' });
+  assert.deepEqual(uncertain.calls.map(call => call.verb), prelude);
+
+  const timedOut = supervisedFixture(verb => {
+    if (verb === 'related') throw Object.assign(new Error('Unconfirmed read timeout'), { code: 'native_timeout' });
+  });
+  await assert.rejects(timedOut.backend.observe(noImage), { code: 'native_timeout' });
+  assert.deepEqual(timedOut.calls.map(call => call.verb), prelude);
+});
+
+test('a combined read with a pending UIA task requires a separate fresh identity after job completion', async () => {
+  const { backend, calls } = supervisedFixture((verb, _, value) => {
+    if (verb === 'related') Object.assign(value, { identityDeferred: true, identity: null });
+  });
+  const result = await backend.observe(noImage);
+  assert.equal(result.window.title, 'Fixture title');
+  assert.deepEqual(calls.map(call => call.verb), [...prelude, 'identity', 'inspect', 'bounds', 'get-focused']);
+});
+
+test('related image and document work keep their separate ordering before final identity', async () => {
+  const { backend, calls } = supervisedFixture();
+  backend.readDocument = async () => { calls.push({ verb: 'document' }); return { available: true }; };
+  const prefix = path.resolve('related-image-prefix');
+  // No popups in the fake receipt, so no image file is created.
+  await backend.observe({ ...noImage, relatedImagePrefix: prefix, documentElementId: 'root' });
+  assert.deepEqual(calls.map(call => call.verb), [...prelude, 'document', 'identity', 'inspect', 'bounds', 'get-focused']);
+  assert.deepEqual(calls[3].args, ['related', window.id, String(window.pid), prefix]);
 });
