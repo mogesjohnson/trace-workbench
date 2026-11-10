@@ -10,7 +10,7 @@ When no ready provider implements a requested operation, retain that checklist i
 
 ## TRACE's native boundary
 
-The native MCP interface contains seven tools:
+The current native MCP interface can expose these seven tools. Use the connected schema to determine what this host exposes.
 
 | Tool | Purpose |
 | --- | --- |
@@ -18,18 +18,26 @@ The native MCP interface contains seven tools:
 | `trace_computer_list_windows` | Returns exact window IDs and available process/ownership evidence |
 | `trace_computer_launch` | Starts a registered app, packaged app or allowlisted Settings page with no session open, and returns its windows |
 | `trace_computer_open_session` | Binds one discovered window and acquires native ownership |
-| `trace_computer_observe` | Returns current PNG, accessibility, target/focus evidence, and observation ID |
+| `trace_computer_observe` | Returns current target/focus evidence, an observation ID, and accessibility or image evidence according to mode |
 | `trace_computer_act` | Consumes one observation for one operation, then refreshes state |
 | `trace_computer_close_session` | Releases the session without closing the application |
 
-Inspect diagnostics for readiness and the available machine-readable constraints, and consult the current action schema. A changed native helper can need rebuilding/reconnection; verify diagnostics afterward. Standard operations include activation, coordinate/element click, literal text, key chords, vertical scroll, drag, accessibility invocation, and editable values. Current native wheel input uses vertical multiples of 120; horizontal wheel input is unsupported. Keep the strictest provider constraint even when a broader schema accepts a value.
+Inspect diagnostics for readiness and consult the current action schema. A changed native helper can need rebuilding and reconnection. Verify diagnostics afterward. Use `trace_computer_doctor` with `verbose: true` when you need the effective action rules in `support.actions`. Apply the strictest schema, action contract and provider readiness constraint.
 
-The orchestration library composes providers above this interface; it creates no extra native MCP operations. Application launch/attach recipes, browser navigation, clipboard transactions, and artifact transfer must use an actual connected adapter/host operation. Discover their support rather than inventing `trace_computer_launch`, browser tools, or transfer behavior.
+For default wheel input, use `deltaX: 0` and nonzero `deltaY` in 120-unit steps. Use `placement: "point"` for wheel at the requested point, including horizontal wheel, only when the connected schema and `support.actions.scroll.point` advertise it and native supervision and source-matched helpers are ready. Follow the advertised bounds and increments and keep at least one delta nonzero.
+
+## Discover or launch a window
+
+Use the listing's exact window ID. The default listing omits tiny, shell and helper windows. Use `verbose: true` when you need those windows or fuller identity evidence.
+
+If the requested app needs starting and the connected schema exposes `trace_computer_launch`, call it with no native session open. Its built-in catalog accepts registered App Paths names such as `notepad`, `settings`, exact packaged AUMIDs and Settings pages on the tool's allowlist. Choose the exact intended window from the returned `windows` and open it by ID without listing again. `handedOff: true` identifies a verified new window hosted by another process. For a packaged app, `already_running` means the existing app was left alone and no window was returned. Discover it by exact ID if attaching is in scope. After an `unknown` launch, list windows to reconcile the outcome and avoid relaunching.
+
+When the task needs an application launch/attach recipe, browser navigation, a clipboard transaction, or artifact transfer, discover a connected adapter or host operation that supports the requested effect.
 
 ## Transition and ownership
 
 Keep task identity separate from its current window/tab/document. Track target environment, application/resource identity, current generation, provider, and whether the task created the resource. A title or shared PID is insufficient to establish ownership. Use exact discovery and available process-creation/session/owner-window evidence.
 
-Release the native lease before changing windows, entering a dialog, switching providers, or doing lengthy analysis. Discover the receiving target and obtain new evidence; earlier element IDs/coordinates cannot cross that boundary. If input cleanup is unresolved, preserve its recovery obligation instead of transferring ownership around it.
+Release the native lease before switching providers, opening a separate target session, or doing lengthy analysis. For a uniquely identified owned modal, follow the [same-lease dialog workflow](operation-and-recovery.md#dispatch-effect-and-cleanup). Ground each action in the receiving target's current evidence. If input cleanup is unresolved, preserve its recovery obligation instead of transferring ownership around it.
 
 For file handoffs, bind source and receiving environments/paths explicitly. Inspect receiving bytes/hash after a real transfer. A local path string does not establish remote file availability; a hash-comparison helper does not itself upload, paste, or transfer files.
