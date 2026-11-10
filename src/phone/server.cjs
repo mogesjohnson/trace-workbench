@@ -151,7 +151,7 @@ function createPhoneServer({ controller, transcribe, onError = () => {}, stopOnC
   }
 
   register('phone_connect',
-    'Pick the phone and start the trace-phone agent. For Wi-Fi debugging pass address (ip:port); add pairAddress and pairCode the first time. With one USB device, call with no arguments.',
+    'Pick a ready ADB device and start the trace-phone agent. For Wi-Fi debugging pass address (ip:port), adding pairAddress and pairCode the first time. An address or serial must exactly match a ready ADB entry. If both are supplied, use the same value. With one ready device, call with no arguments.',
     z.strictObject({ address: text(128).optional(), pairAddress: text(128).optional(),
       pairCode: z.string().regex(/^\d{6}$/).optional(), serial: text(128).optional() }),
     async (args) => {

@@ -154,16 +154,22 @@ function createPhoneController({
 
   /**
    * Pair and/or connect over Wi-Fi when asked, pick the device, then make sure
-   * the agent runs. address/pairAddress are host:port; serial picks among several.
+   * the agent runs. An explicit address or serial must match a ready ADB entry.
    */
   async function connect({ address, pairAddress, pairCode, serial } = {}) {
+    if (serial != null && address != null && serial !== address) {
+      throw new Error('serial and address must match when both are supplied');
+    }
     const steps = {};
     if (pairCode) steps.pair = (await adb.pair(pairAddress || address, pairCode)).trim();
     if (address) steps.connect = (await adb.connect(address)).trim();
     const devices = await adb.devices();
     const ready = devices.filter((d) => d.state === 'device');
-    const chosen = serial || (address && ready.some((d) => d.serial === address) ? address : null)
-      || (ready.length === 1 ? ready[0].serial : null);
+    const requested = serial ?? address;
+    if (requested != null && !ready.some((d) => d.serial === requested)) {
+      throw new Error(`ADB target ${JSON.stringify(requested)} must be in state "device"`);
+    }
+    const chosen = requested ?? (ready.length === 1 ? ready[0].serial : null);
     if (!chosen) {
       throw new Error(ready.length ? `several devices; pass serial (${ready.map((d) => d.serial).join(', ')})` : 'no device in state "device"');
     }
