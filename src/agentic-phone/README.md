@@ -18,3 +18,18 @@ fast. It has no TRACE imports, so it can move to its own repo later with `git fi
   `trace-workbench phone mcp`), `skills/trace-phone/`, the phone install, permission and hook
   scripts, and the policy and handoff docs.
 - Speed and link fixes go here; tool schemas, skill text and approvals go in TRACE.
+
+## Select a local ADB server for MCP
+
+TRACE Phone uses `127.0.0.1:5037` by default. To use an existing private loopback ADB
+server, set `TRACE_PHONE_ADB_PORT` in the MCP server's launch environment. For example,
+with an ADB server already listening on port 15037, run this in PowerShell.
+
+```powershell
+$env:TRACE_PHONE_ADB_PORT = '15037'
+node bin/trace.cjs phone mcp
+```
+
+The port must be a decimal integer from 1 through 65535. Invalid values fail startup.
+TRACE Phone uses the selected port for every ADB request in the MCP session. If the
+selected server is unreachable, device discovery reports the connection error.
