@@ -42,8 +42,9 @@ function createPhoneController({
 } = {}) {
   let agent = null;
   let info = null;
-  let lastFrame = null; // header of the last encoded frame (scale, region)
-  let lastHash = null;
+  let lastFrame = null; // geometry from the last image while it is current
+  let lastObservedHash = null;
+  let pendingMetadataWaits = 0;
   let frameCount = 0;
   let used = false; // set once this controller tries to reach the agent
 
@@ -112,7 +113,7 @@ function createPhoneController({
   }
 
   function remember(header, payload) {
-    if (header.hash) lastHash = header.hash;
+    if (header.hash) lastObservedHash = header.hash;
     if (!payload.length) return null;
     lastFrame = header;
     return saveFrame(header, payload);
@@ -120,6 +121,7 @@ function createPhoneController({
 
   /** Map a point from the last frame's image space to device pixels. */
   function toDevice(x, y) {
+    if (pendingMetadataWaits) throw new Error('metadata-only wait is in progress: let it finish or pass space:"device"');
     if (!lastFrame) throw new Error('no frame yet: call screen first or pass space:"device"');
     return {
       x: Math.round(lastFrame.regionX + x / lastFrame.scale),
@@ -129,7 +131,7 @@ function createPhoneController({
 
   async function screen({ onlyIfChanged = true, maxSide, quality, format, region } = {}) {
     const request = { op: 'screen' };
-    if (onlyIfChanged && lastHash) request.ifChangedFrom = lastHash;
+    if (onlyIfChanged && !pendingMetadataWaits && lastFrame?.hash) request.ifChangedFrom = lastFrame.hash;
     if (maxSide) request.maxSide = maxSide;
     if (quality) request.quality = quality;
     if (format) request.format = format;
@@ -139,18 +141,32 @@ function createPhoneController({
     return { header, payload, file };
   }
 
-  /** Poll on the phone until the screen changes from the last frame or settles; returns the frame. */
-  async function wait({ until = 'stable', stableMs = 300, timeoutMs = 3000, maxSide, quality } = {}) {
-    const request = { op: 'wait', until, stableMs, timeoutMs, image: true };
-    if (lastHash) request.from = lastHash;
+  /** Poll on the phone until the screen changes from the last observation or settles. */
+  async function wait({ until = 'stable', stableMs = 300, timeoutMs = 3000, maxSide, quality, image = true } = {}) {
+    const request = { op: 'wait', until, stableMs, timeoutMs, image };
+    if (lastObservedHash) request.from = lastObservedHash;
     if (maxSide) request.maxSide = maxSide;
     if (quality) request.quality = quality;
-    const { header, payload } = await call(request, { timeoutMs: timeoutMs + 10000 });
-    const file = remember(header, payload);
-    return { header, payload, file };
+    if (!image) pendingMetadataWaits += 1;
+    try {
+      const { header, payload: received } = await call(request, { timeoutMs: timeoutMs + 10000 });
+      // changed can describe a transient difference. Compare the final frame directly.
+      if (!image && lastFrame && (header.hash !== lastFrame.hash ||
+          header.width !== lastFrame.width || header.height !== lastFrame.height)) {
+        lastFrame = null;
+      }
+      const payload = image ? received : Buffer.alloc(0);
+      const file = remember(header, payload);
+      return { header, payload, file };
+    } catch (error) {
+      if (!image) lastFrame = null;
+      throw error;
+    } finally {
+      if (!image) pendingMetadataWaits -= 1;
+    }
   }
 
-  const settle = (options = {}) => wait({ ...options, until: 'stable' });
+  const settle = (options = {}) => wait({ ...options, until: 'stable', image: true });
 
   /**
    * Pair and/or connect over Wi-Fi when asked, pick the device, then make sure
@@ -175,7 +191,7 @@ function createPhoneController({
     }
     if (chosen !== adb.serial) {
       if (agent) { agent.close(); agent = null; }
-      info = null; lastFrame = null; lastHash = null;
+      info = null; lastFrame = null; lastObservedHash = null;
       adb.setSerial(chosen);
     }
     return { ...steps, devices, serial: chosen, agent: await ensure() };

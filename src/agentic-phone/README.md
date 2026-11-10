@@ -11,6 +11,11 @@ fast. It has no TRACE imports, so it can move to its own repo later with `git fi
 | `build.cjs` | Compiles `native/` into `.runtime/phone/build/classes.dex` (run through `node scripts/build-phone-agent.cjs`). |
 | `native/` | The on-device Java agent (`trace.phone`), the Wi-Fi trust watcher (`trace.phone.WifiTrust`) and `bench.cjs`, a read-only benchmark. |
 
+Use `phone_wait({ image: false })` for the wait outcome, frame count, final hash and device
+dimensions without encoding, transferring or saving a screenshot. The latest observed hash
+becomes the baseline for subsequent waits. If the wait fails or the final frame differs
+from the last image, call `phone_screen` to get fresh image coordinates.
+
 ## Boundary
 
 - Node built-ins and files inside this folder only. `tests/agentic-phone-boundary.test.cjs` fails otherwise.
