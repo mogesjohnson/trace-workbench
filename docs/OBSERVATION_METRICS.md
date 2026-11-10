@@ -5,10 +5,10 @@ Since 2.0.0, metrics are opt-in: pass `metrics: true` to `trace_computer_observe
 ## What is measured
 
 - Version 1 uses process-local monotonic elapsed milliseconds, rounded to three decimals. `stages` has fixed labels with `calls`, `failures` and inclusive `durationMs`.
-- Controller stages cover observation, current identity, backend work, file stat/read, hash/base64 encoding and journal write. Provider instrumentation adds identity, UIA, geometry, restore/settle, screenshot request, PNG read/header and focus where those operations occur.
+- Controller stages cover observation, current identity, backend work, file stat/read, hash/base64 encoding and journal write. Provider instrumentation adds identity, UIA, geometry, restore/settle, screenshot request, PNG read/header, focus and related-window lookup where those operations occur.
 - Stages nest: provider time overlaps identity/UIA/capture, which overlap backend and observation. **Do not sum stage durations.** Geometry settlement includes intentional waits. A missing stage is not a measured zero.
 - `counts` records provider request attempts, supervised/direct routes, capture requests and element count. These are not confirmed process launches or successful captures. No helper-startup or isolated native-execution timing is inferred from round trips.
-- `bytes` counts existing backend/controller PNG reads and base64 output. The two PNG read counts describe the current separate reads; instrumentation adds no capture or file read.
+- `bytes` counts existing backend/controller PNG reads, optional related-window PNG reads and base64 output. Instrumentation adds no capture or file read.
 - `sample` distinguishes first and later controller observation attempts, including failed first attempts. It does not prove OS caches, application state or providers are cold/warm. Model time is excluded.
 - Helper startup, isolated provider execution, wire transport, client latency and model time are explicitly unavailable in observation metrics. Ignore timing samples with `counts.invalidTimingSamples`; nonfinite/backward injected clock values cannot be treated as real zero-duration work.
 - A failed full observation retains its existing error rather than publishing partial metrics. A caught optional-focus failure can appear as a failed nested span in an otherwise successful observation.
@@ -25,14 +25,17 @@ Actual desktop measurement needs a separately scheduled owned-window slot; prepa
 2. Use one owned synthetic fixture already foreground, restored and idle. Keep its content, size and focus unchanged. Do not reuse unrelated app inventories or private screenshots as benchmark artifacts.
 3. Start a fresh controller, open its exact target once, and collect one first observation plus three later observations at the same depth. No mutation, export, recovery test or old acceptance rerun is required. Stop on targeting, capture or cleanup uncertainty; record the failed prerequisite instead of expanding the campaign.
 4. Store only each result's numeric metrics, projection metadata, sample label and pass/fail status. Do not save the full tool result, screenshot, title or target/session IDs into the performance report. Record actual cache/app initialization conditions separately; do not relabel first/later as cold/warm proof.
-5. Compare first observations separately from later observations. Report sample count and later min/median/max. Use stage counts and bytes to identify a measured candidate; do not claim a wall-clock speedup from fewer operations alone.
+5. Compare first observations separately from later observations. Report sample count and later min/median/p95/max. Use stage counts and bytes to identify a measured candidate. Fewer operations alone cannot establish a wall-clock speedup.
 6. Close the owned session using its existing cleanup contract. Native input/recovery acceptance stays at its compatible recorded scope. A changed display, depth, fixture or runtime needs a new labeled measurement group, not an unlabeled retest.
 
-An existing connected MCP client can extract a planned observation without retaining its pixels:
+An existing connected MCP client can extract a numeric sample from a full no-image observation:
 
 ```javascript
 const started = performance.now();
-const result = await client.callTool({ name: 'trace_computer_observe', arguments: { sessionId, accessibilityDepth: 8 } });
+const result = await client.callTool({
+  name: 'trace_computer_observe',
+  arguments: { sessionId, mode: 'full', screenshot: 'none', relatedImages: false, accessibilityDepth: 8, metrics: true },
+});
 const clientRoundTripMs = performance.now() - started;
 const sample = {
   status: result.isError ? 'failed' : 'completed',
@@ -45,11 +48,19 @@ const sample = {
 
 The caller measurement includes client processing and transport; it cannot isolate either. It does not include model thinking unless the caller explicitly measures that separately. No comparative latency result is claimed by this instrumentation change.
 
+## Repeated no-image observations and process attribution
+
+Use the same owned-fixture and cleanup requirements for a separately scheduled experiment.
+
+1. Pin the full no-image request shown above, with related images off, and keep the fixture restored, foreground and idle. Collect one first attempt and 20 later attempts serially on the same controller with no input or concurrent TRACE calls. Keep failed attempts and verify zero image blocks in each successful response. Repeat the whole run under the same conditions if comparing first attempts.
+2. Collect Windows ETW process start/exit events independently around the observation run. Use the supervisor's existing `onDispatch` callback to associate dispatch receipts with the in-flight observation. Match ETW lifetimes by child PID, child creation time and supervisor parent identity, aligning clocks before comparing times. Read the child PID from the event payload and exclude process rundown. Attribute only uniquely matched start/exit pairs. Report missing, ambiguous or dropped events and keep raw traces and process identities outside the numeric samples. [Windows kernel process events](https://learn.microsoft.com/en-us/windows/win32/etw/process-v2)
+3. Report caller and stage timing, request counts, confirmed launches and process lifetimes separately, alongside failures and verified cleanup. ETW start-to-exit measures process lifetime. The dispatch receipt follows resume. Isolating startup would require explicit launch and provider-ready boundaries on a common or calibrated clock. Keep startup unavailable without those boundaries.
+
 ## Summarize existing numeric samples
 
 Save an array of the `sample` objects above for one pinned source/runtime/display/depth/mode group, then run `node scripts/observation-profile.cjs samples.json > profile.json`. This offline command does not connect to a server, capture pixels or control the desktop. Keep the source manifest separately; the report cannot verify that samples came from equivalent environments or real captures.
 
-The report separates first/later attempts and gives per-metric sample count, minimum, median and maximum. Missing stages stay absent, never measured zero; failed samples are counted and excluded from aggregates. Observation and supplied projection metadata must declare version 1 and `process-monotonic` clock. Version/clock mismatches, invalid numeric fields and invalid timing samples reject the input. Only fixed numeric stage/count/byte/caller/projection fields are emitted; arbitrary fields and labels are ignored, and CLI errors omit input contents and paths. Caller round trip remains separate from nested stage timings, which must not be summed. Output is diagnostic aggregation, not a benchmark result or evidence of optimization, provider startup, cold caches or model speed.
+The report separates first/later attempts and gives per-metric sample count, minimum, median, p95 and maximum. P95 is the value at one-based rank `ceil(0.95 * n)` among the sorted values present for that metric. With fewer than 20 values it equals the maximum. Missing stages stay absent. Failed samples are counted and excluded from aggregates. Observation and supplied projection metadata must declare version 1 and `process-monotonic` clock. Version/clock mismatches, invalid numeric fields and invalid timing samples reject the input. The report emits only fixed numeric stage/count/byte/caller/projection fields and ignores arbitrary fields and labels. CLI errors omit input contents and paths. Caller round trip remains separate from nested stage timings, which must not be summed. The output summarizes diagnostic samples. Benchmark conclusions, provider startup, cold caches and model speed require separate evidence.
 
 ## Adjacent identity consolidation (V2 development)
 

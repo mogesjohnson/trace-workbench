@@ -1,9 +1,9 @@
 'use strict';
 const fs = require('node:fs');
 const stages = ['observation', 'backend', 'identity', 'uia', 'geometry', 'restore', 'settle', 'capture',
-  'backendPngRead', 'fileStat', 'fileRead', 'pngHeader', 'hashEncode', 'journal', 'focus', 'provider'];
+  'backendPngRead', 'fileStat', 'fileRead', 'pngHeader', 'hashEncode', 'journal', 'focus', 'provider', 'related'];
 const counts = ['providerRequests', 'supervisedRequests', 'directRequests', 'captureRequests', 'elements', 'invalidTimingSamples'];
-const byteNames = ['backendPngRead', 'controllerPngRead', 'base64'];
+const byteNames = ['backendPngRead', 'controllerPngRead', 'base64', 'relatedPngRead'];
 const unavailable = ['helperStartup', 'providerExecution', 'wireTransport', 'clientLatency', 'modelTime'];
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const fail = () => { throw new Error('Invalid observation profile samples.'); };
@@ -51,7 +51,8 @@ function summarize(samples) {
       values.sort((a, b) => a - b);
       const middle = Math.floor(values.length / 2);
       const median = values.length % 2 ? values[middle] : values[middle - 1] + (values[middle] - values[middle - 1]) / 2;
-      group.metrics[name] = { samples: values.length, min: values[0], median, max: values.at(-1) };
+      const p95 = values[Math.ceil(values.length * 0.95) - 1];
+      group.metrics[name] = { samples: values.length, min: values[0], median, p95, max: values.at(-1) };
     }
   }
   return { version: 1, scope: 'provided-numeric-samples', failedSamples, groups, unavailable: [...unavailable] };
