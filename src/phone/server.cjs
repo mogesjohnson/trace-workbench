@@ -9,6 +9,7 @@ const { StdioServerTransport } = require('@modelcontextprotocol/server/stdio');
 const { execFile } = require('node:child_process');
 const { z } = require('zod');
 const { version } = require('../../package.json');
+const { createAdbClient } = require('../agentic-phone/adb.cjs');
 
 const MIME = { jpeg: 'image/jpeg', webp: 'image/webp', png: 'image/png' };
 
@@ -218,9 +219,21 @@ function createPhoneServer({ controller, transcribe, onError = () => {}, stopOnC
   return server;
 }
 
+function configuredAdbPort() {
+  const value = process.env.TRACE_PHONE_ADB_PORT;
+  if (value === undefined) return undefined;
+  const port = Number(value);
+  if (!/^\d+$/.test(value) || port < 1 || port > 65535) {
+    throw new TypeError('TRACE_PHONE_ADB_PORT must be a decimal TCP port from 1 to 65535');
+  }
+  return port;
+}
+
 async function runPhoneServer(options = {}) {
   const phone = require('../agentic-phone/controller.cjs');
-  const controller = options.controller ?? phone.createPhoneController();
+  const controller = options.controller ?? phone.createPhoneController({
+    adb: createAdbClient({ port: configuredAdbPort() }),
+  });
   const onError = options.onError ?? ((error) => {
     process.stderr.write(`TRACE Phone: ${error instanceof Error ? error.message : 'Server error'}\n`);
   });
