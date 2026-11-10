@@ -3,6 +3,7 @@ package trace.phone;
 import android.graphics.Bitmap;
 import android.net.LocalServerSocket;
 import android.net.LocalSocket;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.view.InputDevice;
 import android.view.InputEvent;
@@ -12,7 +13,9 @@ import android.view.MotionEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -28,7 +31,7 @@ import org.json.JSONObject;
  * Wi-Fi link carries kilobytes instead of a 4-bytes-per-pixel raw frame.
  */
 public final class Main {
-  static final String VERSION = "1";
+  static final String VERSION = "2";
   static final Object CAPTURE_LOCK = new Object();
   static Method injectMethod;
   static Object inputManager;
@@ -42,13 +45,26 @@ public final class Main {
    * one uid the owner names explicitly (e.g. Termux for an on-phone agent).
    * There is deliberately no command-execution operation.
    */
+  @SuppressWarnings("deprecation")
   public static void main(String[] args) throws Exception {
     String name = args.length > 0 ? args[0] : "trace-phone";
     final int extraUid = args.length > 1 ? Integer.parseInt(args[1]) : -1;
+    // app_process does not prepare the main looper that Android accessibility uses.
+    Looper.prepareMainLooper();
     LocalServerSocket server = new LocalServerSocket(name);
+    Thread acceptor = new Thread(() -> {
+      try { acceptConnections(server, extraUid); }
+      catch (IOException error) { throw new UncheckedIOException(error); }
+    }, "trace-phone-accept");
+    acceptor.setDaemon(true);
+    acceptor.start();
     System.out.println("trace-phone agent " + VERSION + " listening on @" + name
         + (extraUid >= 0 ? " (also uid " + extraUid + ")" : ""));
     System.out.flush();
+    Looper.loop();
+  }
+
+  private static void acceptConnections(LocalServerSocket server, int extraUid) throws IOException {
     while (true) {
       final LocalSocket socket = server.accept();
       int uid;
