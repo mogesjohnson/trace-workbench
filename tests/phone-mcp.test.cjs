@@ -57,6 +57,29 @@ test('phone server lists exactly the seven phone tools with read-only hints wher
   assert.deepEqual(hints, { phone_act: false, phone_connect: false, phone_logcat: true, phone_screen: true, phone_transcribe: true, phone_ui: true, phone_wait: true });
 });
 
+test('device tools and shutdown leave the guest untouched before phone_connect', async (t) => {
+  const { call, adb, fake, server } = await connection(t);
+  const results = [];
+  for (const [name, args] of [
+    ['phone_screen'],
+    ['phone_wait'],
+    ['phone_ui'],
+    ['phone_ui', { selector: { text: 'Wi-Fi' }, release: true }],
+    ['phone_act', { action: { type: 'key', key: 'back' } }],
+    ['phone_act', { action: { type: 'tap', x: 1, y: 1 } }],
+    ['phone_logcat'],
+  ]) {
+    results.push(await call(name, args));
+  }
+  await server.close();
+  assert.deepEqual(adb.calls, []);
+  assert.deepEqual(fake.requests, []);
+  for (const result of results) {
+    assert.equal(result.isError, true);
+    assert.match(result.structuredContent.error.message, /call phone_connect first/);
+  }
+});
+
 test('phone_connect picks the only USB device and starts the agent', async (t) => {
   const { call, adb } = await connection(t, { adbOptions: { running: false } });
   const result = await call('phone_connect');
@@ -97,6 +120,9 @@ test('phone_connect rejects an unavailable Wi-Fi address and preserves an existi
   assert.deepEqual(adb.calls, [['connect', address]]);
   assert.equal(adb.serial, null);
   assert.deepEqual(fake.requests, []);
+  const unbound = await call('phone_logcat');
+  assert.equal(unbound.isError, true);
+  assert.deepEqual(adb.calls, [['connect', address]]);
 
   const connected = await call('phone_connect');
   assert.equal(connected.structuredContent.serial, 'R5CW');
@@ -140,6 +166,7 @@ test('phone_connect rejects conflicting selectors before pairing or connecting',
 
 test('phone_screen returns the image only when the screen changed, unless forced', async (t) => {
   const { call } = await connection(t);
+  await call('phone_connect', { serial: 'R5CW' });
   const first = await call('phone_screen');
   assert.equal(images(first).length, 1);
   assert.equal(images(first)[0].data, jpeg.toString('base64'));
@@ -157,6 +184,7 @@ test('phone_screen returns the image only when the screen changed, unless forced
 
 test('phone_act converts image coordinates, then returns the settled frame in one call', async (t) => {
   const { call, fake } = await connection(t);
+  await call('phone_connect');
   const early = await call('phone_act', { action: { type: 'tap', x: 1, y: 1 } });
   assert.equal(early.isError, true);
   assert.match(early.structuredContent.error.message, /no frame yet/);
@@ -175,7 +203,8 @@ test('phone_act converts image coordinates, then returns the settled frame in on
 });
 
 test('phone_ui reads nodes, finds by selector and can release UiAutomation', async (t) => {
-  const { call, fake } = await connection(t);
+  const { call, fake, adb } = await connection(t);
+  adb.setSerial('R5CW'); // An injected controller can already have an exact target.
   const all = await call('phone_ui', { maxNodes: 50 });
   assert.deepEqual(all.structuredContent.nodes, [{ text: 'Wi-Fi', cx: 10, cy: 20 }]);
   await call('phone_ui', { selector: { text: 'wi-fi' }, release: true });
@@ -187,6 +216,7 @@ test('phone_ui reads nodes, finds by selector and can release UiAutomation', asy
 
 test('phone_wait passes until:change and phone_logcat bounds its query', async (t) => {
   const { call, fake, adb } = await connection(t);
+  await call('phone_connect');
   await call('phone_screen');
   const waited = await call('phone_wait', { until: 'change', timeoutMs: 500 });
   assert.equal(waited.structuredContent.frame.met, true);
@@ -200,7 +230,7 @@ test('phone_wait passes until:change and phone_logcat bounds its query', async (
 
 test('closing the server stops the agent and removes its dex', async (t) => {
   const { call, server, adb } = await connection(t);
-  await call('phone_screen');
+  await call('phone_connect');
   await server.close();
   assert.deepEqual(adb.calls.filter((c) => c[0] === 'exec').map((c) => c[1]), ['kill 4242', 'rm -f /data/local/tmp/trace-phone.dex']);
 });
@@ -242,7 +272,7 @@ test('phone_transcribe defaults to base.en and reports transcriber failures as t
     if (request.path.endsWith('missing.wav')) throw new Error('phone-transcribe failed: no such file');
     return { text: 'open termux and run the phone bench', model: request.model, audioSeconds: 2.86, elapsedSeconds: 3.55 };
   };
-  const { call } = await connection(t, { transcribe });
+  const { call, adb, server } = await connection(t, { transcribe });
   const ok = await call('phone_transcribe', { path: '/root/clip.m4a' });
   assert.equal(ok.isError, undefined);
   assert.deepEqual(ok.structuredContent, { text: 'open termux and run the phone bench', model: 'base.en', audioSeconds: 2.86, elapsedSeconds: 3.55 });
@@ -253,6 +283,8 @@ test('phone_transcribe defaults to base.en and reports transcriber failures as t
   const rejected = await call('phone_transcribe', { path: '/root/clip.m4a', model: 'large-v3' });
   assert.equal(rejected.isError, true);
   assert.equal(calls.length, 2);
+  await server.close();
+  assert.deepEqual(adb.calls, []);
 });
 
 test('commandTranscriber passes --json, the model and the path, and reads the last JSON line', async () => {
