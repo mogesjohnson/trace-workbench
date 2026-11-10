@@ -75,8 +75,67 @@ test('phone_connect pairs and connects over Wi-Fi, and needs a serial among seve
   const ambiguous = await call('phone_connect');
   assert.equal(ambiguous.isError, true);
   assert.match(ambiguous.structuredContent.error.message, /several devices; pass serial \(R5CW, 192\.0\.2\.5:5555\)/);
+  const same = await call('phone_connect', { address: '192.0.2.5:5555', serial: '192.0.2.5:5555' });
+  assert.equal(same.structuredContent.serial, '192.0.2.5:5555');
+  const usb = await call('phone_connect', { serial: 'R5CW' });
+  assert.equal(usb.structuredContent.serial, 'R5CW');
   const badCode = await call('phone_connect', { pairCode: '12ab56' });
   assert.equal(badCode.isError, true);
+});
+
+test('phone_connect rejects an unavailable Wi-Fi address and preserves an existing connection', async (t) => {
+  const { call, adb, fake } = await connection(t, { adbOptions: { running: false } });
+  const address = '192.0.2.1:5555';
+  adb.connect = async (target) => {
+    adb.calls.push(['connect', target]);
+    return `failed to connect to ${target}`;
+  };
+
+  const failed = await call('phone_connect', { address });
+  assert.equal(failed.isError, true);
+  assert.match(failed.structuredContent.error.message, /192\.0\.2\.1:5555.*state "device"/);
+  assert.deepEqual(adb.calls, [['connect', address]]);
+  assert.equal(adb.serial, null);
+  assert.deepEqual(fake.requests, []);
+
+  const connected = await call('phone_connect');
+  assert.equal(connected.structuredContent.serial, 'R5CW');
+  const before = await call('phone_screen');
+  assert.equal(before.structuredContent.frame.changed, true);
+  const callsBefore = adb.calls.slice();
+  const reconnect = await call('phone_connect', { address });
+  assert.equal(reconnect.isError, true);
+  const screen = await call('phone_screen');
+  assert.equal(screen.structuredContent.frame.changed, false);
+  assert.deepEqual(adb.calls, [...callsBefore, ['connect', address]]);
+  assert.equal(adb.serial, 'R5CW');
+});
+
+test('phone_connect rejects absent or offline serials without guest side effects', async (t) => {
+  const devices = [{ serial: 'R5CW', state: 'device' }, { serial: 'offline-phone', state: 'offline' }];
+  const { call, adb, fake, server } = await connection(t, { adbOptions: { devices } });
+  for (const serial of ['missing-phone', 'offline-phone']) {
+    const failed = await call('phone_connect', { serial });
+    assert.equal(failed.isError, true);
+    assert.ok(failed.structuredContent.error.message.includes(serial));
+  }
+  await server.close();
+  assert.deepEqual(adb.calls, []);
+  assert.equal(adb.serial, null);
+  assert.deepEqual(fake.requests, []);
+});
+
+test('phone_connect rejects conflicting selectors before pairing or connecting', async (t) => {
+  const { call, adb, fake, server } = await connection(t);
+  const mismatch = await call('phone_connect', {
+    address: '192.0.2.5:5555', serial: 'R5CW', pairAddress: '192.0.2.5:37000', pairCode: '123456',
+  });
+  assert.equal(mismatch.isError, true);
+  assert.match(mismatch.structuredContent.error.message, /serial and address.*match/);
+  await server.close();
+  assert.deepEqual(adb.calls, []);
+  assert.equal(adb.serial, null);
+  assert.deepEqual(fake.requests, []);
 });
 
 test('phone_screen returns the image only when the screen changed, unless forced', async (t) => {
