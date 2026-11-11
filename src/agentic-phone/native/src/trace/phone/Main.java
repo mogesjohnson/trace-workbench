@@ -35,6 +35,8 @@ public final class Main {
   static final Object CAPTURE_LOCK = new Object();
   static Method injectMethod;
   static Object inputManager;
+  private static CompositorCapture compositor;
+  private static String compositorFailure;
 
   static final int SHELL_UID = 2000;
 
@@ -163,28 +165,57 @@ public final class Main {
 
   static final class Frame {
     byte[] raw; int offset; int width; int height; long crc;
+    String backend = "screencap";
+    String fallbackReason;
   }
 
   static Frame capture(int ignoreTop) throws Exception {
     synchronized (CAPTURE_LOCK) {
-      Process process = Runtime.getRuntime().exec(new String[] {"screencap"});
-      byte[] raw = readAll(process.getInputStream(), 20 << 20);
-      process.waitFor();
-      ByteBuffer header = ByteBuffer.wrap(raw, 0, 16).order(java.nio.ByteOrder.LITTLE_ENDIAN);
-      Frame f = new Frame();
-      f.width = header.getInt();
-      f.height = header.getInt();
-      int format = header.getInt();
-      if (format != 1) throw new IllegalStateException("unsupported pixel format " + format);
-      f.offset = raw.length - f.width * f.height * 4;
-      if (f.offset != 12 && f.offset != 16) throw new IllegalStateException("unexpected screencap size");
-      f.raw = raw;
+      Frame f = null;
+      if (compositorFailure == null) {
+        try {
+          if (compositor == null) compositor = new CompositorCapture();
+          f = compositor.capture();
+        } catch (Exception | LinkageError failure) {
+          // Keep a failed backend out of subsequent capture and wait requests.
+          Throwable cause = failure.getCause();
+          Throwable reason = cause == null ? failure : cause;
+          compositorFailure = reason instanceof CompositorCapture.Unavailable
+              ? reason.getMessage() : reason.getClass().getSimpleName();
+          compositor = null;
+        }
+      }
+      if (f == null) {
+        f = captureScreencap();
+        f.fallbackReason = compositorFailure;
+      }
       int skip = Math.max(0, Math.min(ignoreTop, f.height)) * f.width * 4;
       CRC32 crc = new CRC32();
-      crc.update(raw, f.offset + skip, raw.length - f.offset - skip);
+      crc.update(f.raw, f.offset + skip, f.raw.length - f.offset - skip);
       f.crc = crc.getValue();
       return f;
     }
+  }
+
+  private static Frame captureScreencap() throws Exception {
+    Process process = Runtime.getRuntime().exec(new String[] {"screencap"});
+    byte[] raw = readAll(process.getInputStream(), 20 << 20);
+    process.waitFor();
+    ByteBuffer header = ByteBuffer.wrap(raw, 0, 16).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+    Frame f = new Frame();
+    f.width = header.getInt();
+    f.height = header.getInt();
+    int format = header.getInt();
+    if (format != 1) throw new IllegalStateException("unsupported pixel format " + format);
+    f.offset = raw.length - f.width * f.height * 4;
+    if (f.offset != 12 && f.offset != 16) throw new IllegalStateException("unexpected screencap size");
+    f.raw = raw;
+    return f;
+  }
+
+  private static void describeCapture(Frame frame, JSONObject header) throws Exception {
+    header.put("captureBackend", frame.backend);
+    if (frame.fallbackReason != null) header.put("captureFallback", frame.fallbackReason);
   }
 
   static byte[] screen(JSONObject r, JSONObject h) throws Exception {
@@ -197,7 +228,9 @@ public final class Main {
     h.put("width", f.width);
     h.put("height", f.height);
     h.put("captureMs", (t1 - t0) / 1e6);
-    if (hash.equals(r.optString("ifChangedFrom", ""))) {
+    describeCapture(f, h);
+    if (f.backend.equals(r.optString("ifChangedFromBackend", f.backend))
+        && hash.equals(r.optString("ifChangedFrom", ""))) {
       h.put("changed", false);
       return new byte[0];
     }
@@ -252,14 +285,15 @@ public final class Main {
     int ignoreTop = r.optInt("ignoreTop", statusBarHeight());
     if (!"change".equals(mode) && !"stable".equals(mode)) throw new IllegalArgumentException("unknown until " + mode);
     String from = r.optString("from", "");
+    String fromBackend = r.optString("fromBackend", "");
     long deadline = SystemClock.uptimeMillis() + timeout;
     Frame f = capture(ignoreTop);
     int frames = 1;
     long since = SystemClock.uptimeMillis();
     boolean met = false;
-    // Without "from", the first frame captured here is the baseline, so
-    // until:"change" waits for the screen to differ from how it is now.
-    String baseline = from.isEmpty() ? Long.toHexString(f.crc) : from;
+    // A backend change can change the raw pixels even when the screen did not change.
+    String baseline = from.isEmpty() || (!fromBackend.isEmpty() && !fromBackend.equals(f.backend))
+        ? Long.toHexString(f.crc) : from;
     boolean changed = !Long.toHexString(f.crc).equals(baseline);
     while (true) {
       if ("change".equals(mode) && changed) { met = true; break; }
@@ -268,14 +302,21 @@ public final class Main {
       if (SystemClock.uptimeMillis() >= deadline) break;
       Frame next = capture(ignoreTop);
       frames++;
-      if (next.crc != f.crc) since = SystemClock.uptimeMillis();
-      if (!Long.toHexString(next.crc).equals(baseline)) changed = true;
+      String nextHash = Long.toHexString(next.crc);
+      if (!next.backend.equals(f.backend)) {
+        baseline = nextHash;
+        since = SystemClock.uptimeMillis();
+      } else {
+        if (next.crc != f.crc) since = SystemClock.uptimeMillis();
+        if (!nextHash.equals(baseline)) changed = true;
+      }
       f = next;
     }
     h.put("met", met);
     h.put("frames", frames);
     h.put("hash", Long.toHexString(f.crc));
     h.put("changed", changed);
+    describeCapture(f, h);
     h.put("width", f.width);
     h.put("height", f.height);
     if (r.optBoolean("image", false)) return encode(f, r, h);

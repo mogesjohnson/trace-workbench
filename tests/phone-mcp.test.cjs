@@ -402,6 +402,41 @@ test('metadata-only waits keep matching geometry and invalidate it when the fina
   assert.equal(images(await call('phone_screen')).length, 0);
 });
 
+test('capture fallback sends a fresh image and invalidates old image coordinates', async (t) => {
+  let backend = 'compositor';
+  const handler = (request) => {
+    if (request.op === 'hello') return hello;
+    const header = { hash: 'same', width: 4, height: 8, captureBackend: backend };
+    if (request.op === 'wait') return { header: { ...header, met: true, changed: false } };
+    if (request.ifChangedFrom === header.hash && request.ifChangedFromBackend === backend) {
+      return { header: { ...header, changed: false } };
+    }
+    return { header: { ...header, format: 'jpeg', scale: 0.5, regionX: 0, regionY: 0 }, payload: jpeg };
+  };
+  const { call, fake } = await connection(t, { handler });
+  await call('phone_connect');
+  assert.equal(images(await call('phone_screen')).length, 1);
+  assert.equal(images(await call('phone_screen')).length, 0);
+
+  backend = 'screencap';
+  const fallback = await call('phone_screen');
+  assert.equal(fake.requests.at(-1).ifChangedFromBackend, 'compositor');
+  assert.equal(fallback.structuredContent.frame.captureBackend, 'screencap');
+  assert.equal(images(fallback).length, 1);
+
+  backend = 'compositor';
+  await call('phone_screen', { force: true });
+  backend = 'screencap';
+  const waited = await call('phone_wait', { image: false });
+  assert.equal(fake.requests.at(-1).fromBackend, 'compositor');
+  assert.equal(waited.structuredContent.frame.captureBackend, 'screencap');
+  const tap = await call('phone_act', { action: { type: 'tap', x: 1, y: 1 } });
+  assert.match(tap.structuredContent.error.message, /call screen first/);
+  assert.equal(fake.requests.some(request => request.op === 'tap'), false);
+  await call('phone_wait', { image: false });
+  assert.equal(fake.requests.at(-1).fromBackend, 'screencap');
+});
+
 test('image-space input requires a fresh frame after a metadata-only wait fails', async (t) => {
   const received = Promise.withResolvers();
   const defaultHandler = agentHandler();

@@ -45,7 +45,7 @@ function createPhoneController({
   let agent = null;
   let info = null;
   let lastFrame = null; // geometry from the last image while it is current
-  let lastObservedHash = null;
+  let lastObservation = null;
   let pendingMetadataWaits = 0;
   let frameCount = 0;
   let used = false; // set once this controller tries to reach the agent
@@ -114,7 +114,7 @@ function createPhoneController({
       if (!canReconnect) {
         if (wasClosed) throw new Error('Agent connection closed before dispatch', { cause: error });
         lastFrame = null;
-        lastObservedHash = null;
+        lastObservation = null;
         throw new Error(`Phone action delivery is unknown (${error.message}). ${VERIFY_BEFORE_INPUT}`, { cause: error });
       }
       if (!client.closed) throw error;
@@ -136,7 +136,7 @@ function createPhoneController({
   }
 
   function remember(header, payload) {
-    if (header.hash) lastObservedHash = header.hash;
+    if (header.hash) lastObservation = { hash: header.hash, backend: header.captureBackend };
     if (!payload.length) return null;
     lastFrame = header;
     return saveFrame(header, payload);
@@ -154,7 +154,10 @@ function createPhoneController({
 
   async function screen({ onlyIfChanged = true, maxSide, quality, format, region } = {}) {
     const request = { op: 'screen' };
-    if (onlyIfChanged && !pendingMetadataWaits && lastFrame?.hash) request.ifChangedFrom = lastFrame.hash;
+    if (onlyIfChanged && !pendingMetadataWaits && lastFrame?.hash) {
+      request.ifChangedFrom = lastFrame.hash;
+      if (lastFrame.captureBackend) request.ifChangedFromBackend = lastFrame.captureBackend;
+    }
     if (maxSide) request.maxSide = maxSide;
     if (quality) request.quality = quality;
     if (format) request.format = format;
@@ -167,7 +170,10 @@ function createPhoneController({
   /** Poll on the phone until the screen changes from the last observation or settles. */
   async function wait({ until = 'stable', stableMs = 300, timeoutMs = 3000, maxSide, quality, image = true } = {}) {
     const request = { op: 'wait', until, stableMs, timeoutMs, image };
-    if (lastObservedHash) request.from = lastObservedHash;
+    if (lastObservation) {
+      request.from = lastObservation.hash;
+      if (lastObservation.backend) request.fromBackend = lastObservation.backend;
+    }
     if (maxSide) request.maxSide = maxSide;
     if (quality) request.quality = quality;
     if (!image) pendingMetadataWaits += 1;
@@ -175,7 +181,8 @@ function createPhoneController({
       const { header, payload: received } = await call(request, { timeoutMs: timeoutMs + 10000 });
       // changed can describe a transient difference. Compare the final frame directly.
       if (!image && lastFrame && (header.hash !== lastFrame.hash ||
-          header.width !== lastFrame.width || header.height !== lastFrame.height)) {
+          header.width !== lastFrame.width || header.height !== lastFrame.height ||
+          header.captureBackend !== lastFrame.captureBackend)) {
         lastFrame = null;
       }
       const payload = image ? received : Buffer.alloc(0);
@@ -214,7 +221,7 @@ function createPhoneController({
     }
     if (chosen !== adb.serial) {
       if (agent) { agent.close(); agent = null; }
-      info = null; lastFrame = null; lastObservedHash = null;
+      info = null; lastFrame = null; lastObservation = null;
       adb.setSerial(chosen);
     }
     return { ...steps, devices, serial: chosen, agent: await ensure() };
@@ -248,7 +255,7 @@ function createPhoneController({
     try { after = await settle(settleOptions); }
     catch (error) {
       lastFrame = null;
-      lastObservedHash = null;
+      lastObservation = null;
       throw new Error(`The agent acknowledged the phone action, but settle failed (${error.message}). ${VERIFY_BEFORE_INPUT}`, { cause: error });
     }
     return { action: result.header, after };
