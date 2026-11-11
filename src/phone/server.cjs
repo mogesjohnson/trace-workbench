@@ -118,16 +118,24 @@ function commandTranscriber({ command = process.env.TRACE_PHONE_TRANSCRIBE } = {
 
 const readOnly = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false };
 
-function createPhoneServer({ controller, transcribe, onError = () => {}, stopOnClose = true } = {}) {
+const DEVICE_UI_TOOLS = new Set(['phone_connect', 'phone_screen', 'phone_ui', 'phone_wait', 'phone_act']);
+
+function createPhoneServer({ controller, transcribe, onError = () => {}, stopOnClose = true, serial } = {}) {
   for (const method of ['connect', 'screen', 'wait', 'act', 'ui', 'find', 'release', 'logcat', 'stop', 'close']) {
     if (typeof controller?.[method] !== 'function') throw new TypeError(`Phone controller requires ${method}()`);
   }
   const server = new McpServer({ name: 'trace-phone', version }, { maxToolInputElements: 64 });
   let closePromise;
+  let deviceTail;
+  let bound = false;
+  if (serial !== undefined && !/^[^\s\0]{1,128}$/.test(serial)) {
+    throw new TypeError('TRACE_PHONE_SERIAL must be one exact ADB serial');
+  }
   // Closing the server stops the agent it used and removes the dex, so nothing
   // with shell rights is left listening on the phone.
   const closeController = () => {
     closePromise ??= (async () => {
+      await deviceTail;
       try { if (stopOnClose) await controller.stop({ onlyIfUsed: true }); } catch (error) { onError(error); }
       controller.close();
     })();
@@ -143,8 +151,19 @@ function createPhoneServer({ controller, transcribe, onError = () => {}, stopOnC
   function register(name, description, inputSchema, handler, annotations) {
     server.registerTool(name, { description, inputSchema, annotations }, async (args, context) => {
       try {
-        if (context?.mcpReq?.signal?.aborted) throw new Error('Phone request cancelled');
-        return await handler(args);
+        const run = () => {
+          if (closePromise || context?.mcpReq?.signal?.aborted) throw new Error('Phone request cancelled');
+          return handler(args);
+        };
+        if (serial === undefined || !DEVICE_UI_TOOLS.has(name)) return await run();
+        // An input queued behind another UI operation could refer to an obsolete frame.
+        if (name === 'phone_act' && deviceTail) {
+          throw new Error('Phone input was not dispatched. Wait for the current UI operation, then observe before acting.');
+        }
+        const task = (deviceTail ?? Promise.resolve()).then(run);
+        const tail = task.catch(() => {});
+        deviceTail = tail;
+        try { return await task; } finally { if (deviceTail === tail) deviceTail = undefined; }
       } catch (error) {
         return errorResult(error);
       }
@@ -156,19 +175,29 @@ function createPhoneServer({ controller, transcribe, onError = () => {}, stopOnC
     z.strictObject({ address: text(128).optional(), pairAddress: text(128).optional(),
       pairCode: z.string().regex(/^\d{6}$/).optional(), serial: text(128).optional() }),
     async (args) => {
-      const out = await controller.connect(args);
+      if (serial !== undefined && (args.address !== undefined || args.pairAddress !== undefined ||
+          args.pairCode !== undefined || (args.serial !== undefined && args.serial !== serial))) {
+        throw new Error('TRACE_PHONE_SERIAL pins this session to an already connected ADB target');
+      }
+      const out = await controller.connect(serial === undefined ? args : { serial });
+      bound = true;
       return result({ ...out, agent: cleanHeader(out.agent) });
     },
     { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true });
 
   register('phone_screen',
+    (serial === undefined ? '' : 'The exact ADB target is configured. Call this directly for the first frame. ') +
     'Capture the screen, scaled and encoded on the phone. Returns the image only when it changed since the last frame (force to always get it). Coordinates in later actions default to this image\'s pixels.',
     z.strictObject({ ...imageSchema, format: z.enum(['jpeg', 'webp', 'png']).optional(), force: z.boolean().optional(),
       region: z.strictObject({ x: z.number().int().min(0), y: z.number().int().min(0),
         width: z.number().int().min(1), height: z.number().int().min(1) }).optional().describe('Crop in device pixels.') }),
     async ({ force, ...options }) => {
+      if (serial !== undefined && !bound) {
+        await controller.connect({ serial });
+        bound = true;
+      }
       const { state, images } = frameState(await controller.screen({ ...options, onlyIfChanged: !force }));
-      return result(state, images);
+      return result(serial === undefined ? state : { serial, ...state }, images);
     }, readOnly);
 
   register('phone_ui',
@@ -245,7 +274,7 @@ async function runPhoneServer(options = {}) {
       if (removed) process.stderr.write(`TRACE Phone: pruned ${removed} frame(s) older than 7 days\n`);
     } catch (error) { onError(error); }
   }
-  const server = createPhoneServer({ controller, onError });
+  const server = createPhoneServer({ controller, onError, serial: options.serial ?? process.env.TRACE_PHONE_SERIAL });
   const shutdown = () => { void server.close().catch(onError); };
   process.once('SIGINT', shutdown);
   process.once('SIGTERM', shutdown);

@@ -9,11 +9,11 @@ TRACE Phone drives one Android target through `trace-workbench phone mcp`. An ag
 
 ## Before the first call
 
-1. **Consent.** The agent injects input and reads the screen while it runs. Start it only on a user-owned Android target or a task-owned emulator guest approved for this session. On the owner's S23, follow `docs/PHONE_AUTONOMY_POLICY.md` in the TRACE repo: starting and stopping the agent, observing, the `home` and `back` keys and opening an app the task names need no further OK; typing, taps in messaging, email, banking, shopping or settings apps, installs and removals, and anything that sends data off the phone need the owner's OK first; payments, passwords and 2FA codes, deleting user data and changing security settings are never done. If unsure, ask. For other targets, confirm the approval before `phone_connect`.
+1. **Consent.** The agent injects input and reads the screen while it runs. Start it only on a user-owned Android target or a task-owned emulator guest approved for this session. On the owner's S23, follow `docs/PHONE_AUTONOMY_POLICY.md` in the TRACE repo: starting and stopping the agent, observing, the `home` and `back` keys and opening an app the task names need no further OK; typing, taps in messaging, email, banking, shopping or settings apps, installs and removals, and anything that sends data off the phone need the owner's OK first; payments, passwords and 2FA codes, deleting user data and changing security settings are never done. If unsure, ask. For other targets, confirm approval before starting the agent.
 2. **Build.** `node scripts/build-phone-agent.cjs` compiles the agent into `.runtime/phone/build/classes.dex` (needs a JDK 11+, Android Studio's JBR by default, and an Android SDK; `--print-config` shows what it found). The dex stays out of Git.
 3. **Link.** For a physical phone, use USB debugging or Wireless debugging. For Wi-Fi, pass the phone's `address` (`ip:port`) as both `address` and `serial`. The first time, add `pairAddress` and the six-digit `pairCode` from the pairing dialog. For an emulator, follow the guest setup below.
 
-Pass the intended target's exact `serial` to `phone_connect`. Before observing or acting, check that the returned `serial` matches, the device list shows it in state `device`, and `agent.pid` is present. Stop if the target cannot be verified.
+If `phone_screen` advertises a configured exact ADB target, call it first and verify its returned `serial` matches the intended target. Otherwise pass the intended target's exact `serial` to `phone_connect`. Check that its `serial` matches, the device list shows it in state `device`, and `agent.pid` is present before observing or acting. Stop if the target cannot be verified.
 
 ### Connect to an emulator guest
 
@@ -29,6 +29,8 @@ Pass the intended target's exact `serial` to `phone_connect`. Before observing o
 4. `phone_wait` waits on the target for `until:"change"` (after something slow, such as a load) or `until:"stable"`. When the live tool schema exposes `image` and you only need the wait outcome or frame hash, pass `image: false` to skip encoding, returning, and saving the screenshot. Otherwise use the default wait. If a metadata-only wait fails or ends on a different frame, call `phone_screen` with `force: true` before using image coordinates again.
 5. `phone_logcat` returns recent log lines; use a filterspec such as `ActivityManager:I *:S` to keep it short.
 6. `phone_transcribe` turns a recording into text with whisper.cpp on the phone (`base.en` by default, about 0.4x real time plus model load). It needs `scripts/phone/install-whisper.sh` run once in the phone's Debian. `path` is a file where `phone-transcribe` runs. From a PC, set `TRACE_PHONE_TRANSCRIBE` to a JSON argv that reaches Debian, such as `["ssh","phone","proot-distro","login","debian","--","phone-transcribe"]`. It never records: recording the microphone (`phone-transcribe --record SECONDS`) is ask-first.
+
+Run independent work in parallel. For one phone screen, wait for each action and its settle result, verify the effect, and ground the next action in the latest observation.
 
 Coordinates default to `space:"image"`: pixels of the last returned frame. Use `space:"device"` only with bounds from `phone_ui` or other physical-pixel sources.
 
