@@ -50,6 +50,10 @@ function createPhoneController({
   let frameCount = 0;
   let used = false; // set once this controller tries to reach the agent
 
+  function requireTarget() {
+    if (!adb.serial) throw new Error('no ADB target selected; call phone_connect first');
+  }
+
   async function attach() {
     const { socket, leftover } = await adb.openAbstract(agentName);
     const client = createAgentClient(socket, leftover);
@@ -79,6 +83,7 @@ function createPhoneController({
   }
 
   async function ensure() {
+    requireTarget();
     used = true;
     if (agent && !agent.closed) return info;
     agent = null;
@@ -220,6 +225,7 @@ function createPhoneController({
    * target: { selector } (accessibility node), or { x, y, space: 'image'|'device' }.
    */
   async function act({ action = 'tap', target = {}, value, key, swipe, settleOptions } = {}) {
+    requireTarget();
     let result;
     if (key !== undefined) {
       result = await call({ op: 'key', code: key });
@@ -260,11 +266,11 @@ function createPhoneController({
 
   /**
    * Stop the agent process and remove its dex. Safe to call when nothing runs.
-   * onlyIfUsed leaves the phone alone if this controller never reached for the agent: a server that
-   * only transcribed has no chosen device and must not stop an agent another session is using.
+   * Cleanup requires a selected device. onlyIfUsed also skips cleanup if this
+   * controller never attempted to reach the agent.
    */
   async function stop({ onlyIfUsed = false } = {}) {
-    if (onlyIfUsed && !used) return { stopped: false, pid: null };
+    if (!adb.serial || (onlyIfUsed && !used)) return { stopped: false, pid: null };
     let pid = info && info.pid;
     if (!pid) { try { pid = (await attach()).pid; } catch { pid = null; } }
     if (agent) { agent.close(); agent = null; }
@@ -278,6 +284,7 @@ function createPhoneController({
     ensure, connect, screen, wait, settle, act, ui, find, stop, toDevice,
     release: () => call({ op: 'release' }).then((r) => r.header),
     logcat: async ({ lines = 200, filter } = {}) => {
+      requireTarget();
       const n = Math.max(1, Math.min(5000, Math.floor(lines)));
       const spec = filter && /^[\w.*:\s-]+$/.test(filter) ? ` ${filter}` : '';
       return (await adb.exec(`logcat -d -t ${n}${spec}`)).toString('utf8');
