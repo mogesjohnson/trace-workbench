@@ -229,6 +229,7 @@ test('phone_act sends each input once when the acknowledgment is lost', async (t
         }
         return reply(r);
       } });
+      await call('phone_connect');
       const failed = await call('phone_act', { action });
       assert.deepEqual(fake.requests.map((r) => r.op), ['hello', op]);
       assert.equal(failed.isError, true);
@@ -247,6 +248,7 @@ test('phone_act distinguishes an agent error from unknown input delivery', async
     if (r.op === 'node') return { header: { ok: false, error: 'no matching node' } };
     return reply(r);
   } });
+  await call('phone_connect');
   const failed = await call('phone_act', { action: { type: 'tap', selector: { text: 'Missing' } } });
   assert.equal(failed.isError, true);
   assert.equal(failed.structuredContent.error.message, 'agent: no matching node');
@@ -254,7 +256,8 @@ test('phone_act distinguishes an agent error from unknown input delivery', async
 });
 
 test('phone_act reports setup failure before dispatch', async (t) => {
-  const { call, fake } = await connection(t, { adbOptions: { running: false }, hasDex: false });
+  const { call, fake, adb } = await connection(t, { adbOptions: { running: false }, hasDex: false });
+  adb.setSerial('R5CW');
   const failed = await call('phone_act', { action: { type: 'key', key: 'back' } });
   assert.equal(failed.isError, true);
   assert.match(failed.structuredContent.error.message, /before dispatch.*agent dex not built/i);
@@ -275,6 +278,7 @@ test('phone_act does not resend input after a protocol failure', async (t) => {
     }
     return reply(r);
   } });
+  await call('phone_connect');
   assert.equal(images(await call('phone_screen')).length, 1);
   const failed = await call('phone_act', { action: { type: 'key', key: 'back' } });
   assert.equal(failed.isError, true);
@@ -293,6 +297,7 @@ test('phone_act reports acknowledged input when both settle reads lose their lin
     if (r.op === 'wait' && r.image) { socket.destroy(); return null; }
     return reply(r);
   } });
+  await call('phone_connect');
   await call('phone_screen');
   const failed = await call('phone_act', { action: { type: 'key', key: 'back' } });
   assert.equal(failed.isError, true);
@@ -336,6 +341,7 @@ test('phone_wait passes until:change and phone_logcat bounds its query', async (
 
 test('metadata-only waits expose metadata without saving an image or enabling image-space input', async (t) => {
   const { call, fake, dir } = await connection(t);
+  await call('phone_connect');
   const waited = await call('phone_wait', { image: false });
   assert.deepEqual(waited.structuredContent.frame, {
     hash: 'h2', met: true, frames: 2, changed: true, width: 4, height: 8,
@@ -345,6 +351,7 @@ test('metadata-only waits expose metadata without saving an image or enabling im
   assert.equal(fs.existsSync(path.join(dir, 'frames')), false);
   const tap = await call('phone_act', { action: { type: 'tap', x: 1, y: 1 } });
   assert.equal(tap.isError, true);
+  assert.match(tap.structuredContent.error.message, /call screen first/);
   assert.equal(fake.requests.some((r) => r.op === 'tap'), false);
   const deviceTap = await call('phone_act', { action: { type: 'tap', x: 3, y: 4, space: 'device' } });
   assert.equal(images(deviceTap).length, 1);
@@ -365,6 +372,7 @@ test('metadata-only waits keep matching geometry and invalidate it when the fina
   const { call, fake, dir } = await connection(t, { handler });
   const tap = { type: 'tap', x: 1, y: 1 };
   const swipe = { type: 'swipe', from: { x: 1, y: 1 }, to: { x: 2, y: 2 } };
+  await call('phone_connect');
   await call('phone_screen');
 
   const stable = await call('phone_wait', { image: false });
@@ -407,6 +415,7 @@ test('image-space input requires a fresh frame after a metadata-only wait fails'
     },
   });
   const tap = { type: 'tap', x: 1, y: 1 };
+  await call('phone_connect');
   await call('phone_screen');
   const waiting = call('phone_wait', { image: false });
   const failWait = await Promise.race([

@@ -216,8 +216,8 @@ test('controller replaces a running version 1 agent with the rebuilt dex', async
     const info = await phone.ensure();
     assert.equal(info.version, hello.header.version);
     assert.equal(info.pid, hello.header.pid);
-    assert.deepEqual(adb.calls.map(([op]) => op), ['open', 'exec', 'push', 'spawn', 'open']);
-    assert.deepEqual(adb.calls[1], ['exec', 'kill 7']);
+    assert.deepEqual(adb.calls.map(([op]) => op), ['serial', 'open', 'exec', 'push', 'spawn', 'open']);
+    assert.deepEqual(adb.calls[2], ['exec', 'kill 7']);
   } finally { phone.close(); fake.server.close(); }
 });
 

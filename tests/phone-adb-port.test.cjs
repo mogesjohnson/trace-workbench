@@ -102,8 +102,9 @@ test('phone MCP uses an injected controller independently of ADB port configurat
   restorePortAfter(t);
   process.env.TRACE_PHONE_ADB_PORT = 'invalid';
   const adb = fakeAdb(null);
+  adb.setSerial('R5CW');
   const client = await startPhoneClient(t, createPhoneController({ adb }));
   const result = await client.callTool({ name: 'phone_logcat', arguments: { lines: 5 } });
   assert.equal(result.isError, undefined);
-  assert.deepEqual(adb.calls, [['exec', 'logcat -d -t 5']]);
+  assert.deepEqual(adb.calls, [['serial', 'R5CW'], ['exec', 'logcat -d -t 5']]);
 });
