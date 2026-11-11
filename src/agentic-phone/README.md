@@ -33,6 +33,18 @@ the settle fails, take a fresh observation and verify the phone state before tak
   scripts, and the policy and handoff docs.
 - Speed and link fixes go here; tool schemas, skill text and approvals go in TRACE.
 
+## Get the first frame in one call
+
+Set `TRACE_PHONE_SERIAL` in the MCP server's launch environment to an exact, already-ready
+ADB serial. For Claude Code on this phone, the serial is `127.0.0.1:5555`. The first
+`phone_screen` checks that exact target, starts the agent if needed, and returns the frame.
+Later calls reuse that session. Pairing and switching devices require a server without this setting.
+
+In a pinned session, UI reads and actions share one queue through action settle. If a UI
+operation is pending, an overlapping `phone_act` returns before dispatch. Wait, observe,
+then submit the next input. Independent work can run while the queue is active. Use one
+MCP session for the phone's UI.
+
 ## Select a local ADB server for MCP
 
 TRACE Phone uses `127.0.0.1:5037` by default. To use an existing private loopback ADB
