@@ -8,6 +8,12 @@ Prefer a suitable connected application API, then a structured browser interface
 
 When no ready provider implements a requested operation, retain that checklist item as incomplete with its concrete prerequisite. Continue independent supported work. If a provider disappears before dispatch, refresh readiness and route again. After possible dispatch, first reconcile the original effect and cleanup before considering another route.
 
+## Android guest and Windows host
+
+- Use direct TRACE Phone for UI inside a verified Android guest. Follow the `trace-phone` skill to match the guest identity to its exact serial on the intended ADB server. A window title or an `emulator-*` serial alone cannot establish guest identity. Before guest observation or input, call `phone_connect` with the exact serial and require a matching returned serial, a `device` entry for it, and an agent PID.
+- Use the Windows provider for emulator window controls, host dialogs, and native Windows apps. Discover the exact window and obtain a fresh Windows observation. For guest actions, use a fresh TRACE Phone screen or accessibility observation from the verified guest. Keep element IDs and coordinates within their provider and target.
+- After uncertain input delivery, stop and inspect the original target for the intended effect. Keep the step unresolved while delivery remains unknown. Never replay it through another provider.
+
 ## TRACE's native boundary
 
 The native MCP interface contains seven tools:
