@@ -13,6 +13,8 @@ const REMOTE_DEX = '/data/local/tmp/trace-phone.dex';
 const DEFAULT_DEX = path.join(__dirname, '..', '..', '.runtime', 'phone', 'build', 'classes.dex');
 const DEFAULT_FRAMES = path.join(__dirname, '..', '..', '.runtime', 'phone', 'frames');
 const FRAME_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const RECONNECTABLE_OPS = new Set(['screen', 'wait', 'ui', 'find', 'release']);
+const VERIFY_BEFORE_INPUT = 'Take a fresh observation and verify the phone state before taking another action.';
 
 // Deletes regular files directly in framesDir last modified more than maxAgeMs ago and returns
 // how many it removed. trace-phone owns its frames, so it prunes them itself at startup: auto
@@ -88,13 +90,29 @@ function createPhoneController({
     return attach();
   }
 
-  /** One retry on a dropped link (Wi-Fi blips); agent errors are not retried. */
+  /** Reads and accessibility release can reconnect once. Phone input is sent once. */
   async function call(request, options) {
-    await ensure();
-    try { return await agent.call(request, options); }
+    const canReconnect = RECONNECTABLE_OPS.has(request.op);
+    try { await ensure(); }
     catch (error) {
-      if (!agent.closed) throw error;
-      agent = null;
+      if (canReconnect) throw error;
+      throw new Error(`Phone action stopped before dispatch. Agent setup failed (${error.message}).`, { cause: error });
+    }
+    const client = agent;
+    if (!client) throw new Error('Agent connection closed before dispatch');
+    const wasClosed = client.closed;
+    const pending = client.call(request, options);
+    try { return await pending; }
+    catch (error) {
+      if (client.closed && agent === client) agent = null;
+      if (error.header?.ok === false) throw error;
+      if (!canReconnect) {
+        if (wasClosed) throw new Error('Agent connection closed before dispatch', { cause: error });
+        lastFrame = null;
+        lastObservedHash = null;
+        throw new Error(`Phone action delivery is unknown (${error.message}). ${VERIFY_BEFORE_INPUT}`, { cause: error });
+      }
+      if (!client.closed) throw error;
       await ensure();
       return agent.call(request, options);
     }
@@ -220,7 +238,13 @@ function createPhoneController({
     } else {
       throw new Error('act needs a selector, a point, a key, a swipe or action:"text"');
     }
-    const after = await settle(settleOptions);
+    let after;
+    try { after = await settle(settleOptions); }
+    catch (error) {
+      lastFrame = null;
+      lastObservedHash = null;
+      throw new Error(`The agent acknowledged the phone action, but settle failed (${error.message}). ${VERIFY_BEFORE_INPUT}`, { cause: error });
+    }
     return { action: result.header, after };
   }
 

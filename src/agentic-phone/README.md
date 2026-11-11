@@ -7,7 +7,7 @@ fast. It has no TRACE imports, so it can move to its own repo later with `git fi
 |---|---|
 | `adb.cjs` | Talks to the adb server socket directly: devices, connect, pair, mdns, `exec:`, sync push, `localabstract:` streams. |
 | `agent.cjs` | Frames requests to the on-device agent. |
-| `controller.cjs` | Starts the agent, checks its version, reconnects once, saves frames, maps coordinates, acts then settles. |
+| `controller.cjs` | Starts the agent, checks its version, reconnects once for reads and accessibility release, saves frames, maps coordinates, acts then settles. |
 | `build.cjs` | Compiles `native/` into `.runtime/phone/build/classes.dex` (run through `node scripts/build-phone-agent.cjs`). |
 | `native/` | The on-device Java agent (`trace.phone`), the Wi-Fi trust watcher (`trace.phone.WifiTrust`) and `bench.cjs`, a read-only benchmark. |
 
@@ -15,6 +15,9 @@ Use `phone_wait({ image: false })` for the wait outcome, frame count, final hash
 dimensions without encoding, transferring or saving a screenshot. The latest observed hash
 becomes the baseline for subsequent waits. If the wait fails or the final frame differs
 from the last image, call `phone_screen` to get fresh image coordinates.
+
+Each action sends input at most once. If delivery is unknown or the agent acknowledges input and
+the settle fails, take a fresh observation and verify the phone state before taking another action.
 
 ## Boundary
 
