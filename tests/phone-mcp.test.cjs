@@ -37,14 +37,14 @@ function agentHandler(waitFor) {
   };
 }
 
-async function connection(t, { adbOptions, transcribe, handler = agentHandler(), hasDex = true } = {}) {
+async function connection(t, { adbOptions, transcribe, handler = agentHandler(), hasDex = true, serial } = {}) {
   const fake = await fakeAgent(handler);
   const dir = tempDir();
   const dexPath = path.join(dir, 'classes.dex');
   if (hasDex) fs.writeFileSync(dexPath, 'dex');
   const adb = fakeAdb(fake.port, adbOptions);
   const controller = createPhoneController({ adb, dexPath, framesDir: path.join(dir, 'frames') });
-  const server = createPhoneServer({ controller, transcribe });
+  const server = createPhoneServer({ controller, transcribe, serial });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await server.connect(serverTransport);
   const client = new Client({ name: 'trace-phone-test', version: '1.0.0' });
@@ -85,6 +85,67 @@ test('device tools and shutdown leave the guest untouched before phone_connect',
     assert.equal(result.isError, true);
     assert.match(result.structuredContent.error.message, /call phone_connect first/);
   }
+});
+
+test('pinned phone_screen validates the exact target and reuses one warm agent', async (t) => {
+  const serial = '127.0.0.1:5555';
+  const devices = [{ serial: 'R5CW', state: 'device' }, { serial, state: 'device' }];
+  const { call, adb, fake } = await connection(t, { serial, adbOptions: { devices, running: false } });
+  const switched = await call('phone_connect', { serial: 'R5CW' });
+  assert.equal(switched.isError, true);
+  assert.deepEqual(adb.calls, []);
+  const [first, second] = await Promise.all([
+    call('phone_screen', { force: true }), call('phone_screen', { force: true }),
+  ]);
+  for (const result of [first, second]) {
+    assert.equal(result.structuredContent.serial, serial);
+    assert.equal(images(result).length, 1);
+  }
+  assert.deepEqual(adb.calls.filter(([op]) => op === 'serial'), [['serial', serial]]);
+  assert.equal(adb.calls.filter(([op]) => op === 'spawn').length, 1);
+  assert.deepEqual(fake.requests.map(({ op }) => op), ['hello', 'screen', 'screen']);
+});
+
+test('pinned phone_screen fails closed when only another target is ready', async (t) => {
+  const { call, adb, fake, server } = await connection(t, { serial: '127.0.0.1:5555' });
+  const result = await call('phone_screen');
+  assert.equal(result.isError, true);
+  assert.match(result.structuredContent.error.message, /must be in state "device"/);
+  await server.close();
+  assert.deepEqual(adb.calls, []);
+  assert.deepEqual(fake.requests, []);
+});
+
+test('pinned phone serializes action and settle while independent work proceeds', async (t) => {
+  let beginSettle;
+  const settleStarted = new Promise((resolve) => { beginSettle = resolve; });
+  const respond = agentHandler();
+  const handler = (request, socket) => {
+    if (request.op !== 'wait') return respond(request);
+    beginSettle(() => {
+      const reply = respond(request);
+      socket.write(frame({ ok: true, id: request.id, ...reply.header }, reply.payload));
+    });
+    return undefined;
+  };
+  const { call, fake } = await connection(t, { serial: 'R5CW', handler, transcribe: async () => ({ text: 'fixture' }) });
+  await call('phone_screen');
+  const input = call('phone_act', { action: { type: 'tap', x: 1, y: 1 } });
+  const finishSettle = await settleStarted;
+  const queued = call('phone_screen', { force: true });
+  try {
+    const overlap = await call('phone_act', { action: { type: 'key', key: 'back' } });
+    assert.equal(overlap.isError, true);
+    assert.match(overlap.structuredContent.error.message, /not dispatched/);
+    const independent = await call('phone_transcribe', { path: '/tmp/fixture.wav' });
+    assert.equal(independent.structuredContent.text, 'fixture');
+    assert.deepEqual(fake.requests.map(({ op }) => op), ['hello', 'screen', 'tap', 'wait']);
+  } finally {
+    finishSettle();
+  }
+  assert.equal(images(await input).length, 1);
+  assert.equal(images(await queued).length, 1);
+  assert.deepEqual(fake.requests.map(({ op }) => op), ['hello', 'screen', 'tap', 'wait', 'screen']);
 });
 
 test('phone_connect picks the only USB device and starts the agent', async (t) => {
