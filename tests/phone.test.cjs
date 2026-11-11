@@ -151,20 +151,22 @@ test('controller stop with onlyIfUsed skips adb until the agent has been used', 
   } finally { fake.server.close(); }
 });
 
-test('controller refuses a version mismatch by restarting the agent', async () => {
-  let version = '0';
-  const fake = await fakeAgent((r) => (r.op === 'hello' ? { header: { version, pid: 7 } } : { header: {} }));
+test('controller replaces a running version 1 agent with the rebuilt dex', async () => {
+  let reply = { header: { version: '1', pid: 7 } };
+  const fake = await fakeAgent((r) => (r.op === 'hello' ? reply : { header: {} }));
   const dir = tempDir();
   const dexPath = path.join(dir, 'classes.dex');
   fs.writeFileSync(dexPath, 'dex');
   const adb = fakeAdb(fake.port);
   const realSpawn = adb.spawn;
-  adb.spawn = async (command) => { version = '1'; return realSpawn(command); };
+  adb.spawn = async (command) => { reply = hello; return realSpawn(command); };
   const phone = createPhoneController({ adb, dexPath, framesDir: dir });
   try {
     const info = await phone.ensure();
-    assert.equal(info.version, '1');
-    assert.ok(adb.calls.some((c) => c[0] === 'exec' && c[1] === 'kill 7'));
+    assert.equal(info.version, hello.header.version);
+    assert.equal(info.pid, hello.header.pid);
+    assert.deepEqual(adb.calls.map(([op]) => op), ['open', 'exec', 'push', 'spawn', 'open']);
+    assert.deepEqual(adb.calls[1], ['exec', 'kill 7']);
   } finally { phone.close(); fake.server.close(); }
 });
 

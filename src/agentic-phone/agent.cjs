@@ -4,7 +4,7 @@
 // Framing: request = u32be length + JSON; reply = u32be length + JSON header,
 // then u32be length + binary payload. Requests are answered in order.
 
-const AGENT_VERSION = '1';
+const AGENT_VERSION = '2';
 const MAX_FRAME = 64 << 20;
 
 function createAgentClient(socket, leftover = Buffer.alloc(0)) {
