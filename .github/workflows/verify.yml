@@ -1,9 +1,8 @@
 name: Verify
 
+# Manual-only while Actions minutes are tight.
+# No pull_request or push triggers. Run from the Actions tab when you want a check.
 on:
-  pull_request:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
