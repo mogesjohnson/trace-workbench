@@ -104,4 +104,6 @@ Keep one fixture instance open across provider blocks. Confirm the TRACE lease i
 
 The combined candidate reduced the same-window TRACE cycle by 39.7% and took about 6.0× the Codex host median. All 13 timed clicks incremented exactly once. Both TRACE leases closed with confirmed cleanup, recovery was clear, the Codex kernel was reset, and the fixture exited. The two provider timings still use different client boundaries.
 
+A separate live guard check moved and minimized an owned fixture using its command file after observation. Both stale clicks returned `not_dispatched` with `window_moved` and left the counter unchanged. A fresh screenshot-backed observation enabled exactly one click in each case, including restore from minimized. Session close and recovery checks passed.
+
 The next parity experiment needs a managed lifetime for a read-only worker, bounded UIA property caching and one fresh WGC frame per observation. Keep the evidence tied to the pinned HWND and compare frame and root geometry before granting input authority. Design the click job around final foreground, geometry, element and hit-test validation followed by one declared input sequence. Measure each change independently. Before claiming parity, alternate multiple blocks and retain equivalent timing and correctness evidence.
