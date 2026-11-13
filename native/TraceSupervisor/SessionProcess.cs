@@ -91,7 +91,7 @@ internal sealed record InputDeclaration(int[] Keys, int[] Unicode)
         else if (provider == "bridge")
         {
             var pointer = args.Length == 7 && args[0] is "click" or "wheel";
-            if (args.Length == 0 || (!pointer && !new[] { "info", "identity", "identities", "bounds", "activate", "document", "capture", "related", "hit", "apps", "process", "packaged", "packaged-identities", "activate-package" }.Contains(args[0]))
+            if (args.Length == 0 || (!pointer && !new[] { "info", "identity", "identities", "bounds", "activate", "document", "capture", "related", "hit", "observe", "apps", "process", "packaged", "packaged-identities", "activate-package" }.Contains(args[0]))
                 || mutating != (args[0] == "activate" || pointer)) throw new TraceError("invalid_arguments", "Unsupported source-owned bridge operation or mutation declaration.");
             if (pointer && (!long.TryParse(args[1], out var hwnd) || hwnd <= 0 || !uint.TryParse(args[2], out var pid) || pid == 0
                 || !int.TryParse(args[3], out _) || !int.TryParse(args[4], out _))) throw new TraceError("invalid_arguments", "Pointer target and physical coordinates are invalid.");
@@ -132,6 +132,7 @@ internal sealed class OperationProcess : IDisposable
     private nint thread;
     public ProcessIdentity Identity { get; private set; } = null!;
     private StreamReader? output, errors;
+    private StreamWriter? input;
     public Task<string> Output { get; private set; } = Task.FromResult("");
     public Task<string> Errors { get; private set; } = Task.FromResult("");
     public bool Started { get; private set; }
@@ -151,7 +152,7 @@ internal sealed class OperationProcess : IDisposable
         return result.Append('\\', slashes * 2).Append('"').ToString();
     }
 
-    public static OperationProcess Create(ProviderSpec provider, string[] args)
+    public static OperationProcess Create(ProviderSpec provider, string[] args, bool keepInput = false)
     {
         provider.Verify();
         var owned = new OperationProcess();
@@ -180,6 +181,11 @@ internal sealed class OperationProcess : IDisposable
             using (var process = Process.GetProcessById((int)created.ProcessId)) owned.Identity = ProcessIdentity.Read(process);
             owned.output = new StreamReader(new FileStream(new SafeFileHandle(outRead, true), FileAccess.Read, 4096, false), Encoding.UTF8); outRead = 0;
             owned.errors = new StreamReader(new FileStream(new SafeFileHandle(errRead, true), FileAccess.Read, 4096, false), Encoding.UTF8); errRead = 0;
+            if (keepInput)
+            {
+                owned.input = new StreamWriter(new FileStream(new SafeFileHandle(inWrite, true), FileAccess.Write, 4096, false), new UTF8Encoding(false)) { NewLine = "\n" };
+                inWrite = 0;
+            }
             return owned;
         }
         catch { owned.Dispose(); throw; }
@@ -200,10 +206,30 @@ internal sealed class OperationProcess : IDisposable
 
     public void Resume()
     {
-        Output = ReadBounded(output!); Errors = ReadBounded(errors!);
+        if (input is null) Output = ReadBounded(output!);
+        Errors = ReadBounded(errors!);
         if (Native.ResumeThread(thread) == uint.MaxValue) throw new TraceError("child_resume_failed", "The owned operation could not resume.");
         Started = true;
         Native.CloseHandle(thread); thread = 0;
+    }
+
+    public async Task<string> Exchange(string request)
+    {
+        await input!.WriteLineAsync(request).ConfigureAwait(false);
+        await input.FlushAsync().ConfigureAwait(false);
+        var response = new StringBuilder();
+        var buffer = new char[4096];
+        int count;
+        while ((count = await output!.ReadAsync(buffer).ConfigureAwait(false)) != 0)
+        {
+            var end = Array.IndexOf(buffer, '\n', 0, count);
+            response.Append(buffer, 0, end < 0 ? count : end);
+            if (response.Length > 4 * 1024 * 1024)
+                throw new TraceError("output_limit", "Worker output exceeded its bound.");
+            if (end >= 0 && end == count - 1) return response.ToString();
+            if (end >= 0) break;
+        }
+        throw new TraceError("worker_protocol", "The worker closed or sent an invalid response.");
     }
 
     public bool Drained()
@@ -229,7 +255,8 @@ internal sealed class OperationProcess : IDisposable
         if (Job != 0) Native.CloseHandle(Job);
         if (thread != 0) Native.CloseHandle(thread);
         if (Handle != 0) Native.CloseHandle(Handle);
-        output?.Dispose(); errors?.Dispose();
+        try { input?.BaseStream.Dispose(); }
+        finally { output?.Dispose(); errors?.Dispose(); }
         Handle = Job = thread = 0;
     }
 }
