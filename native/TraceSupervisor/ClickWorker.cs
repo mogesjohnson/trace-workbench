@@ -25,7 +25,7 @@ internal sealed partial class SupervisorSession
             child = OperationProcess.Create(providers["bridge"], ["click-worker"], keepInput: true);
             DispatchGuard.Enter(gate, lifetime.Token, () => stopCode is not null || closing, child.Resume);
             var ready = await child.ReadReply().WaitAsync(TimeSpan.FromSeconds(5), lifetime.Token);
-            if (ready != "{}") throw new TraceError("worker_protocol", "The click worker did not report readiness.");
+            if (ready.Trim() != "{}") throw new TraceError("worker_protocol", "The click worker did not report readiness.");
             return child;
         }
         catch
