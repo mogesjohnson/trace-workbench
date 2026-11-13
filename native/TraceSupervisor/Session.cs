@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
+using TraceWindows;
 
 namespace TraceSupervisor;
 
@@ -216,23 +217,49 @@ internal sealed class SupervisorSession : IDisposable
         var input = InputDeclaration.For(provider, args, extra, mutating);
         var timeout = root.TryGetProperty("timeoutMs", out var limit) ? limit.GetInt32() : 15000;
         if (timeout is < 1 or > 15000) throw new TraceError("invalid_arguments", "The native operation deadline is 1 through 15000 milliseconds.");
+        // Controlled fixtures exercise the job boundary even for simple window reads.
+        var inlineRead = !allowControlled && provider == "bridge" && args[0] is ("identity" or "bounds");
         lock (gate)
         {
             if (operationBusy) throw new TraceError("operation_busy", "Only one native operation may be active.");
             if (RecoveryStore.Read() is not null) throw new TraceError("input_recovery_required", "Durable recovery state blocks dispatch.");
             operationCancellation?.Dispose();
             operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token);
+            if (inlineRead) operationCancellation.CancelAfter(timeout);
             operationId = id;
             operationBusy = true;
             var token = operationCancellation.Token;
             operation = Task.Run(async () =>
             {
-                // RunOperation disposes every native handle before returning its envelope. Reopen the
-                // dispatch gate before publishing completion, so the next request needs no timing gap.
-                var envelope = await RunOperation(id, provider, args, input, mutating, timeout, token);
+                // Reopen the gate before publishing completion, so the next request needs no delay.
+                var envelope = inlineRead
+                    ? ReadWindow(id, args, token)
+                    : await RunOperation(id, provider, args, input, mutating, timeout, token);
                 lock (gate) { operationBusy = false; if (operationId == id) operationId = null; }
                 try { Json.Write(envelope); } catch { Stop("stdout_failed"); }
             });
+        }
+    }
+
+    private object ReadWindow(string id, string[] args, CancellationToken cancellation)
+    {
+        try
+        {
+            DispatchGuard.Enter(gate, cancellation, () => stopCode is not null || closing, () => { });
+            var stdout = JsonSerializer.Serialize(WindowRead.Query(args));
+            cancellation.ThrowIfCancellationRequested();
+            return new { id, result = new { stdout, stderr = "", exitCode = 0 } };
+        }
+        catch (Exception error)
+        {
+            var code = error switch
+            {
+                WindowReadError read => read.Code,
+                TraceError trace => trace.Code,
+                OperationCanceledException => stopCode ?? "cancelled",
+                _ => "window_bridge_failed"
+            };
+            return ErrorEnvelope(id, code, error is WindowReadError or TraceError ? error.Message : "The guarded window read failed.");
         }
     }
 
