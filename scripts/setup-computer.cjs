@@ -7,7 +7,7 @@ const crypto = require('node:crypto');
 const { Readable, Transform } = require('node:stream');
 const { pipeline } = require('node:stream/promises');
 const { createWriteStream } = require('node:fs');
-const { pin, DEFAULT_BINARY, DEFAULT_BRIDGE, verifyFiles, runProcess, bridgeSourceHashes } = require('../src/computer/winapp-backend.cjs');
+const { pin, DEFAULT_BINARY, DEFAULT_BRIDGE, BRIDGE_OUTPUTS, verifyFiles, runProcess, bridgeSourceHashes } = require('../src/computer/winapp-backend.cjs');
 const { DEFAULT_INDICATOR, OUTPUTS, indicatorSourceHashes, verifyIndicatorFiles } = require('../src/computer/activity-indicator.cjs');
 const { DEFAULT_SUPERVISOR, OUTPUTS: SUPERVISOR_OUTPUTS, supervisorSourceHashes, verifySupervisorFiles } = require('../src/computer/supervisor.cjs');
 const { DEFAULT_CLIPBOARD, CLIPBOARD_OUTPUTS, clipboardSourceHashes, verifyClipboardFiles } = require('../src/method/clipboard-provider.cjs');
@@ -127,10 +127,11 @@ async function install() {
   const parent = path.dirname(output);
   await fs.mkdir(parent, { recursive: true });
   const project = path.join(ROOT, 'native', 'TraceWindowBridge', 'TraceWindowBridge.csproj');
-  const result = await runProcess('dotnet', ['publish', project, '--configuration', 'Release', '--output', output, '--artifacts-path', path.join(parent, 'artifacts'), '--nologo'], { timeoutMs: 120000, maxOutputBytes: 1024 * 1024 });
-  if (result.exitCode !== 0) throw new Error('Window bridge build failed. Install the .NET 10 SDK; engine files remain preserved.');
+  const result = await runProcess('dotnet', ['publish', project, '--configuration', 'Release', '--output', output, '--artifacts-path', path.join(parent, 'artifacts'),
+    '--source', 'https://api.nuget.org/v3/index.json', '--nologo'], { timeoutMs: 120000, maxOutputBytes: 1024 * 1024 });
+  if (result.exitCode !== 0) throw new Error('Window bridge build failed. Check the .NET 10 SDK and access to the locked NuGet packages.');
   const files = {};
-  for (const name of ['TraceWindowBridge.exe', 'TraceWindowBridge.dll', 'TraceWindowBridge.runtimeconfig.json', 'TraceWindowBridge.deps.json']) files[name] = crypto.createHash('sha256').update(await fs.readFile(path.join(output, name))).digest('hex');
+  for (const name of BRIDGE_OUTPUTS) files[name] = crypto.createHash('sha256').update(await fs.readFile(path.join(output, name))).digest('hex');
   await fs.writeFile(path.join(parent, 'manifest.json'), JSON.stringify({ version: 1, sources: await bridgeSourceHashes(), files }, null, 2) + '\n');
   const activityIndicator = await buildActivityIndicator();
   const supervisor = await buildSupervisor();

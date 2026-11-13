@@ -40,7 +40,11 @@ function duplicateGroup(element, keptParent) {
   return element.type === 'Group' && keptParent?.type === 'Group' && typeof element.name === 'string' && element.name !== ''
     && element.name === keptParent.name && ['expanded', 'collapsed'].includes(element.expandState) && element.expandState === keptParent.expandState;
 }
-const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj', 'native/TraceWindowBridge/Capture.cs', 'native/TraceWindowBridge/Related.cs', 'native/TraceWindowBridge/Applications.cs', 'native/TraceWindowBridge/Packages.cs', 'native/TraceSupervisor/WindowRead.cs'];
+const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj', 'native/TraceWindowBridge/Capture.cs', 'native/TraceWindowBridge/Related.cs', 'native/TraceWindowBridge/Applications.cs', 'native/TraceWindowBridge/Packages.cs', 'native/TraceSupervisor/WindowRead.cs', 'native/TraceWindowBridge/ReadWorker.cs', 'native/TraceWindowBridge/CachedTree.cs', 'native/TraceWindowBridge/packages.lock.json'];
+const BRIDGE_OUTPUTS = ['TraceWindowBridge.exe', 'TraceWindowBridge.dll', 'TraceWindowBridge.runtimeconfig.json',
+  'TraceWindowBridge.deps.json', 'Microsoft.Extensions.DependencyInjection.Abstractions.dll', 'Microsoft.Extensions.DependencyInjection.dll',
+  'Microsoft.Extensions.Logging.Abstractions.dll', 'Microsoft.Windows.SDK.BuildTools.WinApp.UIAutomation.dll',
+  'Microsoft.Windows.SDK.NET.dll', 'WinRT.Runtime.dll'];
 
 class BackendError extends Error {
   constructor(code, message, details = {}) {
@@ -273,7 +277,7 @@ async function verifyBridgeFiles(bridgePath = DEFAULT_BRIDGE) {
     const manifest = JSON.parse(await fs.readFile(path.join(path.dirname(path.dirname(bridgePath)), 'manifest.json'), 'utf8'));
     const sources = await bridgeSourceHashes();
     if (manifest.version !== 1 || JSON.stringify(sources) !== JSON.stringify(manifest.sources)) fail('bridge_stale', 'Window bridge source changed; rebuild with computer setup.');
-    for (const name of ['TraceWindowBridge.exe', 'TraceWindowBridge.dll', 'TraceWindowBridge.runtimeconfig.json', 'TraceWindowBridge.deps.json']) {
+    for (const name of BRIDGE_OUTPUTS) {
       const digest = crypto.createHash('sha256').update(await fs.readFile(path.join(path.dirname(bridgePath), name))).digest('hex');
       if (digest !== manifest.files?.[name]) fail('bridge_integrity', 'Window bridge build output differs from its setup manifest.');
     }
@@ -521,6 +525,10 @@ class WinappBackend {
       catch (error) { if (signal?.aborted || !['element_not_found', 'stale_element', 'internal_error'].includes(error.code)) throw error; scopeLost(); }
       if (entry.elements.length !== 1 || entry.elements[0]?.selector !== rootElementId) scopeLost();
     } else entry = await read(deep, 'Exact target UIA root was not returned.');
+    return this.inspectState(entry, windowEntry, depth, { includeOffscreen, rootElementId, interactiveOnly });
+  }
+  inspectState(entry, windowEntry, depth, { includeOffscreen, rootElementId, interactiveOnly }) {
+    const scoped = rootElementId !== undefined;
     const root = (windowEntry ?? entry).elements[0];
     const flat = [], hierarchy = [], active = new WeakSet();
     let visited = 0, kept = 0, offscreenOmitted = 0, filteredOut = 0, truncated = false;
@@ -631,8 +639,8 @@ class WinappBackend {
   }
   // With `state`, an unresolved focus outside the inspected depth is completed with its ancestor
   // chain and bound again. The unique-binding rule is unchanged.
-  async focused(window, signal, elements, state) {
-    const result = await this.command('get-focused', ['-w', window.id], signal);
+  async focused(window, signal, elements, state, receipt) {
+    const result = receipt ?? await this.command('get-focused', ['-w', window.id], signal);
     if (typeof result.hasFocus !== 'boolean') fail('invalid_native_response', 'Invalid focused-element envelope.');
     if (!result.hasFocus) return { available: true, hasFocus: false, provenance: 'winapp-get-focused' };
     const native = result.element ?? {};
@@ -779,6 +787,11 @@ class WinappBackend {
       await measure('restore', () => this.bridge('activate', window, signal));
       geometry = await measure('settle', () => this.settledBounds(window, signal));
     }
+    if (pinned && this.supervisor?.ready && this.supervisor.readiness?.readWorker === true && documentElementId === undefined
+      && rootElementId === undefined && relatedImagePrefix === undefined && !restored) {
+      const warm = await this.observeWarm({ window, signal, depth, includeOffscreen, interactiveOnly, related, screenshotPath });
+      if (warm) return warm;
+    }
     const state = await measure('uia', () => this.inspect(window, signal, depth, { includeOffscreen, rootElementId, interactiveOnly }));
     geometry = await measure('geometry', () => this.bridge('bounds', window, signal));
     const captured = captureBounds(bounds(geometry.frameBounds), state.bounds);
@@ -813,6 +826,48 @@ class WinappBackend {
       targetState: { enabled: afterGeometry.enabled, minimized: afterGeometry.minimized, foreground: afterGeometry.foreground, ownerWindowId: afterGeometry.ownerWindowId ?? null, provenance: 'public-win32-dwm' },
       restoredFromMinimized: restored, ...(includeScreenshot ? { captureMethod: 'window-capture-dwm-bounds', actionCoordinateSpace: 'window-local-pixels', screenshot: { path: screenshotPath, mimeType: 'image/png', ...size } } : {}),
       ...(relatedWindows ? { relatedWindows } : {}) };
+  }
+  async observeWarm({ window, signal, depth, includeOffscreen, interactiveOnly, related, screenshotPath }) {
+    let receipt;
+    try {
+      if (screenshotPath) count('captureRequests');
+      receipt = await measure('uia', () => this.bridge('observe', window, signal, [
+        String(depth), window.processCreationTime, String(window.sessionId), related ? 'related' : 'none', screenshotPath ?? ''
+      ]));
+    } catch (error) {
+      if (signal?.aborted || !['worker_read_failed', 'coordinate_space'].includes(error.code)) throw error;
+      // Some UIA providers only support the isolated CLI path. The worker writes a PNG before
+      // its last guard, so remove a failed request's partial frame before falling back.
+      if (screenshotPath) await fs.rm(screenshotPath, { force: true });
+      return undefined;
+    }
+    const current = await this.identity(window, signal, receipt.identity);
+    const geometry = receipt.bounds;
+    await this.identity(window, signal, geometry);
+    if (geometry.minimized) fail('window_moved', 'Window was minimized during observation.');
+    if (!Array.isArray(receipt.elements) || receipt.elements.length !== 1)
+      fail('invalid_native_response', 'Worker did not return the exact UIA root.');
+    const state = this.inspectState({ elements: receipt.elements, coordinateSpace: 'physical-screen-pixels' }, null, depth,
+      { includeOffscreen, interactiveOnly });
+    const frame = bounds(geometry.frameBounds), captured = captureBounds(frame, state.bounds);
+    const screenshot = receipt.screenshot;
+    if (screenshotPath && (screenshot?.filePath !== screenshotPath || screenshot.width !== captured.width || screenshot.height !== captured.height))
+      fail('invalid_screenshot', 'Worker screenshot does not match the exact window rectangle.');
+    let relatedWindows;
+    if (related) {
+      try { relatedWindows = normalizeRelated(receipt.related); }
+      catch (error) { relatedWindows = { available: false, code: error.code || 'related_unavailable' }; }
+    }
+    let focused;
+    try { focused = receipt.focused ? await this.focused(window, signal, state.elements, state, receipt.focused) : { available: false, code: 'focus_query_failed' }; }
+    catch (error) { if (signal?.aborted) throw error; focused = { available: false, code: error.code || 'focus_query_failed' }; }
+    return { ...state, runtimeIds: receipt.runtimeIds, window: { ...current, bounds: captured }, bounds: captured, uiaBounds: state.bounds,
+      nativeWindowBounds: bounds(geometry.windowBounds), frameBounds: frame, dpi: geometry.dpi, dpiAwareness: geometry.dpiAwareness,
+      focused, targetState: { enabled: geometry.enabled, minimized: false, foreground: geometry.foreground,
+        ownerWindowId: geometry.ownerWindowId ?? null, provenance: 'public-win32-dwm' }, restoredFromMinimized: false,
+      ...(related ? { relatedWindows } : {}),
+      ...(screenshotPath ? { captureMethod: 'window-capture-dwm-bounds', actionCoordinateSpace: 'window-local-pixels',
+        screenshot: { path: screenshotPath, mimeType: 'image/png', width: screenshot.width, height: screenshot.height } } : {}) };
   }
   // Any rejection before the requested primary mutation begins is provably not dispatched. Once it
   // may have begun, the outcome stays unknown even if an error code was raised before input.
@@ -1037,4 +1092,4 @@ class WinappBackend {
   }
 }
 
-module.exports = { WinappBackend, deliveredPrefix, BackendError, DEFAULT_BINARY, DEFAULT_BRIDGE, pin, runProcess, parseJson, pngSize, readPngHeader, verifyFiles, verifyBridgeFiles, bridgeSourceHashes };
+module.exports = { WinappBackend, deliveredPrefix, BackendError, DEFAULT_BINARY, DEFAULT_BRIDGE, BRIDGE_OUTPUTS, pin, runProcess, parseJson, pngSize, readPngHeader, verifyFiles, verifyBridgeFiles, bridgeSourceHashes };

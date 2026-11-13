@@ -16,6 +16,7 @@ internal static partial class Program
         try
         {
             if (!OperatingSystem.IsWindows()) throw new BridgeException("unsupported_platform", "Windows is required.");
+            if (args is ["read-worker"]) return ReadWorker();
             if (args.Length == 1 && args[0] == "info")
             {
                 Write(new { version = 1, runtime = "net10.0-windows", capabilities = new[] { "identities", "identity", "bounds", "activate", "release-left", "click", "wheel", "document", "capture", "related", "hit", "apps", "process", "packaged", "packaged-identities", "activate-package", "selftest" } });
@@ -28,8 +29,8 @@ internal static partial class Program
             if (args.Length is >= 2 and <= 101 && args[0] == "packaged-identities") { PackagedIdentities(args); return 0; }
             if (args.Length > 0 && args[0] == "activate-package") { ActivatePackage(args); return 0; }
             if (args.Length > 0 && args[0] == "capture") { CaptureWindow(args); return 0; }
-            if (args.Length > 0 && args[0] == "related") { RelatedWindows(args); return 0; }
-            if (args.Length > 0 && args[0] == "hit") { HitTest(args); return 0; }
+            if (args.Length > 0 && args[0] == "related") { Write(RelatedWindows(args)); return 0; }
+            if (args.Length > 0 && args[0] == "hit") { Write(HitTest(args)); return 0; }
             if (args.Length > 0 && args[0] == "document") { ReadDocument(args); return 0; }
             if (args.Length > 0 && args[0] is "click" or "wheel") { Pointer(args); return 0; }
             if (args.Length == 1 && args[0] == "release-left")

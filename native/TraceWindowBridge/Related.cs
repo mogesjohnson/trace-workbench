@@ -12,7 +12,7 @@ internal static partial class Program
 
     // Usage: related <HWND> <PID> [<absolute PNG prefix>]. With a prefix, window i is captured to
     // "<prefix>-<i>.png" through the same exact-frame PrintWindow path as the root.
-    private static void RelatedWindows(string[] args)
+    private static object RelatedWindows(string[] args)
     {
         if (args.Length is not (3 or 4) || !long.TryParse(args[1], out var raw) || raw <= 0 || !uint.TryParse(args[2], out var pid) || pid == 0
             || (args.Length == 4 && (!Path.IsPathFullyQualified(args[3]) || args[3].EndsWith(".png", StringComparison.OrdinalIgnoreCase)
@@ -75,7 +75,7 @@ internal static partial class Program
             });
         }
         Guard(root, pid);
-        Write(new
+        return new
         {
             hwnd = raw.ToString(), pid, method = "public-win32-related",
             menuMode = menuStateAvailable ? (object)new { available = true, active = menuActive } : new { available = false },
@@ -83,14 +83,14 @@ internal static partial class Program
             // IME popup) are never attributed to the root, so their absence proves nothing.
             coverage = new { ownerChain = true, threadMenu = menuStateAvailable, sameThreadPopups = true, otherThreadsAndProcesses = false },
             truncated, windows,
-        });
+        };
     }
 
     // Usage: hit <HWND> <PID> <x> <y> [<x> <y>]... (1-4 physical screen points). Read-only: for each
     // point, the top-level window WindowFromPoint resolves to, and whether it is one of the root's
     // own popups (owner chain or the root's UI thread). Pointer input through winapp is refused when
     // such a popup covers its point, because the click would land in the popup.
-    private static void HitTest(string[] args)
+    private static object HitTest(string[] args)
     {
         if (args.Length is < 5 or > 11 || args.Length % 2 == 0 || !long.TryParse(args[1], out var raw) || raw <= 0 || !uint.TryParse(args[2], out var pid) || pid == 0)
             throw new BridgeException("invalid_arguments", "Usage: hit <HWND> <PID> <x> <y> [<x> <y>]... with one to four points.");
@@ -115,7 +115,7 @@ internal static partial class Program
                 className = Clip(ClassName(top)), related = OwnedBy(top, root) || (thread != 0 && thread == rootThread) } };
         }).ToList();
         Guard(root, pid);
-        Write(new { hwnd = raw.ToString(), pid, method = "public-win32-hit", points = results });
+        return new { hwnd = raw.ToString(), pid, method = "public-win32-hit", points = results };
     }
 
     private static bool OwnedBy(nint hwnd, nint root)
