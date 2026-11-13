@@ -27,6 +27,7 @@ internal static partial class Program
             .AddSingleton(typeof(ILogger<>), typeof(NullLogger<>))
             .AddWinAppUiAutomation().BuildServiceProvider();
         Console.OutputEncoding = new UTF8Encoding(false);
+        using var cache = new UiaCache(observation: true);
         using var input = new StreamReader(Console.OpenStandardInput(), new UTF8Encoding(false, true));
         while (input.ReadLine() is { } line)
         {
@@ -37,7 +38,7 @@ internal static partial class Program
                 var result = args?.FirstOrDefault() switch
                 {
                     "observe" => ReadObservation(services.GetRequiredService<IUiAutomation>(),
-                        services.GetRequiredService<IWindowCapture>(), args).GetAwaiter().GetResult(),
+                        services.GetRequiredService<IWindowCapture>(), cache, args).GetAwaiter().GetResult(),
                     "hit" => HitTest(args),
                     _ => throw new BridgeException("invalid_arguments", "Unknown read worker request.")
                 };
@@ -57,7 +58,7 @@ internal static partial class Program
         return 0;
     }
 
-    private static async Task<object> ReadObservation(IUiAutomation ui, IWindowCapture windows, string[] args)
+    private static async Task<object> ReadObservation(IUiAutomation ui, IWindowCapture windows, UiaCache cache, string[] args)
     {
         if (args.Length != 8 || !long.TryParse(args[1], out var handle) || handle <= 0
             || !uint.TryParse(args[2], out var pid) || pid == 0
@@ -81,13 +82,15 @@ internal static partial class Program
         // bracket and must complete before its final read. The worker's job bounds both operations.
         var capture = args[7].Length == 0 ? null : Task.Run(() => FreshFrame(windows, hwnd));
         UiElement[] elements;
-        try { elements = ReadCachedTree(hwnd, pid, depth, runtimeIds); }
+        UiElement? focus;
+        try { elements = ReadCachedTree(cache, hwnd, pid, depth, runtimeIds, out focus); }
         catch
         {
             if (capture is not null) try { await capture; } catch { }
             throw;
         }
-        var pixels = capture is null ? ((byte[] Pixels, int Width, int Height)?)null : await capture;
+        // Keep cached COM access on the worker's request thread.
+        var pixels = capture is null ? ((byte[] Pixels, int Width, int Height)?)null : capture.GetAwaiter().GetResult();
         var root = elements[0];
         var frame = before.Frame;
         var left = Math.Max(frame.Left, root.X); var top = Math.Max(frame.Top, root.Y);
@@ -110,13 +113,13 @@ internal static partial class Program
         if (args[6] == "related")
             try { related = RelatedWindows(["related", args[1], args[2]]); }
             catch (BridgeException) { }
-        var check = System.Windows.Automation.AutomationElement.FromHandle(hwnd);
-        var rect = check.Current.BoundingRectangle;
-        if (check.Current.ProcessId != pid || rect.X != root.X || rect.Y != root.Y || rect.Width != root.Width || rect.Height != root.Height)
+        using var check = cache.Root(hwnd);
+        var rect = check.Bounds();
+        if (check.Number(System.Windows.Automation.AutomationElement.ProcessIdProperty) != pid
+            || rect.Left != root.X || rect.Top != root.Y || rect.Right - rect.Left != root.Width || rect.Bottom - rect.Top != root.Height)
             throw new BridgeException("window_moved", "UIA root changed during capture.");
         var focusAvailable = true;
-        UiElement? focus = null;
-        try { focus = await ui.GetFocusedElementAsync(target, default); }
+        try { focus ??= await ui.GetFocusedElementAsync(target, default); }
         catch (COMException) { focusAvailable = false; }
         var after = Geometry(hwnd);
         if (!before.Equals(after) || IsIconic(hwnd)) throw new BridgeException("window_moved", "Window geometry changed during capture.");

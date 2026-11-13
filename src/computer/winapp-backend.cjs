@@ -40,7 +40,7 @@ function duplicateGroup(element, keptParent) {
   return element.type === 'Group' && keptParent?.type === 'Group' && typeof element.name === 'string' && element.name !== ''
     && element.name === keptParent.name && ['expanded', 'collapsed'].includes(element.expandState) && element.expandState === keptParent.expandState;
 }
-const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj', 'native/TraceWindowBridge/Capture.cs', 'native/TraceWindowBridge/Related.cs', 'native/TraceWindowBridge/Applications.cs', 'native/TraceWindowBridge/Packages.cs', 'native/TraceSupervisor/WindowRead.cs', 'native/TraceWindowBridge/ReadWorker.cs', 'native/TraceWindowBridge/CachedTree.cs', 'native/TraceWindowBridge/GuardedClick.cs', 'native/TraceWindowBridge/packages.lock.json'];
+const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj', 'native/TraceWindowBridge/Capture.cs', 'native/TraceWindowBridge/Related.cs', 'native/TraceWindowBridge/Applications.cs', 'native/TraceWindowBridge/Packages.cs', 'native/TraceSupervisor/WindowRead.cs', 'native/TraceWindowBridge/ReadWorker.cs', 'native/TraceWindowBridge/CachedTree.cs', 'native/TraceWindowBridge/UiaCache.cs', 'native/TraceWindowBridge/GuardedClick.cs', 'native/TraceWindowBridge/packages.lock.json'];
 const BRIDGE_OUTPUTS = ['TraceWindowBridge.exe', 'TraceWindowBridge.dll', 'TraceWindowBridge.runtimeconfig.json',
   'TraceWindowBridge.deps.json', 'Microsoft.Extensions.DependencyInjection.Abstractions.dll', 'Microsoft.Extensions.DependencyInjection.dll',
   'Microsoft.Extensions.Logging.Abstractions.dll', 'Microsoft.Windows.SDK.BuildTools.WinApp.UIAutomation.dll',
