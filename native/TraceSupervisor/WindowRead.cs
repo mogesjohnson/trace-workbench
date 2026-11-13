@@ -1,6 +1,6 @@
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 
 namespace TraceWindows;
 
@@ -15,9 +15,11 @@ internal static class WindowRead
 
         var hwnd = new nint(handle);
         Guard(hwnd, pid);
-        using var process = Process.GetProcessById((int)pid);
-        var created = process.StartTime.ToFileTimeUtc().ToString();
-        var session = process.SessionId;
+        using var process = OpenProcess(0x101000 /* SYNCHRONIZE | PROCESS_QUERY_LIMITED_INFORMATION */, false, pid);
+        if (process.IsInvalid || !GetProcessTimes(process, out var creation, out _, out _, out _)
+            || !ProcessIdToSessionId(pid, out var session))
+            throw new WindowReadError("identity_unavailable", "The selected window's process identity is unavailable.");
+        var created = creation.ToString();
         var owner = GetWindow(hwnd, 4 /* GW_OWNER */);
         var ownerId = owner == 0 ? null : owner.ToInt64().ToString();
         activate?.Invoke(hwnd, pid);
@@ -49,7 +51,9 @@ internal static class WindowRead
             finally { SetThreadDpiAwarenessContext(previous); }
         }
         Guard(hwnd, pid);
-        if (process.HasExited) throw new WindowReadError("window_closed", "The selected window process exited.");
+        var wait = WaitForSingleObject(process, 0);
+        if (wait == 0) throw new WindowReadError("window_closed", "The selected window process exited.");
+        if (wait != 0x102 /* WAIT_TIMEOUT */) throw new WindowReadError("identity_unavailable", "The selected process lifetime could not be verified.");
         return result;
     }
 
@@ -72,6 +76,10 @@ internal static class WindowRead
     }
 
     [DllImport("user32.dll")] private static extern bool IsWindow(nint hwnd);
+    [DllImport("kernel32.dll")] private static extern SafeWaitHandle OpenProcess(uint access, bool inheritHandle, uint pid);
+    [DllImport("kernel32.dll")] private static extern bool GetProcessTimes(SafeWaitHandle process, out long creation, out long exit, out long kernel, out long user);
+    [DllImport("kernel32.dll")] private static extern bool ProcessIdToSessionId(uint pid, out uint session);
+    [DllImport("kernel32.dll")] private static extern uint WaitForSingleObject(SafeWaitHandle process, uint timeout);
     [DllImport("user32.dll")] private static extern bool IsWindowEnabled(nint hwnd);
     [DllImport("user32.dll")] private static extern bool IsIconic(nint hwnd);
     [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(nint hwnd, out uint pid);

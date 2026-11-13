@@ -80,7 +80,17 @@ internal static partial class Program
         var runtimeIds = new Dictionary<string, int[]>(StringComparer.Ordinal);
         // Capture and UIA have independent native providers. Both start inside the same geometry
         // bracket and must complete before its final read. The worker's job bounds both operations.
-        var capture = args[7].Length == 0 ? null : Task.Run(() => FreshFrame(windows, hwnd));
+        var capture = args[7].Length == 0 ? null : Task.Run(async () =>
+        {
+            var pixels = await FreshFrame(windows, hwnd);
+            if (pixels.Width != before.Frame.Right - before.Frame.Left || pixels.Height != before.Frame.Bottom - before.Frame.Top)
+                throw new BridgeException("coordinate_space", "Capture does not match the exact DWM frame.");
+            // Encode the uncropped frame while UIA runs. Publish it only if the fresh UIA root
+            // proves this is the exact crop. A smaller crop uses the same fresh pixels below.
+            using var png = new MemoryStream();
+            WriteWorkerPng(pixels, new(0, 0, pixels.Width, pixels.Height), png);
+            return (pixels, png: new ArraySegment<byte>(png.GetBuffer(), 0, (int)png.Length));
+        });
         UiElement[] elements;
         UiElement? focus;
         try { elements = ReadCachedTree(cache, hwnd, pid, depth, runtimeIds, out focus); }
@@ -90,7 +100,7 @@ internal static partial class Program
             throw;
         }
         // Keep cached COM access on the worker's request thread.
-        var pixels = capture is null ? ((byte[] Pixels, int Width, int Height)?)null : capture.GetAwaiter().GetResult();
+        var captured = capture?.GetAwaiter().GetResult();
         var root = elements[0];
         var frame = before.Frame;
         var left = Math.Max(frame.Left, root.X); var top = Math.Max(frame.Top, root.Y);
@@ -100,13 +110,14 @@ internal static partial class Program
             || width != Math.Truncate(width) || height != Math.Truncate(height))
             throw new BridgeException("coordinate_space", "UIA root has no exact physical pixel intersection.");
         object? screenshot = null;
-        if (pixels is { } framePixels)
+        if (captured is { } image)
         {
-            if (framePixels.Width != frame.Right - frame.Left || framePixels.Height != frame.Bottom - frame.Top
-                || width * height > 16000000)
-                throw new BridgeException("coordinate_space", "Capture does not match the exact DWM frame.");
             var crop = new System.Windows.Int32Rect((int)(left - frame.Left), (int)(top - frame.Top), (int)width, (int)height);
-            SaveWorkerPng(framePixels, crop, args[7]);
+            using var output = new FileStream(args[7], FileMode.CreateNew, FileAccess.Write, FileShare.None);
+            if (crop.X == 0 && crop.Y == 0 && crop.Width == image.pixels.Width && crop.Height == image.pixels.Height)
+                output.Write(image.png.AsSpan());
+            else
+                WriteWorkerPng(image.pixels, crop, output);
             screenshot = new { width = crop.Width, height = crop.Height, filePath = args[7] };
         }
         object? related = null;
@@ -174,12 +185,11 @@ internal static partial class Program
         return [elements[0]];
     }
 
-    private static void SaveWorkerPng((byte[] Pixels, int Width, int Height) pixels, System.Windows.Int32Rect crop, string file)
+    private static void WriteWorkerPng((byte[] Pixels, int Width, int Height) pixels, System.Windows.Int32Rect crop, Stream output)
     {
         var encoder = new PngBitmapEncoder();
         var source = BitmapSource.Create(pixels.Width, pixels.Height, 96, 96, PixelFormats.Bgra32, null, pixels.Pixels, pixels.Width * 4);
         encoder.Frames.Add(BitmapFrame.Create(new CroppedBitmap(source, crop)));
-        using var output = new FileStream(file, FileMode.CreateNew, FileAccess.Write, FileShare.None);
         encoder.Save(output);
     }
 }
