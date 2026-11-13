@@ -135,6 +135,7 @@ internal sealed class OperationProcess : IDisposable
     public ProcessIdentity Identity { get; private set; } = null!;
     private StreamReader? output, errors;
     private StreamWriter? input;
+    private static readonly object SpawnGate = new();
     public Task<string> Output { get; private set; } = Task.FromResult("");
     public Task<string> Errors { get; private set; } = Task.FromResult("");
     public bool Started { get; private set; }
@@ -155,6 +156,13 @@ internal sealed class OperationProcess : IDisposable
     }
 
     public static OperationProcess Create(ProviderSpec provider, string[] args, bool keepInput = false)
+    {
+        // Inheritable child pipe ends must be closed before another concurrent launch.
+        // Otherwise the read and primed click jobs can retain each other's pipes.
+        lock (SpawnGate) return CreateWithPipes(provider, args, keepInput);
+    }
+
+    private static OperationProcess CreateWithPipes(ProviderSpec provider, string[] args, bool keepInput)
     {
         provider.Verify();
         var owned = new OperationProcess();
