@@ -6,7 +6,7 @@ namespace TraceSupervisor;
 
 // Private inherited-stdio protocol. Only the connecting owner configures verified fixed provider
 // identities; per-operation messages select a provider, never an arbitrary executable or shell.
-internal sealed class SupervisorSession : IDisposable
+internal sealed partial class SupervisorSession : IDisposable
 {
     private readonly Process parent;
     private readonly ProcessIdentity identity = ProcessIdentity.Self();
@@ -60,6 +60,7 @@ internal sealed class SupervisorSession : IDisposable
         try { operationCancellation?.Cancel(); } catch (ObjectDisposedException) { }
         _ = Task.Run(() =>
         {
+            _ = DrainIdleWorker();
             try
             {
                 long count;
@@ -179,7 +180,7 @@ internal sealed class SupervisorSession : IDisposable
             await StartIndicator();
             if (stopCode is not null) throw new TraceError("session_stopped", "The session stopped before readiness.");
             configured = true;
-            Reply(id, new { ready = true, version = 1, pid = Environment.ProcessId, monitors, physicalStop = "installed", lease = "native-owned" });
+            Reply(id, new { ready = true, version = 1, pid = Environment.ProcessId, monitors, physicalStop = "installed", lease = "native-owned", readWorker = !allowControlled });
         }
         catch { Stop("startup_failed"); await Close(); throw; }
     }
@@ -234,7 +235,9 @@ internal sealed class SupervisorSession : IDisposable
                 // Reopen the gate before publishing completion, so the next request needs no delay.
                 var envelope = inlineRead
                     ? ReadWindow(id, args, token)
-                    : await RunOperation(id, provider, args, input, mutating, timeout, token);
+                    : UseWorker(provider, args, mutating)
+                        ? await RunWorker(id, args, timeout, token)
+                        : await RunOperation(id, provider, args, input, mutating, timeout, token);
                 lock (gate) { operationBusy = false; if (operationId == id) operationId = null; }
                 try { Json.Write(envelope); } catch { Stop("stdout_failed"); }
             });
@@ -403,23 +406,27 @@ internal sealed class SupervisorSession : IDisposable
         lock (gate) { operationCancellation?.Cancel(); active = operation; }
         try { if (active is not null) await active; }
         catch { /* A fault cannot skip glow teardown. Any persisted input intent remains quarantine. */ }
-        try
-        {
-            if (indicator is not null)
-            {
-                try { indicator.StandardInput.Close(); } catch { }
-                try { await indicator.WaitForExitAsync().WaitAsync(TimeSpan.FromMilliseconds(1500)); }
-                catch { try { indicator.Kill(); await indicator.WaitForExitAsync().WaitAsync(TimeSpan.FromMilliseconds(1500)); } catch { } }
-                if (!indicator.HasExited) throw new TraceError("indicator_stop_unconfirmed", "The activity marker exit could not be confirmed.");
-                indicator.Dispose(); indicator = null;
-            }
-        }
+        try { StopWorker(); }
         finally
         {
-            escape?.Dispose(); escape = null;
-            if (lease != 0) { Native.CloseHandle(lease); lease = 0; }
-            ReleasePins();
+            try { await CloseIndicator(); }
+            finally
+            {
+                escape?.Dispose(); escape = null;
+                if (lease != 0) { Native.CloseHandle(lease); lease = 0; }
+                ReleasePins();
+            }
         }
+    }
+
+    private async Task CloseIndicator()
+    {
+        if (indicator is null) return;
+        try { indicator.StandardInput.Close(); } catch { }
+        try { await indicator.WaitForExitAsync().WaitAsync(TimeSpan.FromMilliseconds(1500)); }
+        catch { try { indicator.Kill(); await indicator.WaitForExitAsync().WaitAsync(TimeSpan.FromMilliseconds(1500)); } catch { } }
+        if (!indicator.HasExited) throw new TraceError("indicator_stop_unconfirmed", "The activity marker exit could not be confirmed.");
+        indicator.Dispose(); indicator = null;
     }
 
     // Closes the deny-write provider handles; an operation never outlives CloseCore's await above.
