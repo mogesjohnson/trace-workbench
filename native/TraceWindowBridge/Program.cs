@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Globalization;
 using System.Windows.Automation;
+using TraceWindows;
 
 // Public Win32/DWM and managed UIA calls. This bridge reads exact geometry and activates one pinned
 // HWND/PID. Pointer operations require explicit coordinates, foreground and unobscured target.
@@ -65,40 +66,14 @@ internal static partial class Program
                 Write(new { windows = identities });
                 return 0;
             }
-            if (args.Length != 3 || (args[0] != "identity" && args[0] != "bounds" && args[0] != "activate") ||
-                !long.TryParse(args[1], out var raw) || raw <= 0 || !uint.TryParse(args[2], out var pid) || pid == 0)
-                throw new BridgeException("invalid_arguments", "Usage: TraceWindowBridge info|release-left OR bounds|activate <HWND> <PID>");
-            var hwnd = new nint(raw);
-            SetProcessDpiAwarenessContext(new nint(-4)); // PER_MONITOR_AWARE_V2; physical pixel geometry.
-            Guard(hwnd, pid);
-            using var process = Process.GetProcessById((int)pid);
-            var creationTime = process.StartTime.ToFileTimeUtc().ToString();
-            var sessionId = process.SessionId;
-            var owner = GetWindow(hwnd, 4 /* GW_OWNER */);
-            if (args[0] == "identity")
-            {
-                // The title is read between the two guards, so it belongs to the guarded window.
-                var title = Title(hwnd);
-                Guard(hwnd, pid);
-                Write(new { hwnd = raw.ToString(), pid, processCreationTime = creationTime, sessionId,
-                    ownerWindowId = owner == 0 ? null : owner.ToInt64().ToString(), title, method = "public-win32-identity" });
-                return 0;
-            }
-            if (args[0] == "activate") Activate(hwnd, pid);
-            Guard(hwnd, pid);
-            if (!GetWindowRect(hwnd, out var outer)) throw new Win32Exception(Marshal.GetLastWin32Error());
-            var hr = DwmGetWindowAttribute(hwnd, 9 /* DWMWA_EXTENDED_FRAME_BOUNDS */, out var frame, Marshal.SizeOf<Rect>());
-            if (hr != 0) throw new BridgeException("frame_bounds_unavailable", "DWM extended frame bounds are unavailable.");
-            Guard(hwnd, pid);
-            Guard(hwnd, pid);
-            Write(new { hwnd = raw.ToString(), pid, processCreationTime = creationTime, sessionId,
-                ownerWindowId = owner == 0 ? null : owner.ToInt64().ToString(),
-                windowBounds = outer.ToBounds(), frameBounds = frame.ToBounds(), dpi = GetDpiForWindow(hwnd), dpiAwareness = DpiAwareness(hwnd), foreground = GetForegroundWindow() == hwnd, minimized = IsIconic(hwnd), enabled = IsWindowEnabled(hwnd), method = "public-win32-dwm" });
+            var activating = args.Length == 3 && args[0] == "activate";
+            if (activating) args[0] = "bounds";
+            Write(WindowRead.Query(args, activating ? Activate : null));
             return 0;
         }
         catch (Exception error)
         {
-            var code = error is BridgeException bridge ? bridge.Code : "window_bridge_failed";
+            var code = error switch { BridgeException bridge => bridge.Code, WindowReadError read => read.Code, _ => "window_bridge_failed" };
             Console.Error.WriteLine(JsonSerializer.Serialize(new { error = new { code, message = error.Message } }));
             return 1;
         }
