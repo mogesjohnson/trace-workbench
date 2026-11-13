@@ -91,8 +91,10 @@ internal sealed record InputDeclaration(int[] Keys, int[] Unicode)
         else if (provider == "bridge")
         {
             var pointer = args.Length == 7 && args[0] is "click" or "wheel";
-            if (args.Length == 0 || (!pointer && !new[] { "info", "identity", "identities", "bounds", "activate", "document", "capture", "related", "hit", "observe", "apps", "process", "packaged", "packaged-identities", "activate-package" }.Contains(args[0]))
-                || mutating != (args[0] == "activate" || pointer)) throw new TraceError("invalid_arguments", "Unsupported source-owned bridge operation or mutation declaration.");
+            var guarded = args.Length == 4 && args[0] == "guarded-click";
+            if (args.Length == 0 || (!pointer && !guarded && !new[] { "info", "identity", "identities", "bounds", "activate", "document", "capture", "related", "hit", "observe", "apps", "process", "packaged", "packaged-identities", "activate-package" }.Contains(args[0]))
+                || mutating != (args[0] == "activate" || pointer || guarded)) throw new TraceError("invalid_arguments", "Unsupported source-owned bridge operation or mutation declaration.");
+            if (guarded) keys.Add(1);
             if (pointer && (!long.TryParse(args[1], out var hwnd) || hwnd <= 0 || !uint.TryParse(args[2], out var pid) || pid == 0
                 || !int.TryParse(args[3], out _) || !int.TryParse(args[4], out _))) throw new TraceError("invalid_arguments", "Pointer target and physical coordinates are invalid.");
             if (pointer && args[0] == "wheel" && (!int.TryParse(args[5], out var dx) || !int.TryParse(args[6], out var dy)

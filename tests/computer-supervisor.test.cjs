@@ -100,6 +100,32 @@ test('backend uses native ownership for all session commands and refuses unowned
   assert.equal(calls.length, 2);
 });
 
+test('warm element click binds the observed runtime identity and propagates proven refusal', async () => {
+  const targetBounds = { x: 110, y: 220, width: 40, height: 30 };
+  const frame = { x: 100, y: 200, width: 300, height: 200 };
+  const window = { id: '1234', pid: 456, processCreationTime: '1200', sessionId: 1, bounds: frame };
+  const element = { id: 'save', automationId: 'save', name: 'Save', controlType: 'Button', enabled: true, bounds: targetBounds };
+  const observation = { window, bounds: frame, nativeWindowBounds: frame, frameBounds: frame, uiaBounds: frame,
+    elements: [element], runtimeIds: { save: [42, 17] } };
+  const calls = [];
+  const backend = new WinappBackend({ supervisor: { ready: true, readiness: { readWorker: true },
+    async run(provider, args, options) {
+      calls.push({ provider, args, options });
+      return { stdout: JSON.stringify({ hwnd: window.id, pid: window.pid, performed: false,
+        refusedBeforeSend: true, code: 'stale_element', message: 'Control changed.' }), stderr: '', exitCode: 0 };
+    }
+  } });
+  await assert.rejects(backend.act({ window, observation, action: { type: 'click', elementId: 'save' } }),
+    error => error.code === 'stale_element' && error.details.outcome === 'not_dispatched');
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].provider, 'bridge');
+  assert.equal(calls[0].options.mutating, true);
+  assert.deepEqual(calls[0].args.slice(0, 3), ['guarded-click', '1234', '456']);
+  const plan = JSON.parse(calls[0].args[3]);
+  assert.deepEqual([plan.x, plan.y], [130, 235]);
+  assert.deepEqual(plan.target.runtimeId, [42, 17]);
+});
+
 test('backend preserves proven native non-dispatch and failed-cleanup details through its action wrapper', async () => {
   const owner = { ready: true, child: {}, owner: 's', async release(id) { assert.equal(id, 's'); this.child = null; } };
   const backend = new WinappBackend({ supervisor: owner });
