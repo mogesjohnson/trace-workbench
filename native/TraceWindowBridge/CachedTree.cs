@@ -15,62 +15,63 @@ internal static partial class Program
         ValuePattern.ValueProperty, AutomationElement.IsInvokePatternAvailableProperty, AutomationElement.IsSelectionItemPatternAvailableProperty
     ];
 
-    private static UiElement[] ReadCachedTree(nint hwnd, uint pid, int depth, Dictionary<string, int[]> runtimeIds)
+    private static UiElement[] ReadCachedTree(UiaCache cache, nint hwnd, uint pid, int depth,
+        Dictionary<string, int[]> runtimeIds, out UiElement? focused)
     {
-        var request = new CacheRequest { TreeScope = TreeScope.Element | TreeScope.Descendants, TreeFilter = Automation.ControlViewCondition,
-            AutomationElementMode = AutomationElementMode.None };
-        foreach (var property in IdentityProperties.Concat(PatternProperties)) request.Add(property);
         var rows = new List<UiElement>();
-        Dictionary<string, int> counts = new(StringComparer.Ordinal);
-        AutomationElement root;
-        using (request.Activate())
-            root = AutomationElement.FromHandle(hwnd);
-        var pending = new Stack<AutomationElement>();
-        foreach (AutomationElement child in root.CachedChildren) pending.Push(child);
+        var counts = new Dictionary<string, int>(StringComparer.Ordinal);
+        UiElement? focus = null;
+        using var root = cache.Tree(hwnd);
         int scanned = 0;
-        while (pending.TryPop(out var node))
-        {
-            if (++scanned > 10000) throw new BridgeException("worker_read_failed", "The UIA identity search exceeded its bound.");
-            var id = node.Cached.AutomationId;
-            if (!string.IsNullOrEmpty(id)) counts[id] = counts.GetValueOrDefault(id) + 1;
-            foreach (AutomationElement child in node.CachedChildren) pending.Push(child);
-        }
+        root.Children(node => Count(node, 1));
         Walk(root, 0);
+        focused = focus;
         return rows.ToArray();
 
-        void Walk(AutomationElement node, int level)
+        void Count(UiaNode node, int level)
         {
-            if (rows.Count >= 10000 || node.Cached.ProcessId != pid)
+            if (++scanned > 10000 || level > 64) throw new BridgeException("worker_read_failed", "The UIA identity search exceeded its bound.");
+            var id = node.Text(AutomationElement.AutomationIdProperty);
+            if (!string.IsNullOrEmpty(id)) counts[id] = counts.GetValueOrDefault(id) + 1;
+            node.Children(child => Count(child, level + 1));
+        }
+
+        void Walk(UiaNode node, int level)
+        {
+            if (rows.Count >= 10000 || node.Number(AutomationElement.ProcessIdProperty) != pid)
                 throw new BridgeException("worker_read_failed", "The UIA tree exceeded its scope.");
-            var cached = node.Cached;
-            var id = cached.AutomationId;
-            var rect = cached.BoundingRectangle;
-            var type = cached.ControlType.ProgrammaticName;
-            type = type.StartsWith("ControlType.", StringComparison.Ordinal) ? type[12..] : type;
-            var runtime = (int[])node.GetCachedPropertyValue(AutomationElement.RuntimeIdProperty);
+            var automationId = node.Text(AutomationElement.AutomationIdProperty);
+            var name = node.Text(AutomationElement.NameProperty);
+            var id = automationId;
+            var rect = node.Bounds();
+            var type = UiaControlName(node.Number(AutomationElement.ControlTypeProperty));
+            var runtime = node.RuntimeId();
             if (string.IsNullOrEmpty(id) || counts.GetValueOrDefault(id) != 1 || level == 0)
-                id = WorkerSlug(type, cached.AutomationId, cached.Name, runtime);
+                id = WorkerSlug(type, automationId, name, runtime);
             if (!runtimeIds.TryAdd(id, runtime))
                 throw new BridgeException("worker_read_failed", "The tree has duplicate control selectors.");
-            var toggle = node.GetCachedPropertyValue(TogglePattern.ToggleStateProperty, true);
-            var expand = node.GetCachedPropertyValue(ExpandCollapsePattern.ExpandCollapseStateProperty, true);
-            var value = node.GetCachedPropertyValue(AutomationElement.IsPasswordProperty, true) is false
-                ? node.GetCachedPropertyValue(ValuePattern.ValueProperty, true) as string : null;
+            var toggle = node.Number(TogglePattern.ToggleStateProperty, -1);
+            var expand = node.Number(ExpandCollapsePattern.ExpandCollapseStateProperty, -1);
+            var value = node.Property(AutomationElement.IsPasswordProperty) is false
+                ? node.Property(ValuePattern.ValueProperty) as string : null;
             var item = new UiElement
             {
-                Selector = id, AutomationId = cached.AutomationId, ClassName = cached.ClassName, Name = cached.Name,
-                Type = type, IsEnabled = cached.IsEnabled, IsOffscreen = cached.IsOffscreen,
-                X = rect.IsEmpty ? 0 : rect.X, Y = rect.IsEmpty ? 0 : rect.Y, Width = rect.IsEmpty ? 0 : rect.Width, Height = rect.IsEmpty ? 0 : rect.Height,
+                Selector = id, AutomationId = automationId, ClassName = node.Text(AutomationElement.ClassNameProperty), Name = name,
+                Type = type, IsEnabled = node.Flag(AutomationElement.IsEnabledProperty), IsOffscreen = node.Flag(AutomationElement.IsOffscreenProperty),
+                X = rect.Left, Y = rect.Top, Width = rect.Right - rect.Left, Height = rect.Bottom - rect.Top,
                 Value = value, Depth = level, WindowHandle = hwnd,
-                IsInvokable = node.GetCachedPropertyValue(AutomationElement.IsInvokePatternAvailableProperty, true) is true
-                    || node.GetCachedPropertyValue(AutomationElement.IsSelectionItemPatternAvailableProperty, true) is true,
-                ToggleState = toggle is ToggleState state ? state.ToString().ToLowerInvariant() : null,
-                ExpandState = expand is ExpandCollapseState.Collapsed ? "collapsed" : expand is ExpandCollapseState.Expanded ? "expanded" : null
+                IsInvokable = node.Flag(AutomationElement.IsInvokePatternAvailableProperty)
+                    || node.Flag(AutomationElement.IsSelectionItemPatternAvailableProperty),
+                ToggleState = toggle switch { 0 => "off", 1 => "on", 2 => "indeterminate", _ => null },
+                ExpandState = expand switch { 0 => "collapsed", 1 => "expanded", 2 => "expanded", _ => null }
             };
             rows.Add(item);
-            var children = node.CachedChildren;
-            if (level == depth) { item.HasMoreChildren = children.Count > 0; return; }
-            foreach (AutomationElement child in children) Walk(child, level + 1);
+            if (node.Flag(AutomationElement.HasKeyboardFocusProperty)) focus = item;
+            node.Children(child =>
+            {
+                if (level == depth) item.HasMoreChildren = true;
+                else Walk(child, level + 1);
+            });
         }
     }
 

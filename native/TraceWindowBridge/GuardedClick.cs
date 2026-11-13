@@ -21,6 +21,7 @@ internal static partial class Program
             throw new BridgeException("coordinate_space", "Guarded input requires physical pixel geometry.");
         var pressed = false;
         var activated = false;
+        using var cache = new UiaCache(observation: false);
         try
         {
             CheckGeometry(requireForeground: false, checkRoot: false);
@@ -61,13 +62,13 @@ internal static partial class Program
             if (plan.X < frame.Left || plan.X >= frame.Right || plan.Y < frame.Top || plan.Y >= frame.Bottom)
                 throw new BridgeException("invalid_coordinates", "Click point is outside the observed frame.");
             if (!checkRoot) return;
-            var root = AutomationElement.FromHandle(hwnd);
-            var rect = root.Current.BoundingRectangle;
-            if (root.Current.ProcessId != pid || rect.X != plan.Geometry[8] || rect.Y != plan.Geometry[9]
-                || rect.Width != plan.Geometry[10] || rect.Height != plan.Geometry[11])
+            using var root = cache.Root(hwnd);
+            var rect = root.Bounds();
+            if (root.Number(AutomationElement.ProcessIdProperty) != pid || rect.Left != plan.Geometry[8] || rect.Top != plan.Geometry[9]
+                || rect.Right - rect.Left != plan.Geometry[10] || rect.Bottom - rect.Top != plan.Geometry[11])
                 throw new BridgeException("window_moved", "The selected UIA root geometry changed.");
-            if (plan.X < Math.Max(frame.Left, rect.X) || plan.X >= Math.Min(frame.Right, rect.Right)
-                || plan.Y < Math.Max(frame.Top, rect.Y) || plan.Y >= Math.Min(frame.Bottom, rect.Bottom))
+            if (plan.X < Math.Max(frame.Left, rect.Left) || plan.X >= Math.Min(frame.Right, rect.Right)
+                || plan.Y < Math.Max(frame.Top, rect.Top) || plan.Y >= Math.Min(frame.Bottom, rect.Bottom))
                 throw new BridgeException("invalid_coordinates", "Click point is outside the observed frame.");
         }
 
@@ -77,18 +78,15 @@ internal static partial class Program
             if (plan.Target is { } expected)
             {
                 if (expected.RuntimeId is not { Length: > 0 }) throw new BridgeException("stale_element", "Missing exact control identity.");
-                var cache = new CacheRequest { AutomationElementMode = AutomationElementMode.None };
-                foreach (var property in IdentityProperties) cache.Add(property);
-                AutomationElement item;
-                using (cache.Activate()) item = AutomationElement.FromPoint(new System.Windows.Point(plan.X, plan.Y));
-                if (item is null) throw new BridgeException("stale_element", "The observed control is absent.");
-                var element = item.Cached;
-                var rect = element.BoundingRectangle;
-                if (element.ProcessId != pid || !element.IsEnabled || element.IsOffscreen || element.AutomationId != expected.Id
-                    || element.Name != expected.Name || element.ControlType.ProgrammaticName != "ControlType." + expected.Type
-                    || element.ClassName != expected.ClassName || rect.X != expected.X || rect.Y != expected.Y
-                    || rect.Width != expected.Width || rect.Height != expected.Height
-                    || !((int[])item.GetCachedPropertyValue(AutomationElement.RuntimeIdProperty)).SequenceEqual(expected.RuntimeId))
+                using var item = cache.At(plan.X, plan.Y);
+                var rect = item.Bounds();
+                if (item.Number(AutomationElement.ProcessIdProperty) != pid || !item.Flag(AutomationElement.IsEnabledProperty)
+                    || item.Flag(AutomationElement.IsOffscreenProperty) || item.Text(AutomationElement.AutomationIdProperty) != expected.Id
+                    || item.Text(AutomationElement.NameProperty) != expected.Name
+                    || UiaControlName(item.Number(AutomationElement.ControlTypeProperty)) != expected.Type
+                    || item.Text(AutomationElement.ClassNameProperty) != expected.ClassName || rect.Left != expected.X || rect.Top != expected.Y
+                    || rect.Right - rect.Left != expected.Width || rect.Bottom - rect.Top != expected.Height
+                    || !item.RuntimeId().SequenceEqual(expected.RuntimeId))
                     throw new BridgeException("stale_element", "The point no longer resolves to the observed control.");
             }
             CheckHit();
