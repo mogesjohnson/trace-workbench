@@ -61,6 +61,7 @@ internal sealed partial class SupervisorSession : IDisposable
         _ = Task.Run(() =>
         {
             _ = DrainIdleWorker();
+            _ = ClosePrimedClick();
             try
             {
                 long count;
@@ -233,11 +234,14 @@ internal sealed partial class SupervisorSession : IDisposable
             operation = Task.Run(async () =>
             {
                 // Reopen the gate before publishing completion, so the next request needs no delay.
+                if (UseWorker(provider, args, mutating) && args[0] == "observe") PrimeClick();
                 var envelope = inlineRead
                     ? ReadWindow(id, args, token)
                     : UseWorker(provider, args, mutating)
                         ? await RunWorker(id, args, timeout, token)
-                        : await RunOperation(id, provider, args, input, mutating, timeout, token);
+                        : !allowControlled && provider == "bridge" && args[0] == "guarded-click"
+                            ? await RunPrimedClick(id, args, input, timeout, token)
+                            : await RunOperation(id, provider, args, input, mutating, timeout, token);
                 lock (gate) { operationBusy = false; if (operationId == id) operationId = null; }
                 try { Json.Write(envelope); } catch { Stop("stdout_failed"); }
             });
@@ -406,7 +410,12 @@ internal sealed partial class SupervisorSession : IDisposable
         lock (gate) { operationCancellation?.Cancel(); active = operation; }
         try { if (active is not null) await active; }
         catch { /* A fault cannot skip glow teardown. Any persisted input intent remains quarantine. */ }
-        try { StopWorker(); }
+        try
+        {
+            try { await ClosePrimedClick(); }
+            finally { StopWorker(); }
+            if (clickExitUnconfirmed) throw new TraceError("worker_exit_unconfirmed", "The click worker did not confirm exit.");
+        }
         finally
         {
             try { await CloseIndicator(); }

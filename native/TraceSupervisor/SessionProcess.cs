@@ -219,6 +219,11 @@ internal sealed class OperationProcess : IDisposable
     {
         await input!.WriteLineAsync(request).ConfigureAwait(false);
         await input.FlushAsync().ConfigureAwait(false);
+        return await ReadReply().ConfigureAwait(false);
+    }
+
+    public async Task<string> ReadReply()
+    {
         var response = new StringBuilder();
         var buffer = new char[4096];
         int count;
@@ -239,6 +244,7 @@ internal sealed class OperationProcess : IDisposable
         return Exited && Native.QueryInformationJobObject(Job, 1 /* JobObjectBasicAccountingInformation */, out var info,
             Marshal.SizeOf<Native.JobAccounting>(), out _) && info.ActiveProcesses == 0;
     }
+    public bool WaitForExit(uint milliseconds) => Native.WaitForSingleObject(Handle, milliseconds) == 0;
     public bool KillAndConfirm(int milliseconds = 3000)
     {
         Native.TerminateJobObject(Job, 1);
