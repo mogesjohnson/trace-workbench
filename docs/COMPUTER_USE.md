@@ -15,7 +15,7 @@ npm run computer:config -- --plan
 npm run computer:config -- --apply
 ```
 
-Engine setup downloads Microsoft winapp CLI `0.7.1`, checks the pinned archive and native-file hashes, and builds TRACE's public Win32 window bridge, screen-edge activity marker, native input supervisor and text-only clipboard helper under ignored `.runtime/` storage. Helpers build against an empty local package feed. Setup does not install global tools or change PATH. After helper source changes, rerun setup before using them; diagnostics verify source/output hashes without opening UI or reading clipboard contents.
+Engine setup downloads Microsoft winapp CLI `0.7.1`, checks the pinned archive and native-file hashes, and builds TRACE's public Win32 window bridge, screen-edge activity marker, native input supervisor and text-only clipboard helper under ignored `.runtime/` storage. The bridge restores locked packages from NuGet. The other helpers build against an empty local feed. After helper source changes, rerun setup before using them. Diagnostics verify source and output hashes without opening UI or reading clipboard contents.
 
 The Windows latency candidate runs routine HWND identity and geometry reads in the existing session owner. These are fresh Win32 reads with the same receipts used by the standalone bridge. UI Automation, capture, activation and input still run in owned child jobs. Rebuild both the supervisor and bridge with computer setup when switching to this candidate.
 

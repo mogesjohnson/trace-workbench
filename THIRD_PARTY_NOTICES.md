@@ -35,6 +35,7 @@ SOFTWARE.
 ## Computer Use dependencies
 
 - [Microsoft winapp CLI](https://github.com/microsoft/winappCli), version `0.7.1`, supplies public UI automation and Windows Graphics Capture. Its [MIT notice](licenses/winapp.txt) is retained. The pinned distribution remains outside Git; its native libraries retain their upstream terms.
+- Microsoft WinApp UI Automation `0.7.1` and its compatible selector format use the same [Microsoft MIT notice](licenses/winapp.txt). The Windows bridge restores its locked NuGet dependencies from the official feed.
 - MCP SDK server/client `2.3.1`: the distributed [SDK license text](licenses/mcp-sdk.txt) records the Apache-2.0 transition and retained MIT contributions.
 - Zod `4.6.7`: [MIT notice](licenses/zod.txt).
 - smol-toml `1.9.0`: [BSD-3-Clause notice](licenses/smol-toml.txt).

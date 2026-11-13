@@ -26,7 +26,8 @@ test('compiled pointer planning and supervisor declaration/release checks send n
   for (const name of ['TraceWindowBridge', 'TraceSupervisor']) {
     const output = path.join(directory, name);
     await execute('dotnet', ['publish', path.join(root, 'native', name, `${name}.csproj`), '--configuration', 'Release',
-      '--output', output, '--artifacts-path', path.join(output, 'artifacts'), '--source', feed, '--nologo'],
+      '--output', output, '--artifacts-path', path.join(output, 'artifacts'),
+      '--source', name === 'TraceWindowBridge' ? 'https://api.nuget.org/v3/index.json' : feed, '--nologo'],
     { windowsHide: true, timeout: 90000, maxBuffer: 1024 * 1024 });
     const result = await execute(path.join(output, `${name}.exe`), ['selftest'], { windowsHide: true, timeout: 15000 });
     const value = JSON.parse(result.stdout);

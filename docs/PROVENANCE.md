@@ -30,6 +30,8 @@ The repository's direct MCP smoke test uses a synthetic fixture. A separate loca
 
 The Windows engine is Microsoft winapp CLI `0.7.1`. Its official release archive SHA-256 and native-file hashes are recorded in [the engine pin](../src/computer/winapp-pin.json). The source-owned [window bridge](../native/TraceWindowBridge/Program.cs) uses public Win32/DWM APIs for geometry, activation and interrupted-input cleanup. Setup verifies its source/build manifest locally.
 
+The Windows read worker uses the public MIT [WinApp UI Automation package 0.7.1](https://www.nuget.org/packages/Microsoft.Windows.SDK.BuildTools.WinApp.UIAutomation/0.7.1) for fresh window-scoped WGC and focus. Its compatible selector format follows the pinned [Microsoft SlugGenerator](https://github.com/microsoft/winappCli/blob/e3cd0b94f3e7b776ac51ba0564f4908094e979b5/src/winapp-CLI/WinApp.UIAutomation/Services/SlugGenerator.cs). The [NuGet lock](../native/TraceWindowBridge/packages.lock.json) records package content hashes. Setup records the built bridge and dependency hashes in its local manifest.
+
 MCP server/client `2.3.1`, Zod `4.6.7` and smol-toml `1.9.0` are pinned in the lockfile. Retained license texts are linked from [third-party notices](../THIRD_PARTY_NOTICES.md). The reference Codex executor's private helper is not copied or included.
 
 The source-owned [activity indicator](../native/TraceActivityIndicator/Program.cs) uses public Win32 layered-window APIs and .NET 10 Windows Forms. Setup builds it locally against an empty package feed and verifies source/output hashes. It adds no provider, downloaded binary or listening port.
