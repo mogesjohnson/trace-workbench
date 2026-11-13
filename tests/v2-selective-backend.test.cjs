@@ -28,7 +28,7 @@ function fixture() {
 test('no-image observation retains identity, geometry, UIA and focus bracketing', async () => {
   const { backend, calls } = fixture();
   const result = await backend.observe({ window, depth: 4, includeScreenshot: false });
-  assert.deepEqual(calls, ['identity', 'bounds', 'inspect:4', 'bounds', 'identity', 'identity', 'inspect:1', 'bounds', 'focus']);
+  assert.deepEqual(calls, ['identity', 'bounds', 'inspect:4', 'bounds', 'identity', 'identity', 'inspect:0', 'bounds', 'focus']);
   assert.equal(result.elements[0].id, 'root');
   assert.deepEqual(result.bounds, rect);
   assert.equal('screenshot' in result, false);
@@ -50,7 +50,7 @@ test('no-image observation rejects UIA, geometry and identity drift', async () =
       const inspect = backend.inspect;
       backend.inspect = async (...args) => {
         const state = await inspect(...args);
-        return args[2] === 1 ? { ...state, bounds: { ...rect, x: 11 } } : state;
+        return args[2] === 0 ? { ...state, bounds: { ...rect, x: 11 } } : state;
       };
     } else if (drift === 'geometry') {
       const bridge = backend.bridge;
@@ -103,7 +103,7 @@ test('pinned no-image observation validates both bounds receipts and independent
     if (changed === 'none') {
       const result = await observation;
       assert.equal('screenshot' in result, false);
-      assert.deepEqual(calls, ['bounds', 'inspect:8', 'bounds', 'identity', 'inspect:1', 'bounds', 'focus']);
+      assert.deepEqual(calls, ['bounds', 'inspect:8', 'bounds', 'identity', 'inspect:0', 'bounds', 'focus']);
     } else {
       await assert.rejects(observation, { code: 'window_identity_changed' });
       assert.equal(calls.includes('identity'), changed === 'final');

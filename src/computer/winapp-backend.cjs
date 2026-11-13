@@ -800,7 +800,9 @@ class WinappBackend {
     const documentRead = documentElementId === undefined ? undefined
       : await measure('document', () => this.readDocument(window, signal, state.elements, documentElementId));
     const current = await measure('identity', () => this.identity(window, signal));
-    const after = await measure('uia', () => this.inspect(window, signal, 1));
+    // Only the root rectangle is compared here. Depth zero in the pinned CLI reads the root
+    // and reports its truncation without walking its children. Public observation depth is unchanged.
+    const after = await measure('uia', () => this.inspect(window, signal, 0));
     const afterGeometry = await measure('geometry', () => this.bridge('bounds', window, signal));
     if (!sameBounds(state.bounds, after.bounds) || !sameBounds(bounds(geometry.frameBounds), bounds(afterGeometry.frameBounds)) || !sameBounds(bounds(geometry.windowBounds), bounds(afterGeometry.windowBounds))) fail('window_moved', 'Window moved during observation; request a fresh observation.');
     let focused;
