@@ -40,7 +40,7 @@ function duplicateGroup(element, keptParent) {
   return element.type === 'Group' && keptParent?.type === 'Group' && typeof element.name === 'string' && element.name !== ''
     && element.name === keptParent.name && ['expanded', 'collapsed'].includes(element.expandState) && element.expandState === keptParent.expandState;
 }
-const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj', 'native/TraceWindowBridge/Capture.cs', 'native/TraceWindowBridge/Related.cs', 'native/TraceWindowBridge/Applications.cs', 'native/TraceWindowBridge/Packages.cs', 'native/TraceSupervisor/WindowRead.cs', 'native/TraceWindowBridge/ReadWorker.cs', 'native/TraceWindowBridge/CachedTree.cs', 'native/TraceWindowBridge/packages.lock.json'];
+const BRIDGE_SOURCES = ['native/TraceWindowBridge/Program.cs', 'native/TraceWindowBridge/TraceWindowBridge.csproj', 'native/TraceWindowBridge/Capture.cs', 'native/TraceWindowBridge/Related.cs', 'native/TraceWindowBridge/Applications.cs', 'native/TraceWindowBridge/Packages.cs', 'native/TraceSupervisor/WindowRead.cs', 'native/TraceWindowBridge/ReadWorker.cs', 'native/TraceWindowBridge/CachedTree.cs', 'native/TraceWindowBridge/GuardedClick.cs', 'native/TraceWindowBridge/packages.lock.json'];
 const BRIDGE_OUTPUTS = ['TraceWindowBridge.exe', 'TraceWindowBridge.dll', 'TraceWindowBridge.runtimeconfig.json',
   'TraceWindowBridge.deps.json', 'Microsoft.Extensions.DependencyInjection.Abstractions.dll', 'Microsoft.Extensions.DependencyInjection.dll',
   'Microsoft.Extensions.Logging.Abstractions.dll', 'Microsoft.Windows.SDK.BuildTools.WinApp.UIAutomation.dll',
@@ -355,7 +355,7 @@ class WinappBackend {
     if (pointer && !this.supervisor?.ready) fail('supervision_required', 'New pointer input requires a ready native owner.', { outcome: 'not_dispatched' });
     const standalone = ['info', 'apps', 'process', 'packaged', 'packaged-identities', 'activate-package'].includes(verb);
     const args = standalone ? [verb, ...parameters] : [verb, id(window.id), String(window.pid), ...parameters];
-    const mutating = verb === 'activate' || pointer;
+    const mutating = verb === 'activate' || verb === 'guarded-click' || pointer;
     if (this.supervisor && mutating && !this.supervisor.ready) fail('session_stopped', 'A ready native session is required before activation.', { outcome: 'not_dispatched' });
     const result = await providerRequest(this.supervisor?.ready === true, () => this.supervisor?.ready
       ? this.supervisor.run('bridge', args, { signal, timeoutMs: 10000, mutating })
@@ -885,6 +885,14 @@ class WinappBackend {
     if (this.inputRecoveryRequired) fail('input_recovery_required', 'Input is quarantined after incomplete mouse recovery. Check the owned input process and button state before restarting TRACE.', { outcome: 'not_dispatched', cause: this.inputRecoveryRequired });
     if (!object(observation) || !sameBounds(bounds(observation.bounds), bounds(observation.window?.bounds)) || observation.window.id !== window.id || observation.window.pid !== window.pid) fail('invalid_observation', 'Action requires an observation of this exact window.');
     action = parseAction(action);
+    if (action.type === 'click' && this.supervisor?.ready && this.supervisor.readiness?.readWorker === true && window.processCreationTime
+      && observation.rootElementId === undefined && (action.button ?? 'left') === 'left' && (action.count ?? 1) === 1) {
+      const selected = action.elementId ? observation.elements.find(item => item.id === action.elementId) : undefined;
+      if (!action.elementId || (selected?.enabled && selected.id === selected.automationId && selected.bounds
+        && Array.isArray(observation.runtimeIds?.[selected.id]))) {
+        return this.guardedClick(window, observation, action, selected, signal, progress);
+      }
+    }
     const pointerClick = action.type === 'click' && ((action.button ?? 'left') !== 'left' || (action.count ?? 1) !== 1);
     const pointWheel = action.type === 'scroll' && action.placement === 'point';
     if (action.type === 'accessibility_action' && !this.supervisor?.ready) fail('supervision_required', 'Named UIA actions require native supervision.', { outcome: 'not_dispatched' });
@@ -1059,6 +1067,25 @@ class WinappBackend {
   }
   // The focused control's text, or undefined when it cannot be read exactly (no TextPattern, a
   // password field, truncated at the read bound, or a control that changed).
+  async guardedClick(window, observation, action, element, signal, progress) {
+    const coordinates = rect => ['x', 'y', 'width', 'height'].map(key => rect[key]);
+    const geometry = [observation.nativeWindowBounds, observation.frameBounds, observation.uiaBounds].flatMap(coordinates);
+    const x = element ? Math.floor(element.bounds.x + element.bounds.width / 2) : observation.bounds.x + action.x;
+    const y = element ? Math.floor(element.bounds.y + element.bounds.height / 2) : observation.bounds.y + action.y;
+    const target = element && { id: element.id, name: element.name, type: element.controlType,
+      className: element.className ?? '', ...element.bounds, runtimeId: observation.runtimeIds[element.id] };
+    progress.primary = true;
+    const native = await this.bridge('guarded-click', window, signal, [JSON.stringify({
+      created: window.processCreationTime, session: window.sessionId, geometry, x, y, target
+    })]);
+    if (native.activated === true) progress.preparation.push({ step: 'activation', status: 'foreground' });
+    if (native.performed === false && native.refusedBeforeSend === true)
+      fail(native.code, native.message, { outcome: 'not_dispatched', refusedBeforeSend: true });
+    if (native.performed !== true || native.operation !== 'click' || native.inputEvents !== 2)
+      fail('invalid_native_response', 'Pointer receipt did not confirm both events.');
+    return { performed: true, type: 'click', engine: 'public-win32-sendinput', version: 1,
+      transport: 'supervised-public-win32', preparation: progress.preparation, native };
+  }
   async typedText(window, signal, elements, elementId) {
     try {
       const read = await this.readDocument(window, signal, elements, elementId);
