@@ -6,7 +6,28 @@ internal static partial class Program
     private sealed record ClickTarget(string Id, string Name, string Type, string ClassName, int X, int Y, int Width, int Height, int[]? RuntimeId);
     private sealed record ClickPlan(string Created, int Session, int[] Geometry, int X, int Y, ClickTarget? Target);
 
-    private static void GuardedClick(string[] args)
+    private static int ClickWorker()
+    {
+        if (!SetProcessDpiAwarenessContext(new nint(-4)))
+            throw new BridgeException("coordinate_space", "Guarded input requires physical pixel geometry.");
+        Console.OutputEncoding = new System.Text.UTF8Encoding(false);
+        using var cache = new UiaCache(observation: false);
+        // Exercise the native cache transport before accepting a click. The desktop root is
+        // used only to initialize COM and is never returned or treated as a click target.
+        using (cache.Root(GetDesktopWindow())) { }
+        Console.WriteLine("{}");
+        using var input = new System.IO.StreamReader(Console.OpenStandardInput(), new System.Text.UTF8Encoding(false, true));
+        var line = input.ReadLine();
+        if (line is null) return 0;
+        if (line.Length > 8192) return 1;
+        GuardedClick(JsonSerializer.Deserialize<string[]>(line) ?? [], cache);
+        return 0;
+    }
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern nint GetDesktopWindow();
+
+    private static void GuardedClick(string[] args, UiaCache? warmed = null)
     {
         if (args.Length != 4 || !long.TryParse(args[1], out var handle) || handle <= 0
             || !uint.TryParse(args[2], out var pid) || pid == 0 || args[3].Length > 4096)
@@ -17,11 +38,12 @@ internal static partial class Program
             || plan.Geometry[2] <= 0 || plan.Geometry[3] <= 0 || plan.Geometry[6] <= 0 || plan.Geometry[7] <= 0)
             throw new BridgeException("invalid_arguments", "Missing guarded click geometry.");
         var hwnd = new nint(handle);
-        if (!SetProcessDpiAwarenessContext(new nint(-4)))
+        if (warmed is null && !SetProcessDpiAwarenessContext(new nint(-4)))
             throw new BridgeException("coordinate_space", "Guarded input requires physical pixel geometry.");
         var pressed = false;
         var activated = false;
-        using var cache = new UiaCache(observation: false);
+        using var owned = warmed is null ? new UiaCache(observation: false) : null;
+        var cache = warmed ?? owned!;
         try
         {
             CheckGeometry(requireForeground: false, checkRoot: false);

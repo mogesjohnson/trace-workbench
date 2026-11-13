@@ -17,6 +17,7 @@ internal static partial class Program
         {
             if (!OperatingSystem.IsWindows()) throw new BridgeException("unsupported_platform", "Windows is required.");
             if (args is ["read-worker"]) return ReadWorker();
+            if (args is ["click-worker"]) return ClickWorker();
             if (args.Length > 0 && args[0] == "guarded-click") { GuardedClick(args); return 0; }
             if (args.Length == 1 && args[0] == "info")
             {
