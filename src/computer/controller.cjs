@@ -360,12 +360,15 @@ function createComputerController(options = {}) {
   async function observeMeasured(session, signal, depth, mode, documentElementId, includeOffscreen, screenshotMode, screenshotPreference, { rootElementId, interactiveOnly = false }, relatedImages = false) {
     signal = markedSignal(signal);
     await lease.assert(session.id);
-    await measure('identity', () => currentWindow(session, signal, mode === 'screenshot'));
     session.observation = null;
     const observationId = randomUUID();
     const capture = screenshotMode !== 'none';
     const screenshotPath = capture ? path.join(session.directory, `${observationId}.png`) : undefined;
     const related = mode !== 'accessibility', relatedPrefix = related && relatedImages ? path.join(session.directory, `${observationId}-related`) : undefined;
+    // The worker binds the process lifetime before reading and validates it again with the final
+    // geometry. Other backends and observation modes keep the controller-level guard.
+    if (!backend.canObserveWarm?.({ window: session.window, visualOnly: mode === 'screenshot', documentElementId, rootElementId, relatedImagePrefix: relatedPrefix }))
+      await measure('identity', () => currentWindow(session, signal, mode === 'screenshot'));
     let snapshot, relatedImageList;
     try {
     snapshot = await measure('backend', () => backend.observe({ window: session.window, screenshotPath, signal, depth,
@@ -606,7 +609,8 @@ function createComputerController(options = {}) {
         }
         const checked = validateAction(action, observation.result);
         session.observation = null;
-        await currentWindow(session, signal);
+        if (!backend.canGuardedClick?.({ window: session.window, observation: observation.snapshot, action: checked }))
+          await currentWindow(session, signal);
         signal.throwIfAborted();
         const actionId = randomUUID();
         await record(session, { type: 'action_started', actionId, observationId, actionType: checked.type });

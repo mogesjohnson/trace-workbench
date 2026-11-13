@@ -776,9 +776,18 @@ class WinappBackend {
     if (documentElementId !== undefined && (includeScreenshot || selector(documentElementId) !== documentElementId)) fail('invalid_document_request', 'Document reads require accessibility-only observation.');
     if (includeScreenshot && (typeof screenshotPath !== 'string' || !path.isAbsolute(screenshotPath) || path.extname(screenshotPath).toLowerCase() !== '.png')) fail('invalid_screenshot_path', 'An absolute PNG output path is required.');
     if (!includeScreenshot && screenshotPath !== undefined) fail('invalid_screenshot_path', 'A screenshot path is not allowed when capture is omitted.');
-    // The controller has just run the guard, so the opening bounds receipt re-proves a pinned identity.
-    // An unpinned window is checked by name before its geometry is read.
     const pinned = window.processCreationTime !== undefined;
+    if (this.canObserveWarm({ window, documentElementId, rootElementId, relatedImagePrefix })) {
+      let warm;
+      try { warm = await this.observeWarm({ window, signal, depth, includeOffscreen, interactiveOnly, related, screenshotPath }); }
+      catch (error) {
+        if (error.code !== 'window_identity_changed' && error.code !== 'window_closed') throw error;
+        fail('window_changed', 'The selected window closed or its process identity changed. Open a new session.');
+      }
+      if (warm) return warm;
+    }
+    // The opening bounds receipt re-proves a pinned identity on the compatibility path.
+    // An unpinned window is checked by name before its geometry is read.
     if (!pinned) await measure('identity', () => this.identity(window, signal));
     let geometry = await measure('geometry', () => this.bridge('bounds', window, signal));
     if (pinned) await measure('identity', () => this.identity(window, signal, geometry));
@@ -786,11 +795,6 @@ class WinappBackend {
     if (restored) {
       await measure('restore', () => this.bridge('activate', window, signal));
       geometry = await measure('settle', () => this.settledBounds(window, signal));
-    }
-    if (pinned && this.supervisor?.ready && this.supervisor.readiness?.readWorker === true && documentElementId === undefined
-      && rootElementId === undefined && relatedImagePrefix === undefined && !restored) {
-      const warm = await this.observeWarm({ window, signal, depth, includeOffscreen, interactiveOnly, related, screenshotPath });
-      if (warm) return warm;
     }
     const state = await measure('uia', () => this.inspect(window, signal, depth, { includeOffscreen, rootElementId, interactiveOnly }));
     geometry = await measure('geometry', () => this.bridge('bounds', window, signal));
@@ -827,6 +831,10 @@ class WinappBackend {
       restoredFromMinimized: restored, ...(includeScreenshot ? { captureMethod: 'window-capture-dwm-bounds', actionCoordinateSpace: 'window-local-pixels', screenshot: { path: screenshotPath, mimeType: 'image/png', ...size } } : {}),
       ...(relatedWindows ? { relatedWindows } : {}) };
   }
+  canObserveWarm({ window, visualOnly, documentElementId, rootElementId, relatedImagePrefix }) {
+    return window.processCreationTime !== undefined && this.supervisor?.ready && this.supervisor.readiness?.readWorker === true
+      && !visualOnly && documentElementId === undefined && rootElementId === undefined && relatedImagePrefix === undefined;
+  }
   async observeWarm({ window, signal, depth, includeOffscreen, interactiveOnly, related, screenshotPath }) {
     let receipt;
     try {
@@ -835,7 +843,7 @@ class WinappBackend {
         String(depth), window.processCreationTime, String(window.sessionId), related ? 'related' : 'none', screenshotPath ?? ''
       ]));
     } catch (error) {
-      if (signal?.aborted || !['worker_read_failed', 'coordinate_space'].includes(error.code)) throw error;
+      if (signal?.aborted || !['worker_read_failed', 'coordinate_space', 'window_minimized'].includes(error.code)) throw error;
       // Some UIA providers only support the isolated CLI path. The worker writes a PNG before
       // its last guard, so remove a failed request's partial frame before falling back.
       if (screenshotPath) await fs.rm(screenshotPath, { force: true });
@@ -885,13 +893,9 @@ class WinappBackend {
     if (this.inputRecoveryRequired) fail('input_recovery_required', 'Input is quarantined after incomplete mouse recovery. Check the owned input process and button state before restarting TRACE.', { outcome: 'not_dispatched', cause: this.inputRecoveryRequired });
     if (!object(observation) || !sameBounds(bounds(observation.bounds), bounds(observation.window?.bounds)) || observation.window.id !== window.id || observation.window.pid !== window.pid) fail('invalid_observation', 'Action requires an observation of this exact window.');
     action = parseAction(action);
-    if (action.type === 'click' && this.supervisor?.ready && this.supervisor.readiness?.readWorker === true && window.processCreationTime
-      && observation.rootElementId === undefined && (action.button ?? 'left') === 'left' && (action.count ?? 1) === 1) {
-      const selected = action.elementId ? observation.elements.find(item => item.id === action.elementId) : undefined;
-      if (!action.elementId || (selected?.enabled && selected.id === selected.automationId && selected.bounds
-        && Array.isArray(observation.runtimeIds?.[selected.id]))) {
-        return this.guardedClick(window, observation, action, selected, signal, progress);
-      }
+    if (this.canGuardedClick({ window, observation, action })) {
+      const selected = observation.elements.find(item => item.id === action.elementId);
+      return this.guardedClick(window, observation, action, selected, signal, progress);
     }
     const pointerClick = action.type === 'click' && ((action.button ?? 'left') !== 'left' || (action.count ?? 1) !== 1);
     const pointWheel = action.type === 'scroll' && action.placement === 'point';
@@ -1067,6 +1071,15 @@ class WinappBackend {
   }
   // The focused control's text, or undefined when it cannot be read exactly (no TextPattern, a
   // password field, truncated at the read bound, or a control that changed).
+  canGuardedClick({ window, observation, action }) {
+    if (action.type !== 'click' || !this.supervisor?.ready || this.supervisor.readiness?.readWorker !== true
+      || !window.processCreationTime || observation.rootElementId !== undefined
+      || (action.button ?? 'left') !== 'left' || (action.count ?? 1) !== 1) return false;
+    if (!action.elementId) return true;
+    const selected = observation.elements.find(item => item.id === action.elementId);
+    return !!(selected?.enabled && selected.id === selected.automationId && selected.bounds
+      && Array.isArray(observation.runtimeIds?.[selected.id]));
+  }
   async guardedClick(window, observation, action, element, signal, progress) {
     const coordinates = rect => ['x', 'y', 'width', 'height'].map(key => rect[key]);
     const geometry = [observation.nativeWindowBounds, observation.frameBounds, observation.uiaBounds].flatMap(coordinates);
