@@ -30,6 +30,8 @@ The current native MCP interface can expose these seven tools. Use the connected
 
 Inspect diagnostics for readiness and consult the current action schema. A changed native helper can need rebuilding and reconnection. Verify diagnostics afterward. Use `trace_computer_doctor` with `verbose: true` when you need the effective action rules in `support.actions`. Apply the strictest schema, action contract and provider readiness constraint.
 
+When maintaining an installation, rebuild the native helpers from the selected TRACE checkout, synchronize its skill bundle, and reconnect the host to that checkout's MCP server. Check the connected `trace_computer_doctor` result afterward. A synchronized skill bundle establishes the instruction revision. The connected executable and helper manifests establish the runtime revision.
+
 For default wheel input, use `deltaX: 0` and nonzero `deltaY` in 120-unit steps. Use `placement: "point"` for wheel at the requested point, including horizontal wheel, only when the connected schema and `support.actions.scroll.point` advertise it and native supervision and source-matched helpers are ready. Follow the advertised bounds and increments and keep at least one delta nonzero.
 
 ## Discover or launch a window
