@@ -92,4 +92,16 @@ The public WinApp UI Automation 0.7.1 SDK can group UIA inspection, screenshot c
 
 To reproduce the probe, create a .NET 10 console project targeting `net10.0-windows10.0.19041.0` and enable WPF for PNG encoding. Pin `Microsoft.Windows.SDK.BuildTools.WinApp.UIAutomation` to 0.7.1 and `Microsoft.Extensions.DependencyInjection` to 10.0.0. Register `AddWinAppUiAutomation()` with logging, resolve `IUiAutomation`, and build an explicit `UiTarget` from the owned HWND. In one process, call `InspectAsync` at depth 2, `ScreenshotAsync` with the observed root selector and both screen-capture and focus flags false, encode BGRA with `PngBitmapEncoder`, read the root again at depth 0 and compare its four bounds coordinates, then query `GetFocusedElementAsync`. Exclude one warm-up. Verify the fixture count remains zero and close the fixture.
 
-The next parity experiment needs a managed lifetime for a read-only worker, bounded UIA property caching and one fresh WGC frame per observation. Keep the evidence tied to the pinned HWND and compare frame and root geometry before granting input authority. Design the click job around final foreground, geometry, element and hit-test validation followed by one declared input sequence. Measure each change independently. Before claiming parity, alternate providers on the same fixture instance and retain equivalent timing and correctness evidence.
+## Same-window cross-check
+
+Keep one fixture instance open across provider blocks. Confirm the TRACE lease is closed before activating the fixture with Sky, and end the Sky session before opening the candidate TRACE lease. Use the same increment control throughout and check the independent counter after every timed click. The cross-check used this order and excluded one warm-up per block.
+
+| Implementation | Trials | Text only | Screenshot and UIA | Click and refresh | Screenshot-backed cycle |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| TRACE 2.3.0 direct MCP | 3 | 1284 | 1481 | 2740 | 4212 |
+| Codex host | 5 | 90 | 120 | 305 | 426 |
+| TRACE with both changes, direct MCP | 5 | 629 | 842 | 1684 | 2538 |
+
+The combined candidate reduced the same-window TRACE cycle by 39.7% and took about 6.0× the Codex host median. All 13 timed clicks incremented exactly once. Both TRACE leases closed with confirmed cleanup, recovery was clear, the Codex kernel was reset, and the fixture exited. The two provider timings still use different client boundaries.
+
+The next parity experiment needs a managed lifetime for a read-only worker, bounded UIA property caching and one fresh WGC frame per observation. Keep the evidence tied to the pinned HWND and compare frame and root geometry before granting input authority. Design the click job around final foreground, geometry, element and hit-test validation followed by one declared input sequence. Measure each change independently. Before claiming parity, alternate multiple blocks and retain equivalent timing and correctness evidence.
