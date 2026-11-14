@@ -165,23 +165,31 @@ public final class Main {
   // ---------- capture ----------
 
   static final class Frame implements AutoCloseable {
-    byte[] raw; int offset; int width; int height; long crc;
+    byte[] raw; int offset; int width; int height; int rotation; long crc;
     Bitmap bitmap;
     String backend = "screencap";
     String fallbackReason;
+
+    int pixelWidth() { return bitmap == null ? width : bitmap.getWidth(); }
+    int pixelHeight() { return bitmap == null ? height : bitmap.getHeight(); }
+
+    String hashBasis(int ignoreTop) {
+      return backend + ":" + width + "x" + height + ":" + pixelWidth() + "x" + pixelHeight()
+          + ":" + rotation + ":" + ignoreTop;
+    }
 
     @Override public void close() {
       if (bitmap != null) bitmap.recycle();
     }
   }
 
-  static Frame capture(int ignoreTop) throws Exception {
+  static Frame capture(int ignoreTop, int maxSide) throws Exception {
     synchronized (CAPTURE_LOCK) {
       Frame f = null;
       if (compositorFailure == null) {
         try {
           if (compositor == null) compositor = new CompositorCapture();
-          f = compositor.capture();
+          f = compositor.capture(maxSide);
         } catch (Exception | LinkageError failure) {
           // Keep a failed backend out of subsequent capture and wait requests.
           Throwable cause = failure.getCause();
@@ -196,7 +204,8 @@ public final class Main {
         f.fallbackReason = compositorFailure;
       }
       try {
-        int skip = Math.max(0, Math.min(ignoreTop, f.height)) * f.width * 4;
+        int rows = (int) Math.ceil((double) Math.max(0, Math.min(ignoreTop, f.height)) * f.pixelHeight() / f.height);
+        int skip = rows * f.pixelWidth() * 4;
         CRC32 crc = new CRC32();
         if (f.bitmap == null) {
           crc.update(f.raw, f.offset + skip, f.raw.length - f.offset - skip);
@@ -231,23 +240,27 @@ public final class Main {
     return f;
   }
 
-  private static void describeCapture(Frame frame, JSONObject header) throws Exception {
+  private static void describeCapture(Frame frame, JSONObject header, int ignoreTop) throws Exception {
     header.put("captureBackend", frame.backend);
+    header.put("hashBasis", frame.hashBasis(ignoreTop));
+    header.put("captureMaxSide", Math.max(frame.pixelWidth(), frame.pixelHeight()));
     if (frame.fallbackReason != null) header.put("captureFallback", frame.fallbackReason);
   }
 
   static byte[] screen(JSONObject r, JSONObject h) throws Exception {
     int ignoreTop = r.optInt("ignoreTop", statusBarHeight());
     long t0 = SystemClock.elapsedRealtimeNanos();
-    try (Frame f = capture(ignoreTop)) {
+    int maxSide = r.has("region") ? Integer.MAX_VALUE : r.optInt("maxSide", 1280);
+    try (Frame f = capture(ignoreTop, maxSide)) {
       long t1 = SystemClock.elapsedRealtimeNanos();
       String hash = Long.toHexString(f.crc);
       h.put("hash", hash);
       h.put("width", f.width);
       h.put("height", f.height);
       h.put("captureMs", (t1 - t0) / 1e6);
-      describeCapture(f, h);
+      describeCapture(f, h, ignoreTop);
       if (f.backend.equals(r.optString("ifChangedFromBackend", f.backend))
+          && r.optString("ifChangedFromBasis", h.getString("hashBasis")).equals(h.getString("hashBasis"))
           && hash.equals(r.optString("ifChangedFrom", ""))) {
         h.put("changed", false);
         return new byte[0];
@@ -274,11 +287,12 @@ public final class Main {
       rh = clamp(crop.getInt("height"), 1, f.height - ry);
       region = Bitmap.createBitmap(full, rx, ry, rw, rh);
     }
-    int maxSide = r.optInt("maxSide", 1280);
+    int maxSide = Math.min(r.optInt("maxSide", 1280), Math.max(f.pixelWidth(), f.pixelHeight()));
     double scale = Math.min(1.0, maxSide / (double) Math.max(rw, rh));
     int ow = Math.max(1, (int) Math.round(rw * scale));
     int oh = Math.max(1, (int) Math.round(rh * scale));
-    Bitmap scaled = scale < 1.0 ? Bitmap.createScaledBitmap(region, ow, oh, true) : region;
+    Bitmap scaled = region.getWidth() != ow || region.getHeight() != oh
+        ? Bitmap.createScaledBitmap(region, ow, oh, true) : region;
     String format = r.optString("format", "jpeg");
     Bitmap.CompressFormat cf = "png".equals(format) ? Bitmap.CompressFormat.PNG
         : "webp".equals(format) ? Bitmap.CompressFormat.WEBP_LOSSY : Bitmap.CompressFormat.JPEG;
@@ -295,6 +309,7 @@ public final class Main {
     h.put("regionWidth", rw);
     h.put("regionHeight", rh);
     h.put("scale", (double) ow / rw);
+    h.put("scaleY", (double) oh / rh);
     h.put("encodeMs", (SystemClock.elapsedRealtimeNanos() - t0) / 1e6);
     return bytes.toByteArray();
   }
@@ -308,31 +323,38 @@ public final class Main {
     if (!"change".equals(mode) && !"stable".equals(mode)) throw new IllegalArgumentException("unknown until " + mode);
     String from = r.optString("from", "");
     String fromBackend = r.optString("fromBackend", "");
+    String fromBasis = r.optString("fromBasis", "");
+    int outputMaxSide = r.optInt("maxSide", 1280);
+    // Compare at the previous observation's resolution, including when output size changes.
+    int captureMaxSide = r.optInt("fromMaxSide", outputMaxSide);
     long deadline = SystemClock.uptimeMillis() + timeout;
-    Frame f = capture(ignoreTop);
+    Frame f = capture(ignoreTop, captureMaxSide);
     try {
       int frames = 1;
       long since = SystemClock.uptimeMillis();
       boolean met = false;
-      // A backend change can change the raw pixels even when the screen did not change.
+      String basis = f.hashBasis(ignoreTop);
       String baseline = from.isEmpty() || (!fromBackend.isEmpty() && !fromBackend.equals(f.backend))
-          ? Long.toHexString(f.crc) : from;
+          || (!fromBasis.isEmpty() && !fromBasis.equals(basis)) ? Long.toHexString(f.crc) : from;
       boolean changed = !Long.toHexString(f.crc).equals(baseline);
       while (true) {
         if ("change".equals(mode) && changed) { met = true; break; }
         if ("stable".equals(mode) && SystemClock.uptimeMillis() - since >= stableFor
             && (from.isEmpty() || changed || r.optBoolean("allowUnchanged", true))) { met = true; break; }
         if (SystemClock.uptimeMillis() >= deadline) break;
-        Frame next = capture(ignoreTop);
-        frames++;
+        Frame next = capture(ignoreTop, captureMaxSide);
+        String nextBasis = next.hashBasis(ignoreTop);
         String nextHash = Long.toHexString(next.crc);
-        if (!next.backend.equals(f.backend)) {
+        if (!nextBasis.equals(basis)) {
+          basis = nextBasis;
           baseline = nextHash;
           since = SystemClock.uptimeMillis();
+          changed = false;
         } else {
           if (next.crc != f.crc) since = SystemClock.uptimeMillis();
           if (!nextHash.equals(baseline)) changed = true;
         }
+        frames++;
         f.close();
         f = next;
       }
@@ -340,11 +362,10 @@ public final class Main {
       h.put("frames", frames);
       h.put("hash", Long.toHexString(f.crc));
       h.put("changed", changed);
-      describeCapture(f, h);
+      describeCapture(f, h, ignoreTop);
       h.put("width", f.width);
       h.put("height", f.height);
-      if (r.optBoolean("image", false)) return encode(f, r, h);
-      return new byte[0];
+      return r.optBoolean("image", false) ? encode(f, r, h) : new byte[0];
     } finally {
       f.close();
     }

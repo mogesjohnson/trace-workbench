@@ -514,6 +514,31 @@ test('capture fallback sends a fresh image and invalidates old image coordinates
   assert.equal(fake.requests.at(-1).fromBackend, 'screencap');
 });
 
+test('scaled captures keep the wait baseline and map rounded image axes independently', async (t) => {
+  let basis = 'compositor:1440x3088:448x960:0:72';
+  const { call, fake } = await connection(t, { handler(request) {
+    if (request.op === 'hello') return hello;
+    if (request.op === 'tap') return { header: {} };
+    const header = { hash: 'same', hashBasis: basis, captureMaxSide: 960, width: 1440, height: 3088,
+      captureBackend: 'compositor', format: 'jpeg', scale: 448 / 1440, scaleY: 960 / 3088, regionX: 0, regionY: 0, met: true };
+    return { header, payload: jpeg };
+  } });
+  await call('phone_connect');
+  await call('phone_screen', { maxSide: 960 });
+  await call('phone_screen', { maxSide: 960 });
+  assert.equal(fake.requests.at(-1).ifChangedFromBasis, basis);
+  const action = { type: 'tap', x: 200, y: 950 };
+  assert.ok(!(await call('phone_act', { action, until: 'change', maxSide: 1280 })).isError);
+  assert.equal(fake.requests.find(request => request.op === 'tap').y, 3056);
+  assert.equal(fake.requests.at(-1).fromBasis, basis);
+  assert.equal(fake.requests.at(-1).fromMaxSide, 960);
+  assert.equal(fake.requests.at(-1).maxSide, 1280);
+  basis = 'compositor:1440x3088:448x960:2:72';
+  await call('phone_wait', { image: false });
+  assert.ok((await call('phone_act', { action })).isError);
+  assert.equal(fake.requests.filter(request => request.op === 'tap').length, 1);
+});
+
 test('image-space input requires a fresh frame after a metadata-only wait fails', async (t) => {
   const received = Promise.withResolvers();
   const defaultHandler = agentHandler();
