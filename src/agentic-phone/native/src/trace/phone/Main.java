@@ -10,6 +10,7 @@ import android.view.InputEvent;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -96,7 +97,8 @@ public final class Main {
   static void serve(LocalSocket socket) {
     try (LocalSocket s = socket) {
       DataInputStream in = new DataInputStream(s.getInputStream());
-      DataOutputStream out = new DataOutputStream(s.getOutputStream());
+      // Send each small reply as one write. Large payloads bypass the buffer.
+      DataOutputStream out = new DataOutputStream(new BufferedOutputStream(s.getOutputStream(), 32 << 10));
       while (true) {
         int length;
         try { length = in.readInt(); } catch (java.io.EOFException end) { return; }
