@@ -80,6 +80,49 @@ test('phone server lists exactly the seven phone tools with read-only hints wher
   assert.deepEqual(hints, { phone_act: false, phone_connect: false, phone_logcat: true, phone_screen: true, phone_transcribe: true, phone_ui: true, phone_wait: true });
 });
 
+test('phone_act can return refreshed accessibility nodes with the image', async (t) => {
+  const ui = { package: 'fixture', nodes: [{ text: 'Count: 1' }] };
+  const handle = agentHandler(() => ({ ui }));
+  const { call, fake } = await connection(t, { handler(request) {
+    if (request.op === 'hello') return { header: { ...hello.header, refreshTree: true } };
+    return handle(request);
+  } });
+  await call('phone_connect');
+  const result = await call('phone_act', { action: { type: 'tap', selector: { text: 'Counter' } }, includeUi: true });
+  assert.ok(!result.isError);
+  assert.deepEqual(result.structuredContent.ui, ui);
+  assert.equal(result.structuredContent.frame.ui, undefined);
+  assert.equal(images(result).length, 1);
+  assert.deepEqual(fake.requests.slice(-2).map(request => request.op), ['node', 'wait']);
+  assert.equal(fake.requests.at(-1).includeUi, true);
+});
+
+test('phone_act uses a separate read when the running agent lacks combined refresh', async (t) => {
+  const { call, fake } = await connection(t);
+  await call('phone_connect');
+  const result = await call('phone_act', { action: { type: 'tap', selector: { text: 'Counter' } }, includeUi: true });
+  assert.ok(!result.isError);
+  assert.equal(images(result).length, 1);
+  assert.equal(result.structuredContent.ui.nodes[0].text, 'Wi-Fi');
+  assert.deepEqual(fake.requests.slice(-3).map(request => request.op), ['node', 'wait', 'ui']);
+  assert.equal(fake.requests.at(-2).includeUi, undefined);
+});
+
+test('phone_act returns acknowledged input and frame when the combined tree fails', async (t) => {
+  const handle = agentHandler(() => ({ uiError: 'tree unavailable' }));
+  const { call, fake } = await connection(t, { handler(request) {
+    if (request.op === 'hello') return { header: { ...hello.header, refreshTree: true } };
+    return handle(request);
+  } });
+  await call('phone_connect');
+  const result = await call('phone_act', { action: { type: 'tap', selector: { text: 'Counter' } }, includeUi: true });
+  assert.ok(!result.isError);
+  assert.equal(result.structuredContent.action.done, 'node');
+  assert.equal(result.structuredContent.uiError, 'tree unavailable');
+  assert.equal(images(result).length, 1);
+  assert.deepEqual(fake.requests.slice(-2).map(request => request.op), ['node', 'wait']);
+});
+
 test('device tools and shutdown leave the guest untouched before phone_connect', async (t) => {
   const { call, adb, fake, server } = await connection(t);
   const results = [];
