@@ -211,12 +211,15 @@ function createPhoneServer({ controller, transcribe, onError = () => {}, stopOnC
     }, readOnly);
 
   register('phone_act',
-    'Perform one action and return a fresh frame. The default waits for stability. Use until:"change" after observing the screen when the first visible change is sufficient, then verify the intended effect. Tap by selector or by point; points default to the last frame\'s image pixels.',
-    z.strictObject({ action: actionSchema, ...settleSchema, ...imageSchema, until: z.enum(['stable', 'change']).optional() }),
-    async ({ action, stableMs, timeoutMs, maxSide, quality, until }) => {
-      const out = await controller.act({ ...toControllerAction(action), settleOptions: { stableMs, timeoutMs, maxSide, quality, until } });
-      const { state, images } = frameState(out.after);
-      return result({ action: cleanHeader(out.action), ...state }, images);
+    'Perform one action and return a fresh frame. Set includeUi:true to also return the refreshed accessibility tree. The default waits for stability. Use until:"change" after observing the screen when the first visible change is sufficient, then verify the intended effect. Tap by selector or by point; points default to the last frame\'s image pixels.',
+    z.strictObject({ action: actionSchema, ...settleSchema, ...imageSchema, until: z.enum(['stable', 'change']).optional(),
+      includeUi: z.boolean().optional() }),
+    async ({ action, stableMs, timeoutMs, maxSide, quality, until, includeUi }) => {
+      const out = await controller.act({ ...toControllerAction(action), settleOptions: { stableMs, timeoutMs, maxSide, quality, until, includeUi } });
+      const { ui, uiError, ...header } = out.after.header;
+      const { state, images } = frameState({ ...out.after, header });
+      return result({ action: cleanHeader(out.action), ...state,
+        ...(ui ? { ui: cleanHeader(ui) } : {}), ...(uiError ? { uiError } : {}) }, images);
     },
     { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true });
 

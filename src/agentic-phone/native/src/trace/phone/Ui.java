@@ -126,6 +126,10 @@ final class Ui {
   }
 
   static byte[] tree(JSONObject r, JSONObject h) throws Exception {
+    return treeNodes(r, h).toString().getBytes(StandardCharsets.UTF_8);
+  }
+
+  static JSONArray treeNodes(JSONObject r, JSONObject h) throws Exception {
     UiAutomation ui = automation();
     boolean all = r.optBoolean("all", false);
     JSONArray nodes = new JSONArray();
@@ -137,7 +141,7 @@ final class Ui {
     h.put("visited", counter[0]);
     h.put("package", activePackage(ui));
     h.put("constructor", constructor);
-    return nodes.toString().getBytes(StandardCharsets.UTF_8);
+    return nodes;
   }
 
   static String activePackage(UiAutomation ui) {
