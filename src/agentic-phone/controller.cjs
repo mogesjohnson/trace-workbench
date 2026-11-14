@@ -136,7 +136,9 @@ function createPhoneController({
   }
 
   function remember(header, payload) {
-    if (header.hash) lastObservation = { hash: header.hash, backend: header.captureBackend };
+    if (header.hash) lastObservation = {
+      hash: header.hash, backend: header.captureBackend, basis: header.hashBasis, maxSide: header.captureMaxSide,
+    };
     if (!payload.length) return null;
     lastFrame = header;
     return saveFrame(header, payload);
@@ -148,7 +150,7 @@ function createPhoneController({
     if (!lastFrame) throw new Error('no frame yet: call screen first or pass space:"device"');
     return {
       x: Math.round(lastFrame.regionX + x / lastFrame.scale),
-      y: Math.round(lastFrame.regionY + y / lastFrame.scale),
+      y: Math.round(lastFrame.regionY + y / (lastFrame.scaleY ?? lastFrame.scale)),
     };
   }
 
@@ -157,6 +159,7 @@ function createPhoneController({
     if (onlyIfChanged && !pendingMetadataWaits && lastFrame?.hash) {
       request.ifChangedFrom = lastFrame.hash;
       if (lastFrame.captureBackend) request.ifChangedFromBackend = lastFrame.captureBackend;
+      if (lastFrame.hashBasis) request.ifChangedFromBasis = lastFrame.hashBasis;
     }
     if (maxSide) request.maxSide = maxSide;
     if (quality) request.quality = quality;
@@ -173,6 +176,8 @@ function createPhoneController({
     if (lastObservation) {
       request.from = lastObservation.hash;
       if (lastObservation.backend) request.fromBackend = lastObservation.backend;
+      if (lastObservation.basis) request.fromBasis = lastObservation.basis;
+      if (lastObservation.maxSide) request.fromMaxSide = lastObservation.maxSide;
     }
     if (maxSide) request.maxSide = maxSide;
     if (quality) request.quality = quality;
@@ -182,7 +187,7 @@ function createPhoneController({
       // changed can describe a transient difference. Compare the final frame directly.
       if (!image && lastFrame && (header.hash !== lastFrame.hash ||
           header.width !== lastFrame.width || header.height !== lastFrame.height ||
-          header.captureBackend !== lastFrame.captureBackend)) {
+          header.captureBackend !== lastFrame.captureBackend || header.hashBasis !== lastFrame.hashBasis)) {
         lastFrame = null;
       }
       const payload = image ? received : Buffer.alloc(0);
