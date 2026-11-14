@@ -7,7 +7,6 @@ import android.os.IBinder;
 import android.view.Display;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
 
 /** Experimental default-display capture through the shell's WindowManager connection. */
 final class CompositorCapture {
@@ -107,17 +106,13 @@ final class CompositorCapture {
       try {
         Bitmap pixels = hardware.copy(Bitmap.Config.ARGB_8888, false);
         if (pixels == null) throw new Unavailable("Unable to read compositor pixels");
-        try {
-          if (pixels.getRowBytes() != frame.width * 4) {
-            throw new Unavailable("Unsupported compositor pixel stride");
-          }
-          frame.raw = new byte[(int) size];
-          pixels.copyPixelsToBuffer(ByteBuffer.wrap(frame.raw));
-          frame.backend = "compositor";
-          return frame;
-        } finally {
+        if (pixels.getRowBytes() != frame.width * 4) {
           pixels.recycle();
+          throw new Unavailable("Unsupported compositor pixel stride");
         }
+        frame.bitmap = pixels;
+        frame.backend = "compositor";
+        return frame;
       } finally {
         hardware.recycle();
       }
