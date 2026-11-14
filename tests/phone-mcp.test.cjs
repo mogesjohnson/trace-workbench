@@ -56,6 +56,22 @@ async function connection(t, { adbOptions, transcribe, handler = agentHandler(),
 
 const images = (result) => result.content.filter((c) => c.type === 'image');
 
+test('phone_act can refresh on visible change from a prior observation', async (t) => {
+  const { call, fake } = await connection(t);
+  await call('phone_connect');
+  const action = { type: 'tap', selector: { text: 'Counter' } };
+  const rejected = await call('phone_act', { action, until: 'change' });
+  assert.equal(rejected.isError, true);
+  assert.ok(!fake.requests.some(request => request.op === 'node'));
+  await call('phone_screen');
+  const result = await call('phone_act', { action, until: 'change' });
+  assert.equal(result.isError, undefined);
+  assert.deepEqual(fake.requests.slice(-2).map(request => request.op), ['node', 'wait']);
+  assert.equal(fake.requests.at(-1).until, 'change');
+  assert.equal(fake.requests.at(-1).from, 'h1');
+  assert.equal(images(result).length, 1);
+});
+
 test('phone server lists exactly the seven phone tools with read-only hints where safe', async (t) => {
   const { client } = await connection(t);
   const { tools } = await client.listTools();
