@@ -211,10 +211,10 @@ function createPhoneServer({ controller, transcribe, onError = () => {}, stopOnC
     }, readOnly);
 
   register('phone_act',
-    'Perform one action, wait on the phone until the screen settles, and return the new frame in the same call. Tap by selector (accessibility click on the clickable ancestor) or by point; points default to the last frame\'s image pixels.',
-    z.strictObject({ action: actionSchema, ...settleSchema, ...imageSchema }),
-    async ({ action, stableMs, timeoutMs, maxSide, quality }) => {
-      const out = await controller.act({ ...toControllerAction(action), settleOptions: { stableMs, timeoutMs, maxSide, quality } });
+    'Perform one action and return a fresh frame. The default waits for stability. Use until:"change" after observing the screen when the first visible change is sufficient, then verify the intended effect. Tap by selector or by point; points default to the last frame\'s image pixels.',
+    z.strictObject({ action: actionSchema, ...settleSchema, ...imageSchema, until: z.enum(['stable', 'change']).optional() }),
+    async ({ action, stableMs, timeoutMs, maxSide, quality, until }) => {
+      const out = await controller.act({ ...toControllerAction(action), settleOptions: { stableMs, timeoutMs, maxSide, quality, until } });
       const { state, images } = frameState(out.after);
       return result({ action: cleanHeader(out.action), ...state }, images);
     },

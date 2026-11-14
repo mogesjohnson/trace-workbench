@@ -233,6 +233,9 @@ function createPhoneController({
    */
   async function act({ action = 'tap', target = {}, value, key, swipe, settleOptions } = {}) {
     requireTarget();
+    const { until = 'stable', ...waitOptions } = settleOptions ?? {};
+    if (until === 'change' && !lastObservation)
+      throw new Error('Observe the screen before requesting a changed frame.');
     let result;
     if (key !== undefined) {
       result = await call({ op: 'key', code: key });
@@ -252,7 +255,7 @@ function createPhoneController({
       throw new Error('act needs a selector, a point, a key, a swipe or action:"text"');
     }
     let after;
-    try { after = await settle(settleOptions); }
+    try { after = await wait({ ...waitOptions, until, image: true }); }
     catch (error) {
       lastFrame = null;
       lastObservation = null;
