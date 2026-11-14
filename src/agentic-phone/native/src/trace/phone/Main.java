@@ -19,6 +19,12 @@ import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.zip.CRC32;
 import org.json.JSONObject;
 
@@ -38,6 +44,11 @@ public final class Main {
   private static CompositorCapture compositor;
   private static String compositorFailure;
   private static byte[] hashPixels;
+  private static final ExecutorService REFRESH_TREE = Executors.newSingleThreadExecutor(task -> {
+    Thread thread = new Thread(task, "trace-refresh-tree");
+    thread.setDaemon(true);
+    return thread;
+  });
 
   static final int SHELL_UID = 2000;
 
@@ -121,6 +132,7 @@ public final class Main {
     String op = r.getString("op");
     switch (op) {
       case "hello":
+        h.put("refreshTree", true);
         h.put("version", VERSION);
         h.put("sdk", android.os.Build.VERSION.SDK_INT);
         h.put("model", android.os.Build.MODEL);
@@ -365,7 +377,26 @@ public final class Main {
       describeCapture(f, h, ignoreTop);
       h.put("width", f.width);
       h.put("height", f.height);
-      return r.optBoolean("image", false) ? encode(f, r, h) : new byte[0];
+      if (!r.optBoolean("image", false)) return new byte[0];
+      if (!r.optBoolean("includeUi", false)) return encode(f, r, h);
+      Future<JSONObject> tree = REFRESH_TREE.submit(() -> {
+        JSONObject ui = new JSONObject();
+        ui.put("nodes", Ui.treeNodes(new JSONObject(), ui));
+        return ui;
+      });
+      try {
+        byte[] image = encode(f, r, h);
+        try {
+          h.put("ui", tree.get(2, TimeUnit.SECONDS));
+        } catch (ExecutionException error) {
+          h.put("uiError", String.valueOf(error.getCause()));
+        } catch (TimeoutException timeoutError) {
+          h.put("uiError", "Accessibility refresh timed out");
+        }
+        return image;
+      } finally {
+        tree.cancel(true);
+      }
     } finally {
       f.close();
     }

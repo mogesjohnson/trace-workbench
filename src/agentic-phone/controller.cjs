@@ -171,7 +171,7 @@ function createPhoneController({
   }
 
   /** Poll on the phone until the screen changes from the last observation or settles. */
-  async function wait({ until = 'stable', stableMs = 300, timeoutMs = 3000, maxSide, quality, image = true } = {}) {
+  async function wait({ until = 'stable', stableMs = 300, timeoutMs = 3000, maxSide, quality, image = true, includeUi } = {}) {
     const request = { op: 'wait', until, stableMs, timeoutMs, image };
     if (lastObservation) {
       request.from = lastObservation.hash;
@@ -181,6 +181,7 @@ function createPhoneController({
     }
     if (maxSide) request.maxSide = maxSide;
     if (quality) request.quality = quality;
+    if (includeUi && info?.refreshTree) request.includeUi = true;
     if (!image) pendingMetadataWaits += 1;
     try {
       const { header, payload: received } = await call(request, { timeoutMs: timeoutMs + 10000 });
@@ -265,6 +266,14 @@ function createPhoneController({
       lastFrame = null;
       lastObservation = null;
       throw new Error(`The agent acknowledged the phone action, but settle failed (${error.message}). ${VERIFY_BEFORE_INPUT}`, { cause: error });
+    }
+    if (waitOptions.includeUi && !after.header.ui && !after.header.uiError) {
+      try {
+        const refreshed = await ui();
+        after.header.ui = { ...refreshed.header, nodes: refreshed.nodes };
+      } catch (error) {
+        after.header.uiError = error.message;
+      }
     }
     return { action: result.header, after };
   }
