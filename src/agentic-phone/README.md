@@ -11,11 +11,13 @@ fast. It has no TRACE imports, so it can move to its own repo later with `git fi
 | `build.cjs` | Compiles `native/` into `.runtime/phone/build/classes.dex` (run through `node scripts/build-phone-agent.cjs`). |
 | `native/` | The on-device Java agent (`trace.phone`), the Wi-Fi trust watcher (`trace.phone.WifiTrust`) and `bench.cjs`, a read-only benchmark. |
 
-The rebuilt agent uses Android's compositor for screenshots and wait polling. If direct
-capture fails, it uses `screencap` for the rest of that agent process. The frame's
-`captureBackend` identifies the path used. A backend switch restarts the wait's frame
-comparison because the two backends can produce different raw pixels for the same screen.
-Rebuild the dex and restart the Phone session to use the new capture path.
+The rebuilt agent asks Android's compositor for full-screen captures at the requested
+image size. Crops use native-sized capture before resizing. If the device cannot supply
+scaled frames, the agent tries the native-sized compositor path. If the compositor fails,
+it uses `screencap` for the rest of that agent process. `captureBackend` identifies the
+path and `hashBasis` identifies the geometry used for pixel comparison. A change in basis
+restarts the comparison. Rebuild the dex and restart the Phone session to use the new
+capture path.
 
 Use `phone_wait({ image: false })` for the wait outcome, frame count, final hash and device
 dimensions without encoding, transferring or saving a screenshot. The latest observed hash
